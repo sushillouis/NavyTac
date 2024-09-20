@@ -78,4 +78,14 @@ public class LineMgr : MonoBehaviour
         Destroy(lr.gameObject);
 
     }
+
+    public void DestroyAllLines()
+    {
+        foreach (Transform child in this.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        lines.Clear();
+    }
 }
