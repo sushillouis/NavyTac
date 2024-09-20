@@ -37,9 +37,9 @@ public class Intercept : Follow
         targetEntity.desiredSpeed = 0;
         targetEntity.GetComponentInParent<UnitAI>().StopAndRemoveAllCommands();
         Vector3 deadRot = targetEntity.transform.localEulerAngles;
-        deadRot.x = 90;
+        deadRot.z = 90;
         targetEntity.transform.localEulerAngles = deadRot;
-        LineMgr.inst.DestroyLR(line);
+
     }
 
 }

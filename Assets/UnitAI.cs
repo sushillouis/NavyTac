@@ -34,8 +34,22 @@ public class UnitAI : MonoBehaviour
 
     void StopAndRemoveCommand(int index)
     {
-        commands[index].Stop();
+        Command cmd = commands[index];
+        if(cmd is Move) {
+            Move move = (Move)cmd;
+            move.Stop();
+            moves.Remove(move);
+        }
+
+        if(cmd is Intercept) {
+            Intercept intercept = (Intercept)cmd;
+            intercept.Stop();
+            intercepts.Remove(intercept);
+        }
+            
         commands.RemoveAt(index);
+
+
     }
     
     public void StopAndRemoveAllCommands()
