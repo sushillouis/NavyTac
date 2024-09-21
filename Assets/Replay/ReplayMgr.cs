@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Unity.XR.OpenVR;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Playables;
 
@@ -10,17 +11,17 @@ using UnityEngine.Playables;
 public class ReplayMgr : MonoBehaviour
 {
     public static ReplayMgr inst;
-    private GameData gameData;
-    private FileDataHandler dataHandler;
-    public bool useEncryption = false;
-    public int stateID;
-    public int maxStateID;
-    public string selectedProfileID;
-    public bool record;
+    private GameData gameData; //holds the data for teh current state when saving/loading
+    private FileDataHandler dataHandler; //object that handles writing/reading data files
+    public bool useEncryption = false; //if we want to encrypt the data files we can
+    public int stateID; //the id of the last state we loaded
+    public int maxStateID; //the id of the last chronological 
+    public string selectedProfileID; //the file name of the current state
+    public bool record; //sets whether or not we want to record a frame each second
 
-    private bool add;
-    private List<UnitAI> uais;
-    private List<Command> commands;
+    private bool add; //flag for setting commands after the data has been loaded in
+    private List<UnitAI> uais; //used for identifying what entity a commnand belongs to 
+    private List<Command> commands; //commands to be added after loading
 
     private void Awake()
     {
@@ -34,8 +35,16 @@ public class ReplayMgr : MonoBehaviour
         maxStateID = -1;
 
         gameData = new GameData();
-        string path = Path.Combine(Application.persistentDataPath, "saves");
+
+        //this is the directory of where all the json files for the states are being saved.
+        //unity has a predetermined path for game data and then we're saving the data in a
+        //folder called "saves" in that directory
+        string path = Path.Combine(Application.persistentDataPath, "saves");  
         dataHandler = new FileDataHandler(path, useEncryption);
+
+        add = false;
+        uais = new List<UnitAI>();
+        commands = new List<Command>();
     }
 
     // Update is called once per frame
@@ -59,36 +68,57 @@ public class ReplayMgr : MonoBehaviour
         }
     }
 
+    private void LateUpdate()
+    {
+        if(add)
+        {
+            LoadCommands();
+        }
+    }
+
+    //handles keeping track of where a state is in terms of chronological order when saving
     public void HandleSaveState()
     {
+        //sets the name of the new file to be created
         selectedProfileID = "state" + (stateID + 1) + ".game";
 
         SaveData();
 
+        //updates the current state as well as the max state
+        //note: the way this is set up makes it so that if you're saving at a state
+        //that isn't the latest chronological state, all states after the state that was
+        //saved in (i.e. states where stateID is greater than what it is before this incrementation)
+        //those states will be lost to the replay and eventually overwritten
         stateID++;
         maxStateID = stateID;
     }
 
+    //loads the next state in chronological order from the last state that was loaded
     public void LoadForward()
     {
+        //if we're at the most recent state, don't load anything
         if (stateID == maxStateID)
         {
             Debug.Log("At max state");
             return;
         }
 
+        //updates the state to the next state
         stateID++;
         selectedProfileID = "state" + stateID + ".game";
         LoadData();
 
     }
 
+    //loads the previous state in chronological order from the last state that was loaded
     public void LoadBackward()
     {
+        //if we're at the first state, don't need to decrement stateID, just reload the first state
         if (stateID <= 0)
         {
             Debug.Log("At min state");
         }
+        //otherwise decrement and set the file name
         else
         {
             stateID--;
@@ -98,9 +128,10 @@ public class ReplayMgr : MonoBehaviour
         LoadData();
     }
 
+    //takes the data from a json file and recreates the scene from it
     public void LoadData()
     {
-        //Loads in new data from the 
+        //Loads in new data from the json file of the state to be loaded
         gameData = dataHandler.Load(selectedProfileID); 
 
         //resets the scene
@@ -108,7 +139,12 @@ public class ReplayMgr : MonoBehaviour
         EntityMgr.inst.ResetEntities();
         EntityMgr.entityId = gameData.entityID - (gameData.entityIndex.Count);
 
-        //Loads in entities
+        //sets camera to correct position/orientation
+        CameraMgr.inst.YawNode.transform.position = gameData.camPosition;
+        CameraMgr.inst.YawNode.transform.eulerAngles = new Vector3(0, gameData.yaw, 0);
+        CameraMgr.inst.PitchNode.transform.eulerAngles = new Vector3(gameData.pitch, 0, 0);
+
+        //loads in entities
         for (int i = 0; i < gameData.entityIndex.Count; i++)
         {
             Entity ent = EntityMgr.inst.CreateEntity((EntityType)gameData.entityType[i], gameData.position[i], new Vector3(0, gameData.heading[i], 0));
@@ -119,10 +155,10 @@ public class ReplayMgr : MonoBehaviour
             ent.desiredHeading = gameData.dh[i];
         }
 
-        //Loads in commands for each entity
+        //loads in commands for each entity
         foreach (Entity ent in EntityMgr.inst.entities)
         {
-            //Finds all commands associated with the current entity in the loop
+            //finds all commands associated with the current entity in the loop
             List<int> dataIndexes = new List<int>();
             for (int j = 0; j < gameData.commandEntIndex.Count; j++)
             {
@@ -132,7 +168,7 @@ public class ReplayMgr : MonoBehaviour
                 }
             }
 
-
+            //recreates those commands 
             foreach (int dataIndex in dataIndexes)
             {
                 Command newCmd;
@@ -148,24 +184,65 @@ public class ReplayMgr : MonoBehaviour
 
                 UnitAI uai = ent.GetComponent<UnitAI>();
 
+                //commands and their corresponding UnitAI are stored in a list to be added after the scene is created
                 uais.Add(uai);
                 commands.Add(newCmd);
             }
         }
 
+        //sets the flag to add commands
+        add = true;
+
+        //since we've recreated all entities we have to reinitialize the DistanceMgr
         DistanceMgr.inst.Initialize();
     }
 
+    //loads commands into their respective entities after data loading is done
+    //note: this is a seperate method from load data due to the fact that when trying to add commands
+    //to an entity right when it's instantiated, the commands are added to the list in one frame but then
+    //the next frame the commands list is empty. The workaround I found for this bug was to just add the commands
+    //later in the frame via LateUpdate but I'm not sure if there's a solution where you can add commands at the
+    //same time as the entites.
+    public void LoadCommands()
+    {
+        //removes all lines from the scene as all the corresponding commands to those lines are now gone
+        LineMgr.inst.DestroyAllLines();
+
+        //adds all commands to their corresponding entites and initializes their lines
+        for (int i = 0; i < uais.Count; i++)
+        {
+            uais[i].AddCommand(commands[i]);
+            uais[i].DecorateAll();
+        }
+
+        //unsets flag to add commands
+        add = false;
+
+        //clears out the cache of commands to be added
+        commands.Clear();
+        uais.Clear();
+    }
+
+    //takes the data from the current state and saves it to a json file
     public void SaveData()
     {
         Debug.Log("saved");
 
+        //clears the data object so new data can be stored
         gameData.Clear();
 
+        //keeps track of the current entityId is EntityMgr so entities can be renamed the same on load
         gameData.entityID = EntityMgr.entityId;
 
+        //save camera position/location
+        gameData.camPosition = CameraMgr.inst.YawNode.transform.position;
+        gameData.yaw = CameraMgr.inst.YawNode.transform.eulerAngles.y;
+        gameData.pitch = CameraMgr.inst.PitchNode.transform.eulerAngles.x;
+
+        //iterates through all entities in the scene
         foreach (Entity ent in EntityMgr.inst.entities)
         {
+            //collects the data of the entity itself
             gameData.entityIndex.Add(EntityMgr.inst.entities.IndexOf(ent));
             gameData.entityType.Add((int)ent.entityType);
             gameData.position.Add(ent.position);
@@ -175,10 +252,13 @@ public class ReplayMgr : MonoBehaviour
             gameData.heading.Add(ent.heading);
             gameData.dh.Add(ent.desiredHeading);
 
+            //gets the UnitAI so commands can be found
             UnitAI uai = ent.GetComponent<UnitAI>();
 
+            //iterates through each command of the current entity
             foreach (Command cmd in uai.commands)
             {
+                //determines whether a command is a move, follow, or intercept and sets commands accordingly
                 if (cmd is Intercept)
                 {
                     Intercept inter = (Intercept)cmd;
@@ -204,6 +284,7 @@ public class ReplayMgr : MonoBehaviour
                     gameData.movePosition.Add(m.movePosition);
                 }
 
+                //general data for commands
                 gameData.commandEntIndex.Add(EntityMgr.inst.entities.IndexOf(ent));
                 gameData.commandIndex.Add(uai.commands.IndexOf(cmd));
                 gameData.isRunning.Add(cmd.isRunning);
@@ -217,7 +298,13 @@ public class ReplayMgr : MonoBehaviour
 //class to hold all the data in the game
 public class GameData
 {
+    //Parameter for the EntityMgr
     public int entityID;
+
+    //Camera Parameters
+    public Vector3 camPosition;
+    public float yaw;
+    public float pitch;
 
     //Entity Data Lists
     public List<int> entityIndex; //index of the entity in the EntityMgr
@@ -237,8 +324,8 @@ public class GameData
     public List<Vector3> movePosition;
 
     //Follow Command Specific Data
-    public List<int> followTargetIndex;
-    public List<Vector3> followOffset;
+    public List<int> followTargetIndex; //for move this is -1
+    public List<Vector3> followOffset; //for move and intercept this is Vector3.zero
 
     public GameData()
     {
