@@ -51,7 +51,8 @@ public class Follow : Move
     {
         base.Stop();
         entity.desiredSpeed = 0;
-        LineMgr.inst.DestroyLR(line);
+        isRunning = false;
+
     }
 
     Vector3 relativeVelocity;

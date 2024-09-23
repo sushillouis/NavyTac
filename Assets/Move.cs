@@ -18,7 +18,7 @@ public class Move : Command
         line = LineMgr.inst.CreateMoveLine(entity.position, movePosition);
         line.gameObject.SetActive(false);
         potentialLine = LineMgr.inst.CreatePotentialLine(entity.position);
-        line.gameObject.SetActive(true);
+        line.gameObject.SetActive(false);
     }
 
     public override void Tick()
@@ -96,5 +96,7 @@ public class Move : Command
         entity.desiredSpeed = 0;
         LineMgr.inst.DestroyLR(line);
         LineMgr.inst.DestroyLR(potentialLine);
+        line = null;
+        potentialLine = null;
     }
 }
