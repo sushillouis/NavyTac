@@ -50,9 +50,9 @@ public class ReplayMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyUp(KeyCode.Alpha1))
+        if (Input.GetMouseButtonDown(1) || Input.GetKeyUp(KeyCode.Alpha1))
         {
-            HandleSaveState();
+            //HandleSaveState();
         }
 
         if (Input.GetKeyUp(KeyCode.RightBracket))
@@ -73,6 +73,12 @@ public class ReplayMgr : MonoBehaviour
         if(add)
         {
             LoadCommands();
+            for (int i = 0; i < gameData.isSelected.Count; i++) 
+            {
+                if (gameData.isSelected[i])
+                    SelectionMgr.inst.SelectEntity(EntityMgr.inst.entities[i], shouldClearSelection: false);
+            }
+
         }
     }
 
@@ -132,7 +138,8 @@ public class ReplayMgr : MonoBehaviour
     public void LoadData()
     {
         //Loads in new data from the json file of the state to be loaded
-        gameData = dataHandler.Load(selectedProfileID); 
+        gameData = dataHandler.Load(selectedProfileID);
+        Debug.Log("state loaded: " + stateID);
 
         //resets the scene
         LineMgr.inst.DestroyAllLines();
@@ -153,6 +160,7 @@ public class ReplayMgr : MonoBehaviour
             ent.desiredSpeed = gameData.ds[i];
             ent.heading = gameData.heading[i];
             ent.desiredHeading = gameData.dh[i];
+            ent.isSelected = gameData.isSelected[i];
         }
 
         //loads in commands for each entity
@@ -212,7 +220,7 @@ public class ReplayMgr : MonoBehaviour
         for (int i = 0; i < uais.Count; i++)
         {
             uais[i].AddCommand(commands[i]);
-            uais[i].DecorateAll();
+            //uais[i].DecorateAll();
         }
 
         //unsets flag to add commands
@@ -251,6 +259,7 @@ public class ReplayMgr : MonoBehaviour
             gameData.ds.Add(ent.desiredSpeed);
             gameData.heading.Add(ent.heading);
             gameData.dh.Add(ent.desiredHeading);
+            gameData.isSelected.Add(ent.isSelected);
 
             //gets the UnitAI so commands can be found
             UnitAI uai = ent.GetComponent<UnitAI>();
@@ -315,6 +324,7 @@ public class GameData
     public List<float> ds;
     public List<float> heading;
     public List<float> dh;
+    public List<bool> isSelected;
 
     //Command Data Lists
     public List<int> commandType; //move = 0, follow = 1, intercepts = 2
@@ -337,6 +347,7 @@ public class GameData
         ds = new List<float>();
         heading = new List<float>();
         dh = new List<float>();
+        isSelected = new List<bool>();
 
         commandType = new List<int>();
         commandEntIndex = new List<int>();
@@ -358,6 +369,7 @@ public class GameData
         ds.Clear();
         heading.Clear();
         dh.Clear();
+        isSelected.Clear();
 
         commandType.Clear();
         commandEntIndex.Clear();
