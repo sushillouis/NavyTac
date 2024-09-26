@@ -20,6 +20,7 @@ public class GameMgr : MonoBehaviour
         foreach(GameObject go in EntityMgr.inst.entityPrefabs) {
             Entity ent = EntityMgr.inst.CreateEntity(go.GetComponent<Entity>().entityType, position, Vector3.zero);
             ent.isSelected = false;
+            ent.team = (Random.value > 0.5f) ? Team.Team1 : Team.Team2;
             position.x += 200;
         }
     }

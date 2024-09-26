@@ -5,10 +5,13 @@ using UnityEngine;
 public class UnitAI : MonoBehaviour
 {
     public Entity entity; //public only for ease of debugging
+    public Weapon weapon;
     // Start is called before the first frame update
     void Start()
     {
         entity = GetComponentInParent<Entity>();
+        weapon = GetComponentInChildren<Weapon>();
+
         commands = new List<Command>();
         intercepts = new List<Intercept>();
         moves = new List<Move>();
