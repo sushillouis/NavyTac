@@ -51,7 +51,11 @@ public class AIMgr : MonoBehaviour
                     else
                         HandleFollow(SelectionMgr.inst.selectedEntities, ent);
                 }
-                ReplayTest.inst.SaveTestState();
+
+                if(ReplayTest.inst != null)
+                    ReplayTest.inst.SaveTestState();
+                else
+                    ReplayMgr.inst.HandleSaveState();
             } else {
                 //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
             }

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class ReplayTest : MonoBehaviour
 {
@@ -19,6 +21,8 @@ public class ReplayTest : MonoBehaviour
     bool startReplay;
     bool lastCommand;
     bool replayRunning;
+
+    public string filename;
     
     // Start is called before the first frame update
     void Start()
@@ -99,6 +103,8 @@ public class ReplayTest : MonoBehaviour
             }
             lastCommand = false;
             replayRunning = false;
+            timesBetweenStates.Add(0);
+            SaveResultsToCSV();
         }
 
         
@@ -114,5 +120,24 @@ public class ReplayTest : MonoBehaviour
             timeSinceLastState = 0;
         }
         started = true;
+    }
+
+    public void SaveResultsToCSV()
+    {
+        string path = Path.Combine(Application.persistentDataPath, filename);
+        TextWriter tw = new StreamWriter(path, false);
+        tw.WriteLine("Save#, RunPosX, RunPosY, RunPosZ, TestPosX, TestPosY, TestPosZ, TimeTilNextState, Distance Diff");
+        tw.Close();
+
+        tw = new StreamWriter(path, true);
+
+        for (int i = 0;i < testPos.Count;i++)
+        {
+            tw.WriteLine(i + "," 
+                + runPos[i].x + "," + runPos[i].y + "," + runPos[i].z + "," 
+                + testPos[i].x + "," + testPos[i].y + "," + testPos[i].z + ","
+                + timesBetweenStates[i] + "," + distanceDiffs[i]);
+        }
+        tw.Close();
     }
 }

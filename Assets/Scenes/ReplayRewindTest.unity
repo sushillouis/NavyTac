@@ -1966,12 +1966,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6de1eeecd6604874ab628aca0f6a4371, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  runCubes: []
-  testCubes: []
+  runPos: []
+  testPos: []
   timesBetweenStates: []
   distanceDiffs: []
   doneAdding: 0
   timeSinceLastState: 0
+  replayTimer: 0
+  filename: rewindResults.csv
 --- !u!1001 &1303395822
 PrefabInstance:
   m_ObjectHideFlags: 0

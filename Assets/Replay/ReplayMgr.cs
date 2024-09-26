@@ -50,9 +50,10 @@ public class ReplayMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(1) || Input.GetKeyUp(KeyCode.Alpha1))
+        if (Input.GetKeyUp(KeyCode.Alpha1))
         {
-            //HandleSaveState();
+            if(ReplayTest.inst == null)
+                HandleSaveState();
         }
 
         if (Input.GetKeyUp(KeyCode.RightBracket))
