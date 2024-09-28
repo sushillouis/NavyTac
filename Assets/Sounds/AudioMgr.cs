@@ -10,6 +10,8 @@ public class AudioMgr : MonoBehaviour
 
     public AudioMixer mixer;
 
+    public bool muteSound;
+
     [Range(-80.0f, 20.0f)]
     public float masterVolume;
     [Range(-80.0f, 20.0f)]
@@ -34,5 +36,10 @@ public class AudioMgr : MonoBehaviour
         mixer.SetFloat("MasterVolume", masterVolume);
         mixer.SetFloat("AmbientVolume", ambientVolume);
         mixer.SetFloat("BGMVolume", bgmVolume);
+
+        if (muteSound)
+        {
+            mixer.SetFloat("MasterVolume", -80);
+        }
     }
 }
