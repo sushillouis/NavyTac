@@ -79,7 +79,7 @@ public class SelectionMgr : MonoBehaviour
         SelectEntitiesInBox(startMousePosition, Input.mousePosition);
         SelectionBoxPanel.gameObject.SetActive(false);
         if (ReplayTest.inst != null)
-            ReplayTest.inst.SaveTestState();
+            ;//ReplayTest.inst.SaveTestState();
         else
             ReplayMgr.inst.HandleSaveState();
     }
