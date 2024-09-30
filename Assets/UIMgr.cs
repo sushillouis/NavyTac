@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,11 +25,11 @@ public class UIMgr : MonoBehaviour
             ToggleMultiSelect.SetActive(true);
         #endif
     }
-    public Text entityName;
-    public Text speed;
-    public Text desiredSpeed;
-    public Text heading;
-    public Text desiredHeading;
+    public TextMeshProUGUI entityName;
+    public TextMeshProUGUI speed;
+    public TextMeshProUGUI desiredSpeed;
+    public TextMeshProUGUI heading;
+    public TextMeshProUGUI desiredHeading;
 
     // Update is called once per frame
     void Update()
