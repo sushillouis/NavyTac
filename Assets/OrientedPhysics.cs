@@ -15,7 +15,7 @@ public class OrientedPhysics : MonoBehaviour
 
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         if(Utils.ApproximatelyEqual(entity.speed, entity.desiredSpeed)) {
             ;
