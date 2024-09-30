@@ -75,7 +75,7 @@ public class LineMgr : MonoBehaviour
             tmp = lr.gameObject;
             lines.Remove(lr);
         }
-        Destroy(lr.gameObject);
+        Destroy(tmp);
 
     }
 
