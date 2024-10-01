@@ -9,9 +9,9 @@ public class EntityMgr : MonoBehaviour
     {
         inst = this;
         entities = new List<Entity>();
-        foreach(Entity ent in movableEntitiesRoot.GetComponentsInChildren<Entity>()) {
-            entities.Add(ent);
-        }
+        //foreach(Entity ent in movableEntitiesRoot.GetComponentsInChildren<Entity>()) {
+        //    entities.Add(ent);
+        //}
     }
 
     public GameObject movableEntitiesRoot;
