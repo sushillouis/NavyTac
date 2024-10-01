@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Threading;
 using UnityEngine;
@@ -30,6 +31,7 @@ public class ReplayTest : MonoBehaviour
     public float timeSinceLastState;
 
     public List<RewindTestEntity> entities;
+    public List<Entity> runEntites;
 
     public int numRows;
     public int numCols;
@@ -76,6 +78,12 @@ public class ReplayTest : MonoBehaviour
         {
             initReplay = true;
         }
+        if(Input.GetKeyUp(KeyCode.Alpha4))
+        {
+            StartCoroutine(RunAddMoves());
+            StartCoroutine(RunSaves());
+        }
+            
     }
 
     int save = 0;
@@ -178,6 +186,7 @@ public class ReplayTest : MonoBehaviour
                 position.z += spread;
                 RewindTestEntity entStruct = new RewindTestEntity(EntityMgr.inst.entities.IndexOf(ent));
                 entities.Add(entStruct);
+                runEntites.Add(ent);
             }
             position.x += spread;
             position.z = initZ;
@@ -206,5 +215,36 @@ public class ReplayTest : MonoBehaviour
         }
         
         tw.Close();
+    }
+
+    public List<Vector3> movePositions;
+    public float timeBetweenCommands;
+
+    IEnumerator RunAddMoves()
+    {
+        
+        for (int i = 0; i < movePositions.Count; i++)
+        {
+            foreach (Entity entity in runEntites)
+            {
+                Move m = new Move(entity, movePositions[i]);
+                UnitAI uai = entity.GetComponent<UnitAI>();
+                uai.AddCommand(m);
+            }
+            yield return new WaitForSeconds(timeBetweenCommands);
+        }
+    }
+
+    public int numSaves;
+    public float timeBetweenSaves;
+
+    IEnumerator RunSaves()
+    {
+        for (int i = 0; i < numSaves; i++)
+        {
+            SaveTestState();
+            yield return new WaitForSeconds(timeBetweenSaves);
+        }
+        started = false;
     }
 }
