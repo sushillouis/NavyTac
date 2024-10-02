@@ -11,7 +11,7 @@ public class PaintingManger : MonoBehaviour
     [SerializeField] Transform terrainContainer;
     [SerializeField] GameObject paintingPlane;
     public int brushSize;
-
+    Vector3 mapCordsOrigin = new(0,0,0);
     Vector3 flat = new(1,0,1);
 
     public void SetCurrentMap(float[,] newMap)
@@ -23,6 +23,8 @@ public class PaintingManger : MonoBehaviour
     void Start()
     {
         SetCurrentMap(new float[10,10]);
+        mapCordsOrigin = terrain.transform.localPosition+terrainContainer.position;
+        print(mapCordsOrigin);
     }
 
     // Update is called once per frame
@@ -47,33 +49,38 @@ public class PaintingManger : MonoBehaviour
             if (Physics.Raycast(ray, out hit, 40000, layers))
             {   //Only Works with square maps atm
                 
-                float worldSpaceScale = terrain.terrainData.heightmapResolution;
+                float worldSpaceScale = terrain.terrainData.heightmapResolution/terrain.terrainData.size.x;
                 
                 
-                Vector3 mapCordsOrigin = terrain.transform.position;
                 Debug.Log(worldSpaceScale);
                 Vector3 flatDelta = Vector3.Scale(hit.point,flat) - Vector3.Scale(mapCordsOrigin,flat);
-                float [,] paintMap = new float[(brushSize*2),(brushSize*2)];
+                float [,] paintMap = new float[brushSize,brushSize];
                 // float terrainHeight = terrain.terrainData.GetHeight((int)(hit.point.x*worldSpaceScale),(int)(hit.point.z*worldSpaceScale));
                 
                 // print(terrainHeight);
                 // print(hit.point.x-mapCordsOrigin.x);
-                // paintingPlane.transform.position = new(hit.point.x,terrainHeight,hit.point.z);
+                
                 // Vector2Int topRight = new((int)(flatDelta.x/worldSpaceScale)+brushSize,MapGenerator.mapChunkSize-(((int)(flatDelta.z/worldSpaceScale))-brushSize));
                 // Vector2Int bottomLeft = new((int)(flatDelta.x/worldSpaceScale)-brushSize,MapGenerator.mapChunkSize-(((int)(flatDelta.z/worldSpaceScale))+brushSize));
-                Vector2Int topLeft = new((int)(flatDelta.x*worldSpaceScale)-brushSize,((int)(flatDelta.z*worldSpaceScale))-brushSize);
-                int i=0,j=0;
-                
-                print(topLeft+" :)");
-                
+                Vector2Int topLeft = 
+                    new((int)(flatDelta.x*worldSpaceScale)-brushSize/2
+                    ,(int)(flatDelta.z*worldSpaceScale)-brushSize/2);                
                 // paintMap = terrain.terrainData.GetHeights((int)hit.point.x,(int)hit.point.y,(brushSize*2),(brushSize*2));
+                Vector2Int center = 
+                    new((int)(flatDelta.x*worldSpaceScale)
+                    ,(int)(flatDelta.z*worldSpaceScale));                
                 
-                float [,] funny = new float[brushSize,brushSize];
+                paintMap =  terrain.terrainData.GetHeights(topLeft.x,topLeft.y,brushSize,brushSize);
+                
+                paintingPlane.transform.position = 
+                    new(hit.point.x,0,hit.point.z);
 
+                // topLeft.x = Mathf.Clamp(topLeft.x,brushSize,(int)worldSpaceScale-brushSize);
+                // topLeft.y = Mathf.Clamp(topLeft.y,brushSize,(int)worldSpaceScale-brushSize);
 
-                terrain.terrainData.SetHeightsDelayLOD(20,20,funny);
+                terrain.terrainData.SetHeightsDelayLOD(topLeft.x,topLeft.y,paintMap);
 
-                terrain.terrainData.SetHeightsDelayLOD(9480,9480,funny);
+                // terrain.terrainData.SetHeightsDelayLOD(9480,9480,funny);
                 
                 // Debug.Log(topRight);
                 // Debug.Log(bottomLeft);
