@@ -49,6 +49,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "MiddleMouseMove",
+                    "type": "Value",
+                    "id": "5bab7b5d-f7ea-4587-9cc5-9282d8f8e716",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "MiddleMouseScroll",
+                    "type": "Value",
+                    "id": "2e4259bc-c4f1-47e5-8e5c-c2223f90618d",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -326,6 +344,28 @@
                     "action": "UpAndDown",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "617e1a54-124e-4587-838f-f0978308da9d",
+                    "path": "<Mouse>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MiddleMouseMove",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2e43d395-407d-499e-836e-280bb4910f6c",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MiddleMouseScroll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },

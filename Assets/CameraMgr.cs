@@ -55,6 +55,12 @@ public class CameraMgr : MonoBehaviour
     //Camera is child of RollNode
 
     public float cameraMoveSpeed = 500;
+    /// <summary>
+    /// Note this is reduced by a log scale;
+    /// </summary>
+    public float heightSensitivty = 5;
+    public float maxCameraHeight = 9600;
+    public float minCameraHeight = 20;
     public float cameraTurnRate = 10;
     public Vector3 currentYawEulerAngles = Vector3.zero;
     public Vector3 currentPitchEulerAngles = Vector3.zero;
@@ -82,9 +88,54 @@ public class CameraMgr : MonoBehaviour
             yawValue = input.Camera.Yaw.ReadValue<float>() * sens;
             pitchValue = input.Camera.Pitch.ReadValue<float>() * -sens;
         }
+        float moveCoefficent = Mathf.Log(YawNode.transform.position.y * heightSensitivty);
+        moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);
 
+        moveVector += -.025f * moveCoefficent * input.Camera.MiddleMouseScroll.ReadValue<Vector2>().y * Vector3.up;
+
+        // 
+
+        if(!Input.GetKey(KeyCode.Mouse2)) 
+        {
+            
+            if(Input.GetKey(KeyCode.UpArrow))
+            {
+                moveVector += Vector3.forward * moveCoefficent;
+            }
+            if(Input.GetKey(KeyCode.DownArrow))
+            {
+                moveVector += Vector3.back * moveCoefficent;
+            }
+
+            if(Input.GetKey(KeyCode.LeftArrow))
+            {
+                moveVector +=Vector3.left * moveCoefficent;
+            }
+            if(Input.GetKey(KeyCode.RightArrow))
+            {
+                moveVector +=Vector3.right * moveCoefficent;
+            }
+
+            if(Input.GetKey(KeyCode.KeypadPlus))
+            {
+                moveVector += Vector3.up * moveCoefficent;
+            }
+            if(Input.GetKey(KeyCode.KeypadMinus))
+            {
+                moveVector += Vector3.down * moveCoefficent;
+            }
+        }
+        else 
+        {
+            Vector3 mouseDelta = input.Camera.MiddleMouseMove.ReadValue<Vector2>();
+
+            moveVector += moveCoefficent * new Vector3(mouseDelta.x,0,mouseDelta.y);
+        }
 
         YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
+        
+        float newY = Mathf.Clamp(YawNode.transform.position.y,minCameraHeight,maxCameraHeight);
+        YawNode.transform.position = new(YawNode.transform.position.x,newY,YawNode.transform.position.z);
 
         currentYawEulerAngles = YawNode.transform.localEulerAngles;
         currentYawEulerAngles.y += yawValue * cameraTurnRate * Time.deltaTime;

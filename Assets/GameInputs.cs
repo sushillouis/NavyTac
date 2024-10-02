@@ -71,6 +71,24 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""MiddleMouseMove"",
+                    ""type"": ""Value"",
+                    ""id"": ""5bab7b5d-f7ea-4587-9cc5-9282d8f8e716"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""MiddleMouseScroll"",
+                    ""type"": ""Value"",
+                    ""id"": ""2e4259bc-c4f1-47e5-8e5c-c2223f90618d"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -348,6 +366,28 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""action"": ""UpAndDown"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""617e1a54-124e-4587-838f-f0978308da9d"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MiddleMouseMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2e43d395-407d-499e-836e-280bb4910f6c"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MiddleMouseScroll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -626,6 +666,8 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Camera_RTSView = m_Camera.FindAction("RTSView", throwIfNotFound: true);
         m_Camera_Movement = m_Camera.FindAction("Movement", throwIfNotFound: true);
         m_Camera_UpAndDown = m_Camera.FindAction("UpAndDown", throwIfNotFound: true);
+        m_Camera_MiddleMouseMove = m_Camera.FindAction("MiddleMouseMove", throwIfNotFound: true);
+        m_Camera_MiddleMouseScroll = m_Camera.FindAction("MiddleMouseScroll", throwIfNotFound: true);
         // Entities
         m_Entities = asset.FindActionMap("Entities", throwIfNotFound: true);
         m_Entities_Speed = m_Entities.FindAction("Speed", throwIfNotFound: true);
@@ -703,6 +745,8 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Camera_RTSView;
     private readonly InputAction m_Camera_Movement;
     private readonly InputAction m_Camera_UpAndDown;
+    private readonly InputAction m_Camera_MiddleMouseMove;
+    private readonly InputAction m_Camera_MiddleMouseScroll;
     public struct CameraActions
     {
         private @GameInputs m_Wrapper;
@@ -712,6 +756,8 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         public InputAction @RTSView => m_Wrapper.m_Camera_RTSView;
         public InputAction @Movement => m_Wrapper.m_Camera_Movement;
         public InputAction @UpAndDown => m_Wrapper.m_Camera_UpAndDown;
+        public InputAction @MiddleMouseMove => m_Wrapper.m_Camera_MiddleMouseMove;
+        public InputAction @MiddleMouseScroll => m_Wrapper.m_Camera_MiddleMouseScroll;
         public InputActionMap Get() { return m_Wrapper.m_Camera; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -736,6 +782,12 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @UpAndDown.started += instance.OnUpAndDown;
             @UpAndDown.performed += instance.OnUpAndDown;
             @UpAndDown.canceled += instance.OnUpAndDown;
+            @MiddleMouseMove.started += instance.OnMiddleMouseMove;
+            @MiddleMouseMove.performed += instance.OnMiddleMouseMove;
+            @MiddleMouseMove.canceled += instance.OnMiddleMouseMove;
+            @MiddleMouseScroll.started += instance.OnMiddleMouseScroll;
+            @MiddleMouseScroll.performed += instance.OnMiddleMouseScroll;
+            @MiddleMouseScroll.canceled += instance.OnMiddleMouseScroll;
         }
 
         private void UnregisterCallbacks(ICameraActions instance)
@@ -755,6 +807,12 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @UpAndDown.started -= instance.OnUpAndDown;
             @UpAndDown.performed -= instance.OnUpAndDown;
             @UpAndDown.canceled -= instance.OnUpAndDown;
+            @MiddleMouseMove.started -= instance.OnMiddleMouseMove;
+            @MiddleMouseMove.performed -= instance.OnMiddleMouseMove;
+            @MiddleMouseMove.canceled -= instance.OnMiddleMouseMove;
+            @MiddleMouseScroll.started -= instance.OnMiddleMouseScroll;
+            @MiddleMouseScroll.performed -= instance.OnMiddleMouseScroll;
+            @MiddleMouseScroll.canceled -= instance.OnMiddleMouseScroll;
         }
 
         public void RemoveCallbacks(ICameraActions instance)
@@ -889,6 +947,8 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnRTSView(InputAction.CallbackContext context);
         void OnMovement(InputAction.CallbackContext context);
         void OnUpAndDown(InputAction.CallbackContext context);
+        void OnMiddleMouseMove(InputAction.CallbackContext context);
+        void OnMiddleMouseScroll(InputAction.CallbackContext context);
     }
     public interface IEntitiesActions
     {
