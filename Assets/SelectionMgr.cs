@@ -148,6 +148,33 @@ public class SelectionMgr : MonoBehaviour
             ent.isSelected = false;
         selectedEntities.Clear();
     }
+    public void DeselectEntity(Entity ent)
+{
+    if (selectedEntity == ent)
+    {
+        selectedEntity = null;
+        selectedEntityIndex = -1;
+    }
+
+    if (selectedEntities.Contains(ent))
+    {
+        selectedEntities.Remove(ent);
+
+        // Check if there are still entities in the selected list
+        if (selectedEntities.Count > 0)
+        {
+            // Select the next entity in the list (you could choose any logic here)
+            selectedEntity = selectedEntities[0];
+            selectedEntityIndex = EntityMgr.inst.entities.FindIndex(x => (x == selectedEntity));
+        }
+        else
+        {
+            // No entities left selected
+            selectedEntity = null;
+            selectedEntityIndex = -1;
+        }
+    }
+}
 
     public void SelectEntity(Entity ent, bool shouldClearSelection = true)
     {

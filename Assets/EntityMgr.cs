@@ -40,6 +40,9 @@ public class EntityMgr : MonoBehaviour
     {
         if (entities.Contains(entity))
         {
+            bool rtsMode = false;
+            CameraMgr.inst.SwitchRTSMode(rtsMode);
+            SelectionMgr.inst.DeselectEntity(entity);
             entities.Remove(entity);
             Destroy(entity.gameObject);
         }

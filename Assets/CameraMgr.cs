@@ -96,22 +96,27 @@ public class CameraMgr : MonoBehaviour
 
         if (input.Camera.RTSView.triggered)
         {
-            if (isRTSMode)
+            SwitchRTSMode(!isRTSMode);
+        }
+    }
+    public bool isRTSMode = true;
+
+    public void SwitchRTSMode(bool rtsMode){
+        if (rtsMode)
             {
                 YawNode.transform.SetParent(SelectionMgr.inst.selectedEntity.cameraRig.transform);
                 YawNode.transform.localPosition = Vector3.zero;
                 YawNode.transform.localEulerAngles = Vector3.zero;
             }
-            else
+        else
             {
                 YawNode.transform.SetParent(RTSCameraRig.transform);
                 YawNode.transform.localPosition = Vector3.zero;
                 YawNode.transform.localEulerAngles = Vector3.zero;
             }
-            isRTSMode = !isRTSMode;
-        }
+        isRTSMode = rtsMode;
     }
-    public bool isRTSMode = true;
+    
 
     private void CamZoom(float increment)
     {
