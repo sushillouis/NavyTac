@@ -67,6 +67,18 @@ public class LineMgr : MonoBehaviour
         return lr;
     }
 
+    public LineRenderer CreateGeneric3PointLine(Vector3 p1, Vector3 p2, Vector2 p3, Color color)
+    {
+        LineRenderer lr = Instantiate<LineRenderer>(InterceptPrefab, transform);
+        lr.SetPosition(0, p1);
+        lr.SetPosition(1, p2);
+        lr.SetPosition(2, p3);
+        lines.Add(lr);
+        lr.startColor=color;
+        lr.endColor = color;
+        return lr;
+    }
+
     public GameObject tmp;
     public void DestroyLR(LineRenderer lr)
     {

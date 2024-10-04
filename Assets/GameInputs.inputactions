@@ -406,6 +406,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Pincer",
+                    "type": "Button",
+                    "id": "973e1714-583b-438a-a962-bba3a67273a9",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Create100",
                     "type": "Button",
                     "id": "2fa46691-b915-4755-8db5-7aba03303154",
@@ -589,6 +598,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Create100",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e654023e-6124-4a37-bb26-985f0b486648",
+                    "path": "<Keyboard>/alt",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Pincer",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

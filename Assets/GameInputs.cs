@@ -428,6 +428,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Pincer"",
+                    ""type"": ""Button"",
+                    ""id"": ""973e1714-583b-438a-a962-bba3a67273a9"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""Create100"",
                     ""type"": ""Button"",
                     ""id"": ""2fa46691-b915-4755-8db5-7aba03303154"",
@@ -613,6 +622,17 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""action"": ""Create100"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e654023e-6124-4a37-bb26-985f0b486648"",
+                    ""path"": ""<Keyboard>/alt"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pincer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -636,6 +656,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Entities_ClearSelection = m_Entities.FindAction("ClearSelection", throwIfNotFound: true);
         m_Entities_Move = m_Entities.FindAction("Move", throwIfNotFound: true);
         m_Entities_Intercept = m_Entities.FindAction("Intercept", throwIfNotFound: true);
+        m_Entities_Pincer = m_Entities.FindAction("Pincer", throwIfNotFound: true);
         m_Entities_Create100 = m_Entities.FindAction("Create100", throwIfNotFound: true);
     }
 
@@ -784,6 +805,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Entities_ClearSelection;
     private readonly InputAction m_Entities_Move;
     private readonly InputAction m_Entities_Intercept;
+    private readonly InputAction m_Entities_Pincer;
     private readonly InputAction m_Entities_Create100;
     public struct EntitiesActions
     {
@@ -797,6 +819,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         public InputAction @ClearSelection => m_Wrapper.m_Entities_ClearSelection;
         public InputAction @Move => m_Wrapper.m_Entities_Move;
         public InputAction @Intercept => m_Wrapper.m_Entities_Intercept;
+        public InputAction @Pincer => m_Wrapper.m_Entities_Pincer;
         public InputAction @Create100 => m_Wrapper.m_Entities_Create100;
         public InputActionMap Get() { return m_Wrapper.m_Entities; }
         public void Enable() { Get().Enable(); }
@@ -831,6 +854,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @Intercept.started += instance.OnIntercept;
             @Intercept.performed += instance.OnIntercept;
             @Intercept.canceled += instance.OnIntercept;
+            @Pincer.started += instance.OnPincer;
+            @Pincer.performed += instance.OnPincer;
+            @Pincer.canceled += instance.OnPincer;
             @Create100.started += instance.OnCreate100;
             @Create100.performed += instance.OnCreate100;
             @Create100.canceled += instance.OnCreate100;
@@ -862,6 +888,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @Intercept.started -= instance.OnIntercept;
             @Intercept.performed -= instance.OnIntercept;
             @Intercept.canceled -= instance.OnIntercept;
+            @Pincer.started -= instance.OnPincer;
+            @Pincer.performed -= instance.OnPincer;
+            @Pincer.canceled -= instance.OnPincer;
             @Create100.started -= instance.OnCreate100;
             @Create100.performed -= instance.OnCreate100;
             @Create100.canceled -= instance.OnCreate100;
@@ -900,6 +929,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnClearSelection(InputAction.CallbackContext context);
         void OnMove(InputAction.CallbackContext context);
         void OnIntercept(InputAction.CallbackContext context);
+        void OnPincer(InputAction.CallbackContext context);
         void OnCreate100(InputAction.CallbackContext context);
     }
 }

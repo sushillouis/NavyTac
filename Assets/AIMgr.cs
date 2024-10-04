@@ -19,6 +19,8 @@ public class AIMgr : MonoBehaviour
         input.Enable();
         input.Entities.Intercept.performed += OnInterceptPerformed;
         input.Entities.Intercept.canceled += OnInterceptCanceled;
+        input.Entities.Pincer.performed += OnPincerPerformed;
+        input.Entities.Pincer.canceled += OnPincerCanceled;
         input.Entities.ClearSelection.performed += OnClearSelectionPerformed;
         input.Entities.ClearSelection.canceled += OnClearSelectionCanceled;
     }
@@ -33,7 +35,9 @@ public class AIMgr : MonoBehaviour
 
     public RaycastHit hit;
     public int layerMask;
-
+    bool pincerDragIsActive = false;
+    List<float> pincerApproaches = new List<float>();
+    Entity pincerCenterTarget = null;
     // Update is called once per frame
     void Update()
     {
@@ -43,16 +47,41 @@ public class AIMgr : MonoBehaviour
                 Vector3 pos = hit.point;
                 pos.y = 0;
                 Entity ent = FindClosestEntInRadius(pos, rClickRadiusSq);
+                pincerCenterTarget = ent;
                 if (ent == null) {
                     HandleMove(SelectionMgr.inst.selectedEntities, pos);
                 } else {
                     if (interceptDown)
                         HandleIntercept(SelectionMgr.inst.selectedEntities, ent);
+                    else if(pincerDown)
+                        pincerDragIsActive=true;
+                        
                     else
                         HandleFollow(SelectionMgr.inst.selectedEntities, ent);
                 }
             } else {
                 //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
+            }
+        }
+
+        if(Input.GetMouseButton(1)) {
+            if(!pincerDown) {
+                pincerDragIsActive=false;
+            }
+        }
+
+        if(Input.GetMouseButtonUp(1)) {
+            if(pincerDragIsActive && Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, layerMask) && pincerCenterTarget) {
+                Vector3 dif = hit.point - pincerCenterTarget.position;
+                if(dif.sqrMagnitude>5) {
+                    float angle = Vector3.SignedAngle(pincerCenterTarget.transform.forward,dif, Vector3.up);
+                    // angle =  hit.point.x * pincerCenterTarget.position.y - hit.point.y * pincerCenterTarget.position.x <= 0 ? -angle : angle;
+                    pincerApproaches.Add(angle);
+                    print("Adding:"+angle);
+                }
+            } else if(pincerApproaches.Count>0 && pincerCenterTarget) {
+                
+                HandlePincer(SelectionMgr.inst.selectedEntities,pincerCenterTarget,pincerApproaches.ToArray());                
             }
         }
     }
@@ -95,6 +124,25 @@ public class AIMgr : MonoBehaviour
 
     }
 
+    void HandlePincer(List<Entity> entities, Entity ent, float[] approaches)
+    {
+        //Round Robbin Attacking
+        int attackApproach = 0;
+        foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
+            if(ent == entity) 
+                continue;
+            Pincer intercept = new(entity, ent, 200, approaches,attackApproach);
+            attackApproach++;
+            if(attackApproach >= approaches.Length) {
+                attackApproach=0;
+            }
+            UnitAI uai = entity.GetComponent<UnitAI>();
+            AddOrSet(intercept, uai);
+        }
+        pincerApproaches.Clear();
+        pincerCenterTarget=null;
+    }
+
     public float rClickRadiusSq = 10000;
     public Entity FindClosestEntInRadius(Vector3 point, float rsq)
     {
@@ -121,6 +169,20 @@ public class AIMgr : MonoBehaviour
     private void OnInterceptCanceled(InputAction.CallbackContext context)
     {
         interceptDown = false;
+    }
+
+    bool pincerDown = false;
+    private void OnPincerPerformed(InputAction.CallbackContext context)
+    {
+        pincerDown = true;
+    }
+
+    private void OnPincerCanceled(InputAction.CallbackContext context)
+    {
+        pincerDown = false;
+        if(pincerApproaches.Count>0 && pincerCenterTarget) {
+            HandlePincer(SelectionMgr.inst.selectedEntities,pincerCenterTarget,pincerApproaches.ToArray());
+        }
     }
 
     bool addDown = false;

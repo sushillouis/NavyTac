@@ -111,17 +111,21 @@ public class UnitAI : MonoBehaviour
                     intercept.line.SetPosition(1, intercept.targetEntity.position);
                 intercept.line.SetPosition(2, intercept.targetEntity.position);
 
+            } else if( current is Pincer) {
+                Pincer pincer = current as Pincer;
+                pincer.line.SetPosition(1, pincer.computePincerPoint());
+                pincer.line.SetPosition(2, pincer.targetEntity.position);
             } else if (current is Follow) { // Less specific
                 Follow f = current as Follow;
                 f.line.SetPosition(1, f.targetEntity.position + f.offset);
                 f.line.SetPosition(2, f.targetEntity.position);
                 //f.line.SetPosition(1, f.predictedMovePosition);
-            }
+            } 
             //Moveposition never changes
         }
 
         //potential fields lines
-        if(!(current is Follow) && !(current is Intercept) && AIMgr.inst.isPotentialFieldsMovement){ 
+        if(!(current is Follow) && !(current is Intercept) && !(current is Pincer) && AIMgr.inst.isPotentialFieldsMovement){ 
             Move m = current as Move;
             m.potentialLine.SetPosition(0, entity.position);
             Vector3 newpos = Vector3.zero;
