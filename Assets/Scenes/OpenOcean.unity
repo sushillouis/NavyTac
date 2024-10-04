@@ -607,6 +607,8 @@ MonoBehaviour:
   - {fileID: 138629261546720789, guid: 56b421d73a8488646b28c822866b075c, type: 3}
   - {fileID: 1321054300686026328, guid: c7061d8cebd1b584880025216a586789, type: 3}
   - {fileID: 8941482605437012095, guid: 5d3b351739a98e34da31ae8acedeb828, type: 3}
+  blastPrefab: {fileID: 1353768526735114364, guid: daac4c81c3118954cb8b2a9a927c381a,
+    type: 3}
   entitiesRoot: {fileID: 1142393662}
   entities: []
 --- !u!1001 &395253057
@@ -3117,6 +3119,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponsRoot: {fileID: 2144076687}
+  blastPrefab: {fileID: 1353768526735114364, guid: daac4c81c3118954cb8b2a9a927c381a,
+    type: 3}
   weaponBaseRoot: {fileID: 976867505}
   weaponPrefabs:
   - {fileID: 7066079806717507699, guid: 8cec2658772e13047a54d65d58998f89, type: 3}

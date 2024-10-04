@@ -7,14 +7,11 @@ public class MissileLauncher : MonoBehaviour
     public Transform missileStartPoint;
     public float range;
     public float fireCooldown = 5.0f;
-    public int ammoLimit = 10;
+    public int ammoLimit = 1000;
     private Entity ownEntity;
-    private int currentAmmo;
+    public int currentAmmo;
     private bool isCooldown = false;
     WeaponType weaponType;
-
-
-    private static Dictionary<Entity, List<GameObject>> targetMissilesMap = new Dictionary<Entity, List<GameObject>>();
 
     void Start()
     {
@@ -34,6 +31,9 @@ public class MissileLauncher : MonoBehaviour
 
         Entity[] allEntities = FindObjectsOfType<Entity>();
 
+        Entity bestTarget = null;
+        float highestEffectiveness = 0.0f;
+
         foreach (Entity otherEntity in allEntities)
         {
             if (otherEntity.team == ownEntity.team || otherEntity == ownEntity || otherEntity.entityType == EntityType.Missile)
@@ -42,12 +42,26 @@ public class MissileLauncher : MonoBehaviour
             float distanceFromEnemy = Vector3.Distance(missileStartPoint.position, otherEntity.transform.position);
             if (distanceFromEnemy <= range)
             {
-                FireMissile(otherEntity);
-                StartCoroutine(FireCooldown());
-                break;
+                float effectiveness = EffectivenessMatrixMgr.GetWeaponEffectiveness(weaponType, otherEntity.entityType);
+
+                // Select the entity with the highest effectiveness
+                if (effectiveness > highestEffectiveness)
+                {
+                    highestEffectiveness = effectiveness;
+                    bestTarget = otherEntity;
+                }
             }
         }
+
+        // Fire at the best target
+        if (bestTarget != null && highestEffectiveness > 0)
+        {
+            FireMissile(bestTarget);
+            StartCoroutine(FireCooldown());
+        }
+        
     }
+    
     private void FireMissile(Entity target)
     {
         if (currentAmmo <= 0)
@@ -60,19 +74,11 @@ public class MissileLauncher : MonoBehaviour
         newMissile.GetComponentInParent<Entity>().speed = missileWeapon.startSpeed;
         newMissile.name = "Missile_" + ownEntity.name + "_" + currentAmmo;
         Weapon missileEntity = newMissile.GetComponent<Weapon>();
-        if (missileEntity == null)
-        {
-            Debug.LogError("Entity component not found on the instantiated missile prefab.");
-            return;
-        }
+        missileEntity.desiredHeading = ownEntity.desiredHeading;
+        missileEntity.heading = ownEntity.heading;
         missileEntity.team = ownEntity.team;
         missileEntity.position = missileStartPoint.position;
         missileEntity.entityType = EntityType.Missile;
-        if (!targetMissilesMap.ContainsKey(target))
-        {
-            targetMissilesMap[target] = new List<GameObject>();
-        }
-        targetMissilesMap[target].Add(newMissile);
         DelayedIntercept(missileEntity, target);
         currentAmmo--;
     }

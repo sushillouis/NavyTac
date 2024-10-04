@@ -6,6 +6,7 @@ public class WeaponMgr : MonoBehaviour
 {
     public static WeaponMgr inst;
     public GameObject weaponsRoot;
+    public GameObject blastPrefab;
     public GameObject weaponBaseRoot;
     public List<GameObject> weaponPrefabs;
     public List<Weapon> weapons;
@@ -41,13 +42,21 @@ public class WeaponMgr : MonoBehaviour
         return weapon;
     }
     public void RemoveWeapon(Weapon weapon)
+{
+    if (weapons.Contains(weapon))
     {
-        if (weapons.Contains(weapon))
-        {
-            weapons.Remove(weapon);
-            Destroy(weapon.gameObject);
-        }
+        GameObject blastInstance = Instantiate(blastPrefab, weapon.transform.position, weapon.transform.rotation);
+        weapons.Remove(weapon);
+        Destroy(weapon.gameObject);
+        StartCoroutine(DestroyBlastAfterDelay(blastInstance, .05f));
     }
+}
+
+private IEnumerator DestroyBlastAfterDelay(GameObject blast, float delay)
+{
+    yield return new WaitForSeconds(delay);
+    Destroy(blast);
+}
 
     void Start()
     {

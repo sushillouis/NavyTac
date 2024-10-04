@@ -8,11 +8,8 @@ public enum WeaponType
 {
     Missile
 }
-
 public class Weapon : Entity
 {
-
-
     public float startSpeed;
     public float damage;
     public WeaponType weaponType;
@@ -28,12 +25,10 @@ public class Weapon : Entity
     }
     private void OnTriggerEnter(Collider other)
     {
-
         Entity targetEntity = other.GetComponent<Entity>();
-
         if (targetEntity != null && targetEntity.team != this.team && targetEntity.entityType != this.entityType)
-        {
-            targetEntity.TakeDamage(damage);
+        {            
+            targetEntity.TakeDamage(damage * EffectivenessMatrixMgr.GetWeaponEffectiveness(WeaponType.Missile, targetEntity.entityType));
             WeaponMgr.inst.RemoveWeapon(this);
         }
     }

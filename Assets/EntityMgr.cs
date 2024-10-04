@@ -16,6 +16,7 @@ public class EntityMgr : MonoBehaviour
 
     public GameObject movableEntitiesRoot;
     public List<GameObject> entityPrefabs;
+    public GameObject blastPrefab;
     public GameObject entitiesRoot;
     public List<Entity> entities;
 
@@ -40,12 +41,20 @@ public class EntityMgr : MonoBehaviour
     {
         if (entities.Contains(entity))
         {
+            GameObject blastInstance = Instantiate(blastPrefab, entity.transform.position, entity.transform.rotation);
+            blastInstance.transform.localScale = new Vector3(entity.transform.localScale.x * 100f, entity.transform.localScale.y * 100f, entity.transform.localScale.z * 100f);
             bool rtsMode = false;
             CameraMgr.inst.SwitchRTSMode(rtsMode);
             SelectionMgr.inst.DeselectEntity(entity);
             entities.Remove(entity);
             Destroy(entity.gameObject);
+            StartCoroutine(DestroyBlastAfterDelay(blastInstance, .5f));
         }
+    }
+    private IEnumerator DestroyBlastAfterDelay(GameObject blast, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Destroy(blast);
     }
 
     // Start is called before the first frame update
