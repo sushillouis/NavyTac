@@ -1,5 +1,77 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &763045076828035336
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4160212223436489112}
+  - component: {fileID: 363466283754072408}
+  - component: {fileID: 1390514132445261196}
+  m_Layer: 5
+  m_Name: OverviewImage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &4160212223436489112
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763045076828035336}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4632542207210265807}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 390, y: 390}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &363466283754072408
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763045076828035336}
+  m_CullTransparentMesh: 1
+--- !u!114 &1390514132445261196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763045076828035336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
 --- !u!1 &4056982694464182023
 GameObject:
   m_ObjectHideFlags: 0
@@ -65,7 +137,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Four Lakes
+  m_text: Four Corners
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 647a7e8c8ac8f42418f3e8f8dea6741d, type: 2}
   m_sharedMaterial: {fileID: 6643591532545578594, guid: 647a7e8c8ac8f42418f3e8f8dea6741d,
@@ -147,6 +219,7 @@ GameObject:
   - component: {fileID: 1129805569144365254}
   - component: {fileID: 5622063754940341209}
   - component: {fileID: 6457432092094754339}
+  - component: {fileID: -3240512352331050103}
   m_Layer: 5
   m_Name: MapSelectionButton
   m_TagString: Untagged
@@ -169,6 +242,7 @@ RectTransform:
   - {fileID: 4115253735291830913}
   - {fileID: 8096752595681473538}
   - {fileID: 3336433831808122659}
+  - {fileID: 4160212223436489112}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -259,6 +333,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &-3240512352331050103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5089722620603201192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25deb3beee816d047868cc16eb978511, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentMapName: {fileID: 8094752916798156066}
+  currentMapImage: {fileID: 1390514132445261196}
 --- !u!1 &5221481941202557044
 GameObject:
   m_ObjectHideFlags: 0
@@ -271,7 +359,7 @@ GameObject:
   - component: {fileID: 2354501311729573742}
   - component: {fileID: 9160061758494447782}
   m_Layer: 5
-  m_Name: ModeText
+  m_Name: CategoryText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -324,7 +412,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Standard
+  m_text: 4v4
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 647a7e8c8ac8f42418f3e8f8dea6741d, type: 2}
   m_sharedMaterial: {fileID: 6643591532545578594, guid: 647a7e8c8ac8f42418f3e8f8dea6741d,
