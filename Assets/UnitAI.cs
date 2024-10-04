@@ -5,12 +5,10 @@ using UnityEngine;
 public class UnitAI : MonoBehaviour
 {
     public Entity entity; //public only for ease of debugging
-    public Weapon weapon;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         entity = GetComponentInParent<Entity>();
-        weapon = GetComponentInChildren<Weapon>();
 
         commands = new List<Command>();
         intercepts = new List<Intercept>();
@@ -49,12 +47,12 @@ public class UnitAI : MonoBehaviour
             intercept.Stop();
             intercepts.Remove(intercept);
         }
-            
+
         commands.RemoveAt(index);
 
 
     }
-    
+
     public void StopAndRemoveAllCommands()
     {
         for(int i = commands.Count - 1; i >= 0; i--) {

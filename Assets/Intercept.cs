@@ -32,14 +32,27 @@ public class Intercept : Follow
 
     public override void Stop()
     {
-        base.Stop();
-        entity.desiredSpeed = 0;
-        targetEntity.desiredSpeed = 0;
-        targetEntity.GetComponentInParent<UnitAI>().StopAndRemoveAllCommands();
-        Vector3 deadRot = targetEntity.transform.localEulerAngles;
-        deadRot.z = 90;
-        targetEntity.transform.localEulerAngles = deadRot;
+        if (targetEntity != null)
+        {
+            base.Stop();
+            entity.desiredSpeed = 0;
 
+            targetEntity.desiredSpeed = 0;
+            targetEntity.GetComponentInParent<UnitAI>().StopAndRemoveAllCommands();
+            Vector3 deadRot = targetEntity.transform.localEulerAngles;
+            deadRot.z = 90;
+            targetEntity.transform.localEulerAngles = deadRot;
+        }
+        else
+        {
+            base.Stop();
+            entity.desiredSpeed = 0;
+            entity.speed = 0;
+            if (entity.entityType == EntityType.Missile)
+            {
+                WeaponMgr.inst.RemoveWeapon(entity.GetComponent<Weapon>());
+            }
+        }
     }
 
 }

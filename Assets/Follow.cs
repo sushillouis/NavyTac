@@ -59,16 +59,25 @@ public class Follow : Move
     public float predictedInterceptTime;
     public Vector3 predictedMovePosition;
     Vector3 predictedDiff;
+    private Vector3 lastKnownPosition = Vector3.zero;
     //------------------------------------------------------
     public float ComputePredictiveDH(Vector3 relativeOffset)
     {
+
+        if (targetEntity != null)
+        {
+            lastKnownPosition = targetEntity.position;
+        }
+        Vector3 currentTargetPosition = targetEntity != null ? targetEntity.position : lastKnownPosition;
+        Vector3 currentTargetVelocity = targetEntity != null ? targetEntity.velocity : Vector3.zero;
+
         float dh;
-        movePosition = targetEntity.position + targetEntity.transform.TransformVector(relativeOffset);
-        diff = movePosition - entity.position; 
-        relativeVelocity = entity.velocity - targetEntity.velocity;
+        movePosition = currentTargetPosition + (targetEntity != null ? targetEntity.transform.TransformVector(relativeOffset) : relativeOffset);
+        diff = movePosition - entity.position;
+        relativeVelocity = entity.velocity - currentTargetVelocity;
         predictedInterceptTime = diff.magnitude / relativeVelocity.magnitude;
         if (predictedInterceptTime >= 0) {
-            predictedMovePosition = movePosition + (targetEntity.velocity * predictedInterceptTime);
+            predictedMovePosition = movePosition + (currentTargetVelocity * predictedInterceptTime);
             predictedDiff = predictedMovePosition - entity.position;
             dh = Utils.Degrees360(Mathf.Atan2(predictedDiff.x, predictedDiff.z) * Mathf.Rad2Deg);
         } else {

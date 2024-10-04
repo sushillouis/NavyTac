@@ -148,7 +148,11 @@ MonoBehaviour:
   maxSpeed: 20
   minSpeed: 0
   mass: 500
+  health: 0
+  missileStartPoint: {fileID: 0}
   entityType: 6
+  team: 0
+  weapons: []
   cameraRig: {fileID: 1680915430}
   selectionCircle: {fileID: 9183282936510948468}
 --- !u!114 &1307310574

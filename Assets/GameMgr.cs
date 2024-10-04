@@ -17,10 +17,22 @@ public class GameMgr : MonoBehaviour
     void Start()
     {
         Vector3 position = Vector3.zero;
-        foreach(GameObject go in EntityMgr.inst.entityPrefabs) {
+        foreach (GameObject go in EntityMgr.inst.entityPrefabs)
+        {
             Entity ent = EntityMgr.inst.CreateEntity(go.GetComponent<Entity>().entityType, position, Vector3.zero);
             ent.isSelected = false;
-            ent.team = (Random.value > 0.5f) ? Team.Team1 : Team.Team2;
+            ent.team = Team.Team1;
+            position.x += 200;
+        }
+        position = Vector3.zero;
+        position.z = 5000;
+        foreach (GameObject go in EntityMgr.inst.entityPrefabs)
+        {
+            Entity ent = EntityMgr.inst.CreateEntity(go.GetComponent<Entity>().entityType, position, Vector3.zero);
+            ent.isSelected = false;
+            ent.team = Team.Team2;
+            ent.desiredHeading = 180;
+            ent.heading = 180;
             position.x += 200;
         }
     }

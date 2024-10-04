@@ -30,23 +30,31 @@ public class EntityMgr : MonoBehaviour
             if (entityGo != null) {
                 entity = entityGo.GetComponent<Entity>();
                 entityGo.name = et.ToString() + entityId++;
+                entity.health = 100f;
                 entities.Add(entity);
             }
         }
         return entity;
     }
-
+    public void RemoveEntity(Entity entity)
+    {
+        if (entities.Contains(entity))
+        {
+            entities.Remove(entity);
+            Destroy(entity.gameObject);
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
 

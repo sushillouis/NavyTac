@@ -14,7 +14,8 @@ public enum EntityType
     PilotVessel,
     SmitHouston,
     Tanker,
-    TugBoat
+    TugBoat,
+    Missile
 }
 public enum Team
 {
@@ -43,12 +44,12 @@ public class Entity : MonoBehaviour
     public float maxSpeed;
     public float minSpeed;
     public float mass;
-    public float health;
+    public float health = 100f;
     public Transform missileStartPoint;
     public EntityType entityType;
 
     public Team team;
-    public List<Weapon> weapons; 
+    public List<Weapon> weapons;
 
     public GameObject cameraRig;
     public GameObject selectionCircle;
@@ -64,37 +65,22 @@ public class Entity : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        FindAndEngageEnemy();  // Continuously scan for enemies to engage
-    }
-
-    // Method to find and engage enemies in range
-    void FindAndEngageEnemy()
-    {
-        Entity[] allEntities = FindObjectsOfType<Entity>();
-
-        foreach (Entity otherEntity in allEntities)
+        if (health <= 0)
         {
-            // Skip friendly entities
-            if (otherEntity.team == this.team)
-                continue;
-
-            // Iterate through weapons
-            if (weapons != null && weapons.Count > 0)
-            {
-                foreach (Weapon weapon in weapons)
-                {
-                    // Check if enemy is within range
-                    float distanceFromEnemy = Vector3.Distance(transform.position, otherEntity.transform.position);
-                    if (distanceFromEnemy < weapon.range)
-                    {
-                        // Fire the missile using WeaponMgr, if within range
-                        if (weapon.weaponType == WeaponType.Missile)
-                        {
-                            WeaponMgr.inst.FireWeapon(this, otherEntity, weapon, missileStartPoint);
-                        }
-                    }
-                }
-            }
+            OnEntityDeath();
         }
+
+    }
+    public void TakeDamage(float damage)
+    {
+        health -= damage;
+        if (health <= 0)
+        {
+            OnEntityDeath();
+        }
+    }
+    private void OnEntityDeath()
+    {
+        EntityMgr.inst.RemoveEntity(this);
     }
 }

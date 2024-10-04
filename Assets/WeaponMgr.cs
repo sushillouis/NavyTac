@@ -1,52 +1,59 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class WeaponMgr : MonoBehaviour
 {
     public static WeaponMgr inst;
-
+    public GameObject weaponsRoot;
+    public GameObject weaponBaseRoot;
+    public List<GameObject> weaponPrefabs;
+    public List<Weapon> weapons;
+    public static int weaponId = 0;
     private void Awake()
     {
         inst = this;
+        weapons = new List<Weapon>();
+        foreach (Weapon weapon in weaponBaseRoot.GetComponentsInChildren<Weapon>())
+        {
+            weapons.Add(weapon);
+        }
     }
 
-    // Fire a weapon (missile) from the assigned missile start point
-    public void FireWeapon(Entity firingEntity, Entity targetEntity, Weapon weapon, Transform missileStartPoint)
+    public Weapon CreateWeapon(WeaponType weaponType, Vector3 position, Vector3 eulerAngles, EntityType entityType)
     {
-        if (missileStartPoint == null)
+        Weapon weapon = null;
+        GameObject weaponPrefab = weaponPrefabs.Find(x => (x.GetComponent<Weapon>().weaponType == weaponType));
+        if (weaponPrefab != null)
         {
-            Debug.LogError("Missile start point is null for entity: " + firingEntity.gameObject.name);
-            return;
+            GameObject weaponGo = Instantiate(weaponPrefab, position, Quaternion.Euler(eulerAngles), weaponsRoot.transform);
+            if (weaponGo != null)
+            {
+                weapon = weaponGo.GetComponent<Weapon>();
+                weaponGo.name = entityType.ToString() + weaponType.ToString() + weaponId++;
+                weapons.Add(weapon);
+            }
         }
-
-        // Check if the weapon can fire based on cooldown and ammo limits
-        bool canFire = weapon.Fire(targetEntity);
-        if (!canFire)
+        else
         {
-            return;  // Weapon is either cooling down or out of ammo
+            Debug.LogError("Weapon prefab not found for type: " + weaponType);
         }
-
-        // Instantiate the missile at the missile start point
-        GameObject weaponObject = Instantiate(weapon.gameObject, missileStartPoint.position, missileStartPoint.rotation);
-
-        // Set up the weapon
-        Weapon newWeapon = weaponObject.GetComponent<Weapon>();
-        newWeapon.maxSpeed = weapon.maxSpeed;
-        newWeapon.range = weapon.range;
-        newWeapon.weaponType = weapon.weaponType;
-        newWeapon.damage = weapon.damage;
-
-        // Assign the target and run intercept logic
-        AssignInterceptCommand(newWeapon, targetEntity);
+        return weapon;
+    }
+    public void RemoveWeapon(Weapon weapon)
+    {
+        if (weapons.Contains(weapon))
+        {
+            weapons.Remove(weapon);
+            Destroy(weapon.gameObject);
+        }
     }
 
-    // Method to assign the intercept command
-    private void AssignInterceptCommand(Weapon missile, Entity target)
+    void Start()
     {
-        // Create the intercept command for the missile
-        Intercept intercept = new Intercept(missile, target);
+    }
 
-        // Assign the intercept command to the missile's UnitAI
-        UnitAI missileAI = missile.GetComponent<UnitAI>();
-        missileAI.SetCommand(intercept);
+    void Update()
+    {
     }
 }
