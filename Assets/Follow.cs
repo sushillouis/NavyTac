@@ -7,7 +7,7 @@ public class Follow : Move
 {
     public Entity targetEntity;
     public Vector3 relativeOffset;
-    public Follow(Entity ent, Entity target, Vector3 delta): base(ent, target.transform.position)
+    public Follow(Entity ent, Entity target, Vector3 delta) : base(ent, target.transform.position)
     {
         targetEntity = target;
         relativeOffset = delta;
@@ -27,15 +27,25 @@ public class Follow : Move
     // Update is called once per frame
     public override void Tick()
     {
-        offset = targetEntity.transform.TransformVector(relativeOffset);
-        movePosition = targetEntity.transform.position + offset;
-        //entity.desiredHeading = ComputePredictiveDH(relativeOffset);
-        entity.desiredHeading = ComputeDHDS().dh;
-        if (diff.sqrMagnitude < followThreshold) {
-            entity.desiredSpeed = targetEntity.speed;
-            entity.desiredHeading = targetEntity.heading;
-        } else {
-            entity.desiredSpeed = entity.maxSpeed;
+        if (targetEntity != null)
+        {
+            offset = targetEntity.transform.TransformVector(relativeOffset);
+            movePosition = targetEntity.transform.position + offset;
+            //entity.desiredHeading = ComputePredictiveDH(relativeOffset);
+            entity.desiredHeading = ComputeDHDS().dh;
+            if (diff.sqrMagnitude < followThreshold)
+            {
+                entity.desiredSpeed = targetEntity.speed;
+                entity.desiredHeading = targetEntity.heading;
+            }
+            else
+            {
+                entity.desiredSpeed = entity.maxSpeed;
+            }
+        }
+        else
+        {
+            Stop();
         }
 
     }
@@ -76,12 +86,15 @@ public class Follow : Move
         diff = movePosition - entity.position;
         relativeVelocity = entity.velocity - currentTargetVelocity;
         predictedInterceptTime = diff.magnitude / relativeVelocity.magnitude;
-        if (predictedInterceptTime >= 0) {
+        if (predictedInterceptTime >= 0)
+        {
             predictedMovePosition = movePosition + (currentTargetVelocity * predictedInterceptTime);
             predictedMovePosition = ComputeAdjustedInterceptPosition(predictedMovePosition, 10f);
             predictedDiff = predictedMovePosition - entity.position;
             dh = Utils.Degrees360(Mathf.Atan2(predictedDiff.x, predictedDiff.z) * Mathf.Rad2Deg);
-        } else {
+        }
+        else
+        {
             dh = ComputeDHDS().dh;
         }
         return dh;
