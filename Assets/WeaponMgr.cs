@@ -42,21 +42,26 @@ public class WeaponMgr : MonoBehaviour
         return weapon;
     }
     public void RemoveWeapon(Weapon weapon)
-{
-    if (weapons.Contains(weapon))
     {
-        GameObject blastInstance = Instantiate(blastPrefab, weapon.transform.position, weapon.transform.rotation);
-        weapons.Remove(weapon);
-        Destroy(weapon.gameObject);
-        StartCoroutine(DestroyBlastAfterDelay(blastInstance, .05f));
+        if (weapons.Contains(weapon))
+        {
+            GameObject blastInstance = Instantiate(blastPrefab, weapon.transform.position, weapon.transform.rotation);
+            UnitAI cmd = weapon.GetComponent<UnitAI>();
+            if (cmd != null)
+            {
+                cmd.StopAndRemoveAllCommands();
+            }
+            weapons.Remove(weapon);
+            Destroy(weapon.gameObject);
+            StartCoroutine(DestroyBlastAfterDelay(blastInstance, .05f));
+        }
     }
-}
 
-private IEnumerator DestroyBlastAfterDelay(GameObject blast, float delay)
-{
-    yield return new WaitForSeconds(delay);
-    Destroy(blast);
-}
+    private IEnumerator DestroyBlastAfterDelay(GameObject blast, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Destroy(blast);
+    }
 
     void Start()
     {

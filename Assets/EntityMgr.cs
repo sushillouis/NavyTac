@@ -45,6 +45,11 @@ public class EntityMgr : MonoBehaviour
             blastInstance.transform.localScale = new Vector3(entity.transform.localScale.x * 100f, entity.transform.localScale.y * 100f, entity.transform.localScale.z * 100f);
             bool rtsMode = false;
             CameraMgr.inst.SwitchRTSMode(rtsMode);
+            UnitAI cmd = entity.GetComponent<UnitAI>();
+            if (cmd != null)
+            {
+                cmd.StopAndRemoveAllCommands();
+            }
             SelectionMgr.inst.DeselectEntity(entity);
             entities.Remove(entity);
             Destroy(entity.gameObject);

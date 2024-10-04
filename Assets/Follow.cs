@@ -78,6 +78,7 @@ public class Follow : Move
         predictedInterceptTime = diff.magnitude / relativeVelocity.magnitude;
         if (predictedInterceptTime >= 0) {
             predictedMovePosition = movePosition + (currentTargetVelocity * predictedInterceptTime);
+            predictedMovePosition = ComputeAdjustedInterceptPosition(predictedMovePosition, 10f);
             predictedDiff = predictedMovePosition - entity.position;
             dh = Utils.Degrees360(Mathf.Atan2(predictedDiff.x, predictedDiff.z) * Mathf.Rad2Deg);
         } else {
@@ -86,4 +87,31 @@ public class Follow : Move
         return dh;
     }
 
+
+    public Vector3 ComputeAdjustedInterceptPosition(Vector3 predictedMovePosition, float safeDistance)
+    {
+        Vector3 repulsivePotential = Vector3.zero;
+        Vector3 attractivePotential = predictedMovePosition - entity.position;
+        attractivePotential.Normalize();
+
+
+        foreach (Entity otherEntity in EntityMgr.inst.entities)
+        {
+            if (otherEntity == entity || otherEntity.team != entity.team)
+                continue;
+
+
+            Vector3 diff = otherEntity.position - entity.position;
+            float distanceToEntity = diff.magnitude;
+
+            if (distanceToEntity < safeDistance)
+            {
+                Vector3 directionAwayFromEntity = -diff.normalized;
+                float repulsionStrength = AIMgr.inst.repulsiveCoefficient / Mathf.Pow(distanceToEntity, AIMgr.inst.repulsiveExponent);
+                repulsivePotential += directionAwayFromEntity * repulsionStrength;
+            }
+        }
+        Vector3 potentialSum = attractivePotential * AIMgr.inst.attractionCoefficient - repulsivePotential;
+        return predictedMovePosition + potentialSum;
+    }
 }
