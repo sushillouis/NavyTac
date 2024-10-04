@@ -11,26 +11,48 @@ public class MapPanelHandler : MonoBehaviour
     public PanelMover mapInfoPanel;
     public PanelMover mapDisplayPanel;
 
+    [ContextMenu("TestInfo")]
+    void TestInfo()
+    {
+        SwitchPanelsInfo();
+    }
+
+    [ContextMenu("TestDisplay")]
+    void TestDisplay()
+    {
+        SwitchPanelsDisplay();
+    }
+
+
 
     // Start is called before the first frame update
     void Start()
     {
         // mapImage;
         mapName.text = "Four Corners";
-        mapDisplayPanel.isVisible = true;
+        // mapDisplayPanel.isVisible = true;
+        // mapInfoPanel.isVisible = false;
     }
 
-    public void SwitchPanels()
+    //Switch the Info Panel In
+    public void SwitchPanelsInfo()
     {
-        if(mapDisplayPanel.isVisible == false){
-            mapDisplayPanel.isVisible = true;
-            mapInfoPanel.isVisible = false;
-        }
-        else{
+        if(mapInfoPanel.isVisible == false)
+        {
             mapDisplayPanel.isVisible = false;
             mapInfoPanel.isVisible = true;
         }
+    }
 
+
+    //Switch the Display panel in
+    public void SwitchPanelsDisplay()
+    {
+        if (mapDisplayPanel.isVisible == false)
+        {
+            mapDisplayPanel.isVisible = true;
+            mapInfoPanel.isVisible = false;
+        }
     }
     // Update is called once per frame
     void Update()
