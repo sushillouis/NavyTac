@@ -212,8 +212,40 @@ public class ReplayTest : MonoBehaviour
                     + ent.testPos[i].x + "," + ent.testPos[i].y + "," + ent.testPos[i].z + ","
                     + timesBetweenStates[i] + "," + ent.distanceDiffs[i]);
             }
+
+            float totalDiff = 0;
+            for(int i = 0; i < ent.distanceDiffs.Count; i++)
+                totalDiff += ent.distanceDiffs[i];
+
+            float mean = totalDiff / ent.distanceDiffs.Count;
+
+            float sqDiff = 0;
+
+            for (int i = 0; i < ent.distanceDiffs.Count; i++)
+                sqDiff += (ent.distanceDiffs[i] - mean) * (ent.distanceDiffs[i] - mean);
+
+            float stdDev = Mathf.Sqrt(sqDiff/ent.distanceDiffs.Count);
+
+            tw.WriteLine("Mean:," + mean + ",Standard Dev:," + stdDev);
         }
         
+        for(int i = 0; i < entities[0].distanceDiffs.Count; i++)
+        {
+            float stateTotalDiff = 0;
+            foreach (RewindTestEntity ent in entities)
+                stateTotalDiff += ent.distanceDiffs[i];
+
+            float mean = stateTotalDiff / entities.Count;
+
+            float sqDiff = 0;
+            foreach (RewindTestEntity ent in entities)
+                sqDiff += (ent.distanceDiffs[i] - mean) * (ent.distanceDiffs[i] - mean);
+
+            float stdDev = Mathf.Sqrt(sqDiff / entities.Count);
+
+            tw.WriteLine("State " + i + " Mean:," + mean + ",State " + i + " Standard Dev:," + stdDev);
+        }
+
         tw.Close();
     }
 
@@ -231,6 +263,7 @@ public class ReplayTest : MonoBehaviour
                 UnitAI uai = entity.GetComponent<UnitAI>();
                 uai.AddCommand(m);
             }
+            SaveTestState();
             yield return new WaitForSeconds(timeBetweenCommands);
         }
     }

@@ -1971,7 +1971,7 @@ MonoBehaviour:
   entities: []
   runEntites: []
   numRows: 5
-  numCols: 2
+  numCols: 4
   replayTimer: 0
   filename: rewindResults.csv
   movePositions:
@@ -1985,9 +1985,9 @@ MonoBehaviour:
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: -500}
   - {x: -500, y: 0, z: -500}
-  timeBetweenCommands: 5
-  numSaves: 15
-  timeBetweenSaves: 10
+  timeBetweenCommands: 9
+  numSaves: 180
+  timeBetweenSaves: 1
 --- !u!1001 &1303395822
 PrefabInstance:
   m_ObjectHideFlags: 0

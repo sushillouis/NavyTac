@@ -133,7 +133,7 @@ public class DistanceMgr : MonoBehaviour
         isInitialized = false;
     }
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         if (isInitialized)
             UpdatePotentials();
