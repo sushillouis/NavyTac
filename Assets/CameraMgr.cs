@@ -7,12 +7,10 @@ using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 public class CameraMgr : MonoBehaviour
 {
     public static CameraMgr inst;
-    private GameInputs input;
     private Vector3 moveVector;
     private float yawValue;
     private float pitchValue;
-    private float prevPinchMag = 0;
-    public int numTouches;
+    
 
     private void Awake()
     {
@@ -21,30 +19,7 @@ public class CameraMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        input = new GameInputs();
-        input.Enable();
-
-        //handles touchscreen zoom
-        var touch0pos = new InputAction(type: InputActionType.Value, binding: "<Touchscreen>/touch0/position");
-        touch0pos.Enable();
-        var touch1pos = new InputAction(type: InputActionType.Value, binding: "<Touchscreen>/touch1/position");
-        touch1pos.Enable();
-        touch1pos.performed += _ =>
-        {
-            if (numTouches == 2)
-            {
-                float mag = (touch0pos.ReadValue<Vector2>() - touch1pos.ReadValue<Vector2>()).magnitude;
-                if (prevPinchMag == 0)
-                    prevPinchMag = mag;
-                float diff = mag - prevPinchMag;
-                prevPinchMag = mag;
-                CamZoom(-diff * 0.1f);
-            }
-            else
-            {
-                prevPinchMag = 0;
-            }
-        };
+        
     }
 
     public GameObject RTSCameraRig;
@@ -55,6 +30,7 @@ public class CameraMgr : MonoBehaviour
     //Camera is child of RollNode
 
     public float cameraMoveSpeed = 500;
+
     /// <summary>
     /// Note this is reduced by a log scale;
     /// </summary>
@@ -62,110 +38,66 @@ public class CameraMgr : MonoBehaviour
     public float maxCameraHeight = 9600;
     public float minCameraHeight = 20;
     public float cameraTurnRate = 10;
+    float moveCoefficent;
     public Vector3 currentYawEulerAngles = Vector3.zero;
     public Vector3 currentPitchEulerAngles = Vector3.zero;
+
     // Update is called once per frame
     void Update()
     {
-        numTouches = Touch.activeTouches.Count;
-        moveVector = Vector3.zero;
+        moveCoefficent = Mathf.Log(YawNode.transform.position.y * heightSensitivty);
+        moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);        
+    }
+    public bool isRTSMode = true;
 
-        if (numTouches == 0 || numTouches == 3)
-        {
-            moveVector += input.Camera.Movement.ReadValue<Vector3>();
-        }
-        if (numTouches == 0 || numTouches == 4)
-        {
-            moveVector += input.Camera.UpAndDown.ReadValue<Vector3>();
-        }
-        if (numTouches == 0 || (numTouches == 1 && !UIMgr.inst.isActive))
-        {
-            float sens = 1;
-
-            if (numTouches == 1 && !UIMgr.inst.isActive)
-                sens = 0.1f;
-
-            yawValue = input.Camera.Yaw.ReadValue<float>() * sens;
-            pitchValue = input.Camera.Pitch.ReadValue<float>() * -sens;
-        }
-        float moveCoefficent = Mathf.Log(YawNode.transform.position.y * heightSensitivty);
-        moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);
-
-        moveVector += -.025f * moveCoefficent * input.Camera.MiddleMouseScroll.ReadValue<Vector2>().y * Vector3.up;
-
-        // 
-
-        if(!Input.GetKey(KeyCode.Mouse2)) 
-        {
-            
-            if(Input.GetKey(KeyCode.UpArrow))
-            {
-                moveVector += Vector3.forward * moveCoefficent;
-            }
-            if(Input.GetKey(KeyCode.DownArrow))
-            {
-                moveVector += Vector3.back * moveCoefficent;
-            }
-
-            if(Input.GetKey(KeyCode.LeftArrow))
-            {
-                moveVector +=Vector3.left * moveCoefficent;
-            }
-            if(Input.GetKey(KeyCode.RightArrow))
-            {
-                moveVector +=Vector3.right * moveCoefficent;
-            }
-
-            if(Input.GetKey(KeyCode.KeypadPlus))
-            {
-                moveVector += Vector3.up * moveCoefficent;
-            }
-            if(Input.GetKey(KeyCode.KeypadMinus))
-            {
-                moveVector += Vector3.down * moveCoefficent;
-            }
-        }
-        else 
-        {
-            Vector3 mouseDelta = input.Camera.MiddleMouseMove.ReadValue<Vector2>();
-
-            moveVector += moveCoefficent * new Vector3(mouseDelta.x,0,mouseDelta.y);
-        }
-
+    public void MoveCameraY(float yMoveValue)
+    {
+        Vector3 moveVector = Vector3.zero;
+        moveVector.y = yMoveValue * moveCoefficent;
         YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
-        
-        float newY = Mathf.Clamp(YawNode.transform.position.y,minCameraHeight,maxCameraHeight);
-        YawNode.transform.position = new(YawNode.transform.position.x,newY,YawNode.transform.position.z);
+        float newY = Mathf.Clamp(YawNode.transform.position.y, minCameraHeight, maxCameraHeight);
+        YawNode.transform.position = new(YawNode.transform.position.x, newY, YawNode.transform.position.z);
+    }
 
+    public void MoveCameraXZ(Vector2 moveValue) 
+    {
+        Vector3 moveVector = Vector3.zero; 
+        moveVector.x += moveValue.x * moveCoefficent;
+        moveVector.z += moveValue.y * moveCoefficent;
+        YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
+    }
+
+    public void YawCamera(float yawValue)
+    {
         currentYawEulerAngles = YawNode.transform.localEulerAngles;
         currentYawEulerAngles.y += yawValue * cameraTurnRate * Time.deltaTime;
         YawNode.transform.localEulerAngles = currentYawEulerAngles;
+    }
 
+    public void PitchCamera(float pitchValue) 
+    {
         currentPitchEulerAngles = PitchNode.transform.localEulerAngles;
         currentPitchEulerAngles.x += pitchValue * cameraTurnRate * Time.deltaTime;
         PitchNode.transform.localEulerAngles = currentPitchEulerAngles;
+    }
 
-        if (input.Camera.RTSView.triggered)
+    public void ToggleRTSView()
+    {
+        if (isRTSMode)
         {
-            if (isRTSMode)
+            if (SelectionMgr.inst.selectedEntity != null) 
             {
                 YawNode.transform.SetParent(SelectionMgr.inst.selectedEntity.cameraRig.transform);
                 YawNode.transform.localPosition = Vector3.zero;
                 YawNode.transform.localEulerAngles = Vector3.zero;
             }
-            else
-            {
-                YawNode.transform.SetParent(RTSCameraRig.transform);
-                YawNode.transform.localPosition = Vector3.zero;
-                YawNode.transform.localEulerAngles = Vector3.zero;
-            }
-            isRTSMode = !isRTSMode;
         }
-    }
-    public bool isRTSMode = true;
-
-    private void CamZoom(float increment)
-    {
-        myCamera.fieldOfView = Mathf.Clamp(myCamera.fieldOfView + increment, 0, 100);
+        else
+        {
+            YawNode.transform.SetParent(RTSCameraRig.transform);
+            YawNode.transform.localPosition = Vector3.zero;
+            YawNode.transform.localEulerAngles = Vector3.zero;
+        }
+        isRTSMode = !isRTSMode;
     }
 }
