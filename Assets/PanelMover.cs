@@ -12,7 +12,7 @@ public class PanelMover : MonoBehaviour
     private void Awake()
     {
         panel = GetComponent<RectTransform>();
-        holdingPosition = panel.anchoredPosition;
+        // holdingPosition = panel.anchoredPosition;
     }
 
     public bool _isVisible = false;

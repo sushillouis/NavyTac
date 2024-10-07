@@ -6,10 +6,12 @@ using UnityEngine.UI;
 
 public class MapPanelHandler : MonoBehaviour
 {
-    public RawImage mapImage;
+    public Image mapImage;
     public TextMeshProUGUI mapName;
+    public TextMeshProUGUI mapDescription;
     public PanelMover mapInfoPanel;
     public PanelMover mapDisplayPanel;
+    
 
     [ContextMenu("TestInfo")]
     void TestInfo()
@@ -30,14 +32,14 @@ public class MapPanelHandler : MonoBehaviour
     {
         // mapImage;
         mapName.text = "Four Corners";
-        // mapDisplayPanel.isVisible = true;
-        // mapInfoPanel.isVisible = false;
+        mapDisplayPanel.isVisible = true;
+        mapInfoPanel.isVisible = false;
     }
 
     //Switch the Info Panel In
     public void SwitchPanelsInfo()
     {
-        if(mapInfoPanel.isVisible == false)
+        if (mapInfoPanel.isVisible == false)
         {
             mapDisplayPanel.isVisible = false;
             mapInfoPanel.isVisible = true;
