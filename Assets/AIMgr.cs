@@ -36,7 +36,9 @@ public class AIMgr : MonoBehaviour
     public RaycastHit hit;
     public int layerMask;
     bool pincerDragIsActive = false;
-    List<float> pincerApproaches = new List<float>();
+    List<Approach> pincerApproaches = new();
+    List<GameObject> pincerVisuals = new();
+    [SerializeField] GameObject pincerVisualPrefab;
     Entity pincerCenterTarget = null;
     // Update is called once per frame
     void Update()
@@ -55,7 +57,6 @@ public class AIMgr : MonoBehaviour
                         HandleIntercept(SelectionMgr.inst.selectedEntities, ent);
                     else if(pincerDown)
                         pincerDragIsActive=true;
-                        
                     else
                         HandleFollow(SelectionMgr.inst.selectedEntities, ent);
                 }
@@ -72,18 +73,28 @@ public class AIMgr : MonoBehaviour
 
         if(Input.GetMouseButtonUp(1)) {
             if(pincerDragIsActive && Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, layerMask) && pincerCenterTarget) {
-                Vector3 dif = hit.point - pincerCenterTarget.position;
+                hit.point = Vector3.Scale(hit.point, new Vector3(1,0,1));
+                Vector3 dif = hit.point - Vector3.Scale(pincerCenterTarget.position, new Vector3(1,0,1));
                 if(dif.sqrMagnitude>5) {
                     float angle = Vector3.SignedAngle(pincerCenterTarget.transform.forward,dif, Vector3.up);
                     // angle =  hit.point.x * pincerCenterTarget.position.y - hit.point.y * pincerCenterTarget.position.x <= 0 ? -angle : angle;
-                    pincerApproaches.Add(angle);
-                    print("Adding:"+angle);
+                    pincerApproaches.Add(new(angle,dif.magnitude));
+                    pincerVisuals.Add(Instantiate(pincerVisualPrefab, hit.point+Vector3.up*5, Quaternion.identity, pincerCenterTarget.transform));
                 }
             } else if(pincerApproaches.Count>0 && pincerCenterTarget) {
-                
                 HandlePincer(SelectionMgr.inst.selectedEntities,pincerCenterTarget,pincerApproaches.ToArray());                
+            } else {
+                ClearPincerData();
             }
         }
+    }
+
+    public void ClearPincerData() {
+        for (int i = 0; i<pincerVisuals.Count;i++) {
+            Destroy(pincerVisuals[i]);
+        }
+        pincerVisuals.Clear();
+        pincerApproaches.Clear();
     }
 
     public void HandleMove(List<Entity> entities, Vector3 point)
@@ -124,22 +135,23 @@ public class AIMgr : MonoBehaviour
 
     }
 
-    void HandlePincer(List<Entity> entities, Entity ent, float[] approaches)
+    void HandlePincer(List<Entity> entities, Entity ent, Approach[] approaches)
     {
         //Round Robbin Attacking
         int attackApproach = 0;
-        foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
+        foreach (Entity entity in entities) {
             if(ent == entity) 
                 continue;
-            Pincer intercept = new(entity, ent, 200, approaches,attackApproach);
-            attackApproach++;
-            if(attackApproach >= approaches.Length) {
+            Pincer pincer = new(entity, ent, approaches[attackApproach].mag, approaches[attackApproach].angle);
+            // print("Mag: "+approaches[attackApproach].mag+" Angle: "+approaches[attackApproach].angle);
+            if(++attackApproach >= approaches.Length) {
                 attackApproach=0;
             }
             UnitAI uai = entity.GetComponent<UnitAI>();
-            AddOrSet(intercept, uai);
+            AddOrSet(pincer, uai);
         }
-        pincerApproaches.Clear();
+        
+        ClearPincerData();
         pincerCenterTarget=null;
     }
 
@@ -194,5 +206,16 @@ public class AIMgr : MonoBehaviour
     private void OnClearSelectionCanceled(InputAction.CallbackContext context)
     {
         addDown = false;
+    }
+}
+
+public struct Approach
+{
+    public float angle;
+    public float mag;
+
+    public Approach(float angle, float mag) {
+        this.angle = angle;
+        this.mag = mag;
     }
 }

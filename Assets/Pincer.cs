@@ -8,14 +8,11 @@ public class Pincer : Move
     public Entity targetEntity;
     public Vector3 relativeOffset;
     public float attackAngle = 0;
-    public Pincer(Entity ent, Entity target, float dist, float[] angels, int approachIndex=-1): base(ent, target.transform.position)
+    public Pincer(Entity ent, Entity target, float dist, float angel): base(ent, target.transform.position)
     {
         targetEntity = target;
         collapsePincerDistance = dist;
-        if(approachIndex < 0 || approachIndex> angels.Length) {
-            attackAngle = angels[(int)(Random.value*angels.Length)];
-        }
-        attackAngle = angels[approachIndex];
+        attackAngle = angel;
     }
 
     // Start is called before the first frame update
