@@ -19,7 +19,7 @@ public class Pincer : Move
     public override void Init()
     {
         //Debug.Log("Follow:\t Following: " + targetEntity.gameObject.name);
-        line = LineMgr.inst.CreateGeneric3PointLine(entity.position, computePincerPoint(), targetEntity.position, Color.magenta);
+        line = LineMgr.inst.CreateGeneric3PointLine(entity.position, ComputePincerPoint(), targetEntity.position, Color.magenta);
         line.gameObject.SetActive(false);
     }
 
@@ -57,7 +57,7 @@ public class Pincer : Move
         deadRot.z = 90;
         targetEntity.transform.localEulerAngles = deadRot;
     }
-    public Vector3 computePincerPoint()
+    public Vector3 ComputePincerPoint()
     {
         return targetEntity.position + Quaternion.Euler(0,attackAngle+targetEntity.heading,0) * Vector3.forward * collapsePincerDistance;
     }
@@ -65,7 +65,7 @@ public class Pincer : Move
     public float ComputePincerDH()
     {
         float dh = 0;
-        movePosition = computePincerPoint();
+        movePosition = ComputePincerPoint();
         Vector3 predictedDiff = movePosition - entity.position;
         dh = Utils.Degrees360(Mathf.Atan2(predictedDiff.x, predictedDiff.z) * Mathf.Rad2Deg);
         return dh;

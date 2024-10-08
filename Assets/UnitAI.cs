@@ -113,7 +113,7 @@ public class UnitAI : MonoBehaviour
 
             } else if( current is Pincer) {
                 Pincer pincer = current as Pincer;
-                pincer.line.SetPosition(1, pincer.computePincerPoint());
+                pincer.line.SetPosition(1, pincer.ComputePincerPoint());
                 pincer.line.SetPosition(2, pincer.targetEntity.position);
             } else if (current is Follow) { // Less specific
                 Follow f = current as Follow;
