@@ -5,6 +5,9 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.Windows;
 
+/// <summary>
+/// Key and mouse bindings are all in this document: _______________
+/// </summary>
 public class UIMgr : MonoBehaviour
 {
     public static UIMgr inst;
@@ -22,7 +25,7 @@ public class UIMgr : MonoBehaviour
     private InputAction selectionCursor;
     private InputAction selectionCursorPosition;
     private InputAction selectNextEntity;
-    private InputAction clearSelection;
+    private InputAction addSelection;
 
     private InputAction command;
     private InputAction intercept;
@@ -69,8 +72,8 @@ public class UIMgr : MonoBehaviour
         selectNextEntity.Enable();
         selectNextEntity.performed += SelectNextEntity;
 
-        clearSelection = inputs.Selection.ClearSelection;
-        clearSelection.Enable();
+        addSelection = inputs.Selection.ClearSelection;
+        addSelection.Enable();
 
         command = inputs.Entities.Command;
         command.Enable();
@@ -105,7 +108,7 @@ public class UIMgr : MonoBehaviour
         selectionCursor.Disable();
         selectionCursorPosition.Disable();
         selectNextEntity.Disable();
-        clearSelection.Disable();
+        addSelection.Disable();
         command.Disable();
         intercept.Disable();
         addCommand.Disable();
@@ -174,7 +177,7 @@ public class UIMgr : MonoBehaviour
 
     private void SelectNextEntity(InputAction.CallbackContext context)
     {
-        SelectionMgr.inst.SelectNextEntity(clearSelection.IsPressed());
+        SelectionMgr.inst.SelectNextEntity(addSelection.IsPressed());
     }
 
     private void HandleCommand(InputAction.CallbackContext context)
