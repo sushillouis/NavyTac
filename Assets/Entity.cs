@@ -13,7 +13,12 @@ public enum EntityType
     PilotVessel,
     SmitHouston,
     Tanker,
-    TugBoat
+    TugBoat,
+    JARIUSV,
+    SeaHunter,
+    Mykola,
+    SeaBaby,
+    CVN75
 }
 
 
