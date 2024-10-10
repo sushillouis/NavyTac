@@ -40,6 +40,7 @@ public class Entity : MonoBehaviour
     public float mass;
 
     public EntityType entityType;
+    public bool isScouting;
 
     public GameObject cameraRig;
     public GameObject selectionCircle;
