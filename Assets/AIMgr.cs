@@ -76,13 +76,15 @@ public class AIMgr : MonoBehaviour
             if(pincerDragIsActive && Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, layerMask) && pincerCenterTarget) {
                 hit.point = Vector3.Scale(hit.point, new Vector3(1,0,1));
                 Vector3 dif = hit.point - Vector3.Scale(pincerCenterTarget.position, new Vector3(1,0,1));
-                if(dif.sqrMagnitude>5) {
+                if(dif.magnitude>50) {
                     float angle = Vector3.SignedAngle(pincerCenterTarget.transform.forward,dif, Vector3.up);
                     // angle =  hit.point.x * pincerCenterTarget.position.y - hit.point.y * pincerCenterTarget.position.x <= 0 ? -angle : angle;
                     pincerApproaches.Add(new(angle,dif.magnitude));
                     pincerVisuals.Add(Instantiate(pincerVisualPrefab, hit.point+Vector3.up*5, Quaternion.identity, pincerCenterTarget.transform));
+                } else {
+                    HandlePincer(SelectionMgr.inst.selectedEntities,pincerCenterTarget,pincerApproaches.ToArray());
                 }
-            } else if(pincerApproaches.Count>0 && pincerCenterTarget) {
+            } else if(pincerCenterTarget) {
                 HandlePincer(SelectionMgr.inst.selectedEntities,pincerCenterTarget,pincerApproaches.ToArray());                
             } else {
                 ClearPincerData();
@@ -173,6 +175,11 @@ public class AIMgr : MonoBehaviour
     {
         //Round Robbin Attacking
         int attackApproach = 0;
+        if (approaches.Length==0) {
+            approaches = new Approach[2];
+            approaches[0] = new Approach(90,200);
+            approaches[1] = new Approach(-90,200);
+        }
         foreach (Entity entity in entities) {
             if(ent == entity) 
                 continue;

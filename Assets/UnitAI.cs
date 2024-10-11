@@ -154,7 +154,10 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
         if (compare == null)
             return 1;
 
+        if(entity.mass == compare.entity.mass)
+            return 1;
+
         else
-            return entity.mass>compare.entity.mass ? 1 : -1;
+            return entity.mass>compare.entity.mass ? -1 : 1;
     }
 }
