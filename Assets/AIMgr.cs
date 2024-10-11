@@ -81,10 +81,10 @@ public class AIMgr : MonoBehaviour
                     // angle =  hit.point.x * pincerCenterTarget.position.y - hit.point.y * pincerCenterTarget.position.x <= 0 ? -angle : angle;
                     pincerApproaches.Add(new(angle,dif.magnitude));
                     pincerVisuals.Add(Instantiate(pincerVisualPrefab, hit.point+Vector3.up*5, Quaternion.identity, pincerCenterTarget.transform));
-                } else {
+                } else if(pincerCenterTarget && pincerDown) {
                     HandlePincer(SelectionMgr.inst.selectedEntities,pincerCenterTarget,pincerApproaches.ToArray());
                 }
-            } else if(pincerCenterTarget) {
+            } else if(pincerCenterTarget && pincerDown) {
                 HandlePincer(SelectionMgr.inst.selectedEntities,pincerCenterTarget,pincerApproaches.ToArray());                
             } else {
                 ClearPincerData();
