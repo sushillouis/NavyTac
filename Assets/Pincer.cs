@@ -71,3 +71,14 @@ public class Pincer : Move
         return dh;
     }
 }
+
+public struct Approach
+{
+    public float angle;
+    public float mag;
+
+    public Approach(float angle, float mag) {
+        this.angle = angle;
+        this.mag = mag;
+    }
+}

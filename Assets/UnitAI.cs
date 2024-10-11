@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UnitAI : MonoBehaviour
+public class UnitAI : MonoBehaviour , IComparable<UnitAI>
 {
     public Entity entity; //public only for ease of debugging
     // Start is called before the first frame update
@@ -35,7 +36,13 @@ public class UnitAI : MonoBehaviour
     void StopAndRemoveCommand(int index)
     {
         Command cmd = commands[index];
-        if(cmd is Move) {
+        if (cmd is FormationMove fmove)
+        {
+            fmove.Stop();
+            moves.Remove(fmove);
+        }
+
+        if (cmd is Move) {
             Move move = (Move)cmd;
             move.Stop();
             moves.Remove(move);
@@ -67,7 +74,7 @@ public class UnitAI : MonoBehaviour
         if (c is Intercept)
             intercepts.Add(c as Intercept);
         else if (c is Follow)
-            ;
+            moves.Add(c as Follow);
         else
             moves.Add(c as Move);
     }
@@ -140,4 +147,14 @@ public class UnitAI : MonoBehaviour
 
     }
 
+        // Default comparer for Part type.
+    public int CompareTo(UnitAI compare)
+    {
+          // A null value means that this object is greater.
+        if (compare == null)
+            return 1;
+
+        else
+            return entity.mass>compare.entity.mass ? 1 : -1;
+    }
 }

@@ -40,6 +40,7 @@ public class AIMgr : MonoBehaviour
     List<GameObject> pincerVisuals = new();
     [SerializeField] GameObject pincerVisualPrefab;
     Entity pincerCenterTarget = null;
+    List<Formation> formations = new();
     // Update is called once per frame
     void Update()
     {
@@ -114,15 +115,49 @@ public class AIMgr : MonoBehaviour
             uai.SetCommand(c);
     }
 
-
+    public void RemoveFormation(Formation formation) {
+        if (formations.Contains(formation)) {
+            formation.Dispand();
+            formations.Remove(formation);
+        }
+    }
 
     public void HandleFollow(List<Entity> entities, Entity ent)
     {
-        foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
-            Follow f = new Follow(entity, ent, new Vector3(100, 0, 0));
-            UnitAI uai = entity.GetComponent<UnitAI>();
+        if(entities.Count==1 && ent.followers==0) {
+            if(ent == entities[0]) 
+                return;
+            Follow f = new(entities[0], ent, new Vector3(100, 0, 0));
+            UnitAI uai = entities[0].GetComponent<UnitAI>();
             AddOrSet(f, uai);
+            return;
         }
+
+        Formation targetFormation = null;
+
+        foreach (Formation formation in formations) {
+            if (formation.target == ent) {
+                targetFormation = formation;
+                break;
+            }
+        }
+        if(targetFormation==null) {
+            targetFormation = new(ent);
+            formations.Add(targetFormation);
+        }
+
+        List<UnitAI> aIs = new();
+
+        for (int i = 0; i<entities.Count; i++) {
+            if(ent == entities[i]) 
+                continue;
+            FormationMove f = new(entities[i], ent,targetFormation);
+            UnitAI uai = entities[i].GetComponent<UnitAI>();
+            // Cannot Chain Formation Move
+            uai.SetCommand(f);
+            aIs.Add(uai);
+        }
+        targetFormation.AddMembers(aIs.ToArray());
     }
 
     void HandleIntercept(List<Entity> entities, Entity ent)
@@ -132,7 +167,6 @@ public class AIMgr : MonoBehaviour
             UnitAI uai = entity.GetComponent<UnitAI>();
             AddOrSet(intercept, uai);
         }
-
     }
 
     void HandlePincer(List<Entity> entities, Entity ent, Approach[] approaches)
@@ -206,16 +240,5 @@ public class AIMgr : MonoBehaviour
     private void OnClearSelectionCanceled(InputAction.CallbackContext context)
     {
         addDown = false;
-    }
-}
-
-public struct Approach
-{
-    public float angle;
-    public float mag;
-
-    public Approach(float angle, float mag) {
-        this.angle = angle;
-        this.mag = mag;
     }
 }

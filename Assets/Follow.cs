@@ -52,7 +52,6 @@ public class Follow : Move
         base.Stop();
         entity.desiredSpeed = 0;
         isRunning = false;
-
     }
 
     Vector3 relativeVelocity;
