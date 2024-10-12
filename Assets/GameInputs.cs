@@ -700,12 +700,21 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Cursor"",
+                    ""name"": ""BoxSelect"",
                     ""type"": ""Button"",
                     ""id"": ""d2d504d8-77e7-4511-8ff3-b71ae76aed5a"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """",
+                    ""interactions"": ""Hold"",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SingleSelect"",
+                    ""type"": ""Button"",
+                    ""id"": ""f68c0915-7f90-43a7-8c45-effd3838469b"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Tap"",
                     ""initialStateCheck"": false
                 },
                 {
@@ -752,28 +761,6 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""7aa1c846-c9f7-4915-95be-d0807b1af1fe"",
-                    ""path"": ""<Touchscreen>/Press"",
-                    ""interactions"": ""SlowTap"",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Cursor"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""b65f60b6-13e2-4dae-8656-46815aebf3ed"",
-                    ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Cursor"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""b1b257ae-ce74-4e3a-8ce1-2a15c05be945"",
                     ""path"": ""<Keyboard>/leftShift"",
                     ""interactions"": """",
@@ -791,6 +778,39 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""NextEntity"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e1b9393e-d536-4600-9d53-53a59e4b2a9f"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SingleSelect"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7aa1c846-c9f7-4915-95be-d0807b1af1fe"",
+                    ""path"": ""<Touchscreen>/Press"",
+                    ""interactions"": ""SlowTap"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BoxSelect"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b65f60b6-13e2-4dae-8656-46815aebf3ed"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BoxSelect"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -818,7 +838,8 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         // Selection
         m_Selection = asset.FindActionMap("Selection", throwIfNotFound: true);
         m_Selection_ClearSelection = m_Selection.FindAction("ClearSelection", throwIfNotFound: true);
-        m_Selection_Cursor = m_Selection.FindAction("Cursor", throwIfNotFound: true);
+        m_Selection_BoxSelect = m_Selection.FindAction("BoxSelect", throwIfNotFound: true);
+        m_Selection_SingleSelect = m_Selection.FindAction("SingleSelect", throwIfNotFound: true);
         m_Selection_CursorPosition = m_Selection.FindAction("CursorPosition", throwIfNotFound: true);
         m_Selection_NextEntity = m_Selection.FindAction("NextEntity", throwIfNotFound: true);
     }
@@ -1055,7 +1076,8 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Selection;
     private List<ISelectionActions> m_SelectionActionsCallbackInterfaces = new List<ISelectionActions>();
     private readonly InputAction m_Selection_ClearSelection;
-    private readonly InputAction m_Selection_Cursor;
+    private readonly InputAction m_Selection_BoxSelect;
+    private readonly InputAction m_Selection_SingleSelect;
     private readonly InputAction m_Selection_CursorPosition;
     private readonly InputAction m_Selection_NextEntity;
     public struct SelectionActions
@@ -1063,7 +1085,8 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         private @GameInputs m_Wrapper;
         public SelectionActions(@GameInputs wrapper) { m_Wrapper = wrapper; }
         public InputAction @ClearSelection => m_Wrapper.m_Selection_ClearSelection;
-        public InputAction @Cursor => m_Wrapper.m_Selection_Cursor;
+        public InputAction @BoxSelect => m_Wrapper.m_Selection_BoxSelect;
+        public InputAction @SingleSelect => m_Wrapper.m_Selection_SingleSelect;
         public InputAction @CursorPosition => m_Wrapper.m_Selection_CursorPosition;
         public InputAction @NextEntity => m_Wrapper.m_Selection_NextEntity;
         public InputActionMap Get() { return m_Wrapper.m_Selection; }
@@ -1078,9 +1101,12 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @ClearSelection.started += instance.OnClearSelection;
             @ClearSelection.performed += instance.OnClearSelection;
             @ClearSelection.canceled += instance.OnClearSelection;
-            @Cursor.started += instance.OnCursor;
-            @Cursor.performed += instance.OnCursor;
-            @Cursor.canceled += instance.OnCursor;
+            @BoxSelect.started += instance.OnBoxSelect;
+            @BoxSelect.performed += instance.OnBoxSelect;
+            @BoxSelect.canceled += instance.OnBoxSelect;
+            @SingleSelect.started += instance.OnSingleSelect;
+            @SingleSelect.performed += instance.OnSingleSelect;
+            @SingleSelect.canceled += instance.OnSingleSelect;
             @CursorPosition.started += instance.OnCursorPosition;
             @CursorPosition.performed += instance.OnCursorPosition;
             @CursorPosition.canceled += instance.OnCursorPosition;
@@ -1094,9 +1120,12 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @ClearSelection.started -= instance.OnClearSelection;
             @ClearSelection.performed -= instance.OnClearSelection;
             @ClearSelection.canceled -= instance.OnClearSelection;
-            @Cursor.started -= instance.OnCursor;
-            @Cursor.performed -= instance.OnCursor;
-            @Cursor.canceled -= instance.OnCursor;
+            @BoxSelect.started -= instance.OnBoxSelect;
+            @BoxSelect.performed -= instance.OnBoxSelect;
+            @BoxSelect.canceled -= instance.OnBoxSelect;
+            @SingleSelect.started -= instance.OnSingleSelect;
+            @SingleSelect.performed -= instance.OnSingleSelect;
+            @SingleSelect.canceled -= instance.OnSingleSelect;
             @CursorPosition.started -= instance.OnCursorPosition;
             @CursorPosition.performed -= instance.OnCursorPosition;
             @CursorPosition.canceled -= instance.OnCursorPosition;
@@ -1141,7 +1170,8 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     public interface ISelectionActions
     {
         void OnClearSelection(InputAction.CallbackContext context);
-        void OnCursor(InputAction.CallbackContext context);
+        void OnBoxSelect(InputAction.CallbackContext context);
+        void OnSingleSelect(InputAction.CallbackContext context);
         void OnCursorPosition(InputAction.CallbackContext context);
         void OnNextEntity(InputAction.CallbackContext context);
     }

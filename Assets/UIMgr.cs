@@ -22,7 +22,8 @@ public class UIMgr : MonoBehaviour
     private InputAction cameraXZMove;
     private InputAction toggleRTSCam;
 
-    private InputAction selectionCursor;
+    private InputAction selectionBox;
+    private InputAction singleSelect;
     private InputAction selectionCursorPosition;
     private InputAction selectNextEntity;
     private InputAction addSelection;
@@ -60,10 +61,14 @@ public class UIMgr : MonoBehaviour
         cameraXZMove = inputs.Camera.XZMove;
         cameraXZMove.Enable();
 
-        selectionCursor = inputs.Selection.Cursor;
-        selectionCursor.Enable();
-        selectionCursor.started += OnCursorStarted;
-        selectionCursor.canceled += OnCursorCanceled;
+        selectionBox = inputs.Selection.BoxSelect;
+        selectionBox.Enable();
+        selectionBox.started += OnBoxSelectPerformed;
+        selectionBox.canceled += OnBoxSelectCanceled;
+
+        singleSelect = inputs.Selection.SingleSelect;
+        singleSelect.Enable();
+        singleSelect.performed += OnSingleSelectPerformed;
 
         selectionCursorPosition = inputs.Selection.CursorPosition;
         selectionCursorPosition.Enable();
@@ -105,7 +110,8 @@ public class UIMgr : MonoBehaviour
         pitchCamera.Disable();
         cameraYMove.Disable();
         cameraXZMove.Disable();
-        selectionCursor.Disable();
+        selectionBox.Disable();
+        singleSelect.Disable();
         selectionCursorPosition.Disable();
         selectNextEntity.Disable();
         addSelection.Disable();
@@ -156,7 +162,7 @@ public class UIMgr : MonoBehaviour
         CameraMgr.inst.MoveCameraY(cameraYMove.ReadValue<Vector2>().y);
         CameraMgr.inst.MoveCameraXZ(cameraXZMove.ReadValue<Vector2>());
 
-        if(selectionCursor.IsPressed())
+        if(boxSelecting)
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
     }
 
@@ -165,14 +171,22 @@ public class UIMgr : MonoBehaviour
         CameraMgr.inst.ToggleRTSView();
     }
 
-    private void OnCursorStarted(InputAction.CallbackContext context)
+    bool boxSelecting;
+    private void OnBoxSelectPerformed(InputAction.CallbackContext context)
     {
         SelectionMgr.inst.StartBoxSelecting();
+        boxSelecting = true;
     }
 
-    private void OnCursorCanceled(InputAction.CallbackContext context)
+    private void OnBoxSelectCanceled(InputAction.CallbackContext context)
     {
         SelectionMgr.inst.EndBoxSelecting();
+        boxSelecting = false;
+    }
+
+    private void OnSingleSelectPerformed(InputAction.CallbackContext context)
+    {
+        SelectionMgr.inst.SelectEntity(selectionCursorPosition.ReadValue<Vector2>(), !addSelection.IsPressed());
     }
 
     private void SelectNextEntity(InputAction.CallbackContext context)

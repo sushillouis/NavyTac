@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEditor.PlayerSettings;
 
 
 public class SelectionMgr : MonoBehaviour
@@ -22,10 +23,7 @@ public class SelectionMgr : MonoBehaviour
     public Vector3 startMousePosition;
     public RectTransform SelectionBoxPanel;
     public RectTransform UICanvas;
-    private bool mouseUp = true;
-    private bool start = false;
     public int numTouches;
-    bool lShiftDown = false;
 
     // Update is called once per frame
     void Update()
@@ -126,5 +124,25 @@ public class SelectionMgr : MonoBehaviour
             selectedEntity.isSelected = true;
             selectedEntities.Add(ent);
         }
+    }
+
+    public void SelectEntity(Vector2 mousePos, bool shouldClearSelection = true)
+    {
+        RaycastHit hit;
+        Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
+        Entity ent = AIMgr.inst.FindClosestEntInRadius(hit.point, AIMgr.inst.rClickRadiusSq);
+        if (ent != null)
+        {
+            if (shouldClearSelection)
+                ClearSelection();
+            if (!SelectionMgr.inst.selectedEntities.Contains(ent))
+            {
+                selectedEntity = ent;
+                selectedEntity.isSelected = true;
+                selectedEntities.Add(ent);
+            } 
+        }
+        else
+            ClearSelection();
     }
 }
