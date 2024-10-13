@@ -9,8 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2020023502261162860}
+  - component: {fileID: 7579767142240316181}
   m_Layer: 0
-  m_Name: Decorations
+  m_Name: UIAspect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32,6 +33,19 @@ Transform:
   - {fileID: 3896657233748144699}
   m_Father: {fileID: 2020023502598012820}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7579767142240316181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2020023502261162861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb27efdfcc15e1f49865dfb0f7e173ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entity: {fileID: 0}
 --- !u!1 &2020023502598012821
 GameObject:
   m_ObjectHideFlags: 0
@@ -43,7 +57,6 @@ GameObject:
   - component: {fileID: 2020023502598012820}
   - component: {fileID: 2020023502598012843}
   - component: {fileID: 2020023502598012842}
-  - component: {fileID: 2020023502598012841}
   - component: {fileID: 2020023502598012840}
   - component: {fileID: 2020023502598012845}
   m_Layer: 0
@@ -113,19 +126,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 2020023502598012843}
   eulerRotation: {x: 0, y: 0, z: 0}
---- !u!114 &2020023502598012841
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2020023502598012821}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb27efdfcc15e1f49865dfb0f7e173ac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  entity: {fileID: 0}
 --- !u!65 &2020023502598012840
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -173,7 +173,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2020023502900363849}
   m_Layer: 0
-  m_Name: CameraRig
+  m_Name: CameraAspect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -540,7 +540,7 @@ PrefabInstance:
     - target: {fileID: 7464076882414629701, guid: d8082e6d06ae6824bb7326e150bc83ad,
         type: 3}
       propertyPath: m_Name
-      value: Wake
+      value: WakeAspect
       objectReference: {fileID: 0}
     - target: {fileID: 7466062079080088699, guid: d8082e6d06ae6824bb7326e150bc83ad,
         type: 3}

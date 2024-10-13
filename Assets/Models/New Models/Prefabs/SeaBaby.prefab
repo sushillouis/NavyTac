@@ -2544,7 +2544,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5296957644281095673}
   m_Layer: 0
-  m_Name: CameraRig
+  m_Name: CameraAspect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5147,8 +5147,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4313059853581319802}
+  - component: {fileID: 3028493259293377132}
   m_Layer: 0
-  m_Name: Decorations
+  m_Name: UIAspect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5170,6 +5171,19 @@ Transform:
   - {fileID: 1068781414195724348}
   m_Father: {fileID: 1695902252603385349}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3028493259293377132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8600297879498900196}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb27efdfcc15e1f49865dfb0f7e173ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entity: {fileID: 0}
 --- !u!1 &8640305722693938992
 GameObject:
   m_ObjectHideFlags: 0
@@ -5432,7 +5446,6 @@ GameObject:
   - component: {fileID: 2789499054413799532}
   - component: {fileID: 85085283259438963}
   - component: {fileID: 7283312425108647106}
-  - component: {fileID: 4633917202087661393}
   m_Layer: 0
   m_Name: SeaBaby
   m_TagString: Untagged
@@ -5537,19 +5550,6 @@ MonoBehaviour:
   moves: []
   commands: []
   intercepts: []
---- !u!114 &4633917202087661393
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9157969438270272206}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb27efdfcc15e1f49865dfb0f7e173ac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  entity: {fileID: 0}
 --- !u!1 &9166180847996618745
 GameObject:
   m_ObjectHideFlags: 0
@@ -5770,7 +5770,7 @@ PrefabInstance:
     - target: {fileID: 7464076882414629701, guid: d8082e6d06ae6824bb7326e150bc83ad,
         type: 3}
       propertyPath: m_Name
-      value: Wake
+      value: WakeAspect
       objectReference: {fileID: 0}
     - target: {fileID: 7466062079080088699, guid: d8082e6d06ae6824bb7326e150bc83ad,
         type: 3}
