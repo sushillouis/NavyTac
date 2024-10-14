@@ -8,7 +8,7 @@ public class OrientedPhysics : MonoBehaviour
     void Start()
     {
         entity = GetComponentInParent<Entity>();
-        entity.position = transform.localPosition;
+        entity.position = entity.transform.localPosition;
     }
 
     public Entity entity;
@@ -41,10 +41,10 @@ public class OrientedPhysics : MonoBehaviour
         entity.velocity.z = Mathf.Cos(entity.heading * Mathf.Deg2Rad) * entity.speed;
 
         entity.position = entity.position + entity.velocity * Time.fixedDeltaTime;
-        transform.localPosition = entity.position;
+        entity.transform.localPosition = entity.position;
 
         eulerRotation.y = entity.heading;
-        transform.localEulerAngles = eulerRotation;
+        entity.transform.localEulerAngles = eulerRotation;
     }
 
     public Vector3 eulerRotation = Vector3.zero;

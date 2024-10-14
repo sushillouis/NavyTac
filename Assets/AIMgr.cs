@@ -63,7 +63,7 @@ public class AIMgr : MonoBehaviour
     {
         foreach (Entity entity in entities) {
             Move m = new Move(entity, point);
-            UnitAI uai = entity.GetComponent<UnitAI>();
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             AddOrSet(m, uai, add);
         }
     }
@@ -82,7 +82,7 @@ public class AIMgr : MonoBehaviour
     {
         foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
             Follow f = new Follow(entity, ent, new Vector3(100, 0, 0));
-            UnitAI uai = entity.GetComponent<UnitAI>();
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             AddOrSet(f, uai, add);
         }
     }
@@ -91,7 +91,7 @@ public class AIMgr : MonoBehaviour
     {
         foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
             Intercept intercept = new Intercept(entity, ent);
-            UnitAI uai = entity.GetComponent<UnitAI>();
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             AddOrSet(intercept, uai, add);
         }
 
