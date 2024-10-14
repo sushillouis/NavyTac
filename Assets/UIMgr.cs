@@ -158,7 +158,7 @@ public class UIMgr : MonoBehaviour
             isActive = false;
 
         CameraMgr.inst.YawCamera(yawCamera.ReadValue<float>());
-        CameraMgr.inst.PitchCamera(pitchCamera.ReadValue<float>());
+        CameraMgr.inst.YawCamera(pitchCamera.ReadValue<float>());
         CameraMgr.inst.MoveCameraY(cameraYMove.ReadValue<Vector2>().y);
         CameraMgr.inst.MoveCameraXZ(cameraXZMove.ReadValue<Vector2>());
 

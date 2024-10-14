@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UIAspect : MonoBehaviour
+public class Selector : MonoBehaviour //change name to UI aspect
 {
     public Entity entity;
     // Start is called before the first frame update
