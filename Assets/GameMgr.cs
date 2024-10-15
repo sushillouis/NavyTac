@@ -17,7 +17,7 @@ public class GameMgr : MonoBehaviour
     void Start()
     {
         Vector3 position = Vector3.zero;
-        position.x = -300;
+        position.x = 0;
         foreach(GameObject go in EntityMgr.inst.entityPrefabs) {
             Entity ent = EntityMgr.inst.CreateEntity(go.GetComponent<Entity>().entityType, position, Vector3.zero);
             ent.isSelected = false;

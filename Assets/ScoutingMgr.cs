@@ -4,15 +4,12 @@ using UnityEngine;
 public class MultiEntityScout : MonoBehaviour
 {
     public float mapSize = 500f;
+    public int gridCountPerSide = 5; // Set this to 5 for a 5x5 grid
     public List<Entity> selectedEntities;
-    public LineRenderer lineRenderer;
-
-    private List<Vector3> quadrantCenters;
 
     void Start()
     {
-        quadrantCenters = GetQuadrantCenters();
-        DrawQuadrantLines();
+        
     }
 
     void Update()
@@ -21,115 +18,106 @@ public class MultiEntityScout : MonoBehaviour
         {
             Debug.Log("Key Pressed");
             selectedEntities = SelectionMgr.inst.selectedEntities;
-            AssignEntitiesToQuadrantsAndScout();
+            AssignEntitiesToScout();
         }
     }
 
-    List<Vector3> GetQuadrantCenters()
-    {
-        return new List<Vector3>
-        {
-            new Vector3(mapSize / 2, 0, mapSize / 2),
-            new Vector3(mapSize / 2, 0, -mapSize / 2),
-            new Vector3(-mapSize / 2, 0, -mapSize / 2),
-            new Vector3(-mapSize / 2, 0, mapSize / 2)
-        };
-    }
-
-    void DrawQuadrantLines()
-    {
-        if (lineRenderer == null)
-        {
-            lineRenderer = gameObject.AddComponent<LineRenderer>();
-        }
-
-        lineRenderer.positionCount = 5;
-        lineRenderer.loop = true;
-        lineRenderer.startWidth = 0.2f;
-        lineRenderer.endWidth = 0.2f;
-
-        Vector3[] points =
-        {
-            new Vector3(mapSize / 2, 0, mapSize / 2),
-            new Vector3(mapSize / 2, 0, -mapSize / 2),
-            new Vector3(-mapSize / 2, 0, -mapSize / 2),
-            new Vector3(-mapSize / 2, 0, mapSize / 2),
-            new Vector3(mapSize / 2, 0, mapSize / 2)
-        };
-
-        lineRenderer.SetPositions(points);
-    }
-
-    void AssignEntitiesToQuadrantsAndScout()
+    // Main method to assign scouting task to each entity
+    void AssignEntitiesToScout()
     {
         if (selectedEntities.Count == 0) return;
-
-        int totalEntities = selectedEntities.Count;
-        int entityIndex = 0;
 
         foreach (Entity entity in selectedEntities)
         {
             UnitAI unitAI = entity.GetComponent<UnitAI>();
             unitAI.StopAndRemoveAllCommands();
-            Vector3 originalPosition = entity.position;
 
-            List<Vector3> targetQuadrants = GetTargetQuadrantsForEntity(entityIndex, totalEntities);
+            // Get path through all quadrants and grids in a smooth, continuous fashion
+            List<Vector3> scoutingPath = GetFullScoutingPath();
 
-            foreach (Vector3 targetQuadrant in targetQuadrants)
+            // Assign path commands
+            foreach (Vector3 gridPosition in scoutingPath)
             {
-                Vector3 initialMovePosition = GetInitialMovePosition(entityIndex);
-                Vector3 finalMovePosition = GetFinalMovePosition(entityIndex);
-
-                unitAI.AddCommand(new Move(entity, initialMovePosition));
-                unitAI.AddCommand(new Move(entity, targetQuadrant));
-                unitAI.AddCommand(new Move(entity, finalMovePosition));
+                unitAI.AddCommand(new Move(entity, gridPosition));
             }
 
-            unitAI.AddCommand(new Move(entity, originalPosition));
-            entityIndex++;
+            // Return entity to the center after scouting
+            unitAI.AddCommand(new Move(entity, Vector3.zero));
         }
     }
 
-    List<Vector3> GetTargetQuadrantsForEntity(int entityIndex, int totalEntities)
+    // Get the complete path for visiting all quadrants and their grids in one continuous path
+    List<Vector3> GetFullScoutingPath()
     {
-        List<Vector3> targetQuadrants = new List<Vector3>();
-        int quadrantsCount = quadrantCenters.Count;
-        targetQuadrants.Clear();
-        int quadrantsPerEntity = Mathf.CeilToInt((float)quadrantsCount / totalEntities);
+        List<Vector3> path = new List<Vector3>();
 
-        for (int i = 0; i < quadrantsPerEntity; i++)
+        // Traverse the full map, including all quadrants, as a continuous grid
+        for (int quadrant = 0; quadrant < 4; quadrant++)
         {
-            int quadrantIndex = entityIndex * quadrantsPerEntity + i;
-            if (quadrantIndex < quadrantsCount)
+            // Get the grids in each quadrant but treat the path as a single, continuous grid
+            List<Vector3> gridsInQuadrant = GetGridsInQuadrant(quadrant, gridCountPerSide);
+
+            // Add the grids to the overall path
+            path.AddRange(gridsInQuadrant);
+        }
+
+        return path;
+    }
+
+    // Get all grid positions within a specific quadrant, optimizing for smooth continuous traversal
+    List<Vector3> GetGridsInQuadrant(int quadrant, int gridCountPerSide)
+    {
+        List<Vector3> grids = new List<Vector3>();
+
+        // Calculate the size of each quadrant and grid
+        float halfMapSize = mapSize / 2;
+        float gridSize = halfMapSize / gridCountPerSide;
+
+        // Determine the bottom-left corner of the quadrant based on which one it is
+        Vector3 bottomLeftCorner;
+        switch (quadrant)
+        {
+            case 0: // Top-right quadrant
+                bottomLeftCorner = new Vector3(0, 0, 0);
+                break;
+            case 1: // Bottom-right quadrant
+                bottomLeftCorner = new Vector3(0, 0, -halfMapSize);
+                break;
+            case 2: // Bottom-left quadrant
+                bottomLeftCorner = new Vector3(-halfMapSize, 0, -halfMapSize);
+                break;
+            case 3: // Top-left quadrant
+                bottomLeftCorner = new Vector3(-halfMapSize, 0, 0);
+                break;
+            default:
+                bottomLeftCorner = Vector3.zero;
+                break;
+        }
+
+        // Create a smooth snaking pattern by visiting each row of grids
+        for (int x = 0; x < gridCountPerSide; x++)
+        {
+            // Determine if this row should be traversed left-to-right or right-to-left (to form a smooth box-like pattern)
+            if (x % 2 == 0)
             {
-                targetQuadrants.Add(quadrantCenters[quadrantIndex]);
+                // Move left to right
+                for (int z = 0; z < gridCountPerSide; z++)
+                {
+                    Vector3 gridPosition = bottomLeftCorner + new Vector3(x * gridSize, 0, z * gridSize);
+                    grids.Add(gridPosition);
+                }
+            }
+            else
+            {
+                // Move right to left (zig-zag pattern)
+                for (int z = gridCountPerSide - 1; z >= 0; z--)
+                {
+                    Vector3 gridPosition = bottomLeftCorner + new Vector3(x * gridSize, 0, z * gridSize);
+                    grids.Add(gridPosition);
+                }
             }
         }
 
-        return targetQuadrants;
-    }
-
-    Vector3 GetInitialMovePosition(int index)
-    {
-        switch (index % quadrantCenters.Count)
-        {
-            case 0: return new Vector3(0, 0, mapSize / 2);
-            case 1: return new Vector3(mapSize / 2, 0, 0);
-            case 2: return new Vector3(0, 0, -mapSize / 2);
-            case 3: return new Vector3(-mapSize / 2, 0, 0);
-            default: return Vector3.zero;
-        }
-    }
-
-    Vector3 GetFinalMovePosition(int index)
-    {
-        switch (index % quadrantCenters.Count)
-        {
-            case 0: return new Vector3(mapSize / 2, 0, 0);
-            case 1: return new Vector3(0, 0, -mapSize / 2);
-            case 2: return new Vector3(-mapSize / 2, 0, 0);
-            case 3: return new Vector3(0, 0, mapSize / 2);
-            default: return Vector3.zero;
-        }
+        return grids;
     }
 }
