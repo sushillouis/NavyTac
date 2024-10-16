@@ -2,8 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MissileLauncher : MonoBehaviour
+public class WeaponAspect : MonoBehaviour
 {
+
+
+
+    // Weapon aspect will have all the necessary components to fire a missile
+    // It will also have the necessary components to check for targets and fire at them
+    // It will also have the necessary components to manage the ammo and cooldown of the weapon
+    // It will also have the necessary components to manage the effectiveness of the weapon against different targets
+    // it will also contain damage and other attributes of the weapon
+    
     public Transform missileStartPoint;
     public float range;
     public float fireCooldown = 5.0f;

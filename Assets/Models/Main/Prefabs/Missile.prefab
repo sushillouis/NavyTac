@@ -706,6 +706,7 @@ MonoBehaviour:
   minSpeed: 0
   mass: 0
   health: 100
+  fuel: 1000
   missileStartPoint: {fileID: 0}
   entityType: 0
   team: 0
@@ -728,7 +729,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
-  weapon: {fileID: 0}
   moves: []
   commands: []
   intercepts: []

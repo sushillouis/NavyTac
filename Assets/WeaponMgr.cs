@@ -7,7 +7,6 @@ public class WeaponMgr : MonoBehaviour
     public static WeaponMgr inst;
     public GameObject weaponsRoot;
     public GameObject blastPrefab;
-    public GameObject weaponBaseRoot;
     public List<GameObject> weaponPrefabs;
     public List<Weapon> weapons;
     public static int weaponId = 0;
@@ -15,10 +14,7 @@ public class WeaponMgr : MonoBehaviour
     {
         inst = this;
         weapons = new List<Weapon>();
-        foreach (Weapon weapon in weaponBaseRoot.GetComponentsInChildren<Weapon>())
-        {
-            weapons.Add(weapon);
-        }
+       
     }
 
     public Weapon CreateWeapon(WeaponType weaponType, Vector3 position, Vector3 eulerAngles, EntityType entityType)

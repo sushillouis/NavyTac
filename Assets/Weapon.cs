@@ -18,11 +18,6 @@ public class Weapon : Entity
         speed = startSpeed;
         desiredSpeed = startSpeed;
     }
-
-    void Update()
-    {
-
-    }
     private void OnTriggerEnter(Collider other)
     {
         Entity targetEntity = other.GetComponent<Entity>();

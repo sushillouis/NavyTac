@@ -37,6 +37,8 @@ public class EntityMgr : MonoBehaviour
         }
         return entity;
     }
+
+
     public void RemoveEntity(Entity entity)
     {
         if (entities.Contains(entity))
