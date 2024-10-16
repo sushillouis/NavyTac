@@ -16,6 +16,7 @@ public class Selector : MonoBehaviour
     {
         if(entity != null)
             entity.selectionCircle.SetActive(entity.isSelected);
+            entity.worldCanvas.SetActive(entity.isSelected);
     }
 
     private void OnMouseDown()

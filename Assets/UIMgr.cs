@@ -31,6 +31,7 @@ public class UIMgr : MonoBehaviour
     public TextMeshProUGUI heading;
     public TextMeshProUGUI desiredHeading;
 
+
     // Update is called once per frame
     void Update()
     {

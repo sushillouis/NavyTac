@@ -48,6 +48,7 @@ public class Entity : MonoBehaviour
 
     public GameObject cameraRig;
     public GameObject selectionCircle;
+    public GameObject worldCanvas;
 
     // Start is called before the first frame update
     void Start()
