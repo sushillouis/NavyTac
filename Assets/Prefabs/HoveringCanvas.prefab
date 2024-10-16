@@ -633,6 +633,7 @@ GameObject:
   - component: {fileID: 7122109345584959263}
   - component: {fileID: 5898420537309846539}
   - component: {fileID: 1436530038121646471}
+  - component: {fileID: 5652040177125251768}
   m_Layer: 5
   m_Name: HoveringCanvas
   m_TagString: Untagged
@@ -705,7 +706,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &1436530038121646471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -723,6 +724,19 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &5652040177125251768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5425347515507837045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1da0a005eca136b4b8dcc95a47fbef90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  worldCanvas: {fileID: 5425347515507837045}
 --- !u!1 &7353367746137205771
 GameObject:
   m_ObjectHideFlags: 0
