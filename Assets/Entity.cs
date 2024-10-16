@@ -15,6 +15,11 @@ public enum EntityType
     SmitHouston,
     Tanker,
     TugBoat,
+    JARIUSV,
+    SeaHunter,
+    Mykola,
+    SeaBaby,
+    CVN75,
     Missile
 }
 public enum Team

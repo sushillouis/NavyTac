@@ -20,7 +20,7 @@ public class UnitAI : MonoBehaviour
     public List<Intercept> intercepts;
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         if (commands.Count > 0) {
             if (commands[0].IsDone()) {
