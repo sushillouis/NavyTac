@@ -32,7 +32,7 @@ public class GameMgr : MonoBehaviour
     {
         if (input.Entities.Create100.triggered) {
             initZ = position.z;
-            for (int i = 0; i < 40; i++) {
+            for (int i = 0; i < 10; i++) {
                 for (int j = 0; j < 10; j++) {
                     Entity ent = EntityMgr.inst.CreateEntity(EntityType.PilotVessel, position, Vector3.zero);
                     position.z += spread;
