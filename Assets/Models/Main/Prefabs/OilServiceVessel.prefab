@@ -97,8 +97,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 3443810125050435354}
   - {fileID: 8516214365781707939}
-  - {fileID: 1007669187778880462}
   - {fileID: 852010692}
   - {fileID: 818870598}
   - {fileID: 7466062078165110361}
@@ -144,6 +144,7 @@ MonoBehaviour:
   desiredSpeed: 0
   heading: 0
   desiredHeading: 0
+  healthBar: {fileID: 0}
   acceleration: 5
   turnRate: 10
   maxSpeed: 19
@@ -152,7 +153,7 @@ MonoBehaviour:
   entityType: 3
   cameraRig: {fileID: 852010691}
   selectionCircle: {fileID: 9183282936042578955}
-  worldCanvas: {fileID: 2795376133942167346}
+  worldCanvas: {fileID: 358600293259588582}
 --- !u!114 &1303395827
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -381,7 +382,7 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1661305459}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &7890762958595084103
+--- !u!1001 &5742289374237834131
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -389,25 +390,15 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8516214366006661343}
     m_Modifications:
-    - target: {fileID: 5028506256053301063, guid: 770c9f1c14dfa9244bb10284d498acf8,
-        type: 3}
-      propertyPath: m_text
-      value: OilServiceVessel
-      objectReference: {fileID: 0}
-    - target: {fileID: 5028506256053301063, guid: 770c9f1c14dfa9244bb10284d498acf8,
-        type: 3}
-      propertyPath: m_fontSize
-      value: 14
-      objectReference: {fileID: 0}
-    - target: {fileID: 5028506256053301063, guid: 770c9f1c14dfa9244bb10284d498acf8,
-        type: 3}
-      propertyPath: m_fontSizeBase
-      value: 14
-      objectReference: {fileID: 0}
     - target: {fileID: 5425347515507837045, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_Name
       value: HoveringCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 5898420537309846539, guid: 770c9f1c14dfa9244bb10284d498acf8,
+        type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
@@ -422,32 +413,32 @@ PrefabInstance:
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 100
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 100
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
@@ -492,7 +483,7 @@ PrefabInstance:
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 68.3
+      value: 82.6
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
@@ -514,17 +505,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 770c9f1c14dfa9244bb10284d498acf8, type: 3}
---- !u!224 &1007669187778880462 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
-    type: 3}
-  m_PrefabInstance: {fileID: 7890762958595084103}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &2795376133942167346 stripped
+--- !u!1 &358600293259588582 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5425347515507837045, guid: 770c9f1c14dfa9244bb10284d498acf8,
     type: 3}
-  m_PrefabInstance: {fileID: 7890762958595084103}
+  m_PrefabInstance: {fileID: 5742289374237834131}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &3443810125050435354 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
+    type: 3}
+  m_PrefabInstance: {fileID: 5742289374237834131}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8516214365781317167
 PrefabInstance:

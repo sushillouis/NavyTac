@@ -1348,7 +1348,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.02e-43, y: 6e-45, z: 2.0816e-41, w: 0}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 2.35e-43, z: 5.4784e-41, w: 4.3417845e+29}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -3026,7 +3026,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 2000, y: 1000}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &364202376
@@ -3082,7 +3082,7 @@ MonoBehaviour:
   holdingPosition: {x: 2000, y: 1000}
   visiblePosition: {x: 0, y: 0}
   panel: {fileID: 364202375}
-  _isVisible: 0
+  _isVisible: 1
   isTimed: 0
   showDuration: 5
 --- !u!1 &368666801
@@ -16438,7 +16438,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 2000, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1947397525
@@ -16494,7 +16494,7 @@ MonoBehaviour:
   holdingPosition: {x: 2000, y: 0}
   visiblePosition: {x: 0, y: 0}
   panel: {fileID: 1947397524}
-  _isVisible: 1
+  _isVisible: 0
   isTimed: 0
   showDuration: 5
 --- !u!1 &1953051243

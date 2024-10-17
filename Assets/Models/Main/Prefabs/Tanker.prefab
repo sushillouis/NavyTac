@@ -97,11 +97,11 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 5233940535694685616}
   - {fileID: 1321054302129686291}
   - {fileID: 672377119}
   - {fileID: 1722631643}
   - {fileID: 3552993820586028423}
-  - {fileID: 6654824832464752813}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1031111532
@@ -144,6 +144,7 @@ MonoBehaviour:
   desiredSpeed: 0
   heading: 0
   desiredHeading: 0
+  healthBar: {fileID: 0}
   acceleration: 3
   turnRate: 2
   maxSpeed: 15
@@ -152,7 +153,7 @@ MonoBehaviour:
   entityType: 7
   cameraRig: {fileID: 672377118}
   selectionCircle: {fileID: 9183282934545717059}
-  worldCanvas: {fileID: 8604815297344599121}
+  worldCanvas: {fileID: 7174919403271197004}
 --- !u!114 &1031111535
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -354,7 +355,7 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1321054302130085267}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &4332679712162118692
+--- !u!1001 &2943344235101624633
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -362,15 +363,15 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1321054300686026329}
     m_Modifications:
-    - target: {fileID: 5028506256053301063, guid: 770c9f1c14dfa9244bb10284d498acf8,
-        type: 3}
-      propertyPath: m_text
-      value: OilTanker
-      objectReference: {fileID: 0}
     - target: {fileID: 5425347515507837045, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_Name
       value: HoveringCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 5898420537309846539, guid: 770c9f1c14dfa9244bb10284d498acf8,
+        type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
@@ -385,32 +386,32 @@ PrefabInstance:
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 100
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 100
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
         type: 3}
@@ -477,17 +478,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 770c9f1c14dfa9244bb10284d498acf8, type: 3}
---- !u!224 &6654824832464752813 stripped
+--- !u!224 &5233940535694685616 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6951986429361941641, guid: 770c9f1c14dfa9244bb10284d498acf8,
     type: 3}
-  m_PrefabInstance: {fileID: 4332679712162118692}
+  m_PrefabInstance: {fileID: 2943344235101624633}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &8604815297344599121 stripped
+--- !u!1 &7174919403271197004 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5425347515507837045, guid: 770c9f1c14dfa9244bb10284d498acf8,
     type: 3}
-  m_PrefabInstance: {fileID: 4332679712162118692}
+  m_PrefabInstance: {fileID: 2943344235101624633}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6256066033390807548
 PrefabInstance:
