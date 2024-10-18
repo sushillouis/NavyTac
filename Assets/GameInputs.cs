@@ -437,6 +437,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Formation"",
+                    ""type"": ""Button"",
+                    ""id"": ""3cc6c6f8-6c10-4868-9404-7631a40fcec2"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""Create100"",
                     ""type"": ""Button"",
                     ""id"": ""2fa46691-b915-4755-8db5-7aba03303154"",
@@ -626,11 +635,22 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""e654023e-6124-4a37-bb26-985f0b486648"",
-                    ""path"": ""<Keyboard>/alt"",
+                    ""path"": ""<Keyboard>/p"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Pincer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""570a5c55-17db-4211-a289-3719360af3ca"",
+                    ""path"": ""<Keyboard>/alt"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Formation"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -657,6 +677,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Entities_Move = m_Entities.FindAction("Move", throwIfNotFound: true);
         m_Entities_Intercept = m_Entities.FindAction("Intercept", throwIfNotFound: true);
         m_Entities_Pincer = m_Entities.FindAction("Pincer", throwIfNotFound: true);
+        m_Entities_Formation = m_Entities.FindAction("Formation", throwIfNotFound: true);
         m_Entities_Create100 = m_Entities.FindAction("Create100", throwIfNotFound: true);
     }
 
@@ -806,6 +827,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Entities_Move;
     private readonly InputAction m_Entities_Intercept;
     private readonly InputAction m_Entities_Pincer;
+    private readonly InputAction m_Entities_Formation;
     private readonly InputAction m_Entities_Create100;
     public struct EntitiesActions
     {
@@ -820,6 +842,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         public InputAction @Move => m_Wrapper.m_Entities_Move;
         public InputAction @Intercept => m_Wrapper.m_Entities_Intercept;
         public InputAction @Pincer => m_Wrapper.m_Entities_Pincer;
+        public InputAction @Formation => m_Wrapper.m_Entities_Formation;
         public InputAction @Create100 => m_Wrapper.m_Entities_Create100;
         public InputActionMap Get() { return m_Wrapper.m_Entities; }
         public void Enable() { Get().Enable(); }
@@ -857,6 +880,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @Pincer.started += instance.OnPincer;
             @Pincer.performed += instance.OnPincer;
             @Pincer.canceled += instance.OnPincer;
+            @Formation.started += instance.OnFormation;
+            @Formation.performed += instance.OnFormation;
+            @Formation.canceled += instance.OnFormation;
             @Create100.started += instance.OnCreate100;
             @Create100.performed += instance.OnCreate100;
             @Create100.canceled += instance.OnCreate100;
@@ -891,6 +917,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @Pincer.started -= instance.OnPincer;
             @Pincer.performed -= instance.OnPincer;
             @Pincer.canceled -= instance.OnPincer;
+            @Formation.started -= instance.OnFormation;
+            @Formation.performed -= instance.OnFormation;
+            @Formation.canceled -= instance.OnFormation;
             @Create100.started -= instance.OnCreate100;
             @Create100.performed -= instance.OnCreate100;
             @Create100.canceled -= instance.OnCreate100;
@@ -930,6 +959,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnMove(InputAction.CallbackContext context);
         void OnIntercept(InputAction.CallbackContext context);
         void OnPincer(InputAction.CallbackContext context);
+        void OnFormation(InputAction.CallbackContext context);
         void OnCreate100(InputAction.CallbackContext context);
     }
 }

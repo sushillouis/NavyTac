@@ -13,18 +13,30 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
         commands = new List<Command>();
         intercepts = new List<Intercept>();
         moves = new List<Move>();
+        _formation = null;
     }
 
     public List<Move> moves;
     public List<Command> commands;
     public List<Intercept> intercepts;
+    [SerializeField] Formation _formation;
+    public Formation formation {
+        get {return _formation;} 
+        set {
+                Formation temp = _formation;
+                _formation = value;
+                if(temp is not null && temp != value) {
+                    temp.RemoveMember(this);
+                }
+            } 
+        }
 
     // Update is called once per frame
     void FixedUpdate()
     {
         if (commands.Count > 0) {
             if (commands[0].IsDone()) {
-                StopAndRemoveCommand(0);
+                StopAndRemoveCommand(0);  
             } else {
                 commands[0].Tick();
                 commands[0].isRunning = true;
@@ -36,7 +48,7 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
     void StopAndRemoveCommand(int index)
     {
         Command cmd = commands[index];
-        if (cmd is FormationMove fmove)
+        if (cmd is EscortFormate fmove)
         {
             fmove.Stop();
             moves.Remove(fmove);

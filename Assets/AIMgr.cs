@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -21,6 +22,8 @@ public class AIMgr : MonoBehaviour
         input.Entities.Intercept.canceled += OnInterceptCanceled;
         input.Entities.Pincer.performed += OnPincerPerformed;
         input.Entities.Pincer.canceled += OnPincerCanceled;
+        input.Entities.Formation.canceled += OnFormationCanceled;
+        input.Entities.Formation.performed += OnFormationPerformed;
         input.Entities.ClearSelection.performed += OnClearSelectionPerformed;
         input.Entities.ClearSelection.canceled += OnClearSelectionCanceled;
     }
@@ -40,7 +43,7 @@ public class AIMgr : MonoBehaviour
     List<GameObject> pincerVisuals = new();
     [SerializeField] GameObject pincerVisualPrefab;
     Entity pincerCenterTarget = null;
-    List<Formation> formations = new();
+    [SerializeReference] List<Formation> formations = new();
     // Update is called once per frame
     void Update()
     {
@@ -51,15 +54,24 @@ public class AIMgr : MonoBehaviour
                 pos.y = 0;
                 Entity ent = FindClosestEntInRadius(pos, rClickRadiusSq);
                 pincerCenterTarget = ent;
-                if (ent == null) {
-                    HandleMove(SelectionMgr.inst.selectedEntities, pos);
+                if(!formationDown) {
+                    if (ent == null) {
+                        HandleMove(SelectionMgr.inst.selectedEntities, pos);
+                    } else {
+                        if (interceptDown)
+                            HandleIntercept(SelectionMgr.inst.selectedEntities, ent);
+                        else if(pincerDown)
+                            pincerDragIsActive=true;
+                        else
+                            HandleFollow(SelectionMgr.inst.selectedEntities, ent);
+                    }
                 } else {
-                    if (interceptDown)
-                        HandleIntercept(SelectionMgr.inst.selectedEntities, ent);
-                    else if(pincerDown)
-                        pincerDragIsActive=true;
-                    else
-                        HandleFollow(SelectionMgr.inst.selectedEntities, ent);
+                    Formation formation = AssembleFormation(SelectionMgr.inst.selectedEntities);
+                    if (ent == null && formation != null) {
+                        HandleEscortFormate(formation, pos);
+                    } else {
+                        
+                    }
                 }
             } else {
                 //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
@@ -100,6 +112,9 @@ public class AIMgr : MonoBehaviour
         pincerApproaches.Clear();
     }
 
+    public void HandleEscortFormate(Formation formation, Vector3 point) {
+
+    }
     public void HandleMove(List<Entity> entities, Vector3 point)
     {
         foreach (Entity entity in entities) {
@@ -109,7 +124,7 @@ public class AIMgr : MonoBehaviour
         }
     }
 
-    void AddOrSet(Command c, UnitAI uai)
+    public void AddOrSet(Command c, UnitAI uai)
     {
         if (addDown)
             uai.AddCommand(c);
@@ -119,52 +134,66 @@ public class AIMgr : MonoBehaviour
 
     public void RemoveFormation(Formation formation) {
         if (formations.Contains(formation)) {
-            formation.Dispand();
             formations.Remove(formation);
         }
     }
 
-    public void HandleFollow(List<Entity> entities, Entity ent)
+    public Formation AssembleFormation(List<Entity> entities) {
+        Formation targetFormation = null;
+        foreach (Entity ent in entities) {
+            foreach (Formation formation in formations) {
+                if (formation.target == ent) {
+                    targetFormation = formation;
+                    break;
+                }
+            }
+        }
+        List<UnitAI> aIs = new();
+
+        foreach (Entity ent in SelectionMgr.inst.selectedEntities) {
+            UnitAI uai = ent.GetComponent<UnitAI>();
+            aIs.Add(uai);
+        }
+
+        if(aIs.Count==0)
+            return null;
+
+        if(targetFormation==null) {
+            targetFormation = new(aIs);
+            formations.Add(targetFormation);
+        } else {
+            targetFormation.AddMembers(aIs.ToArray());
+        }
+        return targetFormation;
+    }
+
+    public void HandleFollow(List<Entity> entities, Entity target)
     {
-        if(entities.Count==1 && ent.followers==0) {
-            if(ent == entities[0]) 
-                return;
-            Follow f = new(entities[0], ent, new Vector3(100, 0, 0));
-            UnitAI uai = entities[0].GetComponent<UnitAI>();
-            AddOrSet(f, uai);
+        if(entities.Count==0) {
             return;
         }
 
-        Formation targetFormation = null;
-
-        foreach (Formation formation in formations) {
-            if (formation.target == ent) {
-                targetFormation = formation;
-                break;
+        if(target.GetComponent<UnitAI>().formation is null) {
+            foreach (Entity ent in entities) {
+                if(target == ent) 
+                    continue;
+                Follow f = new(ent, target, new Vector3(100, 0, 0));
+                UnitAI uai = ent.GetComponent<UnitAI>();
+                AddOrSet(f, uai);
             }
+            return;
         }
-        if(targetFormation==null) {
-            targetFormation = new(ent);
-            formations.Add(targetFormation);
-        }
-
         List<UnitAI> aIs = new();
-
-        for (int i = 0; i<entities.Count; i++) {
-            if(ent == entities[i]) 
-                continue;
-            FormationMove f = new(entities[i], ent,targetFormation);
-            UnitAI uai = entities[i].GetComponent<UnitAI>();
-            // Cannot Chain Formation Move
-            uai.SetCommand(f);
+        foreach (Entity ent in entities) {
+            UnitAI uai = ent.GetComponent<UnitAI>();
             aIs.Add(uai);
         }
-        targetFormation.AddMembers(aIs.ToArray());
+        target.GetComponent<UnitAI>().formation.AddMembers(aIs.ToArray());
     }
 
     void HandleIntercept(List<Entity> entities, Entity ent)
     {
-        foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
+        foreach (Entity entity in entities) {
             Intercept intercept = new Intercept(entity, ent);
             UnitAI uai = entity.GetComponent<UnitAI>();
             AddOrSet(intercept, uai);
@@ -231,6 +260,18 @@ public class AIMgr : MonoBehaviour
     private void OnInterceptCanceled(InputAction.CallbackContext context)
     {
         interceptDown = false;
+    }
+
+    bool formationDown = false;
+    private void OnFormationPerformed(InputAction.CallbackContext context)
+    {
+        formationDown = true;
+    }
+
+    private void OnFormationCanceled(InputAction.CallbackContext context)
+    {
+        formationDown = false;
+        AssembleFormation(SelectionMgr.inst.selectedEntities);
     }
 
     bool pincerDown = false;

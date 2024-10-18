@@ -48,7 +48,6 @@ public class Entity : MonoBehaviour
 
     public GameObject cameraRig;
     public GameObject selectionCircle;
-    public int followers = 0;
     // Start is called before the first frame update
     void Start()
     {
