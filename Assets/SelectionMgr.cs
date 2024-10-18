@@ -140,7 +140,8 @@ public class SelectionMgr : MonoBehaviour
                 selectedEntity = ent;
                 selectedEntity.isSelected = true;
                 selectedEntities.Add(ent);
-            } 
+            }
+            ent.transform.Find("Aspects/Sound").GetComponent<SoundAspect>().PlaySelection();
         }
         else
             ClearSelection();

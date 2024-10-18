@@ -17,6 +17,8 @@ public class SoundAspect : MonoBehaviour
     bool boatFadeIn = false;
     bool boatFadeOut = false;
 
+    public AudioSource selection;
+
     // Update is called once per frame
     void Update()
     {
@@ -69,5 +71,13 @@ public class SoundAspect : MonoBehaviour
             boatFadeOut = false;
             sound.Stop();
         }
+    }
+
+    public void PlaySelection()
+    {
+        if(!selection.isPlaying)
+            selection.Play();
+
+        Debug.Log("ran");
     }
 }
