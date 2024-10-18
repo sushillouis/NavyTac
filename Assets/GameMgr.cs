@@ -20,6 +20,25 @@ public class GameMgr : MonoBehaviour
         foreach(GameObject go in EntityMgr.inst.entityPrefabs) {
             Entity ent = EntityMgr.inst.CreateEntity(go.GetComponent<Entity>().entityType, position, Vector3.zero);
             ent.isSelected = false;
+            ent.team = Team.Team1;
+            Vector3 usvPosition = position;
+            foreach(GameObject wo in WeaponMgr.inst.weaponPrefabs){
+                usvPosition.z += 200;
+                Entity usv = WeaponMgr.inst.CreateWeapon(wo.GetComponent<Entity>().entityType, usvPosition, Vector3.zero);
+                usv.team = ent.team;
+                
+            }
+            position.x += 200;
+        }
+        position = Vector3.zero;
+        position.z = 5000;
+        foreach (GameObject go in EntityMgr.inst.entityPrefabs)
+        {
+            Entity ent = EntityMgr.inst.CreateEntity(go.GetComponent<Entity>().entityType, position, Vector3.zero);
+            ent.isSelected = false;
+            ent.team = Team.Team2;
+            ent.desiredHeading = 180;
+            ent.heading = 180;
             position.x += 200;
         }
     }
