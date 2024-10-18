@@ -171,19 +171,28 @@ public class AIMgr : MonoBehaviour
         }
     }
 
-    void HandlePincer(List<Entity> entities, Entity ent, Approach[] approaches)
+    void HandlePincer(List<Entity> entities, Entity ent, Approach[] approaches= null)
     {
         //Round Robbin Attacking
         int attackApproach = 0;
-        if (approaches.Length==0) {
+        if (approaches is null || approaches.Length==0) {
             approaches = new Approach[2];
             approaches[0] = new Approach(90,200);
             approaches[1] = new Approach(-90,200);
         }
+        float approachAngleRange = 180/approaches.Length * .33f;
+        float[] distributeApproaches = new float[approaches.Length];
+        for (int i = 0; i<distributeApproaches.Length;i++) {
+
+            distributeApproaches[i]=-1f;
+            
+        } 
         foreach (Entity entity in entities) {
             if(ent == entity) 
                 continue;
-            Pincer pincer = new(entity, ent, approaches[attackApproach].mag, approaches[attackApproach].angle);
+            float tempAprroach = approachAngleRange * distributeApproaches[attackApproach] + approaches[attackApproach].angle;
+            distributeApproaches[attackApproach] += 2f/(((float)(entities.Count+(entities.Count%approaches.Length))-1)/approaches.Length);
+            Pincer pincer = new(entity, ent, approaches[attackApproach].mag, tempAprroach);
             // print("Mag: "+approaches[attackApproach].mag+" Angle: "+approaches[attackApproach].angle);
             if(++attackApproach >= approaches.Length) {
                 attackApproach=0;

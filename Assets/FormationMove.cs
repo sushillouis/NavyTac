@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Principal;
 using Unity.Mathematics;
 using UnityEngine;
@@ -58,11 +59,9 @@ public class Formation {
     }
 
     public void RemoveMembers(UnitAI[] unitAIs, bool rebuild = true) {
-        foreach (UnitAI ai in unitAIs) {
-            if(members.Contains(ai)) {
-                members.Remove(ai);
-                target.followers--;
-            }
+        foreach (UnitAI ai in unitAIs.Where((x) => members.Contains(x))) {
+            members.Remove(ai);
+            target.followers--;
         }
         if(members.Count==0) {
             AIMgr.inst.RemoveFormation(this);
