@@ -6,7 +6,6 @@ using UnityEngine.InputSystem;
 public class AIMgr : MonoBehaviour
 {
     public static AIMgr inst;
-    private GameInputs input;
     private void Awake()
     {
         inst = this;
@@ -15,12 +14,6 @@ public class AIMgr : MonoBehaviour
     void Start()
     {
         layerMask = 1 << 9;// LayerMask.GetMask("Water");
-        input = new GameInputs();
-        input.Enable();
-        input.Entities.Intercept.performed += OnInterceptPerformed;
-        input.Entities.Intercept.canceled += OnInterceptCanceled;
-        input.Entities.ClearSelection.performed += OnClearSelectionPerformed;
-        input.Entities.ClearSelection.canceled += OnClearSelectionCanceled;
     }
 
     public bool isPotentialFieldsMovement = false;
@@ -37,38 +30,47 @@ public class AIMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(1)) {
-            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, layerMask)) {
-                //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
-                Vector3 pos = hit.point;
-                pos.y = 0;
-                Entity ent = FindClosestEntInRadius(pos, rClickRadiusSq);
-                if (ent == null) {
-                    HandleMove(SelectionMgr.inst.selectedEntities, pos);
-                } else {
-                    if (interceptDown)
-                        HandleIntercept(SelectionMgr.inst.selectedEntities, ent);
-                    else
-                        HandleFollow(SelectionMgr.inst.selectedEntities, ent);
-                }
-            } else {
-                //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
+        
+    }
+
+    public void HandleCommand(Vector2 mousePos, bool intercept, bool add)
+    {
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
+        {
+            //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
+            Vector3 pos = hit.point;
+            pos.y = 0;
+            Entity ent = FindClosestEntInRadius(pos, rClickRadiusSq);
+            if (ent == null)
+            {
+                HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
             }
+            else
+            {
+                if (intercept)
+                    HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
+                else
+                    HandleFollow(SelectionMgr.inst.selectedEntities, ent, add);
+            }
+        }
+        else
+        {
+            //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
         }
     }
 
-    public void HandleMove(List<Entity> entities, Vector3 point)
+    public void HandleMove(List<Entity> entities, Vector3 point, bool add)
     {
         foreach (Entity entity in entities) {
             Move m = new Move(entity, point);
-            UnitAI uai = entity.GetComponent<UnitAI>();
-            AddOrSet(m, uai);
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            AddOrSet(m, uai, add);
         }
     }
 
-    void AddOrSet(Command c, UnitAI uai)
+    void AddOrSet(Command c, UnitAI uai, bool add)
     {
-        if (addDown)
+        if (add)
             uai.AddCommand(c);
         else
             uai.SetCommand(c);
@@ -76,21 +78,21 @@ public class AIMgr : MonoBehaviour
 
 
 
-    public void HandleFollow(List<Entity> entities, Entity ent)
+    public void HandleFollow(List<Entity> entities, Entity ent, bool add)
     {
         foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
             Follow f = new Follow(entity, ent, new Vector3(100, 0, 0));
-            UnitAI uai = entity.GetComponent<UnitAI>();
-            AddOrSet(f, uai);
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            AddOrSet(f, uai, add);
         }
     }
 
-    void HandleIntercept(List<Entity> entities, Entity ent)
+    void HandleIntercept(List<Entity> entities, Entity ent, bool add)
     {
         foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
             Intercept intercept = new Intercept(entity, ent);
-            UnitAI uai = entity.GetComponent<UnitAI>();
-            AddOrSet(intercept, uai);
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            AddOrSet(intercept, uai, add);
         }
 
     }
@@ -110,27 +112,5 @@ public class AIMgr : MonoBehaviour
             }    
         }
         return minEnt;
-    }
-
-    bool interceptDown = false;
-    private void OnInterceptPerformed(InputAction.CallbackContext context)
-    {
-        interceptDown = true;
-    }
-
-    private void OnInterceptCanceled(InputAction.CallbackContext context)
-    {
-        interceptDown = false;
-    }
-
-    bool addDown = false;
-    private void OnClearSelectionPerformed(InputAction.CallbackContext context)
-    {
-        addDown = true;
-    }
-
-    private void OnClearSelectionCanceled(InputAction.CallbackContext context)
-    {
-        addDown = false;
     }
 }

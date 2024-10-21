@@ -13,7 +13,12 @@ public enum EntityType
     PilotVessel,
     SmitHouston,
     Tanker,
-    TugBoat
+    TugBoat,
+    JARIUSV,
+    SeaHunter,
+    Mykola,
+    SeaBaby,
+    CVN75
 }
 
 
@@ -48,8 +53,8 @@ public class Entity : MonoBehaviour
     void Start()
     {
         isSelected = false;
-        cameraRig = transform.Find("CameraRig").gameObject;
-        selectionCircle = transform.Find("Decorations").Find("SelectionCylinder").gameObject;
+        //cameraRig = transform.Find("CameraRig").gameObject;
+        //selectionCircle = transform.Find("Decorations").Find("SelectionCylinder").gameObject;
     }
 
     // Update is called once per frame
