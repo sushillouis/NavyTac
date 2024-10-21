@@ -37,6 +37,9 @@ public class Entity : MonoBehaviour
     public float desiredHeading; //degrees
 
     public HealthBar healthBar;
+    public AmmoBar ammoBar;
+    public FuelBar fuelBar;
+
     //------------------------------
     // values that do not change
     //------------------------------
@@ -55,7 +58,9 @@ public class Entity : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // healthBar.UpdateHealthBar(100, 100);
+        healthBar.UpdateHealthBar(100, 100);
+        ammoBar.UpdateAmmoBar(100, 100);
+        fuelBar.UpdateFuelBar(100, 100);
         isSelected = false;
         cameraRig = transform.Find("CameraRig").gameObject;
         selectionCircle = transform.Find("Decorations").Find("SelectionCylinder").gameObject;

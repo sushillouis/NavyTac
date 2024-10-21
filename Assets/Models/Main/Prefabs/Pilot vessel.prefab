@@ -144,7 +144,9 @@ MonoBehaviour:
   desiredSpeed: 0
   heading: 0
   desiredHeading: 0
-  healthBar: {fileID: 0}
+  healthBar: {fileID: 2717562528435011238}
+  ammoBar: {fileID: 3628098951322941390}
+  fuelBar: {fileID: 7978549530144911030}
   acceleration: 10
   turnRate: 20
   maxSpeed: 30
@@ -483,6 +485,30 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 770c9f1c14dfa9244bb10284d498acf8, type: 3}
+--- !u!114 &2717562528435011238 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2957191823749600498, guid: 770c9f1c14dfa9244bb10284d498acf8,
+    type: 3}
+  m_PrefabInstance: {fileID: 917809579156253268}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5185334361820209697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9658277a793480c49b6fe9bd66715bf4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3628098951322941390 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -4691292631624508006, guid: 770c9f1c14dfa9244bb10284d498acf8,
+    type: 3}
+  m_PrefabInstance: {fileID: 917809579156253268}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5185334361820209697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09cf17b494848bf45838241054082906, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5185334361820209697 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5425347515507837045, guid: 770c9f1c14dfa9244bb10284d498acf8,
@@ -495,6 +521,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 917809579156253268}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7978549530144911030 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -2160260567595842334, guid: 770c9f1c14dfa9244bb10284d498acf8,
+    type: 3}
+  m_PrefabInstance: {fileID: 917809579156253268}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5185334361820209697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32afd2998cae91142b3915594bc77f8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &9192563767587344916
 PrefabInstance:
   m_ObjectHideFlags: 0

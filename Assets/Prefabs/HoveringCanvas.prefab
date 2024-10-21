@@ -516,7 +516,7 @@ GameObject:
   - component: {fileID: 5567762625278656767}
   - component: {fileID: 4833155082440877005}
   m_Layer: 5
-  m_Name: ForegroundHealthImage
+  m_Name: ForegroundFuelImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1148,6 +1148,8 @@ GameObject:
   - component: {fileID: 1436530038121646471}
   - component: {fileID: 5652040177125251768}
   - component: {fileID: 2957191823749600498}
+  - component: {fileID: -4691292631624508006}
+  - component: {fileID: -2160260567595842334}
   m_Layer: 5
   m_Name: HoveringCanvas
   m_TagString: Untagged
@@ -1267,6 +1269,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   healthBar: {fileID: 954527324702746031}
+  reduceSpeed: 2
+--- !u!114 &-4691292631624508006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5425347515507837045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09cf17b494848bf45838241054082906, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ammoBar: {fileID: 4911363132016855624}
+  reduceSpeed: 2
+--- !u!114 &-2160260567595842334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5425347515507837045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32afd2998cae91142b3915594bc77f8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fuelBar: {fileID: 4833155082440877005}
   reduceSpeed: 2
 --- !u!1 &5853366751896640876
 GameObject:
@@ -1552,7 +1582,7 @@ GameObject:
   - component: {fileID: 1248543596353335248}
   - component: {fileID: 4911363132016855624}
   m_Layer: 5
-  m_Name: ForegroundHealthImage
+  m_Name: ForegroundAmmoImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

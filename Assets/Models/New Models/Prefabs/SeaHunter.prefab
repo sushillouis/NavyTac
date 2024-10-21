@@ -81,7 +81,9 @@ MonoBehaviour:
   desiredSpeed: 0
   heading: 0
   desiredHeading: 0
-  healthBar: {fileID: 0}
+  healthBar: {fileID: 9015826626897876043}
+  ammoBar: {fileID: 7706088811969928483}
+  fuelBar: {fileID: 3896069642973856859}
   acceleration: 5
   turnRate: 10
   maxSpeed: 14
@@ -642,3 +644,39 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 6058652972035424441}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &3896069642973856859 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -2160260567595842334, guid: 770c9f1c14dfa9244bb10284d498acf8,
+    type: 3}
+  m_PrefabInstance: {fileID: 6058652972035424441}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2260274940369291468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32afd2998cae91142b3915594bc77f8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &7706088811969928483 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -4691292631624508006, guid: 770c9f1c14dfa9244bb10284d498acf8,
+    type: 3}
+  m_PrefabInstance: {fileID: 6058652972035424441}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2260274940369291468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09cf17b494848bf45838241054082906, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &9015826626897876043 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2957191823749600498, guid: 770c9f1c14dfa9244bb10284d498acf8,
+    type: 3}
+  m_PrefabInstance: {fileID: 6058652972035424441}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2260274940369291468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9658277a793480c49b6fe9bd66715bf4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

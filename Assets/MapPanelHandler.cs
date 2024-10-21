@@ -30,7 +30,7 @@ public class MapPanelHandler : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // mapImage;
+        // Make sure the Image Display is the one showing
         mapName.text = "Four Corners";
         mapDisplayPanel.isVisible = true;
         mapInfoPanel.isVisible = false;
@@ -55,10 +55,5 @@ public class MapPanelHandler : MonoBehaviour
             mapDisplayPanel.isVisible = true;
             mapInfoPanel.isVisible = false;
         }
-    }
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
