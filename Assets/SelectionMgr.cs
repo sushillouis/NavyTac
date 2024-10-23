@@ -140,7 +140,19 @@ public class SelectionMgr : MonoBehaviour
                 selectedEntity = ent;
                 selectedEntity.isSelected = true;
                 selectedEntities.Add(ent);
-            } 
+            }
+            else if (!shouldClearSelection)
+            {
+                if(selectedEntity = ent)
+                {
+                    if (SelectionMgr.inst.selectedEntities[0] != null)
+                        selectedEntity = EntityMgr.inst.entities[0];
+                    else
+                        selectedEntity = null;
+                }
+                ent.isSelected = false;
+                selectedEntities.Remove(ent);
+            }
         }
         else
             ClearSelection();
