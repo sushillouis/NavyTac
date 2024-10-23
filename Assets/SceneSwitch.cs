@@ -5,23 +5,17 @@ using UnityEngine.SceneManagement;
 
 public class SceneSwitch : MonoBehaviour
 {
- [HideInInspector]
- public int currentScene = 1;
+    [HideInInspector]
+    public int currentScene = 1;
 
-   //Sets the current scene to the selected Map
-   public void GoToScene()
-   {
-        SceneManager.LoadScene(currentScene);
-   }
-
-     public void LoadScene()
-     {
-          StartCoroutine(LoadYourAsyncScene());
-     }
+    public void LoadScene()
+    {
+        StartCoroutine(LoadYourAsyncScene());
+    }
 
    IEnumerator LoadYourAsyncScene()
     {
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("Scene2");
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(currentScene);
 
         // Wait until the asynchronous scene fully loads
         while (!asyncLoad.isDone)
@@ -34,6 +28,5 @@ public class SceneSwitch : MonoBehaviour
    public void GoToMapSelectScene()
    {
         currentScene = 0;
-        SceneManager.LoadScene(currentScene);
    }
 }

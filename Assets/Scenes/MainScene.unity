@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.43667555, g: 0.48427176, b: 0.56452405, a: 1}
+  m_IndirectSpecularColor: {r: 0.4366757, g: 0.48427194, b: 0.5645252, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -268,6 +268,26 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: 22823137344ac374d9726b6ef28972e2,
         type: 3}
+    - target: {fileID: 6457432092094754339, guid: 592b90a40ebee3243bf241a6a4f34a96,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 2114929461}
+    - target: {fileID: 6457432092094754339, guid: 592b90a40ebee3243bf241a6a4f34a96,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: LoadScene
+      objectReference: {fileID: 0}
+    - target: {fileID: 6457432092094754339, guid: 592b90a40ebee3243bf241a6a4f34a96,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: SceneSwitch, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 6457432092094754339, guid: 592b90a40ebee3243bf241a6a4f34a96,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 8094752916798156066, guid: 592b90a40ebee3243bf241a6a4f34a96,
         type: 3}
       propertyPath: m_text
@@ -9883,6 +9903,26 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: 13476e63045465a47965602017085c70,
         type: 3}
+    - target: {fileID: 6457432092094754339, guid: 592b90a40ebee3243bf241a6a4f34a96,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 2114929461}
+    - target: {fileID: 6457432092094754339, guid: 592b90a40ebee3243bf241a6a4f34a96,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: LoadScene
+      objectReference: {fileID: 0}
+    - target: {fileID: 6457432092094754339, guid: 592b90a40ebee3243bf241a6a4f34a96,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: SceneSwitch, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 6457432092094754339, guid: 592b90a40ebee3243bf241a6a4f34a96,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 8085754807914105245, guid: 592b90a40ebee3243bf241a6a4f34a96,
         type: 3}
       propertyPath: m_text
@@ -11341,7 +11381,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2114929461}
         m_TargetAssemblyTypeName: SceneSwitch, Assembly-CSharp
-        m_MethodName: GoToScene
+        m_MethodName: LoadScene
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
