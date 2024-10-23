@@ -1,0 +1,45 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
+
+//This script makes it so the button remains highlighted
+public class ButtonStaysPressed : MonoBehaviour
+{
+    public Button[] buttons;
+    public Button[] disabledButtons;
+
+    private void Awake()
+    {
+        SetAllDisabledButtons();
+    }
+
+    public void SetAllButtonsInteractable()
+    {
+        foreach (Button button in buttons)
+        {
+            button.interactable = true;
+        }
+    }
+
+    public void SetAllDisabledButtons()
+    {
+        foreach (Button button in disabledButtons)
+        {
+            button.interactable = false;
+        }
+    }
+
+    public void OnButtonClicked(Button clickedButton)
+    {
+        int buttonIndex = System.Array.IndexOf(buttons, clickedButton);
+
+        if (buttonIndex == -1)
+            return;
+
+        SetAllButtonsInteractable();
+
+        clickedButton.interactable = false;
+    }
+}

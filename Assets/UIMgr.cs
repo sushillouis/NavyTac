@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.Windows;
+using TMPro;
 
 /// <summary>
 /// Key and mouse bindings are all in this document: _______________
@@ -134,11 +135,11 @@ public class UIMgr : MonoBehaviour
             ToggleMultiSelect.SetActive(true);
         #endif
     }
-    public Text entityName;
-    public Text speed;
-    public Text desiredSpeed;
-    public Text heading;
-    public Text desiredHeading;
+    public TextMeshProUGUI entityName;
+    public TextMeshProUGUI speed;
+    public TextMeshProUGUI desiredSpeed;
+    public TextMeshProUGUI heading;
+    public TextMeshProUGUI desiredHeading;
 
     // Update is called once per frame
     void Update()
