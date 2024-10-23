@@ -14,6 +14,22 @@ public class SceneSwitch : MonoBehaviour
         SceneManager.LoadScene(currentScene);
    }
 
+     public void LoadScene()
+     {
+          StartCoroutine(LoadYourAsyncScene());
+     }
+
+   IEnumerator LoadYourAsyncScene()
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("Scene2");
+
+        // Wait until the asynchronous scene fully loads
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
+    }
+
     //Sets the current scene to Map Select
    public void GoToMapSelectScene()
    {

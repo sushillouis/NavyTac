@@ -8,12 +8,26 @@ using UnityEngine.UI;
 public class ButtonStaysPressed : MonoBehaviour
 {
     public Button[] buttons;
+    public Button[] disabledButtons;
+
+    private void Awake()
+    {
+        SetAllDisabledButtons();
+    }
 
     public void SetAllButtonsInteractable()
     {
         foreach (Button button in buttons)
         {
             button.interactable = true;
+        }
+    }
+
+    public void SetAllDisabledButtons()
+    {
+        foreach (Button button in disabledButtons)
+        {
+            button.interactable = false;
         }
     }
 
