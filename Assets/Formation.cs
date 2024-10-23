@@ -7,8 +7,9 @@ using UnityEngine.InputSystem.Controls;
 [Serializable]
 public class Formation {
     public Entity target = null;
-    [SerializeReference] List<UnitAI> members;
+    public List<UnitAI> members;
     [SerializeField] IFormationStrategy _formationStrategy;
+    [SerializeField] float formationMinSpeed;
     public IFormationStrategy formationStrategy{
         get { return _formationStrategy; }
         set {
@@ -29,7 +30,7 @@ public class Formation {
             ai.formation=this;
         }
         target = FindTarget();
-        _formationStrategy = new FormationHold();
+        _formationStrategy = new FormationHold();  
     }
 
     public Entity FindTarget() {
@@ -142,19 +143,17 @@ class FormationHold : IFormationStrategy {
                 z = ((formation.target.mass/10)+50) * ring * Mathf.Sin(Mathf.Deg2Rad * (i - filledRingMembers)*(360f / remainingRingMembers)),
             };
 
-            if(unitAIs[i].commands.Count > 0 && unitAIs[i].commands[0] is Move fMove) {
-                fMove.movePosition = formation.target.position+formationPos;
-            }
+            // if(unitAIs[i].commands.Count > 0 && unitAIs[i].commands[0] is EscortFormate fMove) {
+            //     fMove.UpdateFormation(formationPos);
+            // }
         }
     }
 }
 
 class CircleEscortMove : IFormationStrategy
 {
-    Vector3 movePos = Vector3.zero;
-    public CircleEscortMove(Vector3 n_movePos, Entity moveCenter) {
-        movePos = n_movePos;
-        moveCenter.GetComponent<UnitAI>().SetCommand(new Move(moveCenter, movePos));
+    public CircleEscortMove() {
+    
     }
     public void UpdateFormation(ref List<UnitAI> unitAIs, Formation formation)
     {
@@ -177,8 +176,8 @@ class CircleEscortMove : IFormationStrategy
                 z = ((formation.target.mass/10)+50) * ring * Mathf.Sin(Mathf.Deg2Rad * (i - filledRingMembers)*(360f / remainingRingMembers)),
             };
 
-            if(unitAIs[i].commands.Count > 0 && unitAIs[i].commands[0] is EscortFormate fMove) {
-                fMove.UpdateFormation(formationPos);
+            if(unitAIs[i].commands.Count > 0 && unitAIs[i].commands[0] is EscortFormate escort) {
+                escort.relativeOffset = formation.target.position+formationPos;
             }
         }
     }

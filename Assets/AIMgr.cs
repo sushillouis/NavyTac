@@ -113,7 +113,17 @@ public class AIMgr : MonoBehaviour
     }
 
     public void HandleEscortFormate(Formation formation, Vector3 point) {
-
+        foreach (UnitAI aI in formation.members) {
+            if (aI.GetComponent<Entity>() == formation.target) {
+                Move m = new Move(formation.target, point);
+                AddOrSet(m, aI);
+            } else {
+                EscortFormate escort = new EscortFormate(aI.GetComponent<Entity>(), formation.target, Vector3.zero);
+                AddOrSet(escort, aI);
+            }
+        }
+        formation.formationStrategy = new CircleEscortMove();
+        formation.RebuildFormation();
     }
     public void HandleMove(List<Entity> entities, Vector3 point)
     {
