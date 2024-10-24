@@ -6,7 +6,12 @@ using UnityEngine.SceneManagement;
 public class SceneSwitch : MonoBehaviour
 {
     [HideInInspector]
-    public int currentScene = 1;
+    public int currentScene;
+
+    void Start()
+    {
+        currentScene = 1;
+    }
 
     public void LoadScene()
     {
