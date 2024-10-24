@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Selector : MonoBehaviour
+public class UIAspect : MonoBehaviour //change name to UI aspect
 {
     public Entity entity;
     // Start is called before the first frame update
@@ -18,12 +18,13 @@ public class Selector : MonoBehaviour
             entity.selectionCircle.SetActive(entity.isSelected);
     }
 
+    /*
     private void OnMouseDown()
     {
         //if (Input.GetMouseButtonDown(0)) {
             SelectionMgr.inst.SelectEntity(entity);
         //}
     }
-
+    */
 
 }
