@@ -30,6 +30,8 @@ public class UIMgr : MonoBehaviour
 
     private InputAction command;
     private InputAction intercept;
+    private InputAction pincer;
+    private InputAction group;
     private InputAction addCommand;
 
     private InputAction changeSpeed;
@@ -90,6 +92,12 @@ public class UIMgr : MonoBehaviour
         addCommand = inputs.Entities.AddCommand;
         addCommand.Enable();
 
+        group = inputs.Entities.Group;
+        group.Enable();
+
+        pincer = inputs.Entities.Pincer;
+        pincer.Enable();
+
         changeSpeed = inputs.Entities.Speed;
         changeSpeed.Enable();
         changeSpeed.performed += ChangeSpeed;
@@ -121,6 +129,8 @@ public class UIMgr : MonoBehaviour
         changeSpeed.Disable();
         changeHeading.Disable();
         create100.Disable();
+        pincer.Disable();
+        group.Disable();
     }
 
     // Start is called before the first frame update
@@ -196,9 +206,9 @@ public class UIMgr : MonoBehaviour
 
     private void HandleCommand(InputAction.CallbackContext context)
     {
-        AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
+        AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed(), pincer.IsPressed(), group.IsPressed());
     }
-
+ 
     private void ChangeSpeed(InputAction.CallbackContext context) 
     {
         ControlMgr.inst.ChangeSpeed(changeSpeed.ReadValue<float>());

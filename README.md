@@ -1,5 +1,5 @@
 # NavyTac
-A tactical decision making nautical simulation for academic research. The simulation has several ship types, simple ship physics using desired speed and desired heading, keyboard controls, AI controls for move, follow, and intercept, with RTS style right mouse click commands. We are essentially making something like a tactical RTS game with little to no macro. Tactical commands will include Scout, Kite, Patrol, Distract-Attack, Retreat, and automated formations. In addition, we plan to implement conditional commands.  We assume the availability of swarms of UAVs, USVs, and UUVs.
+A tactical decision making nautical simulation for academic research. The simulation has several ship types, simple ship physics using desired speed and desired heading, keyboard controls, AI controls for move, follow, and intercept, with RTS style right mouse click commands. We are essentially making something like a tactical RTS game with little to no macro. Tactical commands will include Scout, Kite, Patrol, Distract-Attack, Retreat, and automated groups. In addition, we plan to implement conditional commands.  We assume the availability of swarms of UAVs, USVs, and UUVs.
 
 Runs in and developed on Unity 2022.3.20f1, but should run on other versions with little trouble. Ship Models were brought on the Unity asset store or from TurboSquid. 
 

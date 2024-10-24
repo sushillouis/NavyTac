@@ -1,53 +1,55 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem.Controls;
 
 [Serializable]
-public class Formation {
+public class Group {
     public Entity target = null;
     public List<UnitAI> members;
-    [SerializeField] IFormationStrategy _formationStrategy;
-    [SerializeField] float formationMinSpeed;
-    public IFormationStrategy formationStrategy{
-        get { return _formationStrategy; }
+    [SerializeField] float groupMinSpeed;
+    [SerializeField] Tactic _groupStrategy;
+    public Tactic groupStrategy{
+        get { return _groupStrategy; }
         set {
-             _formationStrategy = value; 
-             RebuildFormation();
+             _groupStrategy = value; 
+             RebuildGroup();
         }
     }
     
-    public Formation(Entity n_target) {
+    
+    public Group(Entity n_target) {
         target = n_target;
         members = new();
-        _formationStrategy = new FormationHold();
+        _groupStrategy = new GroupHold();
     }
 
-    public Formation(List<UnitAI> n_members) {
+    public Group(List<UnitAI> n_members) {
         members = n_members;
         foreach (UnitAI ai in members) {
-            ai.formation=this;
+            ai.group=this;
         }
         target = FindTarget();
-        _formationStrategy = new FormationHold();  
+        _groupStrategy = new GroupHold();  
     }
 
     public Entity FindTarget() {
         members.Sort();
-        return members[0].GetComponent<Entity>();
+        return members[0].GetComponentInParent<Entity>();
     }
     public void Disband() {
-        AIMgr.inst.RemoveFormation(this);
-        if(target.GetComponent<UnitAI>().formation==this) {
-            target.GetComponent<UnitAI>().formation=null;
+        TacticalAIMgr.inst.RemoveGroup(this);
+        if(target.GetComponentInChildren<UnitAI>().group==this) {
+            target.GetComponentInChildren<UnitAI>().group=null;
         }
         foreach (UnitAI ai in members)
         {
             if(ai.commands.Count>0) {
                 ai.commands[0].Stop();
-                if(ai.formation==this) {
-                    ai.formation=null;
+                if(ai.group==this) {
+                    ai.group=null;
                 }
             }
         }
@@ -57,19 +59,19 @@ public class Formation {
     public void AddMembers(UnitAI[] unitAIs) {
         foreach (UnitAI ai in unitAIs) {
             if(!members.Contains(ai)) {
-                ai.formation=this;
+                ai.group=this;
                 members.Add(ai);
             }
         }
-        RebuildFormation();
+        RebuildGroup();
     }
 
     public void RemoveMembers(UnitAI[] unitAIs, bool rebuild = true) {
         foreach (UnitAI ai in unitAIs.Where((x) => members.Contains(x))) {
-            if(ai.formation==this) {
-                ai.formation=null;
+            if(ai.group==this) {
+                ai.group=null;
             }
-            if(target.GetComponent<UnitAI>()==ai) {
+            if(target.GetComponentInChildren<UnitAI>()==ai) {
                 Disband();
                 return;
             }
@@ -80,17 +82,17 @@ public class Formation {
             return;
         }
         if(rebuild) {
-            RebuildFormation();
+            RebuildGroup();
         }
     }
 
     public void RemoveMember(UnitAI unitAI, bool rebuild = true) {
 
         if(members.Contains(unitAI)) {
-            if(unitAI.formation==this) {
-                unitAI.formation=null;
+            if(unitAI.group==this) {
+                unitAI.group=null;
             }
-            if(target.GetComponent<UnitAI>()==unitAI) {
+            if(target.GetComponentInChildren<UnitAI>()==unitAI) {
                 Disband();
                 return;
             }
@@ -102,27 +104,27 @@ public class Formation {
             return;
         }
         if(rebuild) {
-            RebuildFormation();
+            RebuildGroup();
         }
     }
 
-    public void RebuildFormation() {
+    public void RebuildGroup() {
         if(members.Count==0) {
             Disband();
             return;
         }
 
-        formationStrategy.UpdateFormation(ref members,this);
+        groupStrategy.UpdateGroup(ref members,this);
     }
 }
 
-public interface IFormationStrategy{
-    public void UpdateFormation(ref List<UnitAI> unitAIs, Formation formation);
+public interface Tactic{
+    public void UpdateGroup(ref List<UnitAI> unitAIs, Group group);
 }
 
-class FormationHold : IFormationStrategy {
+class GroupHold : Tactic {
 
-    public void UpdateFormation(ref List<UnitAI> unitAIs, Formation formation)
+    public void UpdateGroup(ref List<UnitAI> unitAIs, Group group)
     {
         unitAIs.Sort();
 
@@ -136,48 +138,55 @@ class FormationHold : IFormationStrategy {
             }
 
             int remainingRingMembers = Mathf.Min(unitAIs.Count - filledRingMembers, ring * 4);
-            Vector3 formationPos = new(0,0,0)
+            Vector3 groupPos = new(0,0,0)
             {
-                x = ((formation.target.mass/10)+50) * ring * Mathf.Cos(Mathf.Deg2Rad * (i - filledRingMembers)*(360f / remainingRingMembers)),
+                x = ((group.target.mass/10)+50) * ring * Mathf.Cos(Mathf.Deg2Rad * (i - filledRingMembers)*(360f / remainingRingMembers)),
                 y=0,
-                z = ((formation.target.mass/10)+50) * ring * Mathf.Sin(Mathf.Deg2Rad * (i - filledRingMembers)*(360f / remainingRingMembers)),
+                z = ((group.target.mass/10)+50) * ring * Mathf.Sin(Mathf.Deg2Rad * (i - filledRingMembers)*(360f / remainingRingMembers)),
             };
 
             // if(unitAIs[i].commands.Count > 0 && unitAIs[i].commands[0] is EscortFormate fMove) {
-            //     fMove.UpdateFormation(formationPos);
+            //     fMove.UpdateGroup(groupPos);
             // }
         }
     }
 }
 
-class CircleEscortMove : IFormationStrategy
+class CircleEscortMove : Tactic
 {
     public CircleEscortMove() {
     
     }
-    public void UpdateFormation(ref List<UnitAI> unitAIs, Formation formation)
+    public void UpdateGroup(ref List<UnitAI> unitAIs, Group group)
     {
         unitAIs.Sort();
 
         int ring = 1;
 
         int filledRingMembers = 0;
+
+        float baseDist = 2*Mathf.Log10(group.target.mass)+200;
+
         for (int i = 0; i<unitAIs.Count;i++) {
             if(i-filledRingMembers>=ring*4) {
                 filledRingMembers+=ring*4;
                 ring++;
             }
 
-            int remainingRingMembers = Mathf.Min(unitAIs.Count - filledRingMembers, ring * 4);
-            Vector3 formationPos = new(0,0,0)
+            if(unitAIs[i].GetComponentInParent<Entity>() == group.target) {
+                continue;
+            }
+
+            int remainingRingMembers = Mathf.Min(unitAIs.Count - 1 - filledRingMembers, ring * 4);
+            Vector3 groupPos = new(0,0,0)
             {
-                x = ((formation.target.mass/10)+50) * ring * Mathf.Cos(Mathf.Deg2Rad * (i - filledRingMembers)*(360f / remainingRingMembers)),
+                x =  baseDist * ring * Mathf.Cos(Mathf.Deg2Rad * (i - filledRingMembers - 1)*(360f / remainingRingMembers)),
                 y=0,
-                z = ((formation.target.mass/10)+50) * ring * Mathf.Sin(Mathf.Deg2Rad * (i - filledRingMembers)*(360f / remainingRingMembers)),
+                z = baseDist * ring * Mathf.Sin(Mathf.Deg2Rad * (i - filledRingMembers - 1)*(360f / remainingRingMembers)),
             };
 
             if(unitAIs[i].commands.Count > 0 && unitAIs[i].commands[0] is EscortFormate escort) {
-                escort.relativeOffset = formation.target.position+formationPos;
+                escort.relativeOffset = groupPos;
             }
         }
     }

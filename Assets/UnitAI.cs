@@ -13,18 +13,18 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
         commands = new List<Command>();
         intercepts = new List<Intercept>();
         moves = new List<Move>();
-        _formation = null;
+        _group = null;
     }
 
     public List<Move> moves;
     public List<Command> commands;
     public List<Intercept> intercepts;
-    [SerializeField] Formation _formation;
-    public Formation formation {
-        get {return _formation;} 
+    [SerializeField] Group _group;
+    public Group group {
+        get {return _group;} 
         set {
-                Formation temp = _formation;
-                _formation = value;
+                Group temp = _group;
+                _group = value;
                 if(temp is not null && temp != value) {
                     temp.RemoveMember(this);
                 }
