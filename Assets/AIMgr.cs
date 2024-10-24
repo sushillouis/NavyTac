@@ -7,7 +7,6 @@ using UnityEngine.InputSystem;
 public class AIMgr : MonoBehaviour
 {
     public static AIMgr inst;
-    private GameInputs input;
     private void Awake()
     {
         inst = this;
@@ -16,16 +15,6 @@ public class AIMgr : MonoBehaviour
     void Start()
     {
         layerMask = 1 << 9;// LayerMask.GetMask("Water");
-        input = new GameInputs();
-        input.Enable();
-        input.Entities.Intercept.performed += OnInterceptPerformed;
-        input.Entities.Intercept.canceled += OnInterceptCanceled;
-        input.Entities.Pincer.performed += OnPincerPerformed;
-        input.Entities.Pincer.canceled += OnPincerCanceled;
-        input.Entities.Formation.canceled += OnFormationCanceled;
-        input.Entities.Formation.performed += OnFormationPerformed;
-        input.Entities.ClearSelection.performed += OnClearSelectionPerformed;
-        input.Entities.ClearSelection.canceled += OnClearSelectionCanceled;
     }
 
     public bool isPotentialFieldsMovement = false;
@@ -47,25 +36,33 @@ public class AIMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(1)) {
-            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, layerMask)) {
-                //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
-                Vector3 pos = hit.point;
-                pos.y = 0;
-                Entity ent = FindClosestEntInRadius(pos, rClickRadiusSq);
-                pincerCenterTarget = ent;
-                if(!formationDown) {
-                    if (ent == null) {
-                        HandleMove(SelectionMgr.inst.selectedEntities, pos);
-                    } else {
-                        if (interceptDown)
-                            HandleIntercept(SelectionMgr.inst.selectedEntities, ent);
-                        else if(pincerDown)
+        
+    }
+
+    public void HandleCommand(Vector2 mousePos, bool intercept, bool add)
+    {
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
+        {
+            //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
+            Vector3 pos = hit.point;
+            pos.y = 0;
+            Entity ent = FindClosestEntInRadius(pos, rClickRadiusSq);
+            pincerCenterTarget = ent;
+            if(!formationDown) {
+                if (ent == null)
+                {
+                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
+                }
+                else
+                {
+                    if (intercept)
+                        HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
+                    else if(pincerDown)
                             pincerDragIsActive=true;
-                        else
-                            HandleFollow(SelectionMgr.inst.selectedEntities, ent);
-                    }
-                } else {
+                    else
+                        HandleFollow(SelectionMgr.inst.selectedEntities, ent, add);
+                }
+            } else {
                     Formation formation = AssembleFormation(SelectionMgr.inst.selectedEntities);
                     if (ent == null && formation != null) {
                         HandleEscortFormate(formation, pos);
@@ -73,70 +70,25 @@ public class AIMgr : MonoBehaviour
                         
                     }
                 }
-            } else {
-                //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
-            }
         }
-
-        if(Input.GetMouseButton(1)) {
-            if(!pincerDown) {
-                pincerDragIsActive=false;
-            }
-        }
-
-        if(Input.GetMouseButtonUp(1)) {
-            if(pincerDragIsActive && Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, layerMask) && pincerCenterTarget) {
-                hit.point = Vector3.Scale(hit.point, new Vector3(1,0,1));
-                Vector3 dif = hit.point - Vector3.Scale(pincerCenterTarget.position, new Vector3(1,0,1));
-                if(dif.magnitude>50) {
-                    float angle = Vector3.SignedAngle(pincerCenterTarget.transform.forward,dif, Vector3.up);
-                    // angle =  hit.point.x * pincerCenterTarget.position.y - hit.point.y * pincerCenterTarget.position.x <= 0 ? -angle : angle;
-                    pincerApproaches.Add(new(angle,dif.magnitude));
-                    pincerVisuals.Add(Instantiate(pincerVisualPrefab, hit.point+Vector3.up*5, Quaternion.identity, pincerCenterTarget.transform));
-                } else if(pincerCenterTarget && pincerDown) {
-                    HandlePincer(SelectionMgr.inst.selectedEntities,pincerCenterTarget,pincerApproaches.ToArray());
-                }
-            } else if(pincerCenterTarget && pincerDown) {
-                HandlePincer(SelectionMgr.inst.selectedEntities,pincerCenterTarget,pincerApproaches.ToArray());                
-            } else {
-                ClearPincerData();
-            }
+        else
+        {
+            //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
         }
     }
 
-    public void ClearPincerData() {
-        for (int i = 0; i<pincerVisuals.Count;i++) {
-            Destroy(pincerVisuals[i]);
-        }
-        pincerVisuals.Clear();
-        pincerApproaches.Clear();
-    }
-
-    public void HandleEscortFormate(Formation formation, Vector3 point) {
-        foreach (UnitAI aI in formation.members) {
-            if (aI.GetComponent<Entity>() == formation.target) {
-                Move m = new Move(formation.target, point);
-                AddOrSet(m, aI);
-            } else {
-                EscortFormate escort = new EscortFormate(aI.GetComponent<Entity>(), formation.target, Vector3.zero);
-                AddOrSet(escort, aI);
-            }
-        }
-        formation.formationStrategy = new CircleEscortMove();
-        formation.RebuildFormation();
-    }
-    public void HandleMove(List<Entity> entities, Vector3 point)
+    public void HandleMove(List<Entity> entities, Vector3 point, bool add)
     {
         foreach (Entity entity in entities) {
             Move m = new Move(entity, point);
-            UnitAI uai = entity.GetComponent<UnitAI>();
-            AddOrSet(m, uai);
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            AddOrSet(m, uai, add);
         }
     }
 
-    public void AddOrSet(Command c, UnitAI uai)
+    void AddOrSet(Command c, UnitAI uai, bool add)
     {
-        if (addDown)
+        if (add)
             uai.AddCommand(c);
         else
             uai.SetCommand(c);
@@ -150,7 +102,7 @@ public class AIMgr : MonoBehaviour
 
     public Formation AssembleFormation(List<Entity> entities) {
         Formation targetFormation = null;
-        foreach (Entity ent in entities) {
+        foreach (Entity ent, bool add in entities) {
             foreach (Formation formation in formations) {
                 if (formation.target == ent) {
                     targetFormation = formation;
@@ -177,7 +129,7 @@ public class AIMgr : MonoBehaviour
         return targetFormation;
     }
 
-    public void HandleFollow(List<Entity> entities, Entity target)
+    public void HandleFollow(List<Entity> entities, Entity target, bool add)
     {
         if(entities.Count==0) {
             return;
@@ -188,8 +140,8 @@ public class AIMgr : MonoBehaviour
                 if(target == ent) 
                     continue;
                 Follow f = new(ent, target, new Vector3(100, 0, 0));
-                UnitAI uai = ent.GetComponent<UnitAI>();
-                AddOrSet(f, uai);
+                UnitAI uai = ent.GetComponentInChildren<UnitAI>();
+                AddOrSet(f, uai, add);
             }
             return;
         }
@@ -201,12 +153,12 @@ public class AIMgr : MonoBehaviour
         target.GetComponent<UnitAI>().formation.AddMembers(aIs.ToArray());
     }
 
-    void HandleIntercept(List<Entity> entities, Entity ent)
+    void HandleIntercept(List<Entity> entities, Entity ent, bool add)
     {
         foreach (Entity entity in entities) {
             Intercept intercept = new Intercept(entity, ent);
-            UnitAI uai = entity.GetComponent<UnitAI>();
-            AddOrSet(intercept, uai);
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            AddOrSet(intercept, uai, add);
         }
     }
 
@@ -259,53 +211,5 @@ public class AIMgr : MonoBehaviour
             }    
         }
         return minEnt;
-    }
-
-    bool interceptDown = false;
-    private void OnInterceptPerformed(InputAction.CallbackContext context)
-    {
-        interceptDown = true;
-    }
-
-    private void OnInterceptCanceled(InputAction.CallbackContext context)
-    {
-        interceptDown = false;
-    }
-
-    bool formationDown = false;
-    private void OnFormationPerformed(InputAction.CallbackContext context)
-    {
-        formationDown = true;
-    }
-
-    private void OnFormationCanceled(InputAction.CallbackContext context)
-    {
-        formationDown = false;
-        AssembleFormation(SelectionMgr.inst.selectedEntities);
-    }
-
-    bool pincerDown = false;
-    private void OnPincerPerformed(InputAction.CallbackContext context)
-    {
-        pincerDown = true;
-    }
-
-    private void OnPincerCanceled(InputAction.CallbackContext context)
-    {
-        pincerDown = false;
-        if(pincerApproaches.Count>0 && pincerCenterTarget) {
-            HandlePincer(SelectionMgr.inst.selectedEntities,pincerCenterTarget,pincerApproaches.ToArray());
-        }
-    }
-
-    bool addDown = false;
-    private void OnClearSelectionPerformed(InputAction.CallbackContext context)
-    {
-        addDown = true;
-    }
-
-    private void OnClearSelectionCanceled(InputAction.CallbackContext context)
-    {
-        addDown = false;
     }
 }
