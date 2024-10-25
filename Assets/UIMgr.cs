@@ -45,59 +45,75 @@ public class UIMgr : MonoBehaviour
 
     private void OnEnable()
     {
+        //changes view from RTSCameraRig to entity CameraRig - bound to C
         toggleRTSCam = inputs.Camera.RTSView;
         toggleRTSCam.Enable();
         toggleRTSCam.performed += ToggleRTSView;
 
+        //yaws camera - bound to Q and E
         yawCamera = inputs.Camera.Yaw;
         yawCamera.Enable();
 
+        //pitches camera - bound to Z and X
         pitchCamera = inputs.Camera.Pitch;
         pitchCamera.Enable();
 
+        //moves camera up and down - bound to R and F, Scroll Wheel, and Numpad + and -
         cameraYMove = inputs.Camera.YMove;
         cameraYMove.Enable();
 
+        //moves camera forward, backward, left, and right - bound to WASD, Arrow Keys, and Middle Mouse + Moving Mouse
         cameraXZMove = inputs.Camera.XZMove;
         cameraXZMove.Enable();
 
+        //handles box selection - bound to Left Click with a hold
         selectionBox = inputs.Selection.BoxSelect;
         selectionBox.Enable();
         selectionBox.started += OnBoxSelectPerformed;
         selectionBox.canceled += OnBoxSelectCanceled;
 
+        //handles single click selection - bound to Left Click with a tap
         singleSelect = inputs.Selection.SingleSelect;
         singleSelect.Enable();
         singleSelect.performed += OnSingleSelectPerformed;
 
+        //determines where the cursor is - bound to Mouse Screen Position
         selectionCursorPosition = inputs.Selection.CursorPosition;
         selectionCursorPosition.Enable();
 
+        //selects the next entity in the entity list - bound to Tab
         selectNextEntity = inputs.Selection.NextEntity;
         selectNextEntity.Enable();
         selectNextEntity.performed += SelectNextEntity;
 
+        //lets entities be added to already selected entities when pressed - bound to Shift
         addSelection = inputs.Selection.ClearSelection;
         addSelection.Enable();
 
+        //handles inputing new commands - bound to Right Click
         command = inputs.Entities.Command;
         command.Enable();
         command.performed += HandleCommand;
 
+        //when held down and a follow is input, that command will be an intercept - bound to Ctrl
         intercept = inputs.Entities.Intercept;
         intercept.Enable();
 
+        //when held down, commands are added, not cleared - bound to Shift
         addCommand = inputs.Entities.AddCommand;
         addCommand.Enable();
 
+        //increases/decreases selected entity speed - bound to Up/Down Arrows
         changeSpeed = inputs.Entities.Speed;
         changeSpeed.Enable();
         changeSpeed.performed += ChangeSpeed;
 
+        //increases/decreases selected entity heading - bound to Right/Left Arrows
         changeHeading = inputs.Entities.Heading;
         changeHeading.Enable();
         changeHeading.performed += ChangeHeading;
 
+        //spawns 100 entities in the scene - bound to F12
         create100 = inputs.Entities.Create100;
         create100.Enable();
         create100.performed += Create100;
