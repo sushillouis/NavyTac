@@ -43,6 +43,11 @@ public class Entity : MonoBehaviour
     public float maxSpeed;
     public float minSpeed;
     public float mass;
+    public float length;
+    public float width;
+    public float height;
+    public float health;
+    public float fuel;
 
     public EntityType entityType;
 
