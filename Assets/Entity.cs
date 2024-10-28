@@ -52,11 +52,12 @@ public class Entity : MonoBehaviour
     public float width;
     public float height;
 
-
     public EntityType entityType;
 
     public GameObject cameraRig;
     public GameObject selectionCircle;
+
+    public Player owner;
 
     // Start is called before the first frame update
     void Start()
