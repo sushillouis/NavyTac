@@ -1397,7 +1397,7 @@ Transform:
   m_GameObject: {fileID: 310865922}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6000, y: 0, z: 0}
+  m_LocalPosition: {x: -8600, y: 0, z: -9700}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4796,10 +4796,10 @@ MonoBehaviour:
   colNum: 10
   initZ: 0
   fourCornerSpawns:
-  - {x: 0, y: 0, z: -6000}
-  - {x: 6000, y: 0, z: 0}
-  - {x: 0, y: 0, z: 6000}
-  - {x: -6000, y: 0, z: 0}
+  - {x: 8600, y: 0, z: 97000}
+  - {x: -8600, y: 0, z: 9700}
+  - {x: 8600, y: 0, z: -97000}
+  - {x: -8600, y: 0, z: -9700}
 --- !u!1 &1142393662
 GameObject:
   m_ObjectHideFlags: 0
@@ -8736,7 +8736,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1830057320}
   m_Layer: 0
-  m_Name: TerrainContainer
+  m_Name: Terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10351,14 +10351,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1991371576}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 200, y: 300, z: -800}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -3785, y: 236, z: -9864}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 358051249}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &2026527186
 GameObject:
   m_ObjectHideFlags: 0
@@ -11324,6 +11324,7 @@ SceneRoots:
   - {fileID: 1991371577}
   - {fileID: 170076735}
   - {fileID: 1517180312}
+  - {fileID: 1830057320}
   - {fileID: 1708907977}
   - {fileID: 382953080}
   - {fileID: 1142393663}
@@ -11331,4 +11332,3 @@ SceneRoots:
   - {fileID: 186007286}
   - {fileID: 636502328}
   - {fileID: 310865926}
-  - {fileID: 1830057320}

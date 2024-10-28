@@ -19,6 +19,8 @@ public class GameMgr : MonoBehaviour
     {
         if (SceneManager.GetActiveScene().name.Equals("FourCornersScene"))
             InitFourCorners();
+        if (SceneManager.GetActiveScene().name.Equals("FourBasesScene"))
+            InitFourCorners();
         else
             InitOpenOcean();
     }
