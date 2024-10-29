@@ -121,7 +121,7 @@ public class UIMgr : MonoBehaviour
         addCommand.Disable();
         changeSpeed.Disable();
         changeHeading.Disable();
-        create100.Disable();
+        // create100.Disable();
     }
 
     // Start is called before the first frame update
