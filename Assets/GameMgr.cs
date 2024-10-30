@@ -61,6 +61,7 @@ public class GameMgr : MonoBehaviour
     }
 
     public List<Vector3> OpenOceanMapSpawns;
+    public List<float> OpenOceanMapRotations;
     void InitOpenOceanMap()
     {
         float outerRadius = 500;
@@ -68,16 +69,17 @@ public class GameMgr : MonoBehaviour
         float innerRadius = 100;
         float rotation = 0;
 
-        foreach(Vector3 center in OpenOceanMapSpawns)
+        for (int i = 0; i < OpenOceanMapRotations.Count; i++)
         {
+            rotation = OpenOceanMapRotations[i];
             Vector3 eulers = new Vector3(0, rotation, 0);
-            Vector3 pos1 = CalculateVertex(center, outerRadius, 30 + vertPosAngle);
-            Vector3 pos2 = CalculateVertex(center, outerRadius, 150 + vertPosAngle);
-            Vector3 pos3 = CalculateVertex(center, outerRadius, 270 + vertPosAngle);
-            Vector3 pos4 = CalculateVertex(center, innerRadius, 0);
-            Vector3 pos5 = CalculateVertex(center, innerRadius, 90);
-            Vector3 pos6 = CalculateVertex(center, innerRadius, 180);
-            Vector3 pos7 = CalculateVertex(center, innerRadius, 270);
+            Vector3 pos1 = CalculateVertex(OpenOceanMapSpawns[i], outerRadius, 30 + vertPosAngle);
+            Vector3 pos2 = CalculateVertex(OpenOceanMapSpawns[i], outerRadius, 150 + vertPosAngle);
+            Vector3 pos3 = CalculateVertex(OpenOceanMapSpawns[i], outerRadius, 270 + vertPosAngle);
+            Vector3 pos4 = CalculateVertex(OpenOceanMapSpawns[i], innerRadius, 0);
+            Vector3 pos5 = CalculateVertex(OpenOceanMapSpawns[i], innerRadius, 90);
+            Vector3 pos6 = CalculateVertex(OpenOceanMapSpawns[i], innerRadius, 180);
+            Vector3 pos7 = CalculateVertex(OpenOceanMapSpawns[i], innerRadius, 270);
 
             List<Entity> newEnts = new List<Entity>();
             newEnts.Add(EntityMgr.inst.CreateEntity(EntityType.DDG51, pos1, eulers));
