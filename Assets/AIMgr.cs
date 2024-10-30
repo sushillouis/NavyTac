@@ -145,34 +145,23 @@ public class AIMgr : MonoBehaviour
 
     public void HandleFollow(List<Entity> entities, Entity target, bool add)
     {
-        if(entities.Count==0) {
-            return;
-        }
-
-        if(target.GetComponentInChildren<UnitAI>().group is null) {
-            foreach (Entity ent in entities) {
-                if(target == ent) 
-                    continue;
-                Follow f = new(ent, target, new Vector3(100, 0, 0));
-                UnitAI uai = ent.GetComponentInChildren<UnitAI>();
+        foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
+            if(target != entity) {
+                Follow f = new Follow(entity, target, new Vector3(100, 0, 0));
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
                 AddOrSet(f, uai, add);
             }
-            return;
         }
-        List<UnitAI> aIs = new();
-        foreach (Entity ent in entities) {
-            UnitAI uai = ent.GetComponentInChildren<UnitAI>();
-            aIs.Add(uai);
-        }
-        target.GetComponentInChildren<UnitAI>().group.AddMembers(aIs.ToArray());
     }
 
     void HandleIntercept(List<Entity> entities, Entity ent, bool add)
     {
         foreach (Entity entity in entities) {
-            Intercept intercept = new Intercept(entity, ent);
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-            AddOrSet(intercept, uai, add);
+            if(ent != entity) {
+                Intercept intercept = new Intercept(entity, ent);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(intercept, uai, add);
+            }
         }
     }
 
