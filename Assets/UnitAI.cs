@@ -6,7 +6,7 @@ public class UnitAI : MonoBehaviour
 {
     public Entity entity; //public only for ease of debugging
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         entity = GetComponentInParent<Entity>();
         commands = new List<Command>();

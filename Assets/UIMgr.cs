@@ -196,7 +196,8 @@ public class UIMgr : MonoBehaviour
 
     private void HandleCommand(InputAction.CallbackContext context)
     {
-        AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
+        // AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
+        WeaponAspect.inst.HandleFire_SmartSurfaceMissiles(selectionCursorPosition.ReadValue<Vector2>());
     }
 
     private void ChangeSpeed(InputAction.CallbackContext context) 

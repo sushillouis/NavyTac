@@ -22,8 +22,6 @@ public class AIMgr : MonoBehaviour
     public float attractiveExponent = -1;
     public float repulsiveCoefficient = 60000;
     public float repulsiveExponent = -2.0f;
-
-
     public RaycastHit hit;
     public int layerMask;
 
