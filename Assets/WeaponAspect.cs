@@ -27,7 +27,7 @@ public class Weapon
 public class WeaponAspect : MonoBehaviour
 {
     // Start is called before the first frame update
-    public float rClickRadiusSq = 10000;
+    public float rClickRadiusSq = 5000;
     public int layerMask;
     public RaycastHit hit;
     public List<Weapon> allWeapons;
@@ -66,14 +66,15 @@ public class WeaponAspect : MonoBehaviour
             Entity ent = AIMgr.inst.FindClosestEntInRadius(pos, rClickRadiusSq);
             Weapon selectedWeapon =   allWeapons[weaponIndex];
             
-            if(SelectionMgr.inst.selectedEntity == this.GetComponentInParent<Entity>())
+            if(SelectionMgr.inst.selectedEntity == this.GetComponentInParent<Entity>() && WeaponMgr.inst != null)
             {
                 if(selectedWeapon.ammoCount > 0)
                 {
-                    Entity newMissile = WeaponMgr.inst.CreateWeapon(selectedWeapon.entityType,  selectedWeapon.source.position,selectedWeapon.source.rotation.eulerAngles);
-                    UnitAI missileAI = newMissile.GetComponentInChildren<UnitAI>();
+                    
                     if (ent != null)
-                    {
+                    {   
+                        Entity newMissile = WeaponMgr.inst.CreateWeapon(selectedWeapon.entityType,  selectedWeapon.source.position,selectedWeapon.source.rotation.eulerAngles ,this.gameObject);
+                        UnitAI missileAI = newMissile.GetComponentInChildren<UnitAI>();
                         Intercept intercept = new Intercept(newMissile, ent);
                         missileAI.AddCommand(intercept);
                     }
@@ -81,5 +82,11 @@ public class WeaponAspect : MonoBehaviour
                 }
             }
         }
-    }   
+    }
+
+    public   void HandleFire_Gun(Vector2 mousePos)
+    {
+        weaponIndex = 3;
+        Debug.Log("Fire LA Guided Missiles");
+    }
 }

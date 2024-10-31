@@ -71,4 +71,12 @@ public class Entity : MonoBehaviour
     void Update()
     {
     }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other!= this.GetComponentInParent<Collider>()){
+            Debug.Log("Entity Trigger Entered: " + other.name);
+        }
+        
+    }
 }

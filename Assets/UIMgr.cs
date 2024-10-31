@@ -251,21 +251,24 @@ public class UIMgr : MonoBehaviour
 
     private void Attack1(InputAction.CallbackContext context)
     {
-        Debug.Log("attack 1");
+        //  Debug.Log(selectionCursorPosition.ReadValue<Vector3>());
+        WeaponAspect.inst.HandleFire_AA_Guided(selectionCursorPosition.ReadValue<Vector2>());
     }
 
     private void Attack2(InputAction.CallbackContext context)
     {
         Debug.Log("attack 2");
+        WeaponAspect.inst.HandleFire_LA_GuidedMissiles(selectionCursorPosition.ReadValue<Vector2>());
     }
 
     private void Attack3(InputAction.CallbackContext context)
     {
-        Debug.Log("attack 3");
+        WeaponAspect.inst.HandleFire_SmartSurfaceMissiles(selectionCursorPosition.ReadValue<Vector2>());
     }
 
     private void Attack4(InputAction.CallbackContext context)
     {
         Debug.Log("attack 4");
+
     }
 }
