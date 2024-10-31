@@ -37,6 +37,12 @@ public class UIMgr : MonoBehaviour
 
     private InputAction create100;
 
+    private InputAction attack1;
+    private InputAction attack2;
+    private InputAction attack3;
+    private InputAction attack4;
+    private InputAction modifiers;
+
     private void Awake()
     {
         inst = this;
@@ -101,6 +107,25 @@ public class UIMgr : MonoBehaviour
         create100 = inputs.Entities.Create100;
         create100.Enable();
         create100.performed += Create100;
+
+        attack1 = inputs.Attacks.Attack1;
+        attack1.Enable();
+        attack1.performed += Attack1;
+
+        attack2 = inputs.Attacks.Attack2;
+        attack2.Enable();
+        attack2.performed += Attack2;
+
+        attack3 = inputs.Attacks.Attack3;
+        attack3.Enable();
+        attack3.performed += Attack3;
+
+        attack4 = inputs.Attacks.Attack4;
+        attack4.Enable();
+        attack4.performed += Attack4;
+
+        modifiers = inputs.Attacks.Modifers;
+        modifiers.Enable();
     }
 
     private void OnDisable()
@@ -121,18 +146,23 @@ public class UIMgr : MonoBehaviour
         changeSpeed.Disable();
         changeHeading.Disable();
         create100.Disable();
+        attack1.Disable();
+        attack2.Disable();
+        attack3.Disable();
+        attack4.Disable();
+        modifiers.Disable();
     }
 
     // Start is called before the first frame update
     void Start()
     {
         ToggleMultiSelect.SetActive(false);
-        #if UNITY_ANDROID
+#if UNITY_ANDROID
             ToggleMultiSelect.SetActive(true);
-        #endif
-        #if UNITY_ANDROID
+#endif
+#if UNITY_ANDROID
             ToggleMultiSelect.SetActive(true);
-        #endif
+#endif
     }
     public Text entityName;
     public Text speed;
@@ -143,7 +173,8 @@ public class UIMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(SelectionMgr.inst.selectedEntity != null) {
+        if (SelectionMgr.inst.selectedEntity != null)
+        {
             Entity ent = SelectionMgr.inst.selectedEntity;
             entityName.text = ent.gameObject.name;
             speed.text = ent.speed.ToString("F2") + " m/s";
@@ -162,7 +193,7 @@ public class UIMgr : MonoBehaviour
         CameraMgr.inst.MoveCameraY(cameraYMove.ReadValue<Vector2>().y);
         CameraMgr.inst.MoveCameraXZ(cameraXZMove.ReadValue<Vector2>());
 
-        if(boxSelecting)
+        if (boxSelecting)
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
     }
 
@@ -196,11 +227,14 @@ public class UIMgr : MonoBehaviour
 
     private void HandleCommand(InputAction.CallbackContext context)
     {
-        // AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
-        WeaponAspect.inst.HandleFire_SmartSurfaceMissiles(selectionCursorPosition.ReadValue<Vector2>());
+        if(!modifiers.IsPressed())
+        {
+            AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
+        }
+        //WeaponAspect.inst.HandleFire_SmartSurfaceMissiles(selectionCursorPosition.ReadValue<Vector2>());
     }
 
-    private void ChangeSpeed(InputAction.CallbackContext context) 
+    private void ChangeSpeed(InputAction.CallbackContext context)
     {
         ControlMgr.inst.ChangeSpeed(changeSpeed.ReadValue<float>());
     }
@@ -213,5 +247,25 @@ public class UIMgr : MonoBehaviour
     private void Create100(InputAction.CallbackContext context)
     {
         GameMgr.inst.Create100();
+    }
+
+    private void Attack1(InputAction.CallbackContext context)
+    {
+        Debug.Log("attack 1");
+    }
+
+    private void Attack2(InputAction.CallbackContext context)
+    {
+        Debug.Log("attack 2");
+    }
+
+    private void Attack3(InputAction.CallbackContext context)
+    {
+        Debug.Log("attack 3");
+    }
+
+    private void Attack4(InputAction.CallbackContext context)
+    {
+        Debug.Log("attack 4");
     }
 }
