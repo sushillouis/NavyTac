@@ -74,9 +74,33 @@ public class Entity : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other!= this.GetComponentInParent<Collider>()){
-            Debug.Log("Entity Trigger Entered: " + other.name);
+        if (other != this.GetComponentInParent<Collider>())
+        {
+            // Check if the collider belongs to a weapon
+            Entity weaponEntity = other.GetComponent<Entity>();
+            if (weaponEntity != null && WeaponMgr.inst.weapons.Contains(weaponEntity))
+            {
+                WeaponAspect weaponAspect = other.GetComponent<WeaponAspect>();
+                if (weaponAspect != null)
+                {
+                    // Retrieve the weapon's damage value
+                    Weapon weaponData = weaponAspect.allWeapons.Find(w => w.entityType == weaponEntity.entityType);
+                    if (weaponData != null)
+                    {
+                        // Apply damage to this entity
+                        health -= weaponData.damage;
+
+                        // Log the damage application
+                        Debug.Log($"{gameObject.name} took {weaponData.damage} damage from {weaponEntity.name}");
+
+                        // Check if the entity is destroyed
+                        if (health <= 0)
+                        {
+                            Debug.Log("DEAD");
+                        }
+                    }
+                }
+            }
         }
-        
     }
 }
