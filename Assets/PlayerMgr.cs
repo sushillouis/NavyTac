@@ -30,6 +30,24 @@ public class PlayerMgr : MonoBehaviour
     void Start()
     {
         Debug.Log("Starting player mgr");
+        ReadyPlayerAdmin();
+        ReadyPlayer1();
+        ReadyPlayer2();
+        observer = CreateObserver();
+    }
+
+    public Player adminPlayer;
+    void ReadyPlayerAdmin() {
+        adminPlayer = CreatePlayer("Administrator", PlayerID.Admin, PlayerSide.Admin, Color.black);
+    }
+    public Player player1;
+    public Player player2;
+    void ReadyPlayer1() {
+        player1 = CreatePlayer("One", PlayerID.PlayerOne, PlayerSide.SideOne, Color.blue);
+    }
+
+    void ReadyPlayer2() {
+        player2 = CreatePlayer("Two", PlayerID.PlayerTwo, PlayerSide.SideTwo, Color.red);
     }
 
     // Update is called once per frame
@@ -46,6 +64,7 @@ public class PlayerMgr : MonoBehaviour
         return player;
     }
 
+    public Player observer;
     public Player CreateObserver() {
         Player player = new Player("Observer", PlayerID.Observer, PlayerSide.Observer, Color.grey);
         players.Add(player);
