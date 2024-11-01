@@ -73,14 +73,17 @@ public class WeaponAspect : MonoBehaviour
     
    public void HandleFire_SmartSurfaceMissiles(Vector2 mousePos)
     {
+        Debug.Log("Fire Smart Surface Missiles 1");
         Weapon selectedWeapon = GetWeaponByType(WeaponType.Smart_surface_missiles_USV);
         if (!CanFireWeapon(selectedWeapon)) return;
-
+        Debug.Log("Fire Smart Surface Missiles");
         if (IsHitWithinLayerMask(mousePos, out Vector3 targetPosition))
         {
+            Debug.Log("Hit Target");
             Entity targetEntity = GetTargetEntity(targetPosition);
             if (targetEntity != null && selectedWeapon.ammoCount > 0)
             {
+                Debug.Log("Target Entity Found");
                 CreateAndLaunchMissile(selectedWeapon, targetEntity, targetPosition);
                 selectedWeapon.ammoCount--;
                 selectedWeapon.lastFireTime = Time.time;
@@ -102,7 +105,8 @@ public class WeaponAspect : MonoBehaviour
     }
     private bool IsWeaponSelected()
     {
-        return SelectionMgr.inst.selectedEntity == this.GetComponentInParent<Entity>();
+        Debug.Log(this.GetComponentInParent<Entity>().name);
+        return this.GetComponentInParent<Entity>().isSelected;
     }
 
     private bool IsHitWithinLayerMask(Vector2 mousePos, out Vector3 targetPosition)

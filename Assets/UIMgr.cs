@@ -263,7 +263,10 @@ public class UIMgr : MonoBehaviour
 
     private void Attack3(InputAction.CallbackContext context)
     {
-        WeaponAspect.inst.HandleFire_SmartSurfaceMissiles(selectionCursorPosition.ReadValue<Vector2>());
+    WeaponAspect weaponAspect = SelectionMgr.inst.selectedEntity.GetComponentInChildren<WeaponAspect>();
+    if (weaponAspect == null)
+        return;
+    weaponAspect.HandleFire_SmartSurfaceMissiles(selectionCursorPosition.ReadValue<Vector2>());
     }
 
     private void Attack4(InputAction.CallbackContext context)
