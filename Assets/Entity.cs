@@ -51,12 +51,9 @@ public class Entity : MonoBehaviour
     public float length;
     public float width;
     public float height;
-
     public EntityType entityType;
-
     public GameObject cameraRig;
     public GameObject selectionCircle;
-
     public Player owner;
     public Entity creatorsEntity;
 
@@ -70,33 +67,32 @@ public class Entity : MonoBehaviour
     {
     }
 
-    void OnTriggerEnter(Collider other)
-    {
-        Entity otherEntity = other.GetComponent<Entity>();
-            if (otherEntity != null && !WeaponMgr.inst.weapons.Contains(otherEntity))
-            {
-                if (otherEntity != this.creatorsEntity)
-                {
-            // Check if the collider belongs to a weapon
-            
+   void OnTriggerEnter(Collider other)
+{
+    Entity otherEntity = other.GetComponent<Entity>();
+    if (otherEntity == null || WeaponMgr.inst.weapons.Contains(otherEntity) || otherEntity == this.creatorsEntity)
+        return; 
 
-                Debug.Log("Entity " + gameObject.name + " gave damage to " + otherEntity.name);
-                // WeaponAspect weaponAspect = other.GetComponent<WeaponAspect>();
-                // if (weaponAspect != null)
-                // {
-                //     // Retrieve the weapon's damage value
-                //     Weapon weaponData = weaponAspect.allWeapons.Find(w => w.entityType == weaponEntity.entityType);
-                //     if (weaponData != null)
-                //     {
-                //         health -= weaponData.damage;
-                //         Debug.Log($"{gameObject.name} took {weaponData.damage} damage from {weaponEntity.name}");
-                //         if (health <= 0)
-                //         {
-                //             Debug.Log("DEAD");
-                //         }
-                //     }
-                // }
-            }
-        }
+    WeaponAspect weaponAspect = creatorsEntity.GetComponentInChildren<WeaponAspect>();
+    if (weaponAspect == null || weaponAspect.allWeapons.Count == 0)
+        return;
+
+    Weapon weaponData = weaponAspect.allWeapons.Find(w => w.entityType == this.entityType);
+    if (weaponData == null)
+        return;
+
+    float damage = WeaponMgr.inst.GetDamageForTarget(weaponData.weaponType, otherEntity.entityType);
+    if (damage <= 0)
+        return; 
+
+    otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
+    Debug.Log($"{otherEntity.name} took {damage} damage from {this.name}");
+
+    if (otherEntity.health == 0)
+    {
+        Debug.Log($"{otherEntity.name} is destroyed.");
     }
+}
+
+
 }

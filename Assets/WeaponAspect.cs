@@ -71,48 +71,79 @@ public class WeaponAspect : MonoBehaviour
         Debug.Log("Fire LA Guided Missiles");
     }
     
-    public void HandleFire_SmartSurfaceMissiles(Vector2 mousePos)
+   public void HandleFire_SmartSurfaceMissiles(Vector2 mousePos)
     {
         Weapon selectedWeapon = GetWeaponByType(WeaponType.Smart_surface_missiles_USV);
-        if (selectedWeapon == null || IsWeaponOnCooldown(selectedWeapon)) return;
-               
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
+        if (!CanFireWeapon(selectedWeapon)) return;
+
+        if (IsHitWithinLayerMask(mousePos, out Vector3 targetPosition))
         {
-            Vector3 targetPosition = hit.point;
-            targetPosition.y = 0;
-            if (IsTargetInRange(selectedWeapon,targetPosition)) return;
-            Entity targetEntity = AIMgr.inst.FindClosestEntInRadius(targetPosition, rClickRadiusSq);
-            if (SelectionMgr.inst.selectedEntity == this.GetComponentInParent<Entity>() &&
-                WeaponMgr.inst != null && selectedWeapon.ammoCount > 0 && targetEntity != null)
+            Entity targetEntity = GetTargetEntity(targetPosition);
+            if (targetEntity != null && selectedWeapon.ammoCount > 0)
             {
-                Entity newMissile = WeaponMgr.inst.CreateWeapon(
-                    selectedWeapon.entityType,
-                    selectedWeapon.source.position,
-                    selectedWeapon.source.rotation.eulerAngles,
-                    this.gameObject.transform.parent.parent.gameObject
-                );
-                UnitAI missileAI = newMissile.GetComponentInChildren<UnitAI>();
-                Intercept intercept = new Intercept(newMissile, targetEntity);
-                missileAI.AddCommand(intercept);
+                CreateAndLaunchMissile(selectedWeapon, targetEntity, targetPosition);
                 selectedWeapon.ammoCount--;
                 selectedWeapon.lastFireTime = Time.time;
             }
         }
     }
     public void HandleFire_Gun(Vector2 mousePos)
+        {
+            Weapon SelectedWeapon = GetWeaponByType(WeaponType.Gun);
+            Debug.Log("Fire LA Guided Missiles");
+        }
+    private bool CanFireWeapon(Weapon weapon)
     {
-        Weapon SelectedWeapon = GetWeaponByType(WeaponType.Gun);
-        Debug.Log("Fire LA Guided Missiles");
+        return weapon != null && !IsWeaponOnCooldown(weapon) && IsWeaponSelected();
     }
 
-    private bool IsWeaponOnCooldown(Weapon weapon)
-    {
+    private bool IsWeaponOnCooldown(Weapon weapon){
         return Time.time - weapon.lastFireTime < weapon.cooldown;
     }
-    public bool isSelected(WeaponAspect selected){
-        return SelectionMgr.inst.selectedEntity == selected.GetComponent<Entity>();
+    private bool IsWeaponSelected()
+    {
+        return SelectionMgr.inst.selectedEntity == this.GetComponentInParent<Entity>();
     }
-    public bool IsTargetInRange(Weapon weapon, Vector3 targetPosition){
-        return Vector3.Distance(weapon.source.position, targetPosition) > weapon.range;
+
+    private bool IsHitWithinLayerMask(Vector2 mousePos, out Vector3 targetPosition)
+    {
+        targetPosition = Vector3.zero;
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
+        {
+            targetPosition = hit.point;
+            targetPosition.y = 0;
+            return true;
+        }
+        return false;
     }
+
+    private Entity GetTargetEntity(Vector3 targetPosition)
+    {
+        if (!IsTargetInRange(targetPosition)) return null;
+        return AIMgr.inst.FindClosestEntInRadius(targetPosition, rClickRadiusSq);
+    }
+
+    private bool IsTargetInRange(Vector3 targetPosition)
+    {
+        Weapon selectedWeapon = GetWeaponByType(WeaponType.Smart_surface_missiles_USV);
+        return Vector3.Distance(selectedWeapon.source.position, targetPosition) <= selectedWeapon.range;
+    }
+
+    private void CreateAndLaunchMissile(Weapon weapon, Entity targetEntity, Vector3 targetPosition)
+    {
+        Entity newMissile = WeaponMgr.inst.CreateWeapon(
+            weapon.entityType,
+            weapon.source.position,
+            weapon.source.rotation.eulerAngles,
+            this.gameObject.transform.parent.parent.gameObject
+        );
+
+        if (newMissile != null)
+        {
+            UnitAI missileAI = newMissile.GetComponentInChildren<UnitAI>();
+            Intercept intercept = new Intercept(newMissile, targetEntity);
+            missileAI.AddCommand(intercept);
+        }
+    }
+    
 }

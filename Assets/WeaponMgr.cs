@@ -90,6 +90,16 @@ public class WeaponMgr : MonoBehaviour
 
     }
 
+    public float GetDamageForTarget(WeaponType weaponType, EntityType targetType)
+    {
+        if (damageMatrix.ContainsKey(weaponType) && damageMatrix[weaponType].ContainsKey(targetType))
+        {
+            return damageMatrix[weaponType][targetType];
+        }
+        return 0f;
+    }
+
+
     private void Awake()
     {
         inst = this;
@@ -118,6 +128,7 @@ public class WeaponMgr : MonoBehaviour
                 EntityMgr.inst.entities.Add(weapon);
                 weapons.Add(weapon);
                 DistanceMgr.inst.Initialize();
+                InitializeDamageMatrix();
                 weaponGo.GetComponent<Entity>().heading = eulerAngles.y;
                 weaponGo.GetComponent<Entity>().desiredHeading = eulerAngles.y;
             }
