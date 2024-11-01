@@ -21,15 +21,19 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
     public List<Intercept> intercepts;
     [SerializeField] Group _group;
     public Group group {
-        get {return _group;} 
-        set {
-                Group temp = _group;
-                _group = value;
-                if(temp is not null && temp != value) {
-                    temp.RemoveMember(this);
-                }
-            } 
-        }
+    get {return _group;} 
+    set {
+            Group temp = _group;
+            _group = value;
+            if(temp is not null && temp != value) {
+                temp.RemoveMember(this);
+            }
+        } 
+    }
+
+    public void HardSetGroup(Group n_Group) {
+        _group = n_Group;
+    }
 
     // Update is called once per frame
     void FixedUpdate()
@@ -48,10 +52,15 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
     void StopAndRemoveCommand(int index)
     {
         Command cmd = commands[index];
-        if (cmd is EscortFormate fmove)
+        if (cmd is GroupEscort fmove)
         {
             fmove.Stop();
             moves.Remove(fmove);
+        }
+
+        if (cmd is GroupTargetMove gmove) {
+            gmove.Stop();
+            moves.Remove(gmove);
         }
 
         if (cmd is Move) {
@@ -145,15 +154,26 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
 
         //potential fields lines
         if(!(current is Follow) && !(current is Intercept) && !(current is Pincer) && AIMgr.inst.isPotentialFieldsMovement){ 
-            Move m = current as Move;
-            m.potentialLine.SetPosition(0, entity.position);
-            Vector3 newpos = Vector3.zero;
-            newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
-            newpos.z = Mathf.Cos(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
-            newpos *= 20;
-            newpos.y = 1;
-            m.potentialLine.SetPosition(1, entity.position + newpos);
-            m.potentialLine.gameObject.SetActive(entity.isSelected);
+            if(current is GroupTargetMove gMove) {
+                gMove.potentialLine.SetPosition(0, entity.position);
+                Vector3 newpos = Vector3.zero;
+                newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
+                newpos.z = Mathf.Cos(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
+                newpos *= 20;
+                newpos.y = 1;
+                gMove.potentialLine.SetPosition(1, entity.position + newpos);
+                gMove.potentialLine.gameObject.SetActive(entity.isSelected);
+            } else {
+                Move m = current as Move;
+                m.potentialLine.SetPosition(0, entity.position);
+                Vector3 newpos = Vector3.zero;
+                newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
+                newpos.z = Mathf.Cos(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
+                newpos *= 20;
+                newpos.y = 1;
+                m.potentialLine.SetPosition(1, entity.position + newpos);
+                m.potentialLine.gameObject.SetActive(entity.isSelected);
+            }
         }
 
 

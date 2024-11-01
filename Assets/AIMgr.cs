@@ -47,6 +47,10 @@ public class AIMgr : MonoBehaviour
             Entity ent = FindClosestEntInRadius(pos, rClickRadiusSq);
             // pincerCenterTarget = ent;
             if(!isgroup) {
+                foreach (Entity shipInstance in SelectionMgr.inst.selectedEntities)
+                {
+                    shipInstance.GetComponentInChildren<UnitAI>().group=null;
+                }
                 if (ent == null)
                 {
                     HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
@@ -61,12 +65,11 @@ public class AIMgr : MonoBehaviour
                         HandleFollow(SelectionMgr.inst.selectedEntities, ent, add);
                 }
             } else {
-                print("LMAO");
                 Group group = TacticalAIMgr.inst.AssembleGroup(SelectionMgr.inst.selectedEntities);
                 if (ent == null && group != null) {
-                    HandleEscortFormate(group, pos, add);
+                    HandleGroupEscort(group, pos, add);
                 } else {
-                        
+                    
                 }
             }
         }
@@ -110,18 +113,12 @@ public class AIMgr : MonoBehaviour
     //     pincerApproaches.Clear();
     // }
 
-    public void HandleEscortFormate(Group group, Vector3 point, bool add) {
-        foreach (UnitAI aI in group.members) {
-            if (aI.GetComponentInParent<Entity>() == group.target) {
-                Move m = new Move(group.target, point);
-                AddOrSet(m, aI, add);
-            } else {
-                EscortFormate escort = new EscortFormate(aI.GetComponentInParent<Entity>(), group.target, Vector3.zero);
-                AddOrSet(escort, aI, add);
-            }
+    public void HandleGroupEscort(Group group, Vector3 point, bool add) {
+        if(add) {
+            group.AddTactic(new EscortTactic(ref group, point));
+        } else {
+            group.SetTactic(new EscortTactic(ref group, point));
         }
-        group.groupStrategy = new CircleEscortMove();
-        group.RebuildGroup();
     }
 
     public void HandleMove(List<Entity> entities, Vector3 point, bool add)

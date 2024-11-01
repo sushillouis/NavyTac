@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameMgr : MonoBehaviour
 {
     public static GameMgr inst;
+    public bool deployUnits = true;
 
     private void Awake()
     {
@@ -15,10 +16,12 @@ public class GameMgr : MonoBehaviour
     void Start()
     {
         Vector3 position = Vector3.zero;
-        foreach(GameObject go in EntityMgr.inst.entityPrefabs) {
-            Entity ent = EntityMgr.inst.CreateEntity(go.GetComponent<Entity>().entityType, position, Vector3.zero);
-            ent.isSelected = false;
-            position.x += 200;
+        if(deployUnits) {
+            foreach(GameObject go in EntityMgr.inst.entityPrefabs) {
+                Entity ent = EntityMgr.inst.CreateEntity(go.GetComponent<Entity>().entityType, position, Vector3.zero);
+                ent.isSelected = false;
+                position.x += 200;
+            }
         }
     }
 

@@ -13,13 +13,16 @@ public class TacticalAIMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        foreach (Group group in groups)
+        {
+            group.Tick();
+        }
     }
 
     public void RemoveGroup(Group group) {

@@ -2,16 +2,15 @@
 
 
 [System.Serializable]
-public class EscortFormate : Follow
+public class GroupEscort : Follow
 {
-    // Group myGroup;
-    public EscortFormate(Entity ent, Entity target, Vector3 newOffset): base(ent, target, Vector3.left)
+    public GroupEscort(Entity ent, Entity target, Vector3 newOffset): base(ent, target, Vector3.left)
     {
         targetEntity = target;
         relativeOffset = newOffset;
     }
 
-    public void UpdateGroup(Vector3 newOffset) {
+    public void Update(Vector3 newOffset) {
         relativeOffset = newOffset;
     }
 

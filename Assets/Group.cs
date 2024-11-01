@@ -10,20 +10,77 @@ public class Group {
     public Entity target = null;
     public List<UnitAI> members;
     [SerializeField] float groupMinSpeed;
-    [SerializeField] Tactic _groupStrategy;
-    public Tactic groupStrategy{
-        get { return _groupStrategy; }
-        set {
-             _groupStrategy = value; 
-             RebuildGroup();
+    // [SerializeField] Tactic _groupStrategy;
+    private Queue<Tactic> tactics = new();
+    public bool isActive = true;
+    // public Tactic groupStrategy{
+    //     get { return _groupStrategy; }
+    //     set {
+    //          _groupStrategy = value; 
+    //          RebuildGroup();
+    //     }
+    // }
+    public void Tick() {
+        if(!isActive) {
+            return;
+        }
+        if(tactics.Count == 0) {
+            AddTactic(new GroupHold(this));
+            RebuildGroup();
+        }
+        if(tactics.Peek().needsRebuild) {
+            RebuildGroup();
+        }
+        if (tactics.Peek().isComplete) {
+            NextTactic();
         }
     }
-    
-    
-    public Group(Entity n_target) {
-        target = n_target;
-        members = new();
-        _groupStrategy = new GroupHold();
+
+    public void AddTactic(Tactic n_Tactic) {
+        if(tactics.Count > 0 && tactics.Peek().type == TacticsType.None) {
+            tactics.Peek().Stop();
+            tactics.Dequeue();
+        }
+        tactics.Enqueue(n_Tactic);
+        if(tactics.Count == 1) {
+            tactics.Peek().Init();
+            RebuildGroup();
+        }
+    }
+
+    public void SetTactic(Tactic n_Tactic) {
+        tactics.Clear();
+
+        tactics.Enqueue(n_Tactic);
+        tactics.Peek().Init();
+
+        RebuildGroup();
+    }
+
+    public void NextTactic() {
+        if(tactics.Count>1) {
+            tactics.Peek().Stop();
+            tactics.Dequeue();
+            tactics.Peek().Init();
+        } else if(tactics.Count==1) {
+            tactics.Peek().Stop();
+            tactics.Dequeue();
+            tactics.Enqueue(new GroupHold(this));
+            tactics.Peek().Init();
+            RebuildGroup();
+        } else {
+            tactics.Enqueue(new GroupHold(this));
+            tactics.Peek().Init();
+        }
+    }
+
+    public Group(List<UnitAI> n_members, Tactic n_Tactic) {
+        members = n_members;
+        foreach (UnitAI ai in members) {
+            ai.group=this;
+        }
+        target = FindTarget();
+        AddTactic(n_Tactic);
     }
 
     public Group(List<UnitAI> n_members) {
@@ -32,7 +89,7 @@ public class Group {
             ai.group=this;
         }
         target = FindTarget();
-        _groupStrategy = new GroupHold();  
+        AddTactic(new GroupHold(this));
     }
 
     public Entity FindTarget() {
@@ -40,20 +97,19 @@ public class Group {
         return members[0].GetComponentInParent<Entity>();
     }
     public void Disband() {
-        TacticalAIMgr.inst.RemoveGroup(this);
+        isActive = false;
         if(target.GetComponentInChildren<UnitAI>().group==this) {
-            target.GetComponentInChildren<UnitAI>().group=null;
+            target.GetComponentInChildren<UnitAI>().HardSetGroup(null);
         }
         foreach (UnitAI ai in members)
         {
-            if(ai.commands.Count>0) {
-                ai.commands[0].Stop();
-                if(ai.group==this) {
-                    ai.group=null;
-                }
+            if (tactics.Count > 0) {
+                tactics.Peek().Stop();
             }
         }
+        tactics.Clear();
         members.Clear();
+        TacticalAIMgr.inst.RemoveGroup(this);
     }
 
     public void AddMembers(UnitAI[] unitAIs) {
@@ -67,12 +123,15 @@ public class Group {
     }
 
     public void RemoveMembers(UnitAI[] unitAIs, bool rebuild = true) {
+        if(!isActive) {
+            return;
+        }
         foreach (UnitAI ai in unitAIs.Where((x) => members.Contains(x))) {
             if(ai.group==this) {
-                ai.group=null;
+                ai.HardSetGroup(null);
             }
             if(target.GetComponentInChildren<UnitAI>()==ai) {
-                Disband();
+                // Disband();
                 return;
             }
             members.Remove(ai);
@@ -87,12 +146,15 @@ public class Group {
     }
 
     public void RemoveMember(UnitAI unitAI, bool rebuild = true) {
-
+        if(!isActive) {
+            return;
+        }
         if(members.Contains(unitAI)) {
             if(unitAI.group==this) {
-                unitAI.group=null;
+                unitAI.HardSetGroup(null);
             }
-            if(target.GetComponentInChildren<UnitAI>()==unitAI) {
+            UnitAI targetAI = target.GetComponentInChildren<UnitAI>();
+            if(targetAI==unitAI) {
                 Disband();
                 return;
             }
@@ -109,12 +171,14 @@ public class Group {
     }
 
     public void RebuildGroup() {
+        if(!isActive) {
+            return;
+        }
         if(members.Count==0) {
             Disband();
             return;
         }
-
-        groupStrategy.UpdateGroup(ref members,this);
+        tactics.Peek().Tick();
     }
 }
 
