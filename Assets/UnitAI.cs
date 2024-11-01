@@ -15,10 +15,12 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
         moves = new List<Move>();
         _group = null;
     }
+    public ShipRoles shipRole;
 
     public List<Move> moves;
     public List<Command> commands;
     public List<Intercept> intercepts;
+    public int preOrderOffset = 0;
     [SerializeField] Group _group;
     public Group group {
     get {return _group;} 
@@ -187,7 +189,7 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
             return 1;
 
         if(entity.mass == compare.entity.mass)
-            return 1;
+            return this.preOrderOffset < compare.preOrderOffset ? -1 : 1;
 
         else
             return entity.mass>compare.entity.mass ? -1 : 1;

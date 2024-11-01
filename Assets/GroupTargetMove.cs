@@ -29,7 +29,7 @@ public class GroupTargetMove : Move
 
         entity.desiredHeading = dhds.dh;
         entity.desiredSpeed = dhds.ds;
-        Debug.Log(entity.name);
+
         if(line)
             line.SetPosition(1, movePosition);
     }
@@ -74,6 +74,15 @@ public class GroupTargetMove : Move
         ds = entity.maxSpeed * cosValue;
 
         return new DHDS(dh, ds);
+    }
+
+    public override bool IsDone()
+    {
+        return false;
+    }
+
+    public bool IsDoneGroup() {
+        return (entity.position - movePosition).sqrMagnitude < doneDistanceSq;
     }
 
     public override void Stop()

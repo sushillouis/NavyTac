@@ -31,7 +31,7 @@ public class Group {
         if(tactics.Peek().needsRebuild) {
             RebuildGroup();
         }
-        if (tactics.Peek().isComplete) {
+        if (tactics.Peek().IsDone()) {
             NextTactic();
         }
     }
@@ -94,15 +94,13 @@ public class Group {
 
     public Entity FindTarget() {
         members.Sort();
-        return members[0].GetComponentInParent<Entity>();
+        return members[0].entity;
     }
     public void Disband() {
         isActive = false;
-        if(target.GetComponentInChildren<UnitAI>().group==this) {
-            target.GetComponentInChildren<UnitAI>().HardSetGroup(null);
-        }
         foreach (UnitAI ai in members)
         {
+            ai.HardSetGroup(null);
             if (tactics.Count > 0) {
                 tactics.Peek().Stop();
             }
@@ -119,6 +117,10 @@ public class Group {
                 members.Add(ai);
             }
         }
+        members.Sort();
+        Entity ent = members[0].entity;
+        target =  ent;
+        members[0].preOrderOffset=-1;
         RebuildGroup();
     }
 

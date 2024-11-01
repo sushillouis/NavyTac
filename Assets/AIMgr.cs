@@ -24,7 +24,6 @@ public class AIMgr : MonoBehaviour
     public float repulsiveCoefficient = 60000;
     public float repulsiveExponent = -2.0f;
 
-
     public RaycastHit hit;
     public int layerMask;
     // List<Approach> pincerApproaches = new();
@@ -65,8 +64,8 @@ public class AIMgr : MonoBehaviour
                         HandleFollow(SelectionMgr.inst.selectedEntities, ent, add);
                 }
             } else {
-                Group group = TacticalAIMgr.inst.AssembleGroup(SelectionMgr.inst.selectedEntities);
-                if (ent == null && group != null) {
+                if (ent == null) {
+                    Group group = TacticalAIMgr.inst.AssembleGroup(SelectionMgr.inst.selectedEntities);
                     HandleGroupEscort(group, pos, add);
                 } else {
                     
@@ -114,6 +113,9 @@ public class AIMgr : MonoBehaviour
     // }
 
     public void HandleGroupEscort(Group group, Vector3 point, bool add) {
+        if(group == null) {
+            return;
+        }
         if(add) {
             group.AddTactic(new EscortTactic(ref group, point));
         } else {

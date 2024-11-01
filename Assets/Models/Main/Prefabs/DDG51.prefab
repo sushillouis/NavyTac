@@ -136,6 +136,8 @@ MonoBehaviour:
   desiredSpeed: 0
   heading: 0
   desiredHeading: 0
+  health: 100
+  fuel: 100
   acceleration: 5
   turnRate: 7
   maxSpeed: 30
@@ -144,11 +146,15 @@ MonoBehaviour:
   length: 155
   width: 20
   height: 50
-  health: 100
-  fuel: 100
   entityType: 0
+  shipClass: 3
   cameraRig: {fileID: 2020023502900363850}
   selectionCircle: {fileID: 7167764133957489543}
+  owner:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!65 &2020023502598012840
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -249,6 +255,11 @@ MonoBehaviour:
   moves: []
   commands: []
   intercepts: []
+  _group:
+    target: {fileID: 0}
+    members: []
+    groupMinSpeed: 0
+    isActive: 0
 --- !u!1 &5044917885655642635
 GameObject:
   m_ObjectHideFlags: 0

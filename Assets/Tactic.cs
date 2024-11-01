@@ -8,14 +8,13 @@ using UnityEngine.InputSystem.Controls;
 public abstract class Tactic{
     public TacticsType type;
     public Group group;
-    // If Group Action is Done
-    public bool isComplete = false;
     public bool needsRebuild = false;
     
     public abstract void Init();
     //Need to set isComplete Here!
     public abstract void Tick();
     public abstract void Stop();
+    public abstract bool IsDone();
 }
 
 class GroupHold : Tactic {
@@ -32,6 +31,11 @@ class GroupHold : Tactic {
                 aI.SetCommand(escort);
             }
         }
+    }
+
+    public override bool IsDone()
+    {
+        return false;
     }
 
     public override void Stop()
@@ -54,11 +58,12 @@ class GroupHold : Tactic {
 
 
         for (int i = 0; i<group.members.Count;i++) {
+            group.members[i].preOrderOffset=i;
             if((i-1)-filledRingMembers>=ring*4) {
                 filledRingMembers+=ring*4;
                 ring++;
             }
-            float baseDist = group.target.length+group.members[i].GetComponentInParent<Entity>().length+100;
+            float baseDist = group.target.length+group.members[i].GetComponentInParent<Entity>().length;
 
             if(group.members[i].GetComponentInParent<Entity>() == group.target) {
                 continue;
@@ -104,6 +109,15 @@ class EscortTactic : Tactic
         }
     }
 
+    public override bool IsDone()
+    {
+        UnitAI targetAI = group.target.GetComponentInChildren<UnitAI>();
+        if(targetAI.commands.Count>0 && targetAI.commands[0] is GroupTargetMove gMove) {
+            return gMove.IsDoneGroup();
+        }
+        return true;
+    }
+
     public override void Stop()
     {
         foreach (UnitAI aI in group.members) {
@@ -115,9 +129,6 @@ class EscortTactic : Tactic
 
     public override void Tick()
     {
-        if(group.target.GetComponentInChildren<UnitAI>().commands[0].IsDone()) {
-            isComplete=true;
-        }
         group.members.Sort();
 
         int ring = 1;
@@ -126,25 +137,59 @@ class EscortTactic : Tactic
 
 
         for (int i = 0; i<group.members.Count;i++) {
-            if((i-1)-filledRingMembers>=ring*4) {
-                filledRingMembers+=ring*4;
+            group.members[i].preOrderOffset=i;
+            //This is big bad
+            Entity ent = group.members[i].GetComponentInParent<Entity>();
+            Vector2 degRange = new(0,360);
+            float distanceSclar = 1f;
+            int ringDensity = 4;
+            float angleOffset = 90;
+            switch (ent.shipClass) {
+                case ShipClasses.Carrier:
+                    ringDensity=1;
+                    break;
+                case ShipClasses.Destroyer:
+                    distanceSclar = 1.5f;
+                    angleOffset = 45f;
+                    break;
+                case ShipClasses.Cruiser:
+                    angleOffset = 45f;
+                    break;
+                case ShipClasses.USV:
+                    ringDensity=2;
+                    degRange = new(-80,80);
+                    distanceSclar = 5f;
+                    break;
+                case ShipClasses.Tug:
+                case ShipClasses.Merchant:
+                case ShipClasses.Supply:
+                    degRange = new(120,230);
+                    distanceSclar = 5f;
+                    break;
+                default:
+                    break;
+            }
+
+            if((i-1)-filledRingMembers>=ring*ringDensity) {
+                filledRingMembers+=ring*ringDensity;
                 ring++;
             }
-            float baseDist = group.target.length+group.members[i].GetComponentInParent<Entity>().length;
+            float baseDist = distanceSclar*group.target.length+group.members[i].entity.length+50;
 
-            if(group.members[i].GetComponentInParent<Entity>() == group.target) {
+            if(group.members[i].entity == group.target) {
                 continue;
             }
 
-            int remainingRingMembers = Mathf.Min(group.members.Count -1 - filledRingMembers, ring * 4);
+            int remainingRingMembers = Mathf.Min(group.members.Count -1 - filledRingMembers, ring * ringDensity);
+            float angle =  UnityEngine.Mathf.Lerp(degRange[0],degRange[1],(float)(i -1 - filledRingMembers) / remainingRingMembers)+angleOffset;
             Vector3 groupPos = new(0,0,0)
             {
-                x =  baseDist * ring * Mathf.Cos(Mathf.Deg2Rad * (i -1 - filledRingMembers)*(360f / remainingRingMembers)),
+                x =  baseDist * ring * Mathf.Cos(Mathf.Deg2Rad * angle),
                 y=0,
-                z = baseDist * ring * Mathf.Sin(Mathf.Deg2Rad * (i -1 - filledRingMembers)*(360f / remainingRingMembers)),
+                z = baseDist * ring * Mathf.Sin(Mathf.Deg2Rad * angle),
             };
             if (group.members[i].commands.Count == 0) {
-                group.members[i].AddCommand(new GroupEscort(group.members[i].GetComponentInParent<Entity>(),group.target,Vector3.zero));
+                group.members[i].AddCommand(new GroupEscort(ent,group.target,Vector3.zero));
             }
 
             if(group.members[i].commands[0] is GroupEscort escort) {

@@ -33,23 +33,21 @@ public class TacticalAIMgr : MonoBehaviour
 
     public Group AssembleGroup(List<Entity> entities) {
         Group targetGroup = null;
-        foreach (Entity ent in entities) {
-            foreach (Group group in groups) {
-                if (group.target == ent) {
-                    targetGroup = group;
-                    break;
-                }
-            }
-        }
         List<UnitAI> aIs = new();
 
-        foreach (Entity ent in SelectionMgr.inst.selectedEntities) {
+        foreach (Entity ent in entities) {
             UnitAI uai = ent.GetComponentInChildren<UnitAI>();
             aIs.Add(uai);
         }
-
         if(aIs.Count==0)
             return null;
+
+        for (int i = 0 ; i < aIs.Count; i++) {
+            if(aIs[i].group != null && aIs[i].group.target == entities[i]) {
+                targetGroup = aIs[i].group;
+                break;
+            }
+        }
 
         if(targetGroup==null) {
             targetGroup = new(aIs);
