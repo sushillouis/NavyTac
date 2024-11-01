@@ -141,6 +141,18 @@ public class SelectionMgr : MonoBehaviour
                 selectedEntity.isSelected = true;
                 selectedEntities.Add(ent);
             }
+            else if (!shouldClearSelection)
+            {
+                if(selectedEntity = ent)
+                {
+                    if (SelectionMgr.inst.selectedEntities[0] != null)
+                        selectedEntity = EntityMgr.inst.entities[0];
+                    else
+                        selectedEntity = null;
+                }
+                ent.isSelected = false;
+                selectedEntities.Remove(ent);
+            }
             ent.transform.Find("Aspects/Sound").GetComponent<SoundAspect>().PlaySelection();
         }
         else
