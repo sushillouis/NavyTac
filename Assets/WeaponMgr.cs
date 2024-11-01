@@ -105,12 +105,16 @@ public class WeaponMgr : MonoBehaviour
         {
             GameObject weaponGo = Instantiate(weaponPrefab, position, Quaternion.Euler(eulerAngles), entitiesRoot.transform);
             // weaponGo.transform.SetParent(parent.transform,true);
+            // weaponGo.transform.SetParent(parent.transform,true);
 
 
             if (weaponGo != null)
             {
+                Entity creator = parent.GetComponent<Entity>();
                 weapon = weaponGo.GetComponent<Entity>();
                 weaponGo.name = weaponType.ToString() + weaponId++;
+                weapon.creatorsEntity = creator;
+                weapon.owner = creator.owner;
                 EntityMgr.inst.entities.Add(weapon);
                 weapons.Add(weapon);
                 DistanceMgr.inst.Initialize();
@@ -121,8 +125,6 @@ public class WeaponMgr : MonoBehaviour
         return weapon;
     }
 
-
-    public
     void Start()
     {
     }

@@ -79,13 +79,14 @@ MonoBehaviour:
   layerMask: 0
   allWeapons:
   - source: {fileID: 7187252390980089421}
-    weaponType: 1
+    weaponType: 2
     entityType: 11
     cooldown: 10
     ammoCount: 10
     range: 5000
     weaponPrefab: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
       type: 3}
+    damage: 0
 --- !u!1 &1239843608224656196
 GameObject:
   m_ObjectHideFlags: 0

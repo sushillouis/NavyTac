@@ -44,6 +44,10 @@ public class WeaponAspect : MonoBehaviour
     void Start()
     {
         layerMask = 1 << 9;
+        foreach (Weapon weapon in allWeapons)
+        {
+            weapon.lastFireTime = -weapon.cooldown;
+        }
     }
 
     // Update is called once per frame
@@ -51,73 +55,64 @@ public class WeaponAspect : MonoBehaviour
     {
 
     }
-    private int weaponIndex;
+
+    private Weapon GetWeaponByType(WeaponType type)
+    {
+        return allWeapons.Find(weapon => weapon.weaponType == type);
+    }
     public void HandleFire_AA_Guided(Vector3 mousePos)
     {
-        weaponIndex = 0;
+        Weapon selectedWeapon = GetWeaponByType(WeaponType.AA_Guided);
         Debug.Log("Fire AA Guided");
     }
     public void HandleFire_LA_GuidedMissiles(Vector3 mousePos)
     {
-        weaponIndex = 1;
+        Weapon selectedWeapon = GetWeaponByType(WeaponType.LA_guided_missiles);
         Debug.Log("Fire LA Guided Missiles");
     }
+    
     public void HandleFire_SmartSurfaceMissiles(Vector2 mousePos)
     {
-        weaponIndex = 0;
-        Weapon selectedWeapon = allWeapons[weaponIndex];
-
-        // Check if the weapon is ready to fire (cooldown complete)
-        if (Time.time - selectedWeapon.lastFireTime < selectedWeapon.cooldown)
-        {
-            Debug.Log("Weapon on cooldown");
-            return;
-        }
-
-        // Perform a raycast to find target position
+        Weapon selectedWeapon = GetWeaponByType(WeaponType.Smart_surface_missiles_USV);
+        if (selectedWeapon == null || IsWeaponOnCooldown(selectedWeapon)) return;
+               
         if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
         {
             Vector3 targetPosition = hit.point;
             targetPosition.y = 0;
-
-            // Check if target is within range
-            if (Vector3.Distance(selectedWeapon.source.position, targetPosition) > selectedWeapon.range)
-            {
-                Debug.Log("Target out of range");
-                return;
-            }
-
-            // Find the closest entity within the click radius
+            if (IsTargetInRange(selectedWeapon,targetPosition)) return;
             Entity targetEntity = AIMgr.inst.FindClosestEntInRadius(targetPosition, rClickRadiusSq);
-
-            // Verify that we have ammo and a valid target
             if (SelectionMgr.inst.selectedEntity == this.GetComponentInParent<Entity>() &&
                 WeaponMgr.inst != null && selectedWeapon.ammoCount > 0 && targetEntity != null)
             {
-                // Fire the weapon
                 Entity newMissile = WeaponMgr.inst.CreateWeapon(
                     selectedWeapon.entityType,
                     selectedWeapon.source.position,
                     selectedWeapon.source.rotation.eulerAngles,
-                    this.gameObject
+                    this.gameObject.transform.parent.parent.gameObject
                 );
-
-                // Assign missile AI and target
                 UnitAI missileAI = newMissile.GetComponentInChildren<UnitAI>();
                 Intercept intercept = new Intercept(newMissile, targetEntity);
                 missileAI.AddCommand(intercept);
-
-                // Decrease ammo count and set last fire time for cooldown
                 selectedWeapon.ammoCount--;
                 selectedWeapon.lastFireTime = Time.time;
             }
         }
     }
-
-
     public void HandleFire_Gun(Vector2 mousePos)
     {
-        weaponIndex = 3;
+        Weapon SelectedWeapon = GetWeaponByType(WeaponType.Gun);
         Debug.Log("Fire LA Guided Missiles");
+    }
+
+    private bool IsWeaponOnCooldown(Weapon weapon)
+    {
+        return Time.time - weapon.lastFireTime < weapon.cooldown;
+    }
+    public bool isSelected(WeaponAspect selected){
+        return SelectionMgr.inst.selectedEntity == selected.GetComponent<Entity>();
+    }
+    public bool IsTargetInRange(Weapon weapon, Vector3 targetPosition){
+        return Vector3.Distance(weapon.source.position, targetPosition) > weapon.range;
     }
 }
