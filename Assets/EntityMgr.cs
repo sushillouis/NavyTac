@@ -22,8 +22,7 @@ public class EntityMgr : MonoBehaviour
     public static int entityId = 0;
 
     public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles) {
-        Player player = PlayerMgr.inst.CreateObserver();
-        return CreateEntity(et, position, eulerAngles, player);
+        return CreateEntity(et, position, eulerAngles, PlayerMgr.inst.observer);
     }
 
     public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles, Player player) {
