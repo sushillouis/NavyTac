@@ -3,17 +3,41 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// This is Debug Code
+// This is Debug Code
+// This is Debug Code
 public class EntityBoostrap : MonoBehaviour {
-    /// <summary>
-    /// Start is called on the frame when a script is enabled just before
-    /// any of the Update methods is called the first time.
-    /// </summary>
-    [SerializeField] Player player;
+    [Header("This is a Debug Script")]
+    [SerializeField] PlayerOwnerOfShip playerOwner;
     void Start()
     {
         Entity ent = this.gameObject.GetComponent<Entity>();
-        ent.owner = player;
+        switch (playerOwner) {
+            case PlayerOwnerOfShip.Player1:
+                ent.owner = PlayerMgr.inst.player1;
+                break;
+            case PlayerOwnerOfShip.Player2:
+                ent.owner = PlayerMgr.inst.player2;
+                break;
+            case PlayerOwnerOfShip.Admin:
+                ent.owner = PlayerMgr.inst.adminPlayer;
+                break;
+            case PlayerOwnerOfShip.Observer:
+                ent.owner = PlayerMgr.inst.observer;
+                break;
+            default:
+                ent.owner = PlayerMgr.inst.adminPlayer;
+                break;
+        }
+        
         EntityMgr.inst.entities.Add(ent);
-        Destroy(this);
+        this.enabled = false;
     }
+}
+
+enum PlayerOwnerOfShip {
+    Admin,
+    Observer,
+    Player1,
+    Player2,
 }

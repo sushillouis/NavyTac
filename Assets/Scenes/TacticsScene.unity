@@ -254,11 +254,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &45652590
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -818,11 +814,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!1 &112788849 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
@@ -847,11 +839,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1001 &121691966
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1560,11 +1548,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &251102081 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2020023502598012821, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
@@ -1589,11 +1573,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!1001 &256632072
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1725,11 +1705,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1001 &283118647
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2041,11 +2017,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1001 &347916710
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2361,11 +2333,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &392106489
 GameObject:
   m_ObjectHideFlags: 0
@@ -2714,11 +2682,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &480425566
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2850,11 +2814,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &501386809 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
@@ -2879,11 +2839,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!1001 &527653422
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3282,11 +3238,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1001 &589125154
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3729,11 +3681,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &639876781
 GameObject:
   m_ObjectHideFlags: 0
@@ -4211,11 +4159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &712890687 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
@@ -4240,11 +4184,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!1 &721237564 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1101535870444392007, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
@@ -4269,11 +4209,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &722393455 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
@@ -4298,11 +4234,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &725377113 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1101535870444392007, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
@@ -4327,11 +4259,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!1001 &733465900
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4784,11 +4712,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1001 &760700314
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4920,11 +4844,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &769190857
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5591,11 +5511,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!4 &828627988 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1695902252603385349, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
@@ -5733,11 +5649,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &845670211 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
@@ -5762,11 +5674,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &852827859 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
@@ -5791,11 +5699,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!850595691 &886595368
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -5884,11 +5788,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!4 &907228158 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7540985511424937849, guid: d51d8d0dda5552c478afc7674abdd037,
@@ -6313,11 +6213,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &974015123
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6455,11 +6351,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &983888703
 GameObject:
   m_ObjectHideFlags: 0
@@ -6812,11 +6704,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &1042482052 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
@@ -6841,11 +6729,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!1001 &1043093236
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7163,11 +7047,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &1103196177
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7319,7 +7199,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be0daf4f7e26e5e4190581955416443a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  adminPlayer:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+  player1:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+  player2:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
   players: []
+  observer:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1001 &1124869740
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7472,11 +7372,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &1142393662
 GameObject:
   m_ObjectHideFlags: 0
@@ -7602,11 +7498,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!1001 &1154587160
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8189,11 +8081,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!1 &1249191156 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
@@ -8218,11 +8106,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &1256792425 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
@@ -8247,11 +8131,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &1257354759 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3381456826221025453, guid: d51d8d0dda5552c478afc7674abdd037,
@@ -8276,11 +8156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1001 &1262891048
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8491,11 +8367,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &1291702462
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8627,11 +8499,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1001 &1303395822
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8814,11 +8682,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!1 &1344449817 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3381456826221025453, guid: d51d8d0dda5552c478afc7674abdd037,
@@ -8843,11 +8707,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &1356164248
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9086,11 +8946,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &1361735525
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9374,11 +9230,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &1455108878
 GameObject:
   m_ObjectHideFlags: 0
@@ -9489,11 +9341,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &1463454943
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9839,11 +9687,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1001 &1535524943
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10195,11 +10039,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &1576919499
 GameObject:
   m_ObjectHideFlags: 0
@@ -10486,11 +10326,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!4 &1633039278 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4785934218609609843, guid: 6f05e3291ed3b374e83bc5165bcb3f8d,
@@ -10521,11 +10357,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &1646726534 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
@@ -10550,11 +10382,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &1664575454
 GameObject:
   m_ObjectHideFlags: 0
@@ -11028,11 +10856,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &1766729324
 GameObject:
   m_ObjectHideFlags: 0
@@ -11212,11 +11036,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &1780895878 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
@@ -11241,11 +11061,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &1782422399
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11484,11 +11300,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!1001 &1800301975
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11699,11 +11511,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &1837000951 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
@@ -11728,11 +11536,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &1840762631 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2020023502598012821, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
@@ -11757,11 +11561,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &1851151191 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7105417278651847255, guid: 6f05e3291ed3b374e83bc5165bcb3f8d,
@@ -11786,11 +11586,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &1853669713
 GameObject:
   m_ObjectHideFlags: 0
@@ -11873,11 +11669,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &1889600879 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
@@ -11902,11 +11694,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &1891758670 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
@@ -11931,11 +11719,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &1911764855
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12067,11 +11851,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1001 &1940007420
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12784,11 +12564,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1001 &1997455572
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12920,11 +12696,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &2025094408 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
@@ -12949,11 +12721,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!4 &2028631649 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7187487557739430685, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
@@ -12984,11 +12752,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &2054485500 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
@@ -13013,11 +12777,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &2069220213
 GameObject:
   m_ObjectHideFlags: 0
@@ -13121,11 +12881,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 2
 --- !u!1001 &2083292110
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13623,11 +13379,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &2139292685 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
@@ -13652,11 +13404,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &2139429443 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2020023502598012821, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
@@ -13681,11 +13429,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
+  playerOwner: 2
 --- !u!1 &2142241337 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
@@ -13710,11 +13454,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8308674e36aa72443b735d6fe24ee738, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player:
-    name: Player Two
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 1, g: 0, b: 0, a: 0}
+  playerOwner: 3
 --- !u!1 &2144337139
 GameObject:
   m_ObjectHideFlags: 0
