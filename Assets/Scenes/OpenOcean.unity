@@ -1799,7 +1799,83 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be0daf4f7e26e5e4190581955416443a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  players: []
+  adminPlayer:
+    name: Admin
+    playerId: 10
+    playerSide: 10
+    playerColor: {r: 0, g: 0, b: 0, a: 1}
+  player1:
+    name: PlayerOne
+    playerId: 1
+    playerSide: 1
+    playerColor: {r: 1, g: 1, b: 1, a: 1}
+  player2:
+    name: PlayerTwo
+    playerId: 2
+    playerSide: 2
+    playerColor: {r: 0, g: 1, b: 0.19607843, a: 1}
+  observer:
+    name: Observer
+    playerId: 9
+    playerSide: 9
+    playerColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
+  playerColors:
+  - {r: 0, g: 0, b: 0, a: 0}
+  - {r: 0, g: 0.19607843, b: 1, a: 1}
+  - {r: 1, g: 0.19607843, b: 0.19607843, a: 1}
+  - {r: 0, g: 1, b: 0.19607843, a: 1}
+  - {r: 0.9048767, g: 1, b: 0, a: 1}
+  - {r: 0.9472699, g: 0, b: 1, a: 1}
+  - {r: 1, g: 0.47452188, b: 0, a: 1}
+  - {r: 0, g: 1, b: 0.9142871, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
+  - {r: 0, g: 0, b: 0, a: 1}
+  players:
+  - name: None
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+  - name: PlayerOne
+    playerId: 1
+    playerSide: 1
+    playerColor: {r: 1, g: 1, b: 1, a: 1}
+  - name: PlayerTwo
+    playerId: 2
+    playerSide: 2
+    playerColor: {r: 0, g: 1, b: 0.19607843, a: 1}
+  - name: PlayerThree
+    playerId: 3
+    playerSide: 3
+    playerColor: {r: 0, g: 0.19607843, b: 1, a: 1}
+  - name: PlayerFour
+    playerId: 4
+    playerSide: 4
+    playerColor: {r: 1, g: 0.19607843, b: 0.19607843, a: 1}
+  - name: PlayerFive
+    playerId: 5
+    playerSide: 5
+    playerColor: {r: 0.9048767, g: 1, b: 0, a: 1}
+  - name: PlayerSix
+    playerId: 6
+    playerSide: 6
+    playerColor: {r: 0.9472699, g: 0, b: 1, a: 1}
+  - name: PlayerSeven
+    playerId: 7
+    playerSide: 7
+    playerColor: {r: 1, g: 0.47452188, b: 0, a: 1}
+  - name: PlayerEight
+    playerId: 8
+    playerSide: 8
+    playerColor: {r: 0, g: 1, b: 0.9142871, a: 1}
+  - name: Observer
+    playerId: 9
+    playerSide: 9
+    playerColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
+  - name: Admin
+    playerId: 10
+    playerSide: 10
+    playerColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!1001 &1124869740
 PrefabInstance:
   m_ObjectHideFlags: 0
