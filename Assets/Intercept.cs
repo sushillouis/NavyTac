@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 
 [System.Serializable]
 public class Intercept : Follow
 {
-    public Intercept(Entity ent, Entity target): base(ent, target, Vector3.zero)
+    public Intercept(Entity ent, Entity target) : base(ent, target, Vector3.zero)
     {
         //Follow does all the work
     }
@@ -20,9 +21,26 @@ public class Intercept : Follow
     public override void Tick()
     {
         //movePosition = targetEntity.transform.position;
-        float dh = ComputePredictiveDH(Vector3.zero);
-        entity.desiredHeading = dh;
-        entity.desiredSpeed = entity.maxSpeed;
+        if (targetEntity != null)
+        {
+            // Compute predictive heading towards the target
+            float dh = ComputePredictiveDH(Vector3.zero);
+            entity.desiredHeading = dh;
+            entity.desiredSpeed = entity.maxSpeed;
+        }
+        else
+        {
+            if (WeaponMgr.inst.weapons.Contains(entity))
+            {
+                entity.desiredHeading = entity.heading;
+                entity.desiredSpeed = entity.maxSpeed;
+            }
+            else
+            {
+                Stop();
+            }
+
+        }
     }
 
     public override bool IsDone()

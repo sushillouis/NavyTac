@@ -31,7 +31,7 @@ public class Weapon
 public class WeaponAspect : MonoBehaviour
 {
     // Start is called before the first frame update
-    public float rClickRadiusSq = 5000;
+    public float rClickRadiusSq = 10000;
     public int layerMask;
     public RaycastHit hit;
     public List<Weapon> allWeapons;
@@ -70,20 +70,16 @@ public class WeaponAspect : MonoBehaviour
         Weapon selectedWeapon = GetWeaponByType(WeaponType.LA_guided_missiles);
         Debug.Log("Fire LA Guided Missiles");
     }
-    
-   public void HandleFire_SmartSurfaceMissiles(Vector2 mousePos)
+
+    public void HandleFire_SmartSurfaceMissiles(Vector2 mousePos)
     {
-        Debug.Log("Fire Smart Surface Missiles 1");
         Weapon selectedWeapon = GetWeaponByType(WeaponType.Smart_surface_missiles_USV);
         if (!CanFireWeapon(selectedWeapon)) return;
-        Debug.Log("Fire Smart Surface Missiles");
         if (IsHitWithinLayerMask(mousePos, out Vector3 targetPosition))
         {
-            Debug.Log("Hit Target");
             Entity targetEntity = GetTargetEntity(targetPosition);
             if (targetEntity != null && selectedWeapon.ammoCount > 0)
             {
-                Debug.Log("Target Entity Found");
                 CreateAndLaunchMissile(selectedWeapon, targetEntity, targetPosition);
                 selectedWeapon.ammoCount--;
                 selectedWeapon.lastFireTime = Time.time;
@@ -91,16 +87,17 @@ public class WeaponAspect : MonoBehaviour
         }
     }
     public void HandleFire_Gun(Vector2 mousePos)
-        {
-            Weapon SelectedWeapon = GetWeaponByType(WeaponType.Gun);
-            Debug.Log("Fire LA Guided Missiles");
-        }
+    {
+        Weapon SelectedWeapon = GetWeaponByType(WeaponType.Gun);
+        Debug.Log("Fire LA Guided Missiles");
+    }
     private bool CanFireWeapon(Weapon weapon)
     {
         return weapon != null && !IsWeaponOnCooldown(weapon) && IsWeaponSelected();
     }
 
-    private bool IsWeaponOnCooldown(Weapon weapon){
+    private bool IsWeaponOnCooldown(Weapon weapon)
+    {
         return Time.time - weapon.lastFireTime < weapon.cooldown;
     }
     private bool IsWeaponSelected()
@@ -124,6 +121,7 @@ public class WeaponAspect : MonoBehaviour
     private Entity GetTargetEntity(Vector3 targetPosition)
     {
         if (!IsTargetInRange(targetPosition)) return null;
+        // if (AIMgr.inst.FindClosestEntInRadius(targetPosition, rClickRadiusSq).owner == this.GetComponentInParent<Entity>().owner) return null;
         return AIMgr.inst.FindClosestEntInRadius(targetPosition, rClickRadiusSq);
     }
 
@@ -149,5 +147,5 @@ public class WeaponAspect : MonoBehaviour
             missileAI.AddCommand(intercept);
         }
     }
-    
+
 }

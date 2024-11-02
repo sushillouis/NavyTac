@@ -36,7 +36,7 @@ public class WeaponMgr : MonoBehaviour
 
         damageMatrix[WeaponType.Smart_surface_missiles_USV] = new Dictionary<EntityType, float>
         {
-            {EntityType.DDG51, 5f },
+            {EntityType.DDG51, 100f },
             {EntityType.Container,99f},
             {EntityType.CVN75, 2f},
             {EntityType.JARIUSV , 1f},

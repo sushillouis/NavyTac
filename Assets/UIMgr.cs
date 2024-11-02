@@ -187,7 +187,7 @@ public class UIMgr : MonoBehaviour
             isActive = ToggleMultiSelect.GetComponent<Toggle>().isOn;
         else
             isActive = false;
-
+        
         CameraMgr.inst.YawCamera(yawCamera.ReadValue<float>());
         CameraMgr.inst.PitchCamera(pitchCamera.ReadValue<float>());
         CameraMgr.inst.MoveCameraY(cameraYMove.ReadValue<Vector2>().y);

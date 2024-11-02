@@ -132,8 +132,5 @@ public class UnitAI : MonoBehaviour
             m.potentialLine.SetPosition(1, entity.position + newpos);
             m.potentialLine.gameObject.SetActive(entity.isSelected);
         }
-
-
     }
-
 }
