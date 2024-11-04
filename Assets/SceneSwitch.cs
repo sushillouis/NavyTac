@@ -34,4 +34,7 @@ public class SceneSwitch : MonoBehaviour
    {
         currentScene = 1;
    }
+
+
+
 }

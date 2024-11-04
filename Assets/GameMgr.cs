@@ -16,8 +16,8 @@ public class GameMgr : MonoBehaviour
     {
         if (SceneManager.GetActiveScene().name.Equals("OpenOceanMap"))
             InitOpenOceanMap();
-        else
-            InitOpenOcean();
+        //else
+        //    InitOpenOcean();
     }
 
     public Vector3 position;
@@ -58,6 +58,32 @@ public class GameMgr : MonoBehaviour
         }
 
         DistanceMgr.inst.Initialize();
+    }
+
+    List<Entity> allEntities = new List<Entity>();
+    public void InitMapMenu() {
+        Vector3 position = Vector3.zero;
+        Vector3 offset = new Vector3(100, 0, -50);
+
+        foreach(GameObject go in EntityMgr.inst.entityPrefabs) {
+            Entity ent = go.GetComponent<Entity>();
+            ent = EntityMgr.inst.CreateEntity(ent.entityType, position + offset, new Vector3(0, 270, 0));
+            allEntities.Add(ent);
+            position.x += 400;
+        }
+        StartCoroutine(AddMoveCommandsToEnt());
+
+    }
+
+    IEnumerator AddMoveCommandsToEnt() {
+        yield return new WaitForSeconds(0.5f);
+        foreach(Entity ent in allEntities) {
+            ent.heading = 270;
+            ent.isSelected = true;
+        }
+        AIMgr.inst.HandleMove(allEntities, new Vector3(-3000, 0, 0), false);
+        AIMgr.inst.HandleMove(allEntities, new Vector3(3000, 0, 0), true);
+
     }
 
     public List<Vector3> OpenOceanMapSpawns;
@@ -111,4 +137,7 @@ public class GameMgr : MonoBehaviour
         return new Vector3(x, center.y, z);
 
     }
+
+
+
 }

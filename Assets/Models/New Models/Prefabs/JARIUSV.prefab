@@ -111,19 +111,24 @@ MonoBehaviour:
   desiredSpeed: 0
   heading: 0
   desiredHeading: 0
+  health: 100
+  fuel: 100
   acceleration: 5
   turnRate: 20
-  maxSpeed: 22
+  maxSpeed: 40
   minSpeed: 0
   mass: 30
   length: 15
   width: 5
   height: 7
-  health: 100
-  fuel: 100
   entityType: 9
   cameraRig: {fileID: 6667547634042605354}
   selectionCircle: {fileID: 5401650789423696299}
+  owner:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &3616091459088600439
 GameObject:
   m_ObjectHideFlags: 0

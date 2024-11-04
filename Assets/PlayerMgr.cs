@@ -29,7 +29,7 @@ public class PlayerMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.Log("Starting player mgr");
+        //Debug.Log("Starting player mgr");
     }
 
     // Update is called once per frame

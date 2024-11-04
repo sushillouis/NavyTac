@@ -31,3 +31,9 @@ public enum PlayerSide
     Observer = 9,
 }
 
+public enum MapNames
+{
+    None = 0,
+    OpenOcean,
+    FourCorners,
+}
