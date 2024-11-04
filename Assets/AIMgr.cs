@@ -81,18 +81,22 @@ public class AIMgr : MonoBehaviour
     public void HandleFollow(List<Entity> entities, Entity ent, bool add)
     {
         foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
-            Follow f = new Follow(entity, ent, new Vector3(100, 0, 0));
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-            AddOrSet(f, uai, add);
+            if(ent != entity) {
+                Follow f = new Follow(entity, ent, new Vector3(100, 0, 0));
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(f, uai, add);
+            }
         }
     }
 
     void HandleIntercept(List<Entity> entities, Entity ent, bool add)
     {
         foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
-            Intercept intercept = new Intercept(entity, ent);
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-            AddOrSet(intercept, uai, add);
+            if(ent != entity) {
+                Intercept intercept = new Intercept(entity, ent);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(intercept, uai, add);
+            }
         }
 
     }

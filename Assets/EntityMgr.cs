@@ -21,20 +21,27 @@ public class EntityMgr : MonoBehaviour
 
     public static int entityId = 0;
 
-    public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles)
-    {
+    public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles) {
+        return CreateEntity(et, position, eulerAngles, PlayerMgr.inst.observer);
+    }
+
+    public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles, Player player) {
         Entity entity = null;
         GameObject entityPrefab = entityPrefabs.Find(x => (x.GetComponent<Entity>().entityType == et));
-        if (entityPrefab != null) {
+        if(entityPrefab != null) {
             GameObject entityGo = Instantiate(entityPrefab, position, Quaternion.Euler(eulerAngles), entitiesRoot.transform);
-            if (entityGo != null) {
+            if(entityGo != null) {
                 entity = entityGo.GetComponent<Entity>();
                 entityGo.name = et.ToString() + entityId++;
+                entity.owner = player;
                 entities.Add(entity);
             }
         }
         return entity;
     }
+
+
+
 
 
     // Start is called before the first frame update
