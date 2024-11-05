@@ -13,7 +13,7 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
     void Start()
     {
         entity = GetComponentInParent<Entity>();
-        icon.GetComponent<Renderer>().material.color = Random.ColorHSV();
+        icon.GetComponent<Renderer>().material.color = entity.owner.playerColor;
         icon.SetActive(false);
     }
 
