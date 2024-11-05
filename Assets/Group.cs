@@ -124,6 +124,17 @@ public class Group {
         RebuildGroup();
     }
 
+    public void AddMembers(Entity[] entities) {
+        List<UnitAI> aIs = new();
+
+        foreach (Entity aEnt in entities) {
+            UnitAI uai = aEnt.GetComponentInChildren<UnitAI>();
+            aIs.Add(uai);
+        }
+
+        AddMembers(aIs.ToArray());
+    }
+
     public void RemoveMembers(UnitAI[] unitAIs, bool rebuild = true) {
         if(!isActive) {
             return;

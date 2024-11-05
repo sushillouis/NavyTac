@@ -68,7 +68,12 @@ public class AIMgr : MonoBehaviour
                     Group group = TacticalAIMgr.inst.AssembleGroup(SelectionMgr.inst.selectedEntities);
                     HandleGroupEscort(group, pos, add);
                 } else {
-                    
+                    //Check if friendly
+                    // Calling group+clicking on a firendly ship just adds the selection to that ships group 
+                    UnitAI temp = ent.GetComponentInChildren<UnitAI>();
+                    if(temp.group !=null) {
+                        temp.group.AddMembers(SelectionMgr.inst.selectedEntities.ToArray());
+                    }
                 }
             }
         }
