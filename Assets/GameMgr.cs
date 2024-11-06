@@ -87,16 +87,17 @@ public class GameMgr : MonoBehaviour
     }
 
     public void InitOpenOceanMap() {
+        if(deployUnits) {
+            List<Entity> allEntities = CreateCarrierGroup(Vector3.zero, 0, 300, 300);
+            Vector3 pos = new Vector3(0, 0, 4000);
+            bool add = false;
+            StartCoroutine(AddMoveCommandsToEnt(allEntities, pos, add, 0));
 
-        List<Entity> allEntities = CreateCarrierGroup(Vector3.zero, 0, 300, 300);
-        Vector3 pos = new Vector3(0, 0, 4000);
-        bool add = false;
-        StartCoroutine(AddMoveCommandsToEnt(allEntities, pos, add, 0));
-
-        
-        List<Entity> allEntities2 = CreateCarrierGroup(new Vector3(0, 0, 3000), 180, 300, 300);
-        pos.z = -1000;
-        StartCoroutine(AddMoveCommandsToEnt(allEntities2, pos, add, 180));
+            
+            List<Entity> allEntities2 = CreateCarrierGroup(new Vector3(0, 0, 3000), 180, 300, 300);
+            pos.z = -1000;
+            StartCoroutine(AddMoveCommandsToEnt(allEntities2, pos, add, 180));
+        }
     }
 
 
