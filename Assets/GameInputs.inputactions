@@ -650,7 +650,7 @@
                 {
                     "name": "",
                     "id": "e7de1f10-b7d0-4a1d-b982-7077d2aa5609",
-                    "path": "<Keyboard>/ctrl",
+                    "path": "<Keyboard>/leftAlt",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -683,7 +683,7 @@
                 {
                     "name": "",
                     "id": "f6a1a7ab-3af9-49fe-a92e-1c5adf748d88",
-                    "path": "<Keyboard>/alt",
+                    "path": "<Keyboard>/ctrl",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -748,6 +748,15 @@
                     "name": "NextEntity",
                     "type": "Button",
                     "id": "81ca03f9-4618-4769-a171-377045b18430",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RegionSelect",
+                    "type": "Button",
+                    "id": "7e64639c-e2e2-44a8-be08-c13a669b70d0",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -829,6 +838,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "BoxSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "43e079c8-06ad-46f8-9af0-70f9cf29fee8",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "Hold(duration=0.2)",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RegionSelect",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

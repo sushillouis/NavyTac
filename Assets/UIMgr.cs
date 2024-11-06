@@ -36,6 +36,8 @@ public class UIMgr : MonoBehaviour
 
     private InputAction changeSpeed;
     private InputAction changeHeading;
+    [SerializeReference] GameObject regionSelectCircle;
+    private InputAction regionSelect;
 
     private InputAction create100;
 
@@ -84,7 +86,7 @@ public class UIMgr : MonoBehaviour
 
         command = inputs.Entities.Command;
         command.Enable();
-        command.performed += HandleCommand;
+        command.canceled += HandleCommand;
 
         intercept = inputs.Entities.Intercept;
         intercept.Enable();
@@ -109,6 +111,12 @@ public class UIMgr : MonoBehaviour
         create100 = inputs.Entities.Create100;
         create100.Enable();
         create100.performed += Create100;
+
+        regionSelect = inputs.Selection.RegionSelect;
+        regionSelect.Enable();
+        regionSelect.started += RegionSelectStart;
+        regionSelect.performed += RegionSelect;
+        // regionSelect.canceled += RegionSelectEnd;
     }
 
     private void OnDisable()
@@ -136,6 +144,7 @@ public class UIMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        regionSelectCircle.SetActive(false);
         ToggleMultiSelect.SetActive(false);
         #if UNITY_ANDROID
             ToggleMultiSelect.SetActive(true);
@@ -174,6 +183,16 @@ public class UIMgr : MonoBehaviour
 
         if(boxSelecting)
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
+
+        //166.67f is CircleBaseRad/2*.9
+
+        if(displayRegionCircle) {
+            regionSelectCircle.transform.position = regionStart;
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(selectionCursorPosition.ReadValue<Vector2>()), out RaycastHit hit, float.MaxValue, AIMgr.inst.layerMask)) {
+                regionSelectCircle.transform.localScale = Vector3.one * (regionStart - hit.point + Vector3.up*10).magnitude/140f;
+            }
+            
+        }
     }
 
     private void ToggleRTSView(InputAction.CallbackContext context)
@@ -204,9 +223,18 @@ public class UIMgr : MonoBehaviour
         SelectionMgr.inst.SelectNextEntity(addSelection.IsPressed());
     }
 
+    Vector3 regionStart = Vector3.zero;
+    bool displayRegionCircle = false;
+
     private void HandleCommand(InputAction.CallbackContext context)
-    {
-        AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed(), pincer.IsPressed(), group.IsPressed());
+    {   
+        if(displayRegionCircle) {
+            AIMgr.inst.HandleRegionCommand(regionStart,selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed(), pincer.IsPressed(), group.IsPressed());
+            displayRegionCircle=false;
+            regionSelectCircle.SetActive(false);
+        } else {
+            AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed(), pincer.IsPressed(), group.IsPressed());
+        }
     }
  
     private void ChangeSpeed(InputAction.CallbackContext context) 
@@ -222,5 +250,16 @@ public class UIMgr : MonoBehaviour
     private void Create100(InputAction.CallbackContext context)
     {
         GameMgr.inst.Create100();
+    }
+
+    private void RegionSelectStart(InputAction.CallbackContext context) {
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(selectionCursorPosition.ReadValue<Vector2>()), out RaycastHit hit, float.MaxValue, AIMgr.inst.layerMask)) {
+            regionStart = hit.point + Vector3.up*10;
+        }
+    }
+
+    private void RegionSelect(InputAction.CallbackContext context) {
+        displayRegionCircle=true;
+        regionSelectCircle.SetActive(true);
     }
 }

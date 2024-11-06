@@ -672,7 +672,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""e7de1f10-b7d0-4a1d-b982-7077d2aa5609"",
-                    ""path"": ""<Keyboard>/ctrl"",
+                    ""path"": ""<Keyboard>/leftAlt"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -705,7 +705,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""f6a1a7ab-3af9-49fe-a92e-1c5adf748d88"",
-                    ""path"": ""<Keyboard>/alt"",
+                    ""path"": ""<Keyboard>/ctrl"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -770,6 +770,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""name"": ""NextEntity"",
                     ""type"": ""Button"",
                     ""id"": ""81ca03f9-4618-4769-a171-377045b18430"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RegionSelect"",
+                    ""type"": ""Button"",
+                    ""id"": ""7e64639c-e2e2-44a8-be08-c13a669b70d0"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -853,6 +862,17 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""action"": ""BoxSelect"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""43e079c8-06ad-46f8-9af0-70f9cf29fee8"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": ""Hold(duration=0.2)"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RegionSelect"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -884,6 +904,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Selection_SingleSelect = m_Selection.FindAction("SingleSelect", throwIfNotFound: true);
         m_Selection_CursorPosition = m_Selection.FindAction("CursorPosition", throwIfNotFound: true);
         m_Selection_NextEntity = m_Selection.FindAction("NextEntity", throwIfNotFound: true);
+        m_Selection_RegionSelect = m_Selection.FindAction("RegionSelect", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -1138,6 +1159,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Selection_SingleSelect;
     private readonly InputAction m_Selection_CursorPosition;
     private readonly InputAction m_Selection_NextEntity;
+    private readonly InputAction m_Selection_RegionSelect;
     public struct SelectionActions
     {
         private @GameInputs m_Wrapper;
@@ -1147,6 +1169,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         public InputAction @SingleSelect => m_Wrapper.m_Selection_SingleSelect;
         public InputAction @CursorPosition => m_Wrapper.m_Selection_CursorPosition;
         public InputAction @NextEntity => m_Wrapper.m_Selection_NextEntity;
+        public InputAction @RegionSelect => m_Wrapper.m_Selection_RegionSelect;
         public InputActionMap Get() { return m_Wrapper.m_Selection; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1171,6 +1194,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @NextEntity.started += instance.OnNextEntity;
             @NextEntity.performed += instance.OnNextEntity;
             @NextEntity.canceled += instance.OnNextEntity;
+            @RegionSelect.started += instance.OnRegionSelect;
+            @RegionSelect.performed += instance.OnRegionSelect;
+            @RegionSelect.canceled += instance.OnRegionSelect;
         }
 
         private void UnregisterCallbacks(ISelectionActions instance)
@@ -1190,6 +1216,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @NextEntity.started -= instance.OnNextEntity;
             @NextEntity.performed -= instance.OnNextEntity;
             @NextEntity.canceled -= instance.OnNextEntity;
+            @RegionSelect.started -= instance.OnRegionSelect;
+            @RegionSelect.performed -= instance.OnRegionSelect;
+            @RegionSelect.canceled -= instance.OnRegionSelect;
         }
 
         public void RemoveCallbacks(ISelectionActions instance)
@@ -1234,5 +1263,6 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnSingleSelect(InputAction.CallbackContext context);
         void OnCursorPosition(InputAction.CallbackContext context);
         void OnNextEntity(InputAction.CallbackContext context);
+        void OnRegionSelect(InputAction.CallbackContext context);
     }
 }

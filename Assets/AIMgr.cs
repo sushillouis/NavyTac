@@ -36,6 +36,12 @@ public class AIMgr : MonoBehaviour
         
     }
 
+    public void HandleRegionCommand(Vector3 centerPos, Vector2 edgemousepos, bool intercept, bool add, bool pincer, bool isgroup) {
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(edgemousepos), out hit, float.MaxValue, layerMask)) {
+            HandleSunflowerMove(SelectionMgr.inst.selectedEntities, centerPos, (centerPos-hit.point).magnitude, add);
+        }
+    }
+
     public void HandleCommand(Vector2 mousePos, bool intercept, bool add, bool pincer, bool isgroup)
     {
         if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
@@ -134,6 +140,32 @@ public class AIMgr : MonoBehaviour
             Move m = new Move(entity, point);
             UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             AddOrSet(m, uai, add);
+        }
+    }
+
+    public void HandleSunflowerMove(List<Entity> entities, Vector3 point, float mag, bool add)
+    {
+        print(mag);
+        int b = (int)Mathf.Round(Mathf.Sqrt(entities.Count)*2);
+        float phiSquared = 2.618034f;
+        for (int i = 0;i<entities.Count;i++) {
+            float rad = mag;
+            if (i<(entities.Count-b)) {
+                rad = mag*Mathf.Sqrt(i/2f)/Mathf.Sqrt(entities.Count-(b+1)/2);
+            }
+            float theta = (2*Mathf.PI*(i-1))/phiSquared;
+            Vector3 offset = new Vector3{
+                x = rad*Mathf.Cos(theta),
+                y = 0,
+                z  = rad*Mathf.Sin(theta)
+            };
+            Move m = new Move(entities[i], point+offset);
+            UnitAI uai = entities[i].GetComponentInChildren<UnitAI>();
+            AddOrSet(m, uai, add);
+            
+        }
+        foreach (Entity entity in entities) {
+            
         }
     }
 
