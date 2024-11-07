@@ -71,3 +71,11 @@ public enum TacticsType
     Scout,
 }
 
+public enum MapNames
+{
+    None = 0,
+    OpenOcean,
+    FourCorners,
+}
+
+
