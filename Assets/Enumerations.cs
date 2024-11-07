@@ -15,6 +15,7 @@ public enum PlayerID
     PlayerSeven = 7,
     PlayerEight = 8,
     Observer = 9,
+    Admin = 10,
 }
 
 public enum PlayerSide
@@ -29,6 +30,7 @@ public enum PlayerSide
     SideSeven = 7,
     SideEight = 8,
     Observer = 9,
+    Admin = 10,
 }
 
 public enum ShipClasses
@@ -68,4 +70,12 @@ public enum TacticsType
     AttackDistract,
     Scout,
 }
+
+public enum MapNames
+{
+    None = 0,
+    OpenOcean,
+    FourCorners,
+}
+
 
