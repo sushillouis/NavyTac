@@ -128,9 +128,9 @@ public class SelectionMgr : MonoBehaviour
 
     public void SelectEntity(Vector2 mousePos, bool shouldClearSelection = true)
     {
-        RaycastHit hit;
-        Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
-        Entity ent = AIMgr.inst.FindClosestEntInRadius(hit.point, AIMgr.inst.rClickRadiusSq);
+        Vector3 targetPosition;
+        UIMgr.inst.getTargetPosition(mousePos, out targetPosition);
+        Entity ent = UIMgr.inst.GetTargetEntity(targetPosition);
         if (ent != null)
         {
             if (shouldClearSelection)

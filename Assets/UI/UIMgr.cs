@@ -43,6 +43,10 @@ public class UIMgr : MonoBehaviour
     private InputAction attack3;
     private InputAction attack4;
     private InputAction modifiers;
+    private LayerMask layerMask;
+    private RaycastHit hit;
+
+    private float rClickRadiusSq = 10000;
 
     private void Awake()
     {
@@ -157,6 +161,8 @@ public class UIMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
+        layerMask = 1 << 9;
         ToggleMultiSelect.SetActive(false);
 #if UNITY_ANDROID
             ToggleMultiSelect.SetActive(true);
@@ -196,6 +202,34 @@ public class UIMgr : MonoBehaviour
 
         if (boxSelecting)
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
+    }
+
+    public bool getTargetPosition(Vector2 mousePos, out Vector3 targetPosition)
+    {
+        targetPosition = Vector3.zero;
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
+        {
+            targetPosition = hit.point;
+            targetPosition.y = 0;
+            return true;
+        }
+        return false;
+    }
+    public Entity GetTargetEntity(Vector3 targetPosition)
+    {
+        Entity minEnt = null;
+        float min = float.MaxValue;
+        foreach (Entity ent in EntityMgr.inst.entities) {
+            float distanceSq = (ent.transform.position - targetPosition).sqrMagnitude;
+            if (distanceSq < rClickRadiusSq) {
+                if (distanceSq < min) {
+                    minEnt = ent;
+                    min = distanceSq;
+                }
+            }    
+        }
+        return minEnt;
+       
     }
 
     private void ToggleRTSView(InputAction.CallbackContext context)
@@ -264,10 +298,11 @@ public class UIMgr : MonoBehaviour
 
     private void Attack3(InputAction.CallbackContext context)
     {
-    WeaponAspect weaponAspect = SelectionMgr.inst.selectedEntity.GetComponentInChildren<WeaponAspect>();
-    if (weaponAspect == null)
-        return;
-    weaponAspect.HandleFire_SmartSurfaceMissiles(selectionCursorPosition.ReadValue<Vector2>());
+        foreach (Entity ent in SelectionMgr.inst.selectedEntities){
+            if(ent.GetComponentInChildren<WeaponAspect>()!= null){
+                ent.GetComponentInChildren<WeaponAspect>().HandleFire_SmartSurfaceMissiles(selectionCursorPosition.ReadValue<Vector2>());
+            }
+        }
     }
 
     private void Attack4(InputAction.CallbackContext context)

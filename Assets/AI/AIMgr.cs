@@ -33,15 +33,14 @@ public class AIMgr : MonoBehaviour
 
     public void HandleCommand(Vector2 mousePos, bool intercept, bool add)
     {
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
+        if (UIMgr.inst.getTargetPosition(mousePos,out Vector3 targetPosition))
         {
             //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
-            Vector3 pos = hit.point;
-            pos.y = 0;
-            Entity ent = FindClosestEntInRadius(pos, rClickRadiusSq);
+            
+            Entity ent = UIMgr.inst.GetTargetEntity(targetPosition);
             if (ent == null)
             {
-                HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
+                HandleMove(SelectionMgr.inst.selectedEntities, targetPosition, add);
             }
             else
             {
@@ -99,20 +98,5 @@ public class AIMgr : MonoBehaviour
 
     }
 
-    public float rClickRadiusSq = 10000;
-    public Entity FindClosestEntInRadius(Vector3 point, float rsq)
-    {
-        Entity minEnt = null;
-        float min = float.MaxValue;
-        foreach (Entity ent in EntityMgr.inst.entities) {
-            float distanceSq = (ent.transform.position - point).sqrMagnitude;
-            if (distanceSq < rsq) {
-                if (distanceSq < min) {
-                    minEnt = ent;
-                    min = distanceSq;
-                }
-            }    
-        }
-        return minEnt;
-    }
+    
 }

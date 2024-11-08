@@ -21,8 +21,8 @@ public class Weapon
     public int cooldown;
     public int ammoCount;
     public float range;
-    public GameObject weaponPrefab;
-    public float damage;
+    // public GameObject weaponPrefab;
+    // public float damage;
 
     [NonSerialized]
     public float lastFireTime;
@@ -73,14 +73,16 @@ public class WeaponAspect : MonoBehaviour
 
     public void HandleFire_SmartSurfaceMissiles(Vector2 mousePos)
     {
+        if (!allWeapons.Contains(GetWeaponByType(WeaponType.Smart_surface_missiles_USV))) return;
         Weapon selectedWeapon = GetWeaponByType(WeaponType.Smart_surface_missiles_USV);
         if (!CanFireWeapon(selectedWeapon)) return;
-        if (IsHitWithinLayerMask(mousePos, out Vector3 targetPosition))
+        if (UIMgr.inst.getTargetPosition(mousePos, out Vector3 targetPosition))
         {
-            Entity targetEntity = GetTargetEntity(targetPosition);
+            Entity targetEntity = UIMgr.inst.GetTargetEntity(targetPosition);
             if (targetEntity != null && selectedWeapon.ammoCount > 0)
             {
                 CreateAndLaunchMissile(selectedWeapon, targetEntity, targetPosition);
+
                 selectedWeapon.ammoCount--;
                 selectedWeapon.lastFireTime = Time.time;
             }
@@ -105,26 +107,6 @@ public class WeaponAspect : MonoBehaviour
         Debug.Log(this.GetComponentInParent<Entity>().name);
         return this.GetComponentInParent<Entity>().isSelected;
     }
-
-    private bool IsHitWithinLayerMask(Vector2 mousePos, out Vector3 targetPosition)
-    {
-        targetPosition = Vector3.zero;
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
-        {
-            targetPosition = hit.point;
-            targetPosition.y = 0;
-            return true;
-        }
-        return false;
-    }
-
-    private Entity GetTargetEntity(Vector3 targetPosition)
-    {
-        if (!IsTargetInRange(targetPosition)) return null;
-        // if (AIMgr.inst.FindClosestEntInRadius(targetPosition, rClickRadiusSq).owner == this.GetComponentInParent<Entity>().owner) return null;
-        return AIMgr.inst.FindClosestEntInRadius(targetPosition, rClickRadiusSq);
-    }
-
     private bool IsTargetInRange(Vector3 targetPosition)
     {
         Weapon selectedWeapon = GetWeaponByType(WeaponType.Smart_surface_missiles_USV);
@@ -145,6 +127,7 @@ public class WeaponAspect : MonoBehaviour
             UnitAI missileAI = newMissile.GetComponentInChildren<UnitAI>();
             Intercept intercept = new Intercept(newMissile, targetEntity);
             missileAI.AddCommand(intercept);
+            Debug.Log("Missile Launched");
         }
     }
 

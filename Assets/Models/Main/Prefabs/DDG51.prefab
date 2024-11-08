@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7187252390980089421}
   m_Layer: 0
-  m_Name: StartPosition
+  m_Name: SSMStartPosition
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -25,11 +25,11 @@ Transform:
   m_GameObject: {fileID: 779941688726143498}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 10.2, y: 0, z: -0.5}
+  m_LocalPosition: {x: 10.200012, y: 0, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2020023502598012820}
+  m_Father: {fileID: 2610253626849654309}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1134418706841619381
 GameObject:
@@ -60,7 +60,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7187252390980089421}
   m_Father: {fileID: 3638915916810416351}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8633959596092528174
@@ -203,7 +204,6 @@ Transform:
   - {fileID: 2020023502900363849}
   - {fileID: 3759385072610619238}
   - {fileID: 3638915916810416351}
-  - {fileID: 7187252390980089421}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2020023502598012843
