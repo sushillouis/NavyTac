@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &779941688726143498
+--- !u!1 &161534766714707508
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,86 +8,65 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7187252390980089421}
+  - component: {fileID: 4585058377425760361}
+  - component: {fileID: 6425765912287157090}
   m_Layer: 0
-  m_Name: SSMStartPosition
+  m_Name: WeaponsAspect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7187252390980089421
+--- !u!4 &4585058377425760361
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 779941688726143498}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 10.200012, y: 0, z: -0.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2610253626849654309}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1134418706841619381
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2610253626849654309}
-  - component: {fileID: 8633959596092528174}
-  m_Layer: 0
-  m_Name: Weapon
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2610253626849654309
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1134418706841619381}
+  m_GameObject: {fileID: 161534766714707508}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 7187252390980089421}
+  m_Children: []
   m_Father: {fileID: 3638915916810416351}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8633959596092528174
+--- !u!114 &6425765912287157090
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1134418706841619381}
+  m_GameObject: {fileID: 161534766714707508}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0651a39a5011a3743933ad2263be3beb, type: 3}
+  m_Script: {fileID: 11500000, guid: 8484a39e824370c4a9db2cc1178bdffb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rClickRadiusSq: 10000
-  layerMask: 0
-  allWeapons:
-  - source: {fileID: 7187252390980089421}
-    weaponType: 2
-    entityType: 11
-    cooldown: 10
+  entity: {fileID: 0}
+  weapons:
+  - cooldown: 120
+    behaviorType: 2
+    weaponEntityType: 11
+    currentWeaponEntities: []
+    launchLocation: {x: 100, y: 0, z: 0}
+    launchDirection: {x: 0, y: 0, z: 0}
     ammoCount: 10
-    range: 10000
-    weaponPrefab: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
-      type: 3}
-    damage: 10
+  - cooldown: 60
+    behaviorType: 1
+    weaponEntityType: 12
+    currentWeaponEntities: []
+    launchLocation: {x: -100, y: 0, z: 0}
+    launchDirection: {x: 0, y: 180, z: 0}
+    ammoCount: 5
+  - cooldown: 30
+    behaviorType: 3
+    weaponEntityType: 15
+    currentWeaponEntities: []
+    launchLocation: {x: 0, y: 10, z: 100}
+    launchDirection: {x: 0, y: 0, z: 0}
+    ammoCount: 20
 --- !u!1 &1239843608224656196
 GameObject:
   m_ObjectHideFlags: 0
@@ -166,7 +145,7 @@ Transform:
   - {fileID: 7477007468591699842}
   - {fileID: 6659016837582002879}
   - {fileID: 4669365334998334525}
-  - {fileID: 2610253626849654309}
+  - {fileID: 4585058377425760361}
   m_Father: {fileID: 2020023502598012820}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2020023502598012821
@@ -243,7 +222,6 @@ MonoBehaviour:
     playerId: 0
     playerSide: 0
     playerColor: {r: 0, g: 0, b: 0, a: 0}
-  creatorsEntity: {fileID: 0}
 --- !u!65 &2020023502598012840
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -342,8 +320,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  follows: []
   commands: []
   intercepts: []
+  intercept3ds: []
 --- !u!1 &5044917885655642635
 GameObject:
   m_ObjectHideFlags: 0

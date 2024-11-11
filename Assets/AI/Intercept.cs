@@ -9,6 +9,7 @@ public class Intercept : Follow
     public Intercept(Entity ent, Entity target) : base(ent, target, Vector3.zero)
     {
         //Follow does all the work
+
     }
 
     public override void Init()
@@ -21,26 +22,13 @@ public class Intercept : Follow
     public override void Tick()
     {
         //movePosition = targetEntity.transform.position;
-        if (targetEntity != null)
-        {
-            // Compute predictive heading towards the target
-            float dh = ComputePredictiveDH(Vector3.zero);
-            entity.desiredHeading = dh;
-            entity.desiredSpeed = entity.maxSpeed;
-        }
-        else
-        {
-            if (WeaponMgr.inst.weapons.Contains(entity))
-            {
-                entity.desiredHeading = entity.heading;
-                entity.desiredSpeed = entity.maxSpeed;
-            }
-            else
-            {
-                Stop();
-            }
+        float dh = ComputePredictiveDH(Vector3.zero);
+        entity.desiredHeading = dh;
+        entity.desiredSpeed = entity.maxSpeed;
 
-        }
+        range = diff.magnitude;
+        timeOnTarget = range / entity.speed;
+
     }
 
     public override bool IsDone()
@@ -52,8 +40,10 @@ public class Intercept : Follow
     {
         base.Stop();
         entity.desiredSpeed = 0;
+        entity.speed = 0;
         targetEntity.desiredSpeed = 0;
         targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
+        targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
         Vector3 deadRot = targetEntity.transform.localEulerAngles;
         deadRot.z = 90;
         targetEntity.transform.localEulerAngles = deadRot;

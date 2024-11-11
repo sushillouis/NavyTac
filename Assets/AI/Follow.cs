@@ -47,8 +47,8 @@ public class Follow : Move
         {
             Stop();
         }
-
-
+        range = diff.magnitude;
+        timeOnTarget = range / entity.speed;
     }
 
     public bool done = false;//user can set it to done

@@ -19,7 +19,9 @@ public enum EntityType
     SeaHunter,
     Mykola,
     SeaBaby,
-    CVN75
+    CVN75,
+    Submarine,
+    AntiShipMissile,
 }
 
 

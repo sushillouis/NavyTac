@@ -79,7 +79,7 @@ public class GameMgr : MonoBehaviour
 
     public void InitOpenOceanMap() {
 
-        List<Entity> allEntities = CreateCarrierGroup(Vector3.zero, 0, 300, 300);
+        List<Entity> allEntities = CreateCarrierGroup(Vector3.zero, 0, 300, 300, PlayerMgr.inst.player1);
         Vector3 pos = new Vector3(0, 0, 4000);
         bool add = false;
         StartCoroutine(AddMoveCommandsToEnt(allEntities, pos, add, 0));
@@ -89,7 +89,7 @@ public class GameMgr : MonoBehaviour
             entity.owner = PlayerMgr.inst.player1;
         }
         
-        List<Entity> allEntities2 = CreateCarrierGroup(new Vector3(0, 0, 3000), 180, 300, 300);
+        List<Entity> allEntities2 = CreateCarrierGroup(new Vector3(0, 0, 3000), 180, 300, 300, PlayerMgr.inst.player2);
         pos.z = -1000;
         StartCoroutine(AddMoveCommandsToEnt(allEntities2, pos, add, 180));
         foreach (Entity entity in allEntities2)
@@ -100,43 +100,43 @@ public class GameMgr : MonoBehaviour
     }
 
 
-    List<Entity> CreateCarrierGroup(Vector3 position, float heading, float xDelta, float zDelta) {
+    List<Entity> CreateCarrierGroup(Vector3 position, float heading, float xDelta, float zDelta, Player player) {
         List<Entity> allEntities = new List<Entity>();
 
         Vector3 pos = new Vector3(position.x, position.y, position.z);
         Vector3 headingVector = new Vector3(0, heading, 0);
 
-        Entity ent = EntityMgr.inst.CreateEntity(EntityType.CVN75, pos, headingVector);
+        Entity ent = EntityMgr.inst.CreateEntity(EntityType.CVN75, pos, headingVector, player);
         allEntities.Add(ent);
 
         pos.x = position.x - xDelta;
         pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.DDG51, pos, headingVector);
+        ent = EntityMgr.inst.CreateEntity(EntityType.DDG51, pos, headingVector, player);
         allEntities.Add(ent);
 
         pos.x = position.x + xDelta;
         pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.DDG51, pos, headingVector);
+        ent = EntityMgr.inst.CreateEntity(EntityType.DDG51, pos, headingVector, player);
         allEntities.Add(ent);
 
         pos.x = position.x - xDelta / 2;
         pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector);
+        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
         allEntities.Add(ent);
 
         pos.x = position.x + xDelta / 2;
         pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector);
+        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
         allEntities.Add(ent);
 
         pos.x = position.x - xDelta / 2;
         pos.z = position.z + zDelta / 2;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector);
+        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
         allEntities.Add(ent);
 
         pos.x = position.x + xDelta / 2;
         pos.z = position.z + zDelta / 2;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector);
+        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
         allEntities.Add(ent);
 
         return allEntities;
