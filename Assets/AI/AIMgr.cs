@@ -50,7 +50,7 @@ public class AIMgr : MonoBehaviour
                 if (intercept)
                     HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
                 else
-                    HandleFollow(SelectionMgr.inst.selectedEntities, ent, add);
+                    HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
             }
         }
         else
@@ -78,24 +78,40 @@ public class AIMgr : MonoBehaviour
 
 
 
-    public void HandleFollow(List<Entity> entities, Entity ent, bool add)
+    public void HandleFollow(List<Entity> entities, Entity ent, Vector3 offset, bool add)
     {
-        foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
+        foreach (Entity entity in entities) {
             if(ent != entity) {
-                Follow f = new Follow(entity, ent, new Vector3(100, 0, 0));
+                Follow f = new Follow(entity, ent, offset);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
                 AddOrSet(f, uai, add);
             }
         }
     }
 
-    void HandleIntercept(List<Entity> entities, Entity ent, bool add)
+    public void HandleIntercept(List<Entity> entities, Entity ent, bool add)
     {
-        foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
-            if(ent != entity) {
+        foreach(Entity entity in entities)
+        {
+            if(ent != entity)
+            {
                 Intercept intercept = new Intercept(entity, ent);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
                 AddOrSet(intercept, uai, add);
+            }
+        }
+
+    }
+
+    public void Handle3dIntercept(List<Entity> entities, Entity ent, bool add)
+    {
+        foreach(Entity entity in entities)
+        {
+            if(ent != entity)
+            {
+                Intercept3d intercept3d = new Intercept3d(entity, ent);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(intercept3d, uai, add);
             }
         }
 
