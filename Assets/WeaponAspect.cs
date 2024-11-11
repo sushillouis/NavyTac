@@ -12,6 +12,7 @@ public enum WeaponType
     Gun
 }
 
+//Separate Weapon Class
 [Serializable]
 public class Weapon
 {
@@ -31,7 +32,6 @@ public class Weapon
 public class WeaponAspect : MonoBehaviour
 {
     // Start is called before the first frame update
-    public float rClickRadiusSq = 10000;
     public int layerMask;
     public RaycastHit hit;
     public List<Weapon> allWeapons;
@@ -43,7 +43,7 @@ public class WeaponAspect : MonoBehaviour
 
     void Start()
     {
-        layerMask = 1 << 9;
+        // this intializes all the weapons cooldown to -cooldown so that they are ready to fire
         foreach (Weapon weapon in allWeapons)
         {
             weapon.lastFireTime = -weapon.cooldown;
@@ -79,7 +79,7 @@ public class WeaponAspect : MonoBehaviour
         if (UIMgr.inst.getTargetPosition(mousePos, out Vector3 targetPosition))
         {
             Entity targetEntity = UIMgr.inst.GetTargetEntity(targetPosition);
-            if (targetEntity != null && selectedWeapon.ammoCount > 0)
+            if (targetEntity != null && selectedWeapon.ammoCount > 0 && IsTargetInRange(targetPosition) && targetEntity.owner != this.GetComponentInParent<Entity>().owner)
             {
                 CreateAndLaunchMissile(selectedWeapon, targetEntity, targetPosition);
 
@@ -104,7 +104,6 @@ public class WeaponAspect : MonoBehaviour
     }
     private bool IsWeaponSelected()
     {
-        Debug.Log(this.GetComponentInParent<Entity>().name);
         return this.GetComponentInParent<Entity>().isSelected;
     }
     private bool IsTargetInRange(Vector3 targetPosition)

@@ -83,11 +83,20 @@ public class GameMgr : MonoBehaviour
         Vector3 pos = new Vector3(0, 0, 4000);
         bool add = false;
         StartCoroutine(AddMoveCommandsToEnt(allEntities, pos, add, 0));
-
+        foreach (Entity entity in allEntities) 
+        {
+            // set owner of carrier group 1 to player 1
+            entity.owner = PlayerMgr.inst.player1;
+        }
         
         List<Entity> allEntities2 = CreateCarrierGroup(new Vector3(0, 0, 3000), 180, 300, 300);
         pos.z = -1000;
         StartCoroutine(AddMoveCommandsToEnt(allEntities2, pos, add, 180));
+        foreach (Entity entity in allEntities2)
+        {
+            // set owner of carrier group 2 to player 1
+            entity.owner = PlayerMgr.inst.player2; 
+        }
     }
 
 

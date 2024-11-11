@@ -130,7 +130,7 @@ MonoBehaviour:
   fuel: 100
   acceleration: 5
   turnRate: 20
-  maxSpeed: 22
+  maxSpeed: 100
   minSpeed: 0
   mass: 10
   length: 3.6
@@ -144,6 +144,7 @@ MonoBehaviour:
     playerId: 0
     playerSide: 0
     playerColor: {r: 0, g: 0, b: 0, a: 0}
+  creatorsEntity: {fileID: 0}
 --- !u!54 &3220904144697182213
 Rigidbody:
   m_ObjectHideFlags: 0
