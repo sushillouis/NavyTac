@@ -6,6 +6,8 @@ using UnityEngine;
 public class Move : Command
 {
     public Vector3 movePosition;
+    public float range;
+    public float timeOnTarget;
     public Move(Entity ent, Vector3 pos) : base(ent)
     {
         movePosition = pos;
@@ -32,6 +34,10 @@ public class Move : Command
         entity.desiredHeading = dhds.dh;
         entity.desiredSpeed = dhds.ds;
         line.SetPosition(1, movePosition);
+
+        range = diff.magnitude;
+        timeOnTarget = range / entity.speed;
+
     }
 
     public Vector3 diff = Vector3.positiveInfinity;
@@ -48,6 +54,7 @@ public class Move : Command
 
     public DHDS ComputePotentialDHDS()
     {
+        diff = movePosition - entity.position;
         Potential p;
         repulsivePotential = Vector3.one; repulsivePotential.y = 0;
         foreach (Entity ent in EntityMgr.inst.entities) {

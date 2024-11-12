@@ -37,6 +37,7 @@ public class EntityMgr : MonoBehaviour
                 entities.Add(entity);
             }
         }
+        DistanceMgr.inst.Initialize();
         return entity;
     }
 
