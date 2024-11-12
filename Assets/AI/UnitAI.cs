@@ -145,7 +145,7 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
                 Pincer pincer = current as Pincer;
                 pincer.line.SetPosition(1, pincer.ComputePincerPoint());
                 pincer.line.SetPosition(2, pincer.targetEntity.position);
-            } else if (current is Follow) { // Less specific
+            } else if (current is Follow && current is not GroupEscort) { // Less specific
                 Follow f = current as Follow;
                 f.line.SetPosition(1, f.targetEntity.position + f.offset);
                 f.line.SetPosition(2, f.targetEntity.position);
@@ -155,26 +155,47 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
         }
 
         //potential fields lines
-        if(!(current is Follow) && !(current is Intercept) && !(current is Pincer) && AIMgr.inst.isPotentialFieldsMovement){ 
+        if(!(current is Intercept) && !(current is Pincer) && AIMgr.inst.isPotentialFieldsMovement){ 
             if(current is GroupTargetMove gMove) {
-                gMove.potentialLine.SetPosition(0, entity.position);
-                Vector3 newpos = Vector3.zero;
-                newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
-                newpos.z = Mathf.Cos(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
-                newpos *= 20;
-                newpos.y = 1;
-                gMove.potentialLine.SetPosition(1, entity.position + newpos);
-                gMove.potentialLine.gameObject.SetActive(entity.isSelected);
+                if(AIMgr.inst.displayPotentialLines) {
+                    gMove.potentialLine.SetPosition(0, entity.position);
+                    Vector3 newpos = Vector3.zero;
+                    newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
+                    newpos.z = Mathf.Cos(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
+                    newpos *= 20;
+                    newpos.y = 1;
+                    gMove.potentialLine.SetPosition(1, entity.position + newpos);
+                    gMove.potentialLine.gameObject.SetActive(entity.isSelected);
+                } else {
+                    gMove.potentialLine.gameObject.SetActive(false);
+                }
+            } else if(current is GroupEscort groupEscort) {
+                if(AIMgr.inst.displayPotentialLines) {
+                    groupEscort.potentialLine.SetPosition(0, entity.position);
+                    Vector3 newpos = Vector3.zero;
+                    newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
+                    newpos.z = Mathf.Cos(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
+                    newpos *= 20;
+                    newpos.y = 1;
+                    groupEscort.potentialLine.SetPosition(1, entity.position + newpos);
+                    groupEscort.potentialLine.gameObject.SetActive(entity.isSelected);
+                } else {
+                    groupEscort.potentialLine.gameObject.SetActive(false);
+                }
             } else {
                 Move m = current as Move;
-                m.potentialLine.SetPosition(0, entity.position);
-                Vector3 newpos = Vector3.zero;
-                newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
-                newpos.z = Mathf.Cos(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
-                newpos *= 20;
-                newpos.y = 1;
-                m.potentialLine.SetPosition(1, entity.position + newpos);
-                m.potentialLine.gameObject.SetActive(entity.isSelected);
+                if(AIMgr.inst.displayPotentialLines) {
+                    m.potentialLine.SetPosition(0, entity.position);
+                    Vector3 newpos = Vector3.zero;
+                    newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
+                    newpos.z = Mathf.Cos(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
+                    newpos *= 20;
+                    newpos.y = 1;
+                    m.potentialLine.SetPosition(1, entity.position + newpos);
+                    m.potentialLine.gameObject.SetActive(entity.isSelected);
+                } else {
+                    m.potentialLine.gameObject.SetActive(false);
+                }
             }
         }
 

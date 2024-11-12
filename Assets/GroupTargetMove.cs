@@ -16,7 +16,7 @@ public class GroupTargetMove : Move
         line = LineMgr.inst.CreateMoveLine(entity.position, movePosition);
         line.gameObject.SetActive(false);
         potentialLine = LineMgr.inst.CreatePotentialLine(entity.position);
-        line.gameObject.SetActive(false);
+        potentialLine.gameObject.SetActive(false);
     }
 
     public override void Tick()
@@ -43,21 +43,25 @@ public class GroupTargetMove : Move
             return new DHDS(0,0);
         }
         Potential p;
-        repulsivePotential = Vector3.one; repulsivePotential.y = 0;
+        repulsivePotential = Vector3.zero; repulsivePotential.y = 0;
         foreach (Entity ent in EntityMgr.inst.entities) {
             //THIS SHOULD BE FIXED
             //THIS SHOULD BE FIXED
             //THIS SHOULD BE FIXED
             //THIS SHOULD BE FIXED
             //This many get calls is B A D
+            float potentialScalar = 1.0f;
             UnitAI ai = ent.GetComponentInChildren<UnitAI>();
-            if (ent == entity || (ai.group == thisAI.group && thisAI.group.target != ent))
+            if (ent == entity) {
                 continue;
+            }
+            if (ent == entity || (ai.group == thisAI.group && thisAI.group.target != ent)) {
+                potentialScalar=0.25f;
+            }
             p = DistanceMgr.inst.GetPotential(entity, ent);
             if (p.distance < AIMgr.inst.potentialDistanceThreshold) {
-                repulsivePotential += p.direction * entity.mass *
+                repulsivePotential += p.direction * entity.mass * potentialScalar *
                     AIMgr.inst.repulsiveCoefficient * Mathf.Pow(p.diff.magnitude, AIMgr.inst.repulsiveExponent);
-                //repulsivePotential += p.diff;
             }
         }
         //repulsivePotential *= repulsiveCoefficient * Mathf.Pow(repulsivePotential.magnitude, repulsiveExponent);
@@ -89,9 +93,7 @@ public class GroupTargetMove : Move
     {
         entity.desiredSpeed = 0;
         LineMgr.inst.DestroyLR(line);
-        LineMgr.inst.DestroyLR(potentialLine);
         
         line = null;
-        potentialLine = null;
     }
 }
