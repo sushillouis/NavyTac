@@ -4585,6 +4585,11 @@ MonoBehaviour:
   desiredSpeed: {fileID: 1337279114}
   heading: {fileID: 1569143115}
   desiredHeading: {fileID: 269416325}
+  altitude: {fileID: 0}
+  desiredAltitude: {fileID: 0}
+  target: {fileID: 0}
+  timeOnTarget: {fileID: 0}
+  targetRange: {fileID: 0}
 --- !u!1001 &958908199
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8815,9 +8820,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mixer: {fileID: 24100000, guid: f23e15c2c50c5cb45a850c2216cc732b, type: 2}
   muteSound: 0
-  masterVolume: 0
-  ambientVolume: 0
-  bgmVolume: 0
+  masterVolume: 0.75
+  ambientVolume: 0.75
+  bgmVolume: 0.75
+  soundEffectsVolume: 0.75
 --- !u!1 &1801844801
 GameObject:
   m_ObjectHideFlags: 0

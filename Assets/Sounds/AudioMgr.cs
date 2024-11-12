@@ -18,7 +18,7 @@ public class AudioMgr : MonoBehaviour
     public float ambientVolume;
     [Range(0, 1)]
     public float bgmVolume;
-    [Range(-80.0f, 20.0f)]
+    [Range(0, 1)]
     public float soundEffectsVolume;
 
     void Awake()
@@ -38,6 +38,7 @@ public class AudioMgr : MonoBehaviour
         mixer.SetFloat("MasterVolume", ScaleSound(masterVolume));
         mixer.SetFloat("AmbientVolume", ScaleSound(ambientVolume));
         mixer.SetFloat("BGMVolume", ScaleSound(bgmVolume));
+        mixer.SetFloat("SoundEffectsVolume", ScaleSound(soundEffectsVolume));
 
         if (muteSound)
         {
