@@ -8,8 +8,6 @@ public class SmartIntercept : Intercept
 {
     public SmartIntercept(Entity ent, Entity target) : base(ent, target)
     {
-    
-
     }
 
     public override void Init()

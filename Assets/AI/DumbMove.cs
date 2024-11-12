@@ -18,7 +18,7 @@ public class DumbMove : Move
     {
         DHDS dhds = ComputeDHDS();
         entity.desiredHeading = dhds.dh;
-        entity.desiredSpeed = dhds.ds;
+        entity.desiredSpeed = entity.maxSpeed;
         line.SetPosition(1, movePosition);
     }
 
