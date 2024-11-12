@@ -32,9 +32,10 @@ public class WeaponsMgr : MonoBehaviour
                 wd.ammoCount -= 1;
                 Vector3 pos = launchingEntity.transform.TransformPoint(wd.launchLocation);
                 Vector3 rot = launchingEntity.transform.TransformDirection(wd.launchDirection);
-                Entity ent = EntityMgr.inst.CreateEntity(wd.weaponEntityType, pos, rot);
+                Entity ent = EntityMgr.inst.CreateEntity(wd.weaponEntityType, pos, rot, launchingEntity.owner);
                 weapons.Add(ent);
                 wd.currentWeaponEntities.Add(ent);
+                ent.creatorsEntity = launchingEntity;
                 StartCoroutine(TargetEntity(ent, wd, target, targetPosition));
                 wd.lastShotTime = Time.time;
             }
@@ -89,25 +90,6 @@ public class WeaponsMgr : MonoBehaviour
         
     }
 
-    public void HandleSmartWeapon(Vector2 mousePos)
-    {
-        handleWeapon(mousePos, WeaponBehaviors.Smart);
-    }
-
-    public void HandleDumbWeapon(Vector2 mousePos)
-    {
-        handleWeapon(mousePos, WeaponBehaviors.Dumb);
-    }
-
-    public void HandleAirInterceptorWeapon(Vector2 mousePos){
-        handleWeapon(mousePos, WeaponBehaviors.AirInterceptor);
-    }
-    public void HandleSurfaceInterceptorWeapon(Vector2 mousePos)
-    {
-       handleWeapon(mousePos, WeaponBehaviors.SurfaceInterceptor);
-
-    }
-        
     public void handleWeapon(Vector2 mousePos, WeaponBehaviors behaviorType){
          List<Entity> selectedEntities = SelectionMgr.inst.selectedEntities;
         if (selectedEntities == null) return;

@@ -47,7 +47,7 @@ public class DamageMatrix
             {
                 { EntityType.DDG51, 5f },
                 { EntityType.Container, 1f },
-                { EntityType.CVN75, 2f },
+                { EntityType.CVN75, 100f },
                 { EntityType.JARIUSV, 1f },
                 { EntityType.MineSweeper, 2f },
                 { EntityType.OilServiceVessel, 0f },

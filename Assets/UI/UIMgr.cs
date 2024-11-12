@@ -324,25 +324,25 @@ public class UIMgr : MonoBehaviour
     private void Attack1(InputAction.CallbackContext context)
     {
         Debug.Log("Dumb Weapon");
-        WeaponsMgr.inst.HandleDumbWeapon(selectionCursorPosition.ReadValue<Vector2>());
+        WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.Dumb);
     }
 
     private void Attack2(InputAction.CallbackContext context)
     {
         Debug.Log("Surface Weapon");
-        WeaponsMgr.inst.HandleSurfaceInterceptorWeapon(selectionCursorPosition.ReadValue<Vector2>());
+        WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.SurfaceInterceptor);
     }
 
     private void Attack3(InputAction.CallbackContext context)
     {
         Debug.Log("Air Weapon");
-        WeaponsMgr.inst.HandleAirInterceptorWeapon(selectionCursorPosition.ReadValue<Vector2>());
+        WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.AirInterceptor);
     }
 
     private void Attack4(InputAction.CallbackContext context)
     {
         Debug.Log("Smart Weapon");
-        WeaponsMgr.inst.HandleSmartWeapon(selectionCursorPosition.ReadValue<Vector2>());
+        WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.Smart);
 
     }
 }

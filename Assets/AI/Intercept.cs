@@ -40,13 +40,15 @@ public class Intercept : Follow
         base.Stop();
         entity.desiredSpeed = 0;
         entity.speed = 0;
-        targetEntity.desiredSpeed = 0;
-        targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
-        targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
-        Vector3 deadRot = targetEntity.transform.localEulerAngles;
-        deadRot.z = 90;
-        targetEntity.transform.localEulerAngles = deadRot;
-
+        if (targetEntity != null)
+        {
+            targetEntity.desiredSpeed = 0;
+            targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
+            // targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
+            Vector3 deadRot = targetEntity.transform.localEulerAngles;
+            deadRot.z = 90;
+            targetEntity.transform.localEulerAngles = deadRot;
+        }
     }
 
 }
