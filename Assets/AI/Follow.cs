@@ -37,7 +37,8 @@ public class Follow : Move
         } else {
             entity.desiredSpeed = entity.maxSpeed;
         }
-
+        range = diff.magnitude;
+        timeOnTarget = range / entity.speed;
     }
 
     public bool done = false;//user can set it to done

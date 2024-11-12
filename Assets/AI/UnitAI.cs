@@ -11,12 +11,16 @@ public class UnitAI : MonoBehaviour
         entity = GetComponentInParent<Entity>();
         commands = new List<Command>();
         intercepts = new List<Intercept>();
+        intercept3ds = new List<Intercept3d>();
+        follows = new List<Follow>();
         moves = new List<Move>();
     }
 
     public List<Move> moves;
+    public List<Follow> follows;
     public List<Command> commands;
     public List<Intercept> intercepts;
+    public List<Intercept3d> intercept3ds;
 
     // Update is called once per frame
     void FixedUpdate()
@@ -46,6 +50,18 @@ public class UnitAI : MonoBehaviour
             intercept.Stop();
             intercepts.Remove(intercept);
         }
+        
+        if(cmd is Intercept3d) {
+            Intercept3d intercept3d = (Intercept3d)cmd;
+            intercept3d.Stop();
+            intercept3ds.Remove(intercept3d);
+        }
+
+        if(cmd is Follow){
+            Follow follow = (Follow)cmd;
+            follow.Stop();
+            follows.Remove(follow);
+        }
             
         commands.RemoveAt(index);
 
@@ -64,10 +80,12 @@ public class UnitAI : MonoBehaviour
         //print("Adding command; " + c.ToString());
         c.Init();
         commands.Add(c);
-        if (c is Intercept)
+        if(c is Intercept3d)
+            intercept3ds.Add(c as Intercept3d);
+        else if(c is Intercept)
             intercepts.Add(c as Intercept);
         else if (c is Follow)
-            ;
+            follows.Add(c as Follow);
         else
             moves.Add(c as Move);
     }
@@ -79,6 +97,8 @@ public class UnitAI : MonoBehaviour
         commands.Clear();
         moves.Clear();
         intercepts.Clear();
+        follows.Clear();
+        intercept3ds.Clear();
         AddCommand(c);
 
     }

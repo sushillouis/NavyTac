@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -157,6 +158,13 @@ public class UIMgr : MonoBehaviour
     public TextMeshProUGUI heading;
     public TextMeshProUGUI desiredHeading;
 
+    public TextMeshProUGUI altitude;
+    public TextMeshProUGUI desiredAltitude;
+
+    public TextMeshProUGUI target;
+    public TextMeshProUGUI timeOnTarget;
+    public TextMeshProUGUI targetRange;
+
     // Update is called once per frame
     void Update()
     {
@@ -167,6 +175,16 @@ public class UIMgr : MonoBehaviour
             desiredSpeed.text = ent.desiredSpeed.ToString("F2") + " m/s";
             heading.text = ent.heading.ToString("F1") + " deg";
             desiredHeading.text = ent.desiredHeading.ToString("F1") + " deg";
+
+            DisplayAIInformation(ent);
+
+            Oriented3dPhysics phx3d = ent.GetComponentInChildren<Oriented3dPhysics>();
+            if(phx3d != null)  {
+                altitude.text = phx3d.altitude.ToString("F2") + "m";
+                desiredAltitude.text = phx3d.desiredAltitude.ToString("F2") + "m";
+            }
+
+
         }
 
         if (ToggleMultiSelect.activeSelf)
@@ -182,6 +200,25 @@ public class UIMgr : MonoBehaviour
         if(boxSelecting)
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
     }
+    
+    private void DisplayAIInformation(Entity ent) {
+        UnitAI uai = ent.GetComponentInChildren<UnitAI>();
+        if(uai.commands.Count > 0) {
+            Move move = uai.commands[0] as Move;
+            timeOnTarget.text = move.timeOnTarget.ToString("F2") + "sec";
+            targetRange.text = move.range.ToString("F2") + "m";
+            target.text = move.movePosition.ToString();
+
+            Follow follow = uai.commands[0] as Follow;
+            if(follow != null){
+                target.text = follow.targetEntity.name;
+            } 
+
+        }
+
+
+    }
+
 
     private void ToggleRTSView(InputAction.CallbackContext context)
     {

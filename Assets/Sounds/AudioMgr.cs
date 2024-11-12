@@ -12,11 +12,11 @@ public class AudioMgr : MonoBehaviour
 
     public bool muteSound;
 
-    [Range(-80.0f, 20.0f)]
+    [Range(0, 1)]
     public float masterVolume;
-    [Range(-80.0f, 20.0f)]
+    [Range(0, 1)]
     public float ambientVolume;
-    [Range(-80.0f, 20.0f)]
+    [Range(0, 1)]
     public float bgmVolume;
 
     void Awake()
@@ -33,13 +33,20 @@ public class AudioMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        mixer.SetFloat("MasterVolume", masterVolume);
-        mixer.SetFloat("AmbientVolume", ambientVolume);
-        mixer.SetFloat("BGMVolume", bgmVolume);
+        mixer.SetFloat("MasterVolume", ScaleSound(masterVolume));
+        mixer.SetFloat("AmbientVolume", ScaleSound(ambientVolume));
+        mixer.SetFloat("BGMVolume", ScaleSound(bgmVolume));
 
         if (muteSound)
         {
             mixer.SetFloat("MasterVolume", -80);
         }
+    }
+
+    float scaleConst = 1 / (Mathf.Log10(1.1f) + 1);
+    float ScaleSound(float sliderValue)
+    {
+        float input = scaleConst * (Mathf.Log10(sliderValue + 0.1f) + 1);
+        return Mathf.Lerp(-80f, 0f, input);
     }
 }
