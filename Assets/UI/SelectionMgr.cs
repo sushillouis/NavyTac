@@ -140,6 +140,7 @@ public class SelectionMgr : MonoBehaviour
                 selectedEntity = ent;
                 selectedEntity.isSelected = true;
                 selectedEntities.Add(ent);
+                AudioMgr.inst.PlaySelectionSound(ent);
             }
             else if (!shouldClearSelection)
             {
@@ -153,7 +154,6 @@ public class SelectionMgr : MonoBehaviour
                 ent.isSelected = false;
                 selectedEntities.Remove(ent);
             }
-            ent.transform.Find("Aspects/Sound").GetComponent<SoundAspect>().PlaySelection();
         }
         else
             ClearSelection();

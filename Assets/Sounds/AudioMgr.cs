@@ -10,8 +10,12 @@ public class AudioMgr : MonoBehaviour
 
     public AudioMixer mixer;
 
-    public bool muteSound;
+    [Header("Selection")]
+    public List<AudioClip> selectionSounds;
+    public AudioSource selectionSource;
 
+    [Header("Volume Control")]
+    public bool muteSound;
     [Range(0, 1)]
     public float masterVolume;
     [Range(0, 1)]
@@ -51,5 +55,15 @@ public class AudioMgr : MonoBehaviour
     {
         float input = scaleConst * (Mathf.Log10(sliderValue + 0.1f) + 1);
         return Mathf.Lerp(-80f, 0f, input);
+    }
+
+    public void PlaySelectionSound(Entity ent)
+    {
+        if(ent.shipClass != ShipClasses.None)
+        {
+            selectionSource.Stop();
+            selectionSource.clip = selectionSounds[(int)ent.shipClass-1];
+            selectionSource.Play();
+        }
     }
 }

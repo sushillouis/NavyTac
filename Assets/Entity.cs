@@ -55,6 +55,7 @@ public class Entity : MonoBehaviour
     public float height;
 
     public EntityType entityType;
+    public ShipClasses shipClass;
 
     public GameObject cameraRig;
     public GameObject selectionCircle;
