@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Analytics;
+using UnityEngine.XR;
 
 public class WeaponsMgr : MonoBehaviour
 {
@@ -14,25 +16,22 @@ public class WeaponsMgr : MonoBehaviour
     public List<Entity> weapons = new List<Entity>();
 
 
-    public void LaunchWeapon(Entity launchingEntity, EntityType weaponEntityType, Entity target)
+    public void LaunchWeapon(Entity launchingEntity, WeaponData wd , Entity target)
     {
-        WeaponsAspect weaponsAspect = launchingEntity.GetComponentInChildren<WeaponsAspect>();
-        WeaponData wd = weaponsAspect.weapons.Find(x => x.weaponEntityType == weaponEntityType);
-        if(wd == null) Debug.Log("Could not find weapon: " + weaponEntityType);
+        if(wd == null) Debug.Log("Could not find weapon: " + wd.weaponEntityType);
         if(wd.ammoCount <= 0)
         {
-            Debug.Log("Failure! Out of " + weaponEntityType + " on " + launchingEntity.name);
-        } else
+            Debug.Log("Failure! Out of " + wd.weaponEntityType + " on " + launchingEntity.name);
+        } 
+        else
         {
             wd.ammoCount -= 1;
             Vector3 pos = launchingEntity.transform.TransformPoint(wd.launchLocation);
             Vector3 rot = launchingEntity.transform.TransformDirection(wd.launchDirection);
-            Entity ent = EntityMgr.inst.CreateEntity(weaponEntityType, pos, rot);
+            Entity ent = EntityMgr.inst.CreateEntity(wd.weaponEntityType, pos, rot);
             weapons.Add(ent);
-            Debug.Log("Weapon launching: " + ent.name);
             wd.currentWeaponEntities.Add(ent);
-
-            StartCoroutine(TargetEntity(ent, wd, target));
+            StartCoroutine(TargetEntity(ent, wd, target) );
         }
     }
 
@@ -52,12 +51,16 @@ public class WeaponsMgr : MonoBehaviour
             case WeaponBehaviors.Dumb:
                 AIMgr.inst.HandleFollow(entities, targetEntity, Vector3.zero, false);
                 break;
+            case WeaponBehaviors.Smart:
+                AIMgr.inst.HandleSmartIntercept(entities, targetEntity, false);
+                break;
             default:
                 AIMgr.inst.HandleFollow(entities, targetEntity, Vector3.zero, false);
                 break;
         }
     }
 
+   
     public void WeaponDone(Entity weapon)
     {
         Entity ent = weapons.Find(x => x.name.Contains(weapon.name));
@@ -77,24 +80,92 @@ public class WeaponsMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyUp(KeyCode.Alpha0))
-            Test1();
+        
     }
 
-
-
-    void Test1()
+    public void HandleSmartWeapon(Vector2 mousePos)
     {
-        Entity selectedEnt = SelectionMgr.inst.selectedEntity;
-        Entity ent = EntityMgr.inst.entities.Find(x => (x.entityType == EntityType.CVN75) &&
-                                                       (x.owner.playerSide != selectedEnt.owner.playerSide));
-        LaunchWeapon(selectedEnt, EntityType.AntiShipMissile, ent);
-        Debug.Log("Launched: " + EntityType.AntiShipMissile + " @ " + ent.name);
-
-        LaunchWeapon(selectedEnt, EntityType.SeaBaby, ent);
-        Debug.Log("Launched: " + EntityType.SeaBaby + " @ " + ent.name);
+        List<Entity> selectedEntities = SelectionMgr.inst.selectedEntities;
+        if(selectedEntities == null) return;
+        foreach(Entity selectedEnt in selectedEntities)
+        {
+            WeaponsAspect weaponsAspect = selectedEnt.GetComponentInChildren<WeaponsAspect>();
+            if(weaponsAspect == null) continue;
+            WeaponData wd = weaponsAspect.weapons.Find(x => x.behaviorType == WeaponBehaviors.Smart);
+            if (wd != null) {
+                if(UIMgr.inst.getTargetPosition(mousePos, out Vector3 targetPosition)){
+                    Entity targetEntity = UIMgr.inst.GetTargetEntity(targetPosition);
+                    if(targetEntity!= null && targetEntity.owner != selectedEnt.owner){
+                        Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType + " at " + targetEntity.name) ;
+                        LaunchWeapon(selectedEnt, wd, targetEntity);
+                    }
+                }
+            }
+        }
     }
 
+    public void HandleDumbWeapon(Vector2 mousePos){
+        List<Entity> selectedEntities = SelectionMgr.inst.selectedEntities;
+       if(selectedEntities == null) return;
+       foreach(Entity selectedEnt in selectedEntities){
+            WeaponsAspect weaponsAspect = selectedEnt.GetComponentInChildren<WeaponsAspect>();
+            
+            if(weaponsAspect == null) continue;
+            WeaponData wd = weaponsAspect.weapons.Find(x => x.behaviorType == WeaponBehaviors.Dumb);
+            if (wd != null) {
+                Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType);
+                if(UIMgr.inst.getTargetPosition(mousePos, out Vector3 targetPosition)){
+                    Entity targetEntity = UIMgr.inst.GetTargetEntity(targetPosition);
+                    
+                    if(targetEntity!= null && targetEntity.owner != selectedEnt.owner){
+                        Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType + " at " + targetEntity.name) ;
+                        LaunchWeapon(selectedEnt, wd, targetEntity);
+                    }
+                }
+            }
+       }
+    }
+
+    public void HandleAirInterceptorWeapon(Vector2 mousePos){
+        List<Entity> selectedEntities = SelectionMgr.inst.selectedEntities;
+       if(selectedEntities == null) return;
+       foreach(Entity selectedEnt in selectedEntities){
+            WeaponsAspect weaponsAspect = selectedEnt.GetComponentInChildren<WeaponsAspect>();
+            if(weaponsAspect == null) continue;
+            WeaponData wd = weaponsAspect.weapons.Find(x => x.behaviorType == WeaponBehaviors.AirInterceptor);
+            if (wd != null) {
+                if(UIMgr.inst.getTargetPosition(mousePos, out Vector3 targetPosition)){
+                    Entity targetEntity = UIMgr.inst.GetTargetEntity(targetPosition);
+                    if(targetEntity!= null && targetEntity.owner != selectedEnt.owner){
+                        Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType + " at " + targetEntity.name) ;
+                        LaunchWeapon(selectedEnt, wd, targetEntity);
+                        
+                    }
+                }
+            }
+       }
+    }
+    public void HandleSurfaceInterceptorWeapon(Vector2 mousePos){
+       List<Entity> selectedEntities = SelectionMgr.inst.selectedEntities;
+       if(selectedEntities == null) return;
+       foreach(Entity selectedEnt in selectedEntities){
+            WeaponsAspect weaponsAspect = selectedEnt.GetComponentInChildren<WeaponsAspect>();
+            if(weaponsAspect == null) continue;
+            WeaponData wd = weaponsAspect.weapons.Find(x => x.behaviorType == WeaponBehaviors.SurfaceInterceptor);
+            if (wd != null) {
+                if(UIMgr.inst.getTargetPosition(mousePos, out Vector3 targetPosition)){
+                    Entity targetEntity = UIMgr.inst.GetTargetEntity(targetPosition);
+                    if(targetEntity!= null && targetEntity.owner != selectedEnt.owner){
+                        Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType + " at " + targetEntity.name) ;
+                        LaunchWeapon(selectedEnt, wd, targetEntity);
+                    }
+                }
+            }
+       }
+        
+
+        
+    }
     public GameObject MovableEntitiesRoot;
     public GameObject WeaponsAspectPrefab;
 

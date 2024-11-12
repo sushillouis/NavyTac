@@ -1927,6 +1927,11 @@ MonoBehaviour:
   desiredSpeed: {fileID: 0}
   heading: {fileID: 0}
   desiredHeading: {fileID: 0}
+  altitude: {fileID: 0}
+  desiredAltitude: {fileID: 0}
+  target: {fileID: 0}
+  timeOnTarget: {fileID: 0}
+  targetRange: {fileID: 0}
 --- !u!1001 &958908199
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4988,6 +4993,46 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].cooldown
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].ammoCount
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[0].behaviorType
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].behaviorType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].launchLocation.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].launchLocation.z
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].weaponEntityType
+      value: 11
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5176,7 +5221,7 @@ PrefabInstance:
     - target: {fileID: 250376097529231850, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.0000010971845
+      value: -0.000021062624
       objectReference: {fileID: 0}
     - target: {fileID: 873341795395542852, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}

@@ -4,9 +4,9 @@ using System.Security.Cryptography;
 using UnityEngine;
 
 [System.Serializable]
-public class Intercept : Follow
+public class SmartIntercept : Follow
 {
-    public Intercept(Entity ent, Entity target) : base(ent, target, Vector3.zero)
+    public SmartIntercept(Entity ent, Entity target) : base(ent, target, Vector3.zero)
     {
         //Follow does all the work
 
@@ -21,13 +21,13 @@ public class Intercept : Follow
 
     public override void Tick()
     {
-        //movePosition = targetEntity.transform.position;
-        float dh = ComputePredictiveDH(Vector3.zero);
+        //movePosition = targetEntity.transform.position; 
+        float dh = ComputePotentialPredictiveDHDS(Vector3.zero).dh;
+        float ds = ComputePotentialPredictiveDHDS(Vector3.zero).ds;
         entity.desiredHeading = dh;
         entity.desiredSpeed = entity.maxSpeed;
         range = diff.magnitude;
         timeOnTarget = range / entity.speed;
-
     }
 
     public override bool IsDone()

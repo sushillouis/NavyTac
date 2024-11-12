@@ -12,6 +12,7 @@ public class UnitAI : MonoBehaviour
         commands = new List<Command>();
         intercepts = new List<Intercept>();
         intercept3ds = new List<Intercept3d>();
+        smartIntercepts = new List<SmartIntercept>();
         follows = new List<Follow>();
         moves = new List<Move>();
     }
@@ -21,6 +22,7 @@ public class UnitAI : MonoBehaviour
     public List<Command> commands;
     public List<Intercept> intercepts;
     public List<Intercept3d> intercept3ds;
+    public List<SmartIntercept> smartIntercepts;
 
     // Update is called once per frame
     void FixedUpdate()
@@ -57,6 +59,12 @@ public class UnitAI : MonoBehaviour
             intercept3ds.Remove(intercept3d);
         }
 
+        if(cmd is SmartIntercept) {
+            SmartIntercept smartIntercept = (SmartIntercept)cmd;
+            smartIntercept.Stop();
+            smartIntercepts.Remove(smartIntercept);
+        }
+
         if(cmd is Follow){
             Follow follow = (Follow)cmd;
             follow.Stop();
@@ -80,7 +88,9 @@ public class UnitAI : MonoBehaviour
         //print("Adding command; " + c.ToString());
         c.Init();
         commands.Add(c);
-        if(c is Intercept3d)
+        if(c is SmartIntercept)
+            smartIntercepts.Add(c as SmartIntercept);
+        else if(c is Intercept3d)
             intercept3ds.Add(c as Intercept3d);
         else if(c is Intercept)
             intercepts.Add(c as Intercept);
@@ -99,6 +109,7 @@ public class UnitAI : MonoBehaviour
         intercepts.Clear();
         follows.Clear();
         intercept3ds.Clear();
+        smartIntercepts.Clear();
         AddCommand(c);
 
     }

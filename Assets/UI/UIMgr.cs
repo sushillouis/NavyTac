@@ -323,28 +323,26 @@ public class UIMgr : MonoBehaviour
 
     private void Attack1(InputAction.CallbackContext context)
     {
-        //  Debug.Log(selectionCursorPosition.ReadValue<Vector3>());
-        WeaponAspect.inst.HandleFire_AA_Guided(selectionCursorPosition.ReadValue<Vector2>());
+        Debug.Log("Dumb Weapon");
+        WeaponsMgr.inst.HandleDumbWeapon(selectionCursorPosition.ReadValue<Vector2>());
     }
 
     private void Attack2(InputAction.CallbackContext context)
     {
-        Debug.Log("attack 2");
-        WeaponAspect.inst.HandleFire_LA_GuidedMissiles(selectionCursorPosition.ReadValue<Vector2>());
+        Debug.Log("Surface Weapon");
+        WeaponsMgr.inst.HandleSurfaceInterceptorWeapon(selectionCursorPosition.ReadValue<Vector2>());
     }
 
     private void Attack3(InputAction.CallbackContext context)
     {
-        foreach (Entity ent in SelectionMgr.inst.selectedEntities){
-            if(ent.GetComponentInChildren<WeaponAspect>()!= null){
-                ent.GetComponentInChildren<WeaponAspect>().HandleFire_SmartSurfaceMissiles(selectionCursorPosition.ReadValue<Vector2>());
-            }
-        }
+        Debug.Log("Air Weapon");
+        WeaponsMgr.inst.HandleAirInterceptorWeapon(selectionCursorPosition.ReadValue<Vector2>());
     }
 
     private void Attack4(InputAction.CallbackContext context)
     {
-        Debug.Log("attack 4");
+        Debug.Log("Smart Weapon");
+        WeaponsMgr.inst.HandleSmartWeapon(selectionCursorPosition.ReadValue<Vector2>());
 
     }
 }

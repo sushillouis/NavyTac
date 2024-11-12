@@ -113,6 +113,19 @@ public class AIMgr : MonoBehaviour
         }
 
     }
+    public void HandleSmartIntercept(List<Entity> entities, Entity ent, bool add)
+    {
+        foreach(Entity entity in entities)
+        {
+            if(ent != entity)
+            {
+                SmartIntercept smartIntercept = new SmartIntercept(entity, ent);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(smartIntercept, uai, add);
+            }
+        }
+
+    }
 
     public float rClickRadiusSq = 10000;
     public Entity FindClosestEntInRadius(Vector3 point, float rsq)
