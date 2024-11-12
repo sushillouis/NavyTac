@@ -67,6 +67,13 @@ MonoBehaviour:
     launchLocation: {x: 0, y: 10, z: 100}
     launchDirection: {x: 0, y: 0, z: 0}
     ammoCount: 20
+  - cooldown: 30
+    behaviorType: 1
+    weaponEntityType: 11
+    currentWeaponEntities: []
+    launchLocation: {x: 0, y: 10, z: 100}
+    launchDirection: {x: 0, y: 0, z: 0}
+    ammoCount: 20
 --- !u!1 &1239843608224656196
 GameObject:
   m_ObjectHideFlags: 0

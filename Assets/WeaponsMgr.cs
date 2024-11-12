@@ -16,7 +16,7 @@ public class WeaponsMgr : MonoBehaviour
     public List<Entity> weapons = new List<Entity>();
 
 
-    public void LaunchWeapon(Entity launchingEntity, WeaponData wd , Entity target)
+    public void LaunchWeapon(Entity launchingEntity, WeaponData wd , Entity target, Vector3 targetPosition)
     {
         if(wd == null) Debug.Log("Could not find weapon: " + wd.weaponEntityType);
         if(wd.ammoCount <= 0)
@@ -31,11 +31,11 @@ public class WeaponsMgr : MonoBehaviour
             Entity ent = EntityMgr.inst.CreateEntity(wd.weaponEntityType, pos, rot);
             weapons.Add(ent);
             wd.currentWeaponEntities.Add(ent);
-            StartCoroutine(TargetEntity(ent, wd, target) );
+            StartCoroutine(TargetEntity(ent, wd, target, targetPosition) );
         }
     }
 
-    IEnumerator TargetEntity(Entity weapon, WeaponData wd, Entity targetEntity)
+    IEnumerator TargetEntity(Entity weapon, WeaponData wd, Entity targetEntity, Vector3 targetPosition)
     {
         yield return new WaitForFixedUpdate();
         List<Entity> entities = new List<Entity>();
@@ -49,7 +49,7 @@ public class WeaponsMgr : MonoBehaviour
                 AIMgr.inst.Handle3dIntercept(entities, targetEntity, false);
                 break;
             case WeaponBehaviors.Dumb:
-                AIMgr.inst.HandleFollow(entities, targetEntity, Vector3.zero, false);
+                AIMgr.inst.HandleDumbMove(entities, targetPosition , false);
                 break;
             case WeaponBehaviors.Smart:
                 AIMgr.inst.HandleSmartIntercept(entities, targetEntity, false);
@@ -97,7 +97,7 @@ public class WeaponsMgr : MonoBehaviour
                     Entity targetEntity = UIMgr.inst.GetTargetEntity(targetPosition);
                     if(targetEntity!= null && targetEntity.owner != selectedEnt.owner){
                         Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType + " at " + targetEntity.name) ;
-                        LaunchWeapon(selectedEnt, wd, targetEntity);
+                        LaunchWeapon(selectedEnt, wd, targetEntity,targetPosition);
                     }
                 }
             }
@@ -115,13 +115,10 @@ public class WeaponsMgr : MonoBehaviour
             if (wd != null) {
                 Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType);
                 if(UIMgr.inst.getTargetPosition(mousePos, out Vector3 targetPosition)){
-                    Entity targetEntity = UIMgr.inst.GetTargetEntity(targetPosition);
                     
-                    if(targetEntity!= null && targetEntity.owner != selectedEnt.owner){
-                        Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType + " at " + targetEntity.name) ;
-                        LaunchWeapon(selectedEnt, wd, targetEntity);
-                    }
+                    LaunchWeapon(selectedEnt, wd, null,targetPosition);
                 }
+                
             }
        }
     }
@@ -138,7 +135,7 @@ public class WeaponsMgr : MonoBehaviour
                     Entity targetEntity = UIMgr.inst.GetTargetEntity(targetPosition);
                     if(targetEntity!= null && targetEntity.owner != selectedEnt.owner){
                         Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType + " at " + targetEntity.name) ;
-                        LaunchWeapon(selectedEnt, wd, targetEntity);
+                        LaunchWeapon(selectedEnt, wd, targetEntity,targetPosition);
                         
                     }
                 }
@@ -157,7 +154,7 @@ public class WeaponsMgr : MonoBehaviour
                     Entity targetEntity = UIMgr.inst.GetTargetEntity(targetPosition);
                     if(targetEntity!= null && targetEntity.owner != selectedEnt.owner){
                         Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType + " at " + targetEntity.name) ;
-                        LaunchWeapon(selectedEnt, wd, targetEntity);
+                        LaunchWeapon(selectedEnt, wd, targetEntity,targetPosition);
                     }
                 }
             }

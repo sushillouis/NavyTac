@@ -64,7 +64,14 @@ public class AIMgr : MonoBehaviour
             AddOrSet(m, uai, add);
         }
     }
-
+    public void HandleDumbMove(List<Entity> entities, Vector3 point, bool add)
+    {
+        foreach (Entity entity in entities) {
+            Move m = new DumbMove(entity, point);
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            AddOrSet(m, uai, add);
+        }
+    }
     void AddOrSet(Command c, UnitAI uai, bool add)
     {
         if (add)
