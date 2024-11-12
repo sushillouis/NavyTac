@@ -91,44 +91,20 @@ public class Follow : Move
         return dh;
     }
 
-    public DHDS ComputePotentialPredictiveDHDS(Vector3 relativeOffset)
+        public DHDS ComputePotentialPredictiveDHDS(Vector3 relativeOffset)
     {
-        float dh;
         movePosition = targetEntity.position + targetEntity.transform.TransformVector(relativeOffset);
         diff = movePosition - entity.position;
         relativeVelocity = entity.velocity - targetEntity.velocity;
-        predictedInterceptTime = diff.magnitude / relativeVelocity.magnitude;
+        predictedInterceptTime = relativeVelocity.magnitude > 0 ? diff.magnitude / relativeVelocity.magnitude : 0;
+
         if (predictedInterceptTime >= 0)
         {
             predictedMovePosition = movePosition + (targetEntity.velocity * predictedInterceptTime);
-            predictedDiff = predictedMovePosition - entity.position;
-            Potential p;
-            repulsivePotential = Vector3.one; repulsivePotential.y = 0;
-            foreach (Entity ent in EntityMgr.inst.entities) {
-                if (ent == entity && ent!= targetEntity) continue;
-                p = DistanceMgr.inst.GetPotential(entity, ent);
-                if (p.distance < AIMgr.inst.potentialDistanceThreshold) {
-                    repulsivePotential += p.direction * entity.mass *
-                    AIMgr.inst.repulsiveCoefficient * Mathf.Pow(p.diff.magnitude, AIMgr.inst.repulsiveExponent);
-                }
-            }
-            attractivePotential = movePosition - entity.position;
-            Vector3 tmp = attractivePotential.normalized;
-            attractivePotential = tmp * 
-                AIMgr.inst.attractionCoefficient * Mathf.Pow(attractivePotential.magnitude, AIMgr.inst.attractiveExponent);
-            potentialSum = attractivePotential - repulsivePotential;
-            dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
-            angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
-            cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
-            ds = entity.maxSpeed * cosValue;
-            
+            movePosition = predictedMovePosition;
         }
-        else
-        {
-            dh = ComputePotentialDHDS().dh;
-            ds = ComputePotentialDHDS().ds;
-        }
-        return  new DHDS(dh, ds);    
+
+        return ComputePotentialDHDS();
     }
 
 }

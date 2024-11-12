@@ -4,19 +4,17 @@ using System.Security.Cryptography;
 using UnityEngine;
 
 [System.Serializable]
-public class SmartIntercept : Follow
+public class SmartIntercept : Intercept
 {
-    public SmartIntercept(Entity ent, Entity target) : base(ent, target, Vector3.zero)
+    public SmartIntercept(Entity ent, Entity target) : base(ent, target)
     {
-        //Follow does all the work
+    
 
     }
 
     public override void Init()
     {
-        //Debug.Log("Intercept:\t ing: " + targetEntity.gameObject.name);
-        line = LineMgr.inst.CreateInterceptLine(entity.position, targetEntity.position, targetEntity.position);
-        line.gameObject.SetActive(false);
+        base.Init(); 
     }
 
     public override void Tick()
@@ -25,28 +23,11 @@ public class SmartIntercept : Follow
         float dh = ComputePotentialPredictiveDHDS(Vector3.zero).dh;
         float ds = ComputePotentialPredictiveDHDS(Vector3.zero).ds;
         entity.desiredHeading = dh;
-        entity.desiredSpeed = entity.maxSpeed;
+        entity.desiredSpeed = ds;
         range = diff.magnitude;
         timeOnTarget = range / entity.speed;
     }
 
-    public override bool IsDone()
-    {
-        return diff.sqrMagnitude < doneDistanceSq;
-    }
-
-    public override void Stop()
-    {
-        base.Stop();
-        entity.desiredSpeed = 0;
-        entity.speed = 0;
-        targetEntity.desiredSpeed = 0;
-        targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
-        targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
-        Vector3 deadRot = targetEntity.transform.localEulerAngles;
-        deadRot.z = 90;
-        targetEntity.transform.localEulerAngles = deadRot;
-
-    }
+    
 
 }
