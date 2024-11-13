@@ -37,7 +37,7 @@ public class GroupTargetMove : Move
 
     public new DHDS ComputePotentialDHDS()
     {
-        UnitAI thisAI = entity.GetComponentInChildren<UnitAI>();
+        UnitAI thisAI = entity.ai;
         if(thisAI.group == null) {
             Stop();
             return new DHDS(0,0);
@@ -51,11 +51,11 @@ public class GroupTargetMove : Move
             //THIS SHOULD BE FIXED
             //This many get calls is B A D
             float potentialScalar = 1.0f;
-            UnitAI ai = ent.GetComponentInChildren<UnitAI>();
+            UnitAI ai = ent.ai;
             if (ent == entity) {
                 continue;
             }
-            if (ent == entity || (ai.group == thisAI.group && thisAI.group.target != ent)) {
+            if (ai.group == thisAI.group && thisAI.group.target != ent) {
                 potentialScalar=0.25f;
             }
             p = DistanceMgr.inst.GetPotential(entity, ent);

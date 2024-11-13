@@ -88,6 +88,33 @@ class GroupHold : Tactic {
     }
 }
 
+class GroupNull : Tactic {
+    public GroupNull(Group n_group) {
+        group = n_group;
+        type = TacticsType.None;
+        
+    }
+
+    public override void Init() {
+        foreach (UnitAI aI in group.members) {
+            if (aI.entity != group.target) {
+                aI.StopAndRemoveAllCommands();
+            }
+        }
+    }
+
+    public override bool IsDone() {
+        return false;
+    }
+
+    public override void Stop() {
+    }
+
+    public override void Tick() {
+
+    }
+}
+
 class EscortTactic : Tactic
 {
     Vector3 destination;
@@ -111,7 +138,7 @@ class EscortTactic : Tactic
 
     public override bool IsDone()
     {
-        UnitAI targetAI = group.target.GetComponentInChildren<UnitAI>();
+        UnitAI targetAI = group.target.ai;
         if(targetAI.commands.Count>0 && targetAI.commands[0] is GroupTargetMove gMove) {
             return gMove.IsDoneGroup();
         }

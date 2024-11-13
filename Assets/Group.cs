@@ -25,7 +25,7 @@ public class Group {
             return;
         }
         if(tactics.Count == 0) {
-            AddTactic(new GroupHold(this));
+            AddTactic(new GroupNull(this));
             RebuildGroup();
         }
         if(tactics.Peek().needsRebuild) {
@@ -65,11 +65,11 @@ public class Group {
         } else if(tactics.Count==1) {
             tactics.Peek().Stop();
             tactics.Dequeue();
-            tactics.Enqueue(new GroupHold(this));
+            tactics.Enqueue(new GroupNull(this));
             tactics.Peek().Init();
             RebuildGroup();
         } else {
-            tactics.Enqueue(new GroupHold(this));
+            tactics.Enqueue(new GroupNull(this));
             tactics.Peek().Init();
         }
     }
@@ -89,7 +89,7 @@ public class Group {
             ai.group=this;
         }
         target = FindTarget();
-        AddTactic(new GroupHold(this));
+        AddTactic(new GroupNull(this));
     }
 
     public Entity FindTarget() {
@@ -128,7 +128,7 @@ public class Group {
         List<UnitAI> aIs = new();
 
         foreach (Entity aEnt in entities) {
-            UnitAI uai = aEnt.GetComponentInChildren<UnitAI>();
+            UnitAI uai = aEnt.ai;
             aIs.Add(uai);
         }
 
@@ -143,7 +143,7 @@ public class Group {
             if(ai.group==this) {
                 ai.HardSetGroup(null);
             }
-            if(target.GetComponentInChildren<UnitAI>()==ai) {
+            if(target.ai==ai) {
                 // Disband();
                 return;
             }
@@ -166,7 +166,7 @@ public class Group {
             if(unitAI.group==this) {
                 unitAI.HardSetGroup(null);
             }
-            UnitAI targetAI = target.GetComponentInChildren<UnitAI>();
+            UnitAI targetAI = target.ai;
             if(targetAI==unitAI) {
                 Disband();
                 return;

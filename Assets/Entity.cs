@@ -59,11 +59,13 @@ public class Entity : MonoBehaviour
     public GameObject selectionCircle;
 
     public Player owner;
+    public UnitAI ai;
 
     // Start is called before the first frame update
     void Start()
     {
         isSelected = false;
+        ai = GetComponentInChildren<UnitAI>();
         //cameraRig = transform.Find("CameraRig").gameObject;
         //selectionCircle = transform.Find("Decorations").Find("SelectionCylinder").gameObject;
     }

@@ -59,7 +59,7 @@ public class GroupEscort : Follow
             if (ent == entity) {
                 continue;
             }
-            if (ent == entity || (ai.group == thisAI.group && thisAI.group.target != ent)) {
+            if (ai.group == thisAI.group) {
                 potentialScalar=0.25f;
             }
             p = DistanceMgr.inst.GetPotential(entity, ent);
@@ -69,7 +69,7 @@ public class GroupEscort : Follow
             }
         }
         //repulsivePotential *= repulsiveCoefficient * Mathf.Pow(repulsivePotential.magnitude, repulsiveExponent);
-        attractivePotential = movePosition - (entity.position+relativeOffset);
+        attractivePotential = targetEntity.position+targetEntity.transform.TransformVector(relativeOffset) - entity.position;
         Vector3 tmp = attractivePotential.normalized;
         attractivePotential = tmp * 
             AIMgr.inst.attractionCoefficient * Mathf.Pow(attractivePotential.magnitude, AIMgr.inst.attractiveExponent);

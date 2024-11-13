@@ -36,7 +36,7 @@ public class TacticalAIMgr : MonoBehaviour
         List<UnitAI> aIs = new();
 
         foreach (Entity ent in entities) {
-            UnitAI uai = ent.GetComponentInChildren<UnitAI>();
+            UnitAI uai = ent.ai;
             aIs.Add(uai);
         }
         if(aIs.Count==0)

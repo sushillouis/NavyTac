@@ -55,7 +55,7 @@ public class AIMgr : MonoBehaviour
             if(!isgroup) {
                 foreach (Entity shipInstance in SelectionMgr.inst.selectedEntities)
                 {
-                    shipInstance.GetComponentInChildren<UnitAI>().group=null;
+                    shipInstance.ai.group=null;
                 }
                 if (ent == null)
                 {
@@ -77,7 +77,7 @@ public class AIMgr : MonoBehaviour
                 } else {
                     //Check if friendly
                     // Calling group+clicking on a firendly ship just adds the selection to that ships group 
-                    UnitAI temp = ent.GetComponentInChildren<UnitAI>();
+                    UnitAI temp = ent.ai;
                     if(temp.group !=null) {
                         temp.group.AddMembers(SelectionMgr.inst.selectedEntities.ToArray());
                     }
@@ -139,7 +139,7 @@ public class AIMgr : MonoBehaviour
     {
         foreach (Entity entity in entities) {
             Move m = new Move(entity, point);
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            UnitAI uai = entity.ai;
             AddOrSet(m, uai, add);
         }
     }
@@ -161,7 +161,7 @@ public class AIMgr : MonoBehaviour
                 z  = rad*Mathf.Sin(theta)
             };
             Move m = new Move(entities[i], point+offset);
-            UnitAI uai = entities[i].GetComponentInChildren<UnitAI>();
+            UnitAI uai = entities[i].ai;
             AddOrSet(m, uai, add);
             
         }
@@ -185,7 +185,7 @@ public class AIMgr : MonoBehaviour
         foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
             if(target != entity) {
                 Follow f = new Follow(entity, target, new Vector3(100, 0, 0));
-                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                UnitAI uai = entity.ai;
                 AddOrSet(f, uai, add);
             }
         }
@@ -196,7 +196,7 @@ public class AIMgr : MonoBehaviour
         foreach (Entity entity in entities) {
             if(ent != entity) {
                 Intercept intercept = new Intercept(entity, ent);
-                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                UnitAI uai = entity.ai;
                 AddOrSet(intercept, uai, add);
             }
         }
@@ -228,7 +228,7 @@ public class AIMgr : MonoBehaviour
             if(++attackApproach >= approaches.Length) {
                 attackApproach=0;
             }
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            UnitAI uai = entity.ai;
             AddOrSet(pincer, uai, add);
         }
         
