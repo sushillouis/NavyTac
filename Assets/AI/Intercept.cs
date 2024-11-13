@@ -18,20 +18,31 @@ public class Intercept : Follow
         line = LineMgr.inst.CreateInterceptLine(entity.position, targetEntity.position, targetEntity.position);
         line.gameObject.SetActive(false);
     }
-
+    float entityLastHeading = 0;
     public override void Tick()
     {
+        
         //movePosition = targetEntity.transform.position;
-        float dh = ComputePredictiveDH(Vector3.zero);
-        entity.desiredHeading = dh;
-        entity.desiredSpeed = entity.maxSpeed;
+        if (targetEntity == null)
+        {
+            entity.heading = entityLastHeading;
+            entity.desiredSpeed = entity.maxSpeed;
+        }
+        else{
+            float dh = ComputePredictiveDH(Vector3.zero);
+            entity.desiredHeading = dh;
+            entity.desiredSpeed = entity.maxSpeed;
+            entityLastHeading = entity.desiredHeading;
+            
+        }
         range = diff.magnitude;
         timeOnTarget = range / entity.speed;
 
     }
 
     public override bool IsDone()
-    {
+    {   
+        
         return diff.sqrMagnitude < doneDistanceSq;
     }
 
@@ -49,6 +60,7 @@ public class Intercept : Follow
             deadRot.z = 90;
             targetEntity.transform.localEulerAngles = deadRot;
         }
+        
     }
 
 }

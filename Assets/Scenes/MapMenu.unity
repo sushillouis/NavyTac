@@ -4590,7 +4590,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mixer: {fileID: 24100000, guid: f23e15c2c50c5cb45a850c2216cc732b, type: 2}
-  muteSound: 0
+  muteSound: 1
   masterVolume: 0.75
   ambientVolume: 0.75
   bgmVolume: 0.75
@@ -5221,7 +5221,7 @@ PrefabInstance:
     - target: {fileID: 250376097529231850, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000021062624
+      value: 0.00082999596
       objectReference: {fileID: 0}
     - target: {fileID: 873341795395542852, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}

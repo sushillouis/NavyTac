@@ -69,45 +69,24 @@ public class Entity : MonoBehaviour
     void Update()
     {
     }
-
+    // This is On Trigger Enter is just for testing purposes.
+    // START
     void OnTriggerEnter(Collider other)
     {
-        Entity otherEntity = other.GetComponent<Entity>();
-        if (otherEntity == null || WeaponsMgr.inst == null || creatorsEntity == null) return;
-        if (WeaponsMgr.inst.weapons.Contains(otherEntity) || otherEntity == creatorsEntity) return;
-        WeaponsAspect weaponsAspect = creatorsEntity.GetComponentInChildren<WeaponsAspect>();
-        if (weaponsAspect == null || weaponsAspect.weapons== null || weaponsAspect.weapons.Count == 0) return;
-        WeaponData wd = weaponsAspect.weapons.Find(x => x.weaponEntityType == entityType);
-        Debug.Log(wd.weaponEntityType);
-        if (wd == null) return;
-        float damage = DamageMatrix.GetDamage(entityType, otherEntity.entityType);
-        Debug.Log(damage);
-        if (damage < 0) return;
-        otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
-        health = 0;
-        if (health <= 0) DestroyEntity(this);
-        if (otherEntity.health <= 0) DestroyEntity(otherEntity);
-    }
-    void DestroyEntity(Entity entity)
-    {   
-        if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name )
-            CameraMgr.inst.ToggleRTSView();
-        UnitAI otherEntityAI = entity.GetComponentInChildren<UnitAI>();
-        if (otherEntityAI != null)
-            otherEntityAI.StopAndRemoveAllCommands();
-        if (SelectionMgr.inst.selectedEntities.Contains(entity))
-        {
-            SelectionMgr.inst.selectedEntities.Remove(entity);
-            if (SelectionMgr.inst.selectedEntities.Count > 0){
-                Debug.Log(SelectionMgr.inst.selectedEntities[0]);
-                SelectionMgr.inst.selectedEntity = SelectionMgr.inst.selectedEntities[0];}
-            else    
-                SelectionMgr.inst.selectedEntity = null;
+        if (WeaponsMgr.inst.weapons.Contains(this))
+            {
+            Entity otherEntity = other.GetComponent<Entity>();
+            if (otherEntity != creatorsEntity)
+            {
+                float damage = DamageMatrix.GetDamage(entityType, otherEntity.entityType);
+                // Debug.Log(damage);
+                otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
+                health = 0;
+                if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
+                if (otherEntity.health <= 0) WeaponsMgr.inst.DestroyEntity(otherEntity);
+            }
         }
-        EntityMgr.inst.entities.Remove(entity);
-        if (WeaponsMgr.inst.weapons.Contains(entity))
-            WeaponsMgr.inst.weapons.Remove(entity);
-        DistanceMgr.inst.Initialize();
-        Destroy(entity.gameObject);
     }
+
+    // END
 }

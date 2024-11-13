@@ -231,8 +231,11 @@ public class UIMgr : MonoBehaviour
             target.text = move.movePosition.ToString();
 
             Follow follow = uai.commands[0] as Follow;
+
             if(follow != null){
-                target.text = follow.targetEntity.name;
+                if(follow.targetEntity != null){
+                    target.text = follow.targetEntity.name;
+                }
             } 
 
         }

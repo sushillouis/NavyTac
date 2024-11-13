@@ -27,6 +27,7 @@ public class UnitAI : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        // Debug.Log(entity.name +""+commands.Count);
         if (commands.Count > 0) {
             if (commands[0].IsDone()) {
                 StopAndRemoveCommand(0);

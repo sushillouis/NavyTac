@@ -55,6 +55,10 @@ public class Follow : Move
 
     public override bool IsDone()
     {
+        if (targetEntity == null)
+        {
+            base.IsDone();
+        }
         return done;
     }
 
