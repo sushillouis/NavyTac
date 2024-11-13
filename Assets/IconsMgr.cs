@@ -8,6 +8,7 @@ public class IconsMgr : MonoBehaviour
     bool iconsOn;
     public bool distanceFromEntityBased;
     public float distanceThreshold;
+    public AnimationCurve heightMultiplier;
     // Start is called before the first frame update
     void Start()
     {
@@ -33,6 +34,11 @@ public class IconsMgr : MonoBehaviour
             {
                 TurnOnModels();
             }
+
+            if (iconsOn && cam.transform.position.y > distanceThreshold)
+            {
+                ScaleIcons(cam.transform.position.y);
+            }
         }
         
     }
@@ -41,7 +47,7 @@ public class IconsMgr : MonoBehaviour
     {
         foreach (Entity ent in EntityMgr.inst.entities)
         {
-            ent.gameObject.GetComponentInChildren<UIAspect>().TurnOnModels();
+            ent.uia.TurnOnModels();
         }
         iconsOn = false;
     }
@@ -50,9 +56,17 @@ public class IconsMgr : MonoBehaviour
     {
         foreach(Entity ent in EntityMgr.inst.entities)
         {
-            ent.gameObject.GetComponentInChildren<UIAspect>().TurnOnIcons();
+            ent.uia.TurnOnIcons();
         }
         iconsOn = true;
+    }
+
+    void ScaleIcons(float height)
+    {
+        foreach (Entity ent in EntityMgr.inst.entities)
+        {
+            ent.uia.icon.transform.localScale = ent.uia.baseIconScale * heightMultiplier.Evaluate(height);
+        }
     }
 
     void HandleSwitching()

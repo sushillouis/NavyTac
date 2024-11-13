@@ -58,6 +58,7 @@ public class Entity : MonoBehaviour
 
     public GameObject cameraRig;
     public GameObject selectionCircle;
+    public UIAspect uia;
 
     public Player owner;
 
@@ -65,6 +66,7 @@ public class Entity : MonoBehaviour
     void Start()
     {
         isSelected = false;
+        uia = GetComponentInChildren<UIAspect>();
         //cameraRig = transform.Find("CameraRig").gameObject;
         //selectionCircle = transform.Find("Decorations").Find("SelectionCylinder").gameObject;
     }

@@ -6,14 +6,18 @@ using UnityEngine.UI;
 public class UIAspect : MonoBehaviour //change name to UI aspect
 {
     public Entity entity;
-    public float iconThreshold;
     public GameObject shipModel;
+
+    [Header("Distance Icon Parameters")]
+    public float iconThreshold;
     public GameObject icon;
+    public Vector3 baseIconScale;
     // Start is called before the first frame update
     void Start()
     {
         entity = GetComponentInParent<Entity>();
         icon.GetComponent<Renderer>().material.color = entity.owner.playerColor;
+        baseIconScale = icon.transform.localScale;
         icon.SetActive(false);
     }
 
