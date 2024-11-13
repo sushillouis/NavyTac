@@ -137,6 +137,10 @@ public class UIMgr : MonoBehaviour
         #endif
     }
     public TextMeshProUGUI entityName;
+
+    public TextMeshProUGUI fuel;
+    public TextMeshProUGUI range;
+
     public TextMeshProUGUI speed;
     public TextMeshProUGUI desiredSpeed;
     public TextMeshProUGUI heading;
@@ -148,6 +152,7 @@ public class UIMgr : MonoBehaviour
     public TextMeshProUGUI target;
     public TextMeshProUGUI timeOnTarget;
     public TextMeshProUGUI targetRange;
+
 
     // Update is called once per frame
     void Update()
@@ -167,6 +172,9 @@ public class UIMgr : MonoBehaviour
                 altitude.text = phx3d.altitude.ToString("F2") + "m";
                 desiredAltitude.text = phx3d.desiredAltitude.ToString("F2") + "m";
             }
+
+            fuel.text = ent.fuel.ToString("F0");
+            range.text = (ent.range * Utils.ToNautialMiles).ToString("F1") + " nm";
 
 
         }
