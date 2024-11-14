@@ -90,6 +90,7 @@ MonoBehaviour:
   entityType: 10
   cameraRig: {fileID: 8242789660831846513}
   selectionCircle: {fileID: 3471284118621656153}
+  uia: {fileID: 0}
   owner:
     name: 
     playerId: 0
@@ -105,6 +106,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5297544780851318707}
   - component: {fileID: 3160081287396154431}
+  - component: {fileID: 7634675205597916453}
   m_Layer: 0
   m_Name: UI
   m_TagString: Untagged
@@ -142,9 +144,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
-  iconThreshold: 600
   shipModel: {fileID: 3310019002709106948}
+  iconThreshold: 600
   icon: {fileID: 2236818054874055828}
+  baseIconScale: {x: 0, y: 0, z: 0}
+--- !u!114 &7634675205597916453
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3900172711751269054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df5bf89396bd98640a793b5293e91312, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  iconPrefab: {fileID: 3023699446096780876, guid: 7695a6ef207938849b9a6f9c79eb8204,
+    type: 3}
+  entity: {fileID: 3922448631972919876}
 --- !u!1 &4766140010681853235
 GameObject:
   m_ObjectHideFlags: 0
