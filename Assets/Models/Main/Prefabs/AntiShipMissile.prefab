@@ -438,6 +438,7 @@ MonoBehaviour:
   entity: {fileID: 0}
   moves: []
   follows: []
+  follows: []
   commands: []
   intercepts: []
   intercept3ds: []
@@ -790,14 +791,19 @@ MonoBehaviour:
   desiredHeading: 0
   health: 0
   fuel: 0
-  acceleration: 20
-  turnRate: 5
+  range: 0
+  fuelBurnRate: 0
+  acceleration: 100
+  turnRate: 20
   maxSpeed: 240
   minSpeed: 0
+  cruiseSpeed: 240
   mass: 690
   length: 5
   width: 1
   height: 1
+  maxFuel: 520
+  maxRange: 124000
   entityType: 15
   cameraRig: {fileID: 9145676869908812067}
   selectionCircle: {fileID: 5332817206858276288}
