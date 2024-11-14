@@ -16,10 +16,22 @@ public class DumbMove : Move
 
     public override void Tick()
     {
+        
         DHDS dhds = ComputeDHDS();
         entity.desiredHeading = dhds.dh;
         entity.desiredSpeed = entity.maxSpeed;
-        line.SetPosition(1, movePosition);
+
+    }
+
+    public override bool IsDone()
+    {
+
+        return (entity.position - movePosition).sqrMagnitude < doneDistanceSq;
+    }
+
+    public override void Stop()
+    {
+        entity.desiredSpeed = entity.maxSpeed;
     }
 
 }

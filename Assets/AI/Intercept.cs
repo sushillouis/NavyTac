@@ -1,12 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
 
 [System.Serializable]
 public class Intercept : Follow
 {
-    public Intercept(Entity ent, Entity target) : base(ent, target, Vector3.zero)
+    public Intercept(Entity ent, Entity target): base(ent, target, Vector3.zero)
     {
         //Follow does all the work
 
@@ -18,31 +17,21 @@ public class Intercept : Follow
         line = LineMgr.inst.CreateInterceptLine(entity.position, targetEntity.position, targetEntity.position);
         line.gameObject.SetActive(false);
     }
-    float entityLastHeading = 0;
+
     public override void Tick()
     {
-        
         //movePosition = targetEntity.transform.position;
-        if (targetEntity == null)
-        {
-            entity.heading = entityLastHeading;
-            entity.desiredSpeed = entity.maxSpeed;
-        }
-        else{
-            float dh = ComputePredictiveDH(Vector3.zero);
-            entity.desiredHeading = dh;
-            entity.desiredSpeed = entity.maxSpeed;
-            entityLastHeading = entity.desiredHeading;
-            
-        }
+        float dh = ComputePredictiveDH(Vector3.zero);
+        entity.desiredHeading = dh;
+        entity.desiredSpeed = entity.maxSpeed;
+
         range = diff.magnitude;
         timeOnTarget = range / entity.speed;
 
     }
 
     public override bool IsDone()
-    {   
-        
+    {
         return diff.sqrMagnitude < doneDistanceSq;
     }
 
@@ -51,16 +40,13 @@ public class Intercept : Follow
         base.Stop();
         entity.desiredSpeed = 0;
         entity.speed = 0;
-        if (targetEntity != null)
-        {
-            targetEntity.desiredSpeed = 0;
-            targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
-            // targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
-            Vector3 deadRot = targetEntity.transform.localEulerAngles;
-            deadRot.z = 90;
-            targetEntity.transform.localEulerAngles = deadRot;
-        }
-        
+        targetEntity.desiredSpeed = 0;
+        targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
+        // targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
+        Vector3 deadRot = targetEntity.transform.localEulerAngles;
+        deadRot.z = 90;
+        targetEntity.transform.localEulerAngles = deadRot;
+
     }
 
 }

@@ -78,9 +78,9 @@ public class Entity : MonoBehaviour
     }
     void Update()
     {
-        // if(health <= 0){
-        //     Entity.GetComponent<phys>().enabled = false;
-        // }
+        if(health <= 0){
+            EntityMgr.inst.DestroyEntity(this);           
+        }
     }
 
     private void FixedUpdate() {
@@ -98,10 +98,13 @@ public class Entity : MonoBehaviour
         range = Mathf.Clamp(fuel * cruiseSpeed, 0, maxRange);
 
     }
-    // This is On Trigger Enter is just for testing purposes.
+    // This function On Trigger Enter is just for testing purposes.
     // START
     void OnTriggerEnter(Collider other)
     {
+
+        //this method checks if the weapon is collided by a ship and if yes then it damages the ship based on the damage matrix
+        Debug.Log("hit");
         if (WeaponsMgr.inst.weapons.Contains(this))
             {
             Entity otherEntity = other.GetComponent<Entity>();

@@ -41,7 +41,20 @@ public class EntityMgr : MonoBehaviour
         return entity;
     }
 
-
+    public void DestroyEntity(Entity entity)
+    {
+            entity.GetComponentInChildren<OrientedPhysics>().enabled = false;
+            entity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
+            Vector3 deadRot = transform.localEulerAngles;
+            deadRot.z = 90;
+            entity.speed = 0;
+            if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name)
+            {
+                CameraMgr.inst.ToggleRTSView();
+            }
+            entities.Remove(entity);
+            
+    }
 
 
 
