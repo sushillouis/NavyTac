@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class MinimapMgr : MonoBehaviour
@@ -9,13 +10,15 @@ public class MinimapMgr : MonoBehaviour
     public RectTransform minimapImage;
     public Vector2 worldSize;
     Dictionary<Entity, GameObject> mapIcons;
-    Matrix4x4 transformationMatrix;
+    Matrix4x4 worldToMapTransformationMatrix;
+    Matrix4x4 mapToWorldTransformationMatrix;
 
     private void Awake()
     {
         inst = this;
         mapIcons = new Dictionary<Entity, GameObject>();
-        InitTransformationMatrix();
+        InitWorldToMapTransformationMatrix();
+        InitMapToWorldTransformationMatrix();
     }
 
     // Start is called before the first frame update
@@ -35,13 +38,22 @@ public class MinimapMgr : MonoBehaviour
     }
 
     //Assumes world origin is center of the map
-    void InitTransformationMatrix()
+    void InitWorldToMapTransformationMatrix()
     {
         Vector2 minimapSize = minimapImage.rect.size;
 
         Vector2 scaleRatio = minimapSize / worldSize;
 
-        transformationMatrix = Matrix4x4.TRS(Vector2.zero, Quaternion.identity, scaleRatio);
+        worldToMapTransformationMatrix = Matrix4x4.TRS(Vector2.zero, Quaternion.identity, scaleRatio);
+    }
+
+    void InitMapToWorldTransformationMatrix()
+    {
+        Vector2 minimapSize = minimapImage.rect.size;
+
+        Vector2 scaleRatio = worldSize / minimapSize;
+
+        mapToWorldTransformationMatrix = Matrix4x4.TRS(Vector2.zero, Quaternion.identity, scaleRatio);
     }
 
     public void CreateMinimapIcon(Entity ent, GameObject minimapIcon)
@@ -59,7 +71,7 @@ public class MinimapMgr : MonoBehaviour
         {
             Entity ent = icon.Key;
             var mapIcon = icon.Value;
-            Vector2 mapPosition = transformationMatrix.MultiplyPoint3x4(new Vector2(ent.position.x, ent.position.z));
+            Vector2 mapPosition = worldToMapTransformationMatrix.MultiplyPoint3x4(new Vector2(ent.position.x, ent.position.z));
 
             RectTransform rt = mapIcon.GetComponent<RectTransform>();
             rt.anchoredPosition = mapPosition;
@@ -84,5 +96,16 @@ public class MinimapMgr : MonoBehaviour
     Vector3 GetPointAtHeight(Ray ray, float height)
     {
         return ray.origin + (((ray.origin.y - height) / -ray.direction.y) * ray.direction);
+    }
+
+    public void CheckIfMapClicked(Vector2 mousePos)
+    {
+        Vector2 localPoint;
+        if (RectTransformUtility.RectangleContainsScreenPoint(minimapImage, mousePos))
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(minimapImage, mousePos, null, out localPoint);
+            Vector2 worldPos2D = mapToWorldTransformationMatrix.MultiplyPoint3x4(localPoint);
+            CameraMgr.inst.YawNode.transform.position = new Vector3(worldPos2D.x, CameraMgr.inst.YawNode.transform.position.y, worldPos2D.y);
+        }
     }
 }

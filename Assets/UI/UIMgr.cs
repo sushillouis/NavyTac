@@ -199,6 +199,9 @@ public class UIMgr : MonoBehaviour
 
         if(boxSelecting)
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
+
+        if (singleSelect.IsPressed())
+            MinimapMgr.inst.CheckIfMapClicked(selectionCursorPosition.ReadValue<Vector2>());
     }
     
     private void DisplayAIInformation(Entity ent) {
