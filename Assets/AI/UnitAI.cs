@@ -114,8 +114,10 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
     /// </summary>
     void OnDestroy()
     {
-        LineMgr.inst.DestroyLR(groupConnectingLine);
-        groupConnectingLine=null;
+        if(groupConnectingLine!=null) {
+            LineMgr.inst.DestroyLR(groupConnectingLine);
+            groupConnectingLine=null;
+        }
     }
     
     public void StopAndRemoveAllCommands()

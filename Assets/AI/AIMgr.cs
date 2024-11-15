@@ -153,7 +153,7 @@ public class AIMgr : MonoBehaviour
 
     public void HandleSunflowerMove(List<Entity> entities, Vector3 point, float mag, bool add)
     {
-        print(mag);
+        // print(mag);
         int b = (int)Mathf.Round(Mathf.Sqrt(entities.Count)*2);
         float phiSquared = 2.618034f;
         for (int i = 0;i<entities.Count;i++) {
