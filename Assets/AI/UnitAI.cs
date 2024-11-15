@@ -24,6 +24,33 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
     public List<Command> commands;
     public List<Intercept> intercepts;
     public List<Intercept3d> intercept3ds;
+    public LineRenderer groupConnectingLine;
+    public int preOrderOffset = 0;
+    [SerializeField] Group _group;
+    public Group group {
+    get {return _group;} 
+    set {
+            Group temp = _group;
+            _group = value;
+            if(groupConnectingLine!=null && value == null) {
+                Destroy(groupConnectingLine);
+                groupConnectingLine=null;
+            }
+            if(temp is not null && temp != value) {
+                temp.RemoveMember(this);
+            } else if(value !=null && value.target != null && value.target != entity && groupConnectingLine == null) {
+                Vector3[] points = new Vector3[2];
+                points[0] = entity.position;
+                points[1] = value.target.position;
+                groupConnectingLine = LineMgr.inst.CreateColoredDashedLine(points,Color.cyan);
+            }
+        } 
+    }
+
+    public void HardSetGroup(Group n_Group) {
+        _group = n_Group;
+    }
+
 
     // Update is called once per frame
     void FixedUpdate()

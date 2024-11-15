@@ -211,6 +211,20 @@ public class AIMgr : MonoBehaviour
         }
     }
 
+    public void Handle3dIntercept(List<Entity> entities, Entity ent, bool add)
+    {
+        foreach(Entity entity in entities)
+        {
+            if(ent != entity)
+            {
+                Intercept3d intercept3d = new Intercept3d(entity, ent);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(intercept3d, uai, add);
+            }
+        }
+
+    }
+
     void HandlePincer(List<Entity> entities, Entity ent, bool add, Approach[] approaches= null)
     {
         //Round Robbin Attacking

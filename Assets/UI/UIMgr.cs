@@ -189,7 +189,7 @@ public class UIMgr : MonoBehaviour
             DisplayAIInformation(ent);
 
             Oriented3dPhysics phx3d = ent.GetComponentInChildren<Oriented3dPhysics>();
-            if(phx3d != null)  {
+            if(phx3d != null && altitude && desiredAltitude)  {
                 altitude.text = phx3d.altitude.ToString("F2") + "m";
                 desiredAltitude.text = phx3d.desiredAltitude.ToString("F2") + "m";
             }
