@@ -26,8 +26,8 @@ class GroupHold : Tactic {
 
     public override void Init() {
         foreach (UnitAI aI in group.members) {
-            if (aI.GetComponentInParent<Entity>() != group.target) {
-                GroupTargetMove escort = new GroupTargetMove(aI.GetComponentInParent<Entity>(), group.target.position);
+            if (aI.entity != group.target) {
+                GroupTargetMove escort = new GroupTargetMove(aI.entity, group.target.position);
                 aI.SetCommand(escort);
             }
         }
@@ -126,11 +126,11 @@ class EscortTactic : Tactic
 
     public override void Init() {
         foreach (UnitAI aI in group.members) {
-            if (aI.GetComponentInParent<Entity>() == group.target) {
+            if (aI.entity == group.target) {
                 GroupTargetMove m = new GroupTargetMove(group.target, destination);
                 aI.SetCommand(m);
             } else {
-                GroupEscort escort = new GroupEscort(aI.GetComponentInParent<Entity>(), group.target, Vector3.zero);
+                GroupEscort escort = new GroupEscort(aI.entity, group.target, Vector3.zero);
                 aI.SetCommand(escort);
             }
         }

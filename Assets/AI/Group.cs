@@ -76,19 +76,19 @@ public class Group {
 
     public Group(List<UnitAI> n_members, Tactic n_Tactic) {
         members = n_members;
+        target = FindTarget();
         foreach (UnitAI ai in members) {
             ai.group=this;
         }
-        target = FindTarget();
         AddTactic(n_Tactic);
     }
 
     public Group(List<UnitAI> n_members) {
         members = n_members;
+        target = FindTarget();
         foreach (UnitAI ai in members) {
             ai.group=this;
         }
-        target = FindTarget();
         AddTactic(new GroupNull(this));
     }
 
@@ -113,13 +113,13 @@ public class Group {
     public void AddMembers(UnitAI[] unitAIs) {
         foreach (UnitAI ai in unitAIs) {
             if(!members.Contains(ai)) {
-                ai.group=this;
                 members.Add(ai);
             }
         }
-        members.Sort();
-        Entity ent = members[0].entity;
-        target =  ent;
+        target = FindTarget();
+        foreach (UnitAI ai in members) {
+            ai.group=this;
+        }
         members[0].preOrderOffset=-1;
         RebuildGroup();
     }

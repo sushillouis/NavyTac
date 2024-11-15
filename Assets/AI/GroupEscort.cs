@@ -41,7 +41,7 @@ public class GroupEscort : Follow
 
     public new DHDS ComputePotentialDHDS()
     {
-        UnitAI thisAI = entity.GetComponentInChildren<UnitAI>();
+        UnitAI thisAI = entity.ai;
         if(thisAI.group == null) {
             Stop();
             return new DHDS(0,0);
@@ -49,18 +49,13 @@ public class GroupEscort : Follow
         Potential p;
         repulsivePotential = Vector3.zero; repulsivePotential.y = 0;
         foreach (Entity ent in EntityMgr.inst.entities) {
-            //THIS SHOULD BE FIXED
-            //THIS SHOULD BE FIXED
-            //THIS SHOULD BE FIXED
-            //THIS SHOULD BE FIXED
-            //This many get calls is B A D
             float potentialScalar = 1.0f;
-            UnitAI ai = ent.GetComponentInChildren<UnitAI>();
+            UnitAI ai = ent.ai;
             if (ent == entity) {
                 continue;
             }
-            if (ai.group == thisAI.group) {
-                potentialScalar=0.25f;
+            if (ai.group == thisAI.group && ai.group.target != ent) {
+                potentialScalar=0.33f;
             }
             p = DistanceMgr.inst.GetPotential(entity, ent);
             if (p.distance < AIMgr.inst.potentialDistanceThreshold) {
@@ -71,9 +66,15 @@ public class GroupEscort : Follow
         //repulsivePotential *= repulsiveCoefficient * Mathf.Pow(repulsivePotential.magnitude, repulsiveExponent);
         attractivePotential = targetEntity.position+targetEntity.transform.TransformVector(relativeOffset) - entity.position;
         Vector3 tmp = attractivePotential.normalized;
-        attractivePotential = tmp * 
-            AIMgr.inst.attractionCoefficient * Mathf.Pow(attractivePotential.magnitude, AIMgr.inst.attractiveExponent);
-        potentialSum = attractivePotential - repulsivePotential;
+        if(attractivePotential.magnitude > AIMgr.inst.destinationThreshold) {
+            attractivePotential = tmp * 
+                AIMgr.inst.attractionCoefficient * Mathf.Pow(attractivePotential.magnitude, AIMgr.inst.attractiveExponent);
+            potentialSum = attractivePotential - repulsivePotential;
+        } else {
+            attractivePotential = tmp * 
+                AIMgr.inst.attractiveCloseExponent * Mathf.Pow(attractivePotential.magnitude, AIMgr.inst.attractiveExponent);
+            potentialSum = attractivePotential - repulsivePotential;
+        }
 
         dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
 
@@ -86,9 +87,12 @@ public class GroupEscort : Follow
 
     public override void Stop()
     {
-        // myGroup.RemoveMember(entity.GetComponentInChildren<UnitAI>());
+        // myGroup.RemoveMember(entity.ai);
         base.Stop();
         entity.desiredSpeed = 0;
         isRunning = false;
+
+        LineMgr.inst.DestroyLR(potentialLine);
+        potentialLine = null;
     }
 }

@@ -55,8 +55,11 @@ public class GroupTargetMove : Move
             if (ent == entity) {
                 continue;
             }
-            if (ai.group == thisAI.group && thisAI.group.target != ent) {
+            if (ai.group == thisAI.group) {
                 potentialScalar=0.25f;
+                if(ai.group.target == entity) {
+                    potentialScalar=0.01f;
+                }
             }
             p = DistanceMgr.inst.GetPotential(entity, ent);
             if (p.distance < AIMgr.inst.potentialDistanceThreshold) {
@@ -93,7 +96,8 @@ public class GroupTargetMove : Move
     {
         entity.desiredSpeed = 0;
         LineMgr.inst.DestroyLR(line);
-        
         line = null;
+        LineMgr.inst.DestroyLR(potentialLine);
+        potentialLine = null;
     }
 }

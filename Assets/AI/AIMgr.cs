@@ -18,12 +18,13 @@ public class AIMgr : MonoBehaviour
     }
 
     public bool isPotentialFieldsMovement = false;
-    public bool displayPotentialLines = false;
     public float potentialDistanceThreshold = 1000;
     public float attractionCoefficient = 500;
     public float attractiveExponent = -1;
+    public float attractiveCloseExponent = 1;
     public float repulsiveCoefficient = 60000;
     public float repulsiveExponent = -2.0f;
+    public float destinationThreshold = 50;
 
     public RaycastHit hit;
     public int layerMask;
@@ -39,7 +40,13 @@ public class AIMgr : MonoBehaviour
 
     public void HandleRegionCommand(Vector3 centerPos, Vector2 edgemousepos, bool intercept, bool add, bool pincer, bool isgroup) {
         if (Physics.Raycast(Camera.main.ScreenPointToRay(edgemousepos), out hit, float.MaxValue, layerMask)) {
-            HandleSunflowerMove(SelectionMgr.inst.selectedEntities, centerPos, (centerPos-hit.point).magnitude, add);
+            if(!isgroup) {
+                foreach (Entity shipInstance in SelectionMgr.inst.selectedEntities)
+                {
+                    shipInstance.ai.group=null;
+                    HandleSunflowerMove(SelectionMgr.inst.selectedEntities, centerPos, (centerPos-hit.point).magnitude, add);
+                }
+            }
         }
     }
 

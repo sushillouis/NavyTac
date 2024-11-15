@@ -16,6 +16,8 @@ public class UIMgr : MonoBehaviour
     public bool isActive;
 
     public GameInputs inputs;
+    public bool displayPotentialLines = false;
+    public bool displayGroupLines = false;
 
     private InputAction yawCamera;
     private InputAction pitchCamera;

@@ -27,6 +27,7 @@ public class LineMgr : MonoBehaviour
     public LineRenderer FollowPrefab;
     public LineRenderer InterceptPrefab;
     public LineRenderer PotentialPrefab;
+    public LineRenderer DashedPrefab;
 
     public List<LineRenderer> lines = new List<LineRenderer>();
     public LineRenderer CreateMoveLine(Vector3 p1, Vector3 p2)
@@ -76,6 +77,20 @@ public class LineMgr : MonoBehaviour
         lines.Add(lr);
         lr.startColor=color;
         lr.endColor = color;
+        return lr;
+    }
+
+    public LineRenderer CreateColoredDashedLine(Vector3[] points, Color color)
+    {
+        LineRenderer lr = Instantiate(DashedPrefab, transform);
+        for (int i =0 ; i<points.Length;i++) {
+            lr.SetPosition(i, points[i]);
+        }
+        //Note this doesn't work if you do multiple of these in diffrent colors
+        //To do that use material groups
+        //See JudeTacticalSim
+        lr.materials[0].SetColor("_Color",color);
+        lines.Add(lr);
         return lr;
     }
 

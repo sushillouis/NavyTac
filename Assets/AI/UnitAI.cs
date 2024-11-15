@@ -20,6 +20,7 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
     public List<Move> moves;
     public List<Command> commands;
     public List<Intercept> intercepts;
+    public LineRenderer groupConnectingLine;
     public int preOrderOffset = 0;
     [SerializeField] Group _group;
     public Group group {
@@ -27,8 +28,17 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
     set {
             Group temp = _group;
             _group = value;
+            if(groupConnectingLine!=null && value == null) {
+                Destroy(groupConnectingLine);
+                groupConnectingLine=null;
+            }
             if(temp is not null && temp != value) {
                 temp.RemoveMember(this);
+            } else if(value !=null && value.target != null && value.target != entity && groupConnectingLine == null) {
+                Vector3[] points = new Vector3[2];
+                points[0] = entity.position;
+                points[1] = value.target.position;
+                groupConnectingLine = LineMgr.inst.CreateColoredDashedLine(points,Color.cyan);
             }
         } 
     }
@@ -80,6 +90,15 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
         commands.RemoveAt(index);
 
 
+    }
+
+    /// <summary>
+    /// This function is called when the MonoBehaviour will be destroyed.
+    /// </summary>
+    void OnDestroy()
+    {
+        LineMgr.inst.DestroyLR(groupConnectingLine);
+        groupConnectingLine=null;
     }
     
     public void StopAndRemoveAllCommands()
@@ -157,7 +176,7 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
         //potential fields lines
         if(!(current is Intercept) && !(current is Pincer) && AIMgr.inst.isPotentialFieldsMovement){ 
             if(current is GroupTargetMove gMove) {
-                if(AIMgr.inst.displayPotentialLines) {
+                if(UIMgr.inst.displayPotentialLines) {
                     gMove.potentialLine.SetPosition(0, entity.position);
                     Vector3 newpos = Vector3.zero;
                     newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
@@ -170,7 +189,7 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
                     gMove.potentialLine.gameObject.SetActive(false);
                 }
             } else if(current is GroupEscort groupEscort) {
-                if(AIMgr.inst.displayPotentialLines) {
+                if(UIMgr.inst.displayPotentialLines) {
                     groupEscort.potentialLine.SetPosition(0, entity.position);
                     Vector3 newpos = Vector3.zero;
                     newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
@@ -184,7 +203,7 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
                 }
             } else {
                 Move m = current as Move;
-                if(AIMgr.inst.displayPotentialLines) {
+                if(UIMgr.inst.displayPotentialLines) {
                     m.potentialLine.SetPosition(0, entity.position);
                     Vector3 newpos = Vector3.zero;
                     newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
@@ -198,8 +217,13 @@ public class UnitAI : MonoBehaviour , IComparable<UnitAI>
                 }
             }
         }
-
-
+        // Group Connecting Line
+        if(groupConnectingLine!=null && group!=null) {
+            groupConnectingLine.gameObject.SetActive(entity.isSelected && UIMgr.inst.displayGroupLines);
+            groupConnectingLine.SetPosition(0, entity.position);
+            groupConnectingLine.SetPosition(1, group.target.position);
+        }
+ 
     }
 
         // Default comparer for Part type.
