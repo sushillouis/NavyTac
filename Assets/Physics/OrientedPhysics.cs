@@ -14,24 +14,30 @@ public class OrientedPhysics : MonoBehaviour
     public Entity entity;
 
 
-    // Update is called once per frame
-    void FixedUpdate()
+    // FixedUpdate is called once per frame
+    public virtual void FixedUpdate()
     {
-        if(Utils.ApproximatelyEqual(entity.speed, entity.desiredSpeed)) {
+        if(Utils.ApproximatelyEqual(entity.speed, entity.desiredSpeed))
+        {
             ;
-        } else if(entity.speed < entity.desiredSpeed) {
+        } else if(entity.speed < entity.desiredSpeed)
+        {
             entity.speed = entity.speed + entity.acceleration * Time.fixedDeltaTime;
-        } else if (entity.speed > entity.desiredSpeed) {
+        } else if(entity.speed > entity.desiredSpeed)
+        {
             entity.speed = entity.speed - entity.acceleration * Time.fixedDeltaTime;
         }
         entity.speed = Utils.Clamp(entity.speed, entity.minSpeed, entity.maxSpeed);
 
         //heading
-        if (Utils.ApproximatelyEqual(entity.heading, entity.desiredHeading)) {
+        if(Utils.ApproximatelyEqual(entity.heading, entity.desiredHeading))
+        {
             ;
-        } else if (Utils.AngleDiffPosNeg(entity.desiredHeading, entity.heading) > 0) {
+        } else if(Utils.AngleDiffPosNeg(entity.desiredHeading, entity.heading) > 0)
+        {
             entity.heading += entity.turnRate * Time.fixedDeltaTime;
-        } else if (Utils.AngleDiffPosNeg(entity.desiredHeading, entity.heading) < 0) {
+        } else if(Utils.AngleDiffPosNeg(entity.desiredHeading, entity.heading) < 0)
+        {
             entity.heading -= entity.turnRate * Time.fixedDeltaTime;
         }
         entity.heading = Utils.Degrees360(entity.heading);
@@ -48,6 +54,5 @@ public class OrientedPhysics : MonoBehaviour
     }
 
     public Vector3 eulerRotation = Vector3.zero;
-
 
 }

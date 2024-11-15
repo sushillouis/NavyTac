@@ -75,7 +75,7 @@ public class AIMgr : MonoBehaviour
                     else if(pincer)
                         HandlePincer(SelectionMgr.inst.selectedEntities, ent, add);
                     else
-                        HandleFollow(SelectionMgr.inst.selectedEntities, ent, add);
+                        HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
                 }
             } else {
                 if (ent == null) {
@@ -187,21 +187,23 @@ public class AIMgr : MonoBehaviour
 
     
 
-    public void HandleFollow(List<Entity> entities, Entity target, bool add)
+    public void HandleFollow(List<Entity> entities, Entity ent, Vector3 offset, bool add)
     {
-        foreach (Entity entity in SelectionMgr.inst.selectedEntities) {
-            if(target != entity) {
-                Follow f = new Follow(entity, target, new Vector3(100, 0, 0));
-                UnitAI uai = entity.ai;
+        foreach (Entity entity in entities) {
+            if(ent != entity) {
+                Follow f = new Follow(entity, ent, offset);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
                 AddOrSet(f, uai, add);
             }
         }
     }
 
-    void HandleIntercept(List<Entity> entities, Entity ent, bool add)
+    public void HandleIntercept(List<Entity> entities, Entity ent, bool add)
     {
-        foreach (Entity entity in entities) {
-            if(ent != entity) {
+        foreach(Entity entity in entities)
+        {
+            if(ent != entity)
+            {
                 Intercept intercept = new Intercept(entity, ent);
                 UnitAI uai = entity.ai;
                 AddOrSet(intercept, uai, add);

@@ -78,4 +78,11 @@ public enum MapNames
     FourCorners,
 }
 
-
+public enum WeaponBehaviors
+{
+    None = 0,
+    Dumb,
+    SurfaceInterceptor,
+    AirInterceptor,
+    Smart,
+}
