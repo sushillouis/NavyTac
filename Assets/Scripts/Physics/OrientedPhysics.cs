@@ -55,5 +55,4 @@ public class OrientedPhysics : MonoBehaviour
 
     public Vector3 eulerRotation = Vector3.zero;
 
-
 }
