@@ -98,7 +98,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   shipModel: {fileID: 20335901416906396}
-  iconThreshold: 800
+  iconThreshold: 1250
   icon: {fileID: 2914620945382058400}
   baseIconScale: {x: 0, y: 0, z: 0}
 --- !u!1 &2963791853966192756
@@ -270,14 +270,19 @@ MonoBehaviour:
   desiredHeading: 0
   health: 100
   fuel: 100
+  range: 0
+  fuelBurnRate: 0
   acceleration: 3
   turnRate: 30
   maxSpeed: 20
   minSpeed: 0
+  cruiseSpeed: 0
   mass: 50
   length: 33
   width: 12.5
   height: 20
+  maxFuel: 0
+  maxRange: 0
   entityType: 8
   cameraRig: {fileID: 8941482605391829314}
   selectionCircle: {fileID: 345591687323572756}

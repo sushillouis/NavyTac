@@ -79,17 +79,23 @@ MonoBehaviour:
   desiredHeading: 0
   health: 100
   fuel: 100
+  range: 0
+  fuelBurnRate: 0
   acceleration: 5
   turnRate: 10
   maxSpeed: 14
   minSpeed: 0
+  cruiseSpeed: 0
   mass: 270
   length: 38
   width: 13.5
   height: 15
+  maxFuel: 0
+  maxRange: 0
   entityType: 10
   cameraRig: {fileID: 8242789660831846513}
   selectionCircle: {fileID: 3471284118621656153}
+  uia: {fileID: 0}
   owner:
     name: 
     playerId: 0
@@ -142,9 +148,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
-  iconThreshold: 600
   shipModel: {fileID: 3310019002709106948}
+  iconThreshold: 1000
   icon: {fileID: 2236818054874055828}
+  baseIconScale: {x: 0, y: 0, z: 0}
 --- !u!1 &4766140010681853235
 GameObject:
   m_ObjectHideFlags: 0

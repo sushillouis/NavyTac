@@ -114,9 +114,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
-  iconThreshold: 1800
   shipModel: {fileID: 1061575964593058048}
+  iconThreshold: 3500
   icon: {fileID: 2993314560226816291}
+  baseIconScale: {x: 0, y: 0, z: 0}
 --- !u!1 &1788670721864899137
 GameObject:
   m_ObjectHideFlags: 0
@@ -226,6 +227,7 @@ MonoBehaviour:
   entityType: 0
   cameraRig: {fileID: 2020023502900363850}
   selectionCircle: {fileID: 7167764133957489543}
+  uia: {fileID: 0}
   owner:
     name: 
     playerId: 0

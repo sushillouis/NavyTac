@@ -74,12 +74,12 @@ public class IconsMgr : MonoBehaviour
         foreach (Entity ent in EntityMgr.inst.entities)
         {
             UIAspect uia = ent.uia;
-            float dist = Vector3.SqrMagnitude(ent.position - cam.transform.position);
-            if (uia.shipModel.activeSelf && dist > uia.iconThreshold * uia.iconThreshold)
+            float dist = cam.transform.position.y;
+            if (uia.shipModel.activeSelf && dist > uia.iconThreshold)
             {
                 uia.TurnOnIcons();
             }
-            if (uia.icon.activeSelf && dist <= uia.iconThreshold * uia.iconThreshold)
+            if (uia.icon.activeSelf && dist <= uia.iconThreshold)
             {
                 uia.TurnOnModels();
             }

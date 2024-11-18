@@ -113,14 +113,19 @@ MonoBehaviour:
   desiredHeading: 0
   health: 100
   fuel: 100
+  range: 0
+  fuelBurnRate: 0
   acceleration: 5
   turnRate: 20
   maxSpeed: 22
   minSpeed: 0
+  cruiseSpeed: 0
   mass: 30
   length: 15
   width: 5
   height: 7
+  maxFuel: 0
+  maxRange: 0
   entityType: 9
   cameraRig: {fileID: 6667547634042605354}
   selectionCircle: {fileID: 5401650789423696299}
@@ -178,7 +183,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   shipModel: {fileID: 7277314524413997884}
-  iconThreshold: 400
+  iconThreshold: 800
   icon: {fileID: 8056728306134081828}
   baseIconScale: {x: 0, y: 0, z: 0}
 --- !u!1 &3973805478103434808
