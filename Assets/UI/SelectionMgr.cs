@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using static UnityEditor.PlayerSettings;
 
 
@@ -48,12 +49,14 @@ public class SelectionMgr : MonoBehaviour
 
     public void UpdateSelectionBox(Vector3 end)
     {
+        Vector2 localMousePositon;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(UICanvas, startMousePosition, null, out localMousePositon);
         SelectionBoxPanel.localPosition = 
-            new Vector3(startMousePosition.x - UICanvas.rect.width/2, startMousePosition.y - UICanvas.rect.height/2, 0) / canvas.scaleFactor;
-        Debug.Log(SelectionBoxPanel.localPosition);
+            new Vector3(localMousePositon.x, localMousePositon.y, 0);
+        //Debug.Log(SelectionBoxPanel.localPosition);
         SetPivotAndAnchors(startMousePosition, end);
         SelectionBoxPanel.sizeDelta = new Vector2(Mathf.Abs(end.x - startMousePosition.x), Mathf.Abs(startMousePosition.y - end.y)) / canvas.scaleFactor;
-        Debug.Log(SelectionBoxPanel.sizeDelta);
+        //Debug.Log(SelectionBoxPanel.sizeDelta);
     }
     public Vector2 anchorMin = Vector2.up;
     public Vector2 anchorMax = Vector2.up;
