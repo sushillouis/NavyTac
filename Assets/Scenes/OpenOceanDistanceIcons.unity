@@ -2928,7 +2928,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 578a6d8f35ef73643b21882478083779, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  distanceFromEntityBased: 0
+  distanceFromEntityBased: 1
   distanceThreshold: 1000
   heightMultiplier:
     serializedVersion: 2
@@ -9416,7 +9416,7 @@ GameObject:
   - component: {fileID: 1852731778}
   - component: {fileID: 1852731779}
   m_Layer: 0
-  m_Name: OpenOceanMain
+  m_Name: DistanceIconsMain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9446,7 +9446,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1852731777}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eaea28c609606d5418aa98acc45d2fe6, type: 3}
+  m_Script: {fileID: 11500000, guid: d3c6cdf21e966be4babd97397b8e0103, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1853669713

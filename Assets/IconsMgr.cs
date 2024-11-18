@@ -73,7 +73,7 @@ public class IconsMgr : MonoBehaviour
     {
         foreach (Entity ent in EntityMgr.inst.entities)
         {
-            UIAspect uia = ent.gameObject.GetComponentInChildren<UIAspect>();
+            UIAspect uia = ent.uia;
             float dist = Vector3.SqrMagnitude(ent.position - cam.transform.position);
             if (uia.shipModel.activeSelf && dist > uia.iconThreshold * uia.iconThreshold)
             {

@@ -124,6 +124,7 @@ MonoBehaviour:
   entityType: 9
   cameraRig: {fileID: 6667547634042605354}
   selectionCircle: {fileID: 5401650789423696299}
+  uia: {fileID: 0}
   owner:
     name: 
     playerId: 0
@@ -176,9 +177,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
-  iconThreshold: 400
   shipModel: {fileID: 7277314524413997884}
-  icon: {fileID: 0}
+  iconThreshold: 400
+  icon: {fileID: 8056728306134081828}
+  baseIconScale: {x: 0, y: 0, z: 0}
 --- !u!1 &3973805478103434808
 GameObject:
   m_ObjectHideFlags: 0
@@ -493,6 +495,12 @@ PrefabInstance:
 --- !u!4 &7243176995000204190 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6666920278595907593, guid: 1b76ab05bfeaeca47b847b092fe76b28,
+    type: 3}
+  m_PrefabInstance: {fileID: 4035585573074373527}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8056728306134081828 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6327126498989763251, guid: 1b76ab05bfeaeca47b847b092fe76b28,
     type: 3}
   m_PrefabInstance: {fileID: 4035585573074373527}
   m_PrefabAsset: {fileID: 0}

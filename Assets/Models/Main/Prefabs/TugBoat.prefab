@@ -81,7 +81,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5882122587268332456}
-  - {fileID: 1247557154171536945}
+  - {fileID: 4910898848091717799}
   m_Father: {fileID: 4763621423814886639}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3894215860844663463
@@ -97,9 +97,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
-  iconThreshold: 800
   shipModel: {fileID: 20335901416906396}
-  icon: {fileID: 1881350378924285067}
+  iconThreshold: 800
+  icon: {fileID: 2914620945382058400}
+  baseIconScale: {x: 0, y: 0, z: 0}
 --- !u!1 &2963791853966192756
 GameObject:
   m_ObjectHideFlags: 0
@@ -280,6 +281,7 @@ MonoBehaviour:
   entityType: 8
   cameraRig: {fileID: 8941482605391829314}
   selectionCircle: {fileID: 345591687323572756}
+  uia: {fileID: 0}
   owner:
     name: 
     playerId: 0
@@ -369,20 +371,35 @@ PrefabInstance:
       propertyPath: m_Name
       value: TugBoat Distance Icon
       objectReference: {fileID: 0}
+    - target: {fileID: 6080287305861646174, guid: b5dd200080efca647b90eb53fca63231,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6080287305861646174, guid: b5dd200080efca647b90eb53fca63231,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6080287305861646174, guid: b5dd200080efca647b90eb53fca63231,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b5dd200080efca647b90eb53fca63231, type: 3}
---- !u!4 &1247557154171536945 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 78452300199674312, guid: b5dd200080efca647b90eb53fca63231,
+--- !u!1 &2914620945382058400 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4049951171488231001, guid: b5dd200080efca647b90eb53fca63231,
     type: 3}
   m_PrefabInstance: {fileID: 1172767057026123769}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1881350378924285067 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 746866771327622002, guid: b5dd200080efca647b90eb53fca63231,
+--- !u!4 &4910898848091717799 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6080287305861646174, guid: b5dd200080efca647b90eb53fca63231,
     type: 3}
   m_PrefabInstance: {fileID: 1172767057026123769}
   m_PrefabAsset: {fileID: 0}

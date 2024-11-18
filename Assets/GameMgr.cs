@@ -133,4 +133,14 @@ public class GameMgr : MonoBehaviour
         return allEntities;
     }
 
+    public void InitDistanceIconsTesting(List<GameObject> entPrefabs)
+    {
+        Vector3 position = Vector3.zero;
+        foreach (GameObject go in entPrefabs)
+        {
+            Entity ent = EntityMgr.inst.CreateEntity(go.GetComponent<Entity>().entityType, position, Vector3.zero);
+            ent.isSelected = false;
+            position.x += 200;
+        }
+    }
 }
