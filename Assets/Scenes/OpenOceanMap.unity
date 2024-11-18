@@ -567,7 +567,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mixer: {fileID: 24100000, guid: f23e15c2c50c5cb45a850c2216cc732b, type: 2}
-  muteSound: 0
+  muteSound: 1
   masterVolume: 0.75
   ambientVolume: 0.75
   bgmVolume: 0.75
@@ -7386,10 +7386,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -9245,6 +9245,7 @@ MonoBehaviour:
   startMousePosition: {x: 0, y: 0, z: 0}
   SelectionBoxPanel: {fileID: 194918368}
   UICanvas: {fileID: 1491763689}
+  mainCanvas: {fileID: 1491763688}
   numTouches: 0
   selectionSensitivity: 25
   anchorMin: {x: 0, y: 1}
@@ -12327,6 +12328,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 21896543999796168}
     m_Modifications:
+    - target: {fileID: 2361369770463863096, guid: 364057f89cdf3134f82026eb3fd91614,
+        type: 3}
+      propertyPath: m_text
+      value: Menu
+      objectReference: {fileID: 0}
+    - target: {fileID: 2361369770463863096, guid: 364057f89cdf3134f82026eb3fd91614,
+        type: 3}
+      propertyPath: m_fontSize
+      value: 24
+      objectReference: {fileID: 0}
+    - target: {fileID: 2361369770463863096, guid: 364057f89cdf3134f82026eb3fd91614,
+        type: 3}
+      propertyPath: m_fontSizeBase
+      value: 24
+      objectReference: {fileID: 0}
     - target: {fileID: 4617248182551729312, guid: 364057f89cdf3134f82026eb3fd91614,
         type: 3}
       propertyPath: m_Name
@@ -12365,12 +12381,12 @@ PrefabInstance:
     - target: {fileID: 7424239055927980210, guid: 364057f89cdf3134f82026eb3fd91614,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 150
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7424239055927980210, guid: 364057f89cdf3134f82026eb3fd91614,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 50
+      value: 45
       objectReference: {fileID: 0}
     - target: {fileID: 7424239055927980210, guid: 364057f89cdf3134f82026eb3fd91614,
         type: 3}
