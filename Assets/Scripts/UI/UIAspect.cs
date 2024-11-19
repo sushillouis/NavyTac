@@ -12,6 +12,9 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
     public float iconThreshold;
     public GameObject icon;
     public Vector3 baseIconScale;
+
+    [Header("Minimap Parameters")]
+    public GameObject minimapIcon;
     // Start is called before the first frame update
     void Start()
     {
@@ -19,6 +22,7 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
         icon.GetComponent<Renderer>().material.color = entity.owner.playerColor;
         baseIconScale = icon.transform.localScale;
         icon.SetActive(false);
+        MinimapMgr.inst.CreateMinimapIcon(entity, minimapIcon);
     }
 
     // Update is called once per frame

@@ -709,8 +709,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 652260230}
+  m_Children: []
   m_Father: {fileID: 1298102323376211950}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -1986,11 +1985,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: SeaHunter
       objectReference: {fileID: 0}
-    - target: {fileID: 1101535870444392007, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7187487557739430685, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2551,11 +2545,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SeaBaby
-      objectReference: {fileID: 0}
-    - target: {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3667,81 +3656,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 10000, y: 1, z: 10000}
   m_Center: {x: 0, y: -10, z: 0}
---- !u!1 &652260229
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 652260230}
-  - component: {fileID: 652260232}
-  - component: {fileID: 652260231}
-  m_Layer: 5
-  m_Name: Minimap Icon
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &652260230
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 652260229}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 116391183}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 5, y: 10}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &652260231
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 652260229}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &652260232
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 652260229}
-  m_CullTransparentMesh: 1
 --- !u!4 &661634719 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2020023502598012820, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
@@ -4826,6 +4740,8 @@ MonoBehaviour:
   ToggleMultiSelect: {fileID: 1455108878}
   isActive: 0
   entityName: {fileID: 1216696430}
+  fuel: {fileID: 846262170}
+  range: {fileID: 2050649485}
   speed: {fileID: 3927103}
   desiredSpeed: {fileID: 1337279114}
   heading: {fileID: 1569143115}
@@ -4897,11 +4813,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: CVN75
-      objectReference: {fileID: 0}
-    - target: {fileID: 7105417278651847255, guid: 6f05e3291ed3b374e83bc5165bcb3f8d,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5308,11 +5219,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tanker
       objectReference: {fileID: 0}
-    - target: {fileID: 1321054300686026328, guid: c7061d8cebd1b584880025216a586789,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1321054300686026329, guid: c7061d8cebd1b584880025216a586789,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -5500,11 +5406,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Pilot vessel
-      objectReference: {fileID: 0}
-    - target: {fileID: 857272126595392923, guid: 2c4513be36911cf43af492fcdb5d3351,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5764,11 +5665,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: OrientExplorer
-      objectReference: {fileID: 0}
-    - target: {fileID: 4205535018835155151, guid: 70aafd5fa95ebb743a2cf93ed1442278,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6735,11 +6631,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: OilServiceVessel
       objectReference: {fileID: 0}
-    - target: {fileID: 8516214366006661342, guid: 8b6d19bb645cb934fa859c6b2ba600ff,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8516214366006661343, guid: 8b6d19bb645cb934fa859c6b2ba600ff,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -6813,11 +6704,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SmitHouston
-      objectReference: {fileID: 0}
-    - target: {fileID: 138629261546720789, guid: 56b421d73a8488646b28c822866b075c,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5250705106703308689, guid: 56b421d73a8488646b28c822866b075c,
         type: 3}
@@ -7268,11 +7154,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Mykola
-      objectReference: {fileID: 0}
-    - target: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7528760655783591509, guid: 8c32edeab3e41cf41b00eb272c64dad8,
         type: 3}
@@ -8849,11 +8730,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Container
       objectReference: {fileID: 0}
-    - target: {fileID: 4175921536809093428, guid: 195ecb91b20a27e4c837b4a6d3c601f4,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4175921536809093429, guid: 195ecb91b20a27e4c837b4a6d3c601f4,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -8961,6 +8837,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minimapImage: {fileID: 116391183}
   worldSize: {x: 18520, y: 18520}
+  minimapZoom: 0
+  mapOffset: {x: 0, y: 0}
 --- !u!1 &1789397585
 GameObject:
   m_ObjectHideFlags: 0
@@ -9692,6 +9570,7 @@ MonoBehaviour:
   startMousePosition: {x: 0, y: 0, z: 0}
   SelectionBoxPanel: {fileID: 194918368}
   UICanvas: {fileID: 1491763689}
+  mainCanvas: {fileID: 1491763688}
   numTouches: 0
   selectionSensitivity: 25
   anchorMin: {x: 0, y: 1}
@@ -10567,11 +10446,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Minesweeper
-      objectReference: {fileID: 0}
-    - target: {fileID: 8269003061167357734, guid: f946d7fa0cf80f741b8c5a0cce39d24f,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11640,11 +11514,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: JARIUSV
-      objectReference: {fileID: 0}
-    - target: {fileID: 3381456826221025453, guid: d51d8d0dda5552c478afc7674abdd037,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7540985511424937849, guid: d51d8d0dda5552c478afc7674abdd037,
         type: 3}
@@ -12866,11 +12735,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: DDG51
-      objectReference: {fileID: 0}
-    - target: {fileID: 2020023502598012821, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -15895,11 +15759,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: TugBoat
-      objectReference: {fileID: 0}
-    - target: {fileID: 8941482605437012095, guid: 5d3b351739a98e34da31ae8acedeb828,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -24,6 +24,9 @@ public class UIMgr : MonoBehaviour
     private InputAction cameraXZMove;
     private InputAction toggleRTSCam;
 
+    private InputAction mouseDelta;
+    private InputAction mouseScroll;
+
     private InputAction selectionBox;
     private InputAction singleSelect;
     private InputAction selectionCursorPosition;
@@ -60,13 +63,19 @@ public class UIMgr : MonoBehaviour
         pitchCamera = inputs.Camera.Pitch;
         pitchCamera.Enable();
 
-        //moves camera up and down - bound to R and F, Scroll Wheel, and Numpad + and -
+        //moves camera up and down - bound to R and F, and Numpad + and -
         cameraYMove = inputs.Camera.YMove;
         cameraYMove.Enable();
 
-        //moves camera forward, backward, left, and right - bound to WASD, Arrow Keys, and Middle Mouse + Moving Mouse
+        //moves camera forward, backward, left, and right - bound to WASD, Arrow Keys
         cameraXZMove = inputs.Camera.XZMove;
         cameraXZMove.Enable();
+
+        mouseDelta = inputs.Camera.MiddleMouseMove;
+        mouseDelta.Enable();
+
+        mouseScroll = inputs.Camera.MiddleMouseScroll; 
+        mouseScroll.Enable();
 
         //handles box selection - bound to Left Click with a hold
         selectionBox = inputs.Selection.BoxSelect;
@@ -209,7 +218,18 @@ public class UIMgr : MonoBehaviour
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
 
         if (singleSelect.IsPressed())
-            MinimapMgr.inst.CheckIfMapClicked(selectionCursorPosition.ReadValue<Vector2>());
+            MinimapMgr.inst.MoveCameraViaMinimap(selectionCursorPosition.ReadValue<Vector2>());
+
+        if (MinimapMgr.inst.CursorOverMap(selectionCursorPosition.ReadValue<Vector2>()))
+        {
+            MinimapMgr.inst.ChangeZoom(mouseScroll.ReadValue<Vector2>().y);
+            MinimapMgr.inst.ChangeCenter(mouseDelta.ReadValue<Vector2>());
+        }
+        else
+        {
+            CameraMgr.inst.MoveCameraY(mouseScroll.ReadValue<Vector2>().y);
+            CameraMgr.inst.MoveCameraXZ(mouseDelta.ReadValue<Vector2>());
+        }
     }
     
     private void DisplayAIInformation(Entity ent) {

@@ -12,10 +12,14 @@ public class MinimapMgr : MonoBehaviour
     Dictionary<Entity, GameObject> mapIcons;
     Matrix4x4 worldToMapTransformationMatrix;
     Matrix4x4 mapToWorldTransformationMatrix;
+    [Range(1f, 4f)]
+    public float minimapZoom;
+    public Vector2 mapOffset;
 
     private void Awake()
     {
         inst = this;
+        minimapZoom = 1;
         mapIcons = new Dictionary<Entity, GameObject>();
         InitWorldToMapTransformationMatrix();
         InitMapToWorldTransformationMatrix();
@@ -31,10 +35,6 @@ public class MinimapMgr : MonoBehaviour
     void Update()
     {
         UpdateMinimap();
-        if(Input.GetKeyDown(KeyCode.P))
-        {
-            GetFrustumOceanIntersection();
-        }
     }
 
     //Assumes world origin is center of the map
@@ -42,18 +42,20 @@ public class MinimapMgr : MonoBehaviour
     {
         Vector2 minimapSize = minimapImage.rect.size;
 
-        Vector2 scaleRatio = minimapSize / worldSize;
+        Vector2 scaleRatio = minimapSize / (worldSize / minimapZoom);
 
-        worldToMapTransformationMatrix = Matrix4x4.TRS(Vector2.zero, Quaternion.identity, scaleRatio);
+        worldToMapTransformationMatrix = Matrix4x4.TRS(mapOffset, Quaternion.identity, scaleRatio);
     }
 
     void InitMapToWorldTransformationMatrix()
     {
         Vector2 minimapSize = minimapImage.rect.size;
 
-        Vector2 scaleRatio = worldSize / minimapSize;
+        Vector2 scaleRatio = (worldSize / minimapZoom) / minimapSize;
+        //Vector2 translationRatio = -mapOffset *(worldSize.x/(minimapZoom*minimapSize.x));
+        Vector2 translationVector = -mapOffset * scaleRatio;
 
-        mapToWorldTransformationMatrix = Matrix4x4.TRS(Vector2.zero, Quaternion.identity, scaleRatio);
+        mapToWorldTransformationMatrix = Matrix4x4.TRS(translationVector, Quaternion.identity, scaleRatio);
     }
 
     public void CreateMinimapIcon(Entity ent, GameObject minimapIcon)
@@ -77,6 +79,12 @@ public class MinimapMgr : MonoBehaviour
             rt.anchoredPosition = mapPosition;
             rt.localRotation = Quaternion.Euler(new Vector3(0, 0, -ent.heading));
             rt.localScale = Vector3.one * iconScale;
+
+            if (Mathf.Abs(rt.localPosition.x) > minimapImage.rect.width/2 || 
+                Mathf.Abs(rt.localPosition.y) > minimapImage.rect.height/2)
+                mapIcon.SetActive(false);
+            else 
+                mapIcon.SetActive(true);
         }
     }
 
@@ -98,14 +106,41 @@ public class MinimapMgr : MonoBehaviour
         return ray.origin + (((ray.origin.y - height) / -ray.direction.y) * ray.direction);
     }
 
-    public void CheckIfMapClicked(Vector2 mousePos)
+    public bool CursorOverMap(Vector2 mousePos)
+    {
+        return RectTransformUtility.RectangleContainsScreenPoint(minimapImage, mousePos);
+    }
+
+    public void MoveCameraViaMinimap(Vector2 mousePos)
     {
         Vector2 localPoint;
-        if (RectTransformUtility.RectangleContainsScreenPoint(minimapImage, mousePos))
+        if (CursorOverMap(mousePos))
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(minimapImage, mousePos, null, out localPoint);
             Vector2 worldPos2D = mapToWorldTransformationMatrix.MultiplyPoint3x4(localPoint);
             CameraMgr.inst.YawNode.transform.position = new Vector3(worldPos2D.x, CameraMgr.inst.YawNode.transform.position.y, worldPos2D.y);
         }
+    }
+
+    public void ChangeZoom(float delta)
+    {
+        minimapZoom -= delta*0.1f;
+        minimapZoom = Mathf.Clamp(minimapZoom, 1, 4);
+        InitMapToWorldTransformationMatrix();
+        InitWorldToMapTransformationMatrix();
+    }
+    
+    public void ChangeCenter(Vector2 delta)
+    {
+        mapOffset.x = Mathf.Clamp(mapOffset.x + delta.x,
+            -minimapZoom * (minimapImage.rect.width / 2 - (minimapImage.rect.width / (2 * minimapZoom))),
+            minimapZoom * (minimapImage.rect.width / 2 - (minimapImage.rect.width / (2 * minimapZoom))));
+
+        mapOffset.y = Mathf.Clamp(mapOffset.y + delta.y,
+            -minimapZoom * (minimapImage.rect.height / 2 - (minimapImage.rect.height / (2 * minimapZoom))),
+            minimapZoom * (minimapImage.rect.height / 2 - (minimapImage.rect.height / (2 * minimapZoom))));
+
+        InitMapToWorldTransformationMatrix();
+        InitWorldToMapTransformationMatrix();
     }
 }

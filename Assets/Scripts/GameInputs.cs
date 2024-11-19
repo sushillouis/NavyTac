@@ -80,6 +80,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""MiddleMouseScroll"",
+                    ""type"": ""Value"",
+                    ""id"": ""c45f5ba6-c2a4-4534-b7fa-e3333aee52b4"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -348,39 +357,6 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
-                    ""name"": ""One Modifier"",
-                    ""id"": ""c119b839-9411-4736-8daf-6958d47178f9"",
-                    ""path"": ""OneModifier"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""modifier"",
-                    ""id"": ""5d7485be-e1b9-4aeb-b0c0-a32dcb90d4a4"",
-                    ""path"": ""<Mouse>/middleButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""binding"",
-                    ""id"": ""e4f6a117-423c-4fc2-8811-e22acfffe3a6"",
-                    ""path"": ""<Mouse>/delta"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
                     ""name"": ""2D Vector"",
                     ""id"": ""8e17f1cf-109c-460a-9c92-d034e8d4c9e9"",
                     ""path"": ""2DVector"",
@@ -447,17 +423,6 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
-                    ""name"": """",
-                    ""id"": ""773e73eb-b501-47c0-a0f1-f72be94128a5"",
-                    ""path"": ""<Mouse>/scroll"",
-                    ""interactions"": """",
-                    ""processors"": ""ScaleVector2(y=-0.025)"",
-                    ""groups"": """",
-                    ""action"": ""YMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
                     ""name"": ""2D Vector"",
                     ""id"": ""72f257a9-cffc-4fea-8d7c-27fa9b68df6e"",
                     ""path"": ""2DVector"",
@@ -491,13 +456,46 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
-                    ""name"": """",
-                    ""id"": ""617e1a54-124e-4587-838f-f0978308da9d"",
+                    ""name"": ""One Modifier"",
+                    ""id"": ""3303b0ed-b067-4ce9-9066-8dfab95da00f"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MiddleMouseMove"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""970d8f43-3dc5-4afd-9aa9-4cdd96ff2ca3"",
+                    ""path"": ""<Mouse>/middleButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MiddleMouseMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""3335cfc3-b999-4ff3-816b-06eabac3b68c"",
                     ""path"": ""<Mouse>/delta"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""MiddleMouseMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fad173e6-9692-4afd-80d0-279f6f3c8e74"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": ""ScaleVector2(y=-0.025)"",
+                    ""groups"": """",
+                    ""action"": ""MiddleMouseScroll"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -827,6 +825,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Camera_XZMove = m_Camera.FindAction("XZMove", throwIfNotFound: true);
         m_Camera_YMove = m_Camera.FindAction("YMove", throwIfNotFound: true);
         m_Camera_MiddleMouseMove = m_Camera.FindAction("MiddleMouseMove", throwIfNotFound: true);
+        m_Camera_MiddleMouseScroll = m_Camera.FindAction("MiddleMouseScroll", throwIfNotFound: true);
         // Entities
         m_Entities = asset.FindActionMap("Entities", throwIfNotFound: true);
         m_Entities_Speed = m_Entities.FindAction("Speed", throwIfNotFound: true);
@@ -909,6 +908,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Camera_XZMove;
     private readonly InputAction m_Camera_YMove;
     private readonly InputAction m_Camera_MiddleMouseMove;
+    private readonly InputAction m_Camera_MiddleMouseScroll;
     public struct CameraActions
     {
         private @GameInputs m_Wrapper;
@@ -919,6 +919,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         public InputAction @XZMove => m_Wrapper.m_Camera_XZMove;
         public InputAction @YMove => m_Wrapper.m_Camera_YMove;
         public InputAction @MiddleMouseMove => m_Wrapper.m_Camera_MiddleMouseMove;
+        public InputAction @MiddleMouseScroll => m_Wrapper.m_Camera_MiddleMouseScroll;
         public InputActionMap Get() { return m_Wrapper.m_Camera; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -946,6 +947,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @MiddleMouseMove.started += instance.OnMiddleMouseMove;
             @MiddleMouseMove.performed += instance.OnMiddleMouseMove;
             @MiddleMouseMove.canceled += instance.OnMiddleMouseMove;
+            @MiddleMouseScroll.started += instance.OnMiddleMouseScroll;
+            @MiddleMouseScroll.performed += instance.OnMiddleMouseScroll;
+            @MiddleMouseScroll.canceled += instance.OnMiddleMouseScroll;
         }
 
         private void UnregisterCallbacks(ICameraActions instance)
@@ -968,6 +972,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @MiddleMouseMove.started -= instance.OnMiddleMouseMove;
             @MiddleMouseMove.performed -= instance.OnMiddleMouseMove;
             @MiddleMouseMove.canceled -= instance.OnMiddleMouseMove;
+            @MiddleMouseScroll.started -= instance.OnMiddleMouseScroll;
+            @MiddleMouseScroll.performed -= instance.OnMiddleMouseScroll;
+            @MiddleMouseScroll.canceled -= instance.OnMiddleMouseScroll;
         }
 
         public void RemoveCallbacks(ICameraActions instance)
@@ -1157,6 +1164,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnXZMove(InputAction.CallbackContext context);
         void OnYMove(InputAction.CallbackContext context);
         void OnMiddleMouseMove(InputAction.CallbackContext context);
+        void OnMiddleMouseScroll(InputAction.CallbackContext context);
     }
     public interface IEntitiesActions
     {

@@ -77,7 +77,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7477007468591699842}
   - component: {fileID: 3721043663586795140}
-  - component: {fileID: 1359622142606963849}
   m_Layer: 0
   m_Name: UI
   m_TagString: Untagged
@@ -119,21 +118,8 @@ MonoBehaviour:
   iconThreshold: 1800
   icon: {fileID: 2993314560226816291}
   baseIconScale: {x: 0, y: 0, z: 0}
---- !u!114 &1359622142606963849
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1239843608224656196}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df5bf89396bd98640a793b5293e91312, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  iconPrefab: {fileID: 3023699446096780876, guid: 7695a6ef207938849b9a6f9c79eb8204,
+  minimapIcon: {fileID: 3023699446096780876, guid: 7695a6ef207938849b9a6f9c79eb8204,
     type: 3}
-  entity: {fileID: 2020023502598012843}
 --- !u!1 &1788670721864899137
 GameObject:
   m_ObjectHideFlags: 0

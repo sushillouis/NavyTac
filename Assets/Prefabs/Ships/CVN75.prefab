@@ -175,14 +175,19 @@ MonoBehaviour:
   desiredHeading: 0
   health: 100
   fuel: 100
+  range: 0
+  fuelBurnRate: 0
   acceleration: 2
   turnRate: 2
   maxSpeed: 15
   minSpeed: 0
+  cruiseSpeed: 0
   mass: 12000
   length: 340
   width: 82.5
   height: 75
+  maxFuel: 0
+  maxRange: 0
   entityType: 13
   cameraRig: {fileID: 9167490790678090778}
   selectionCircle: {fileID: 5460552826247094139}
@@ -236,7 +241,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8844111233423992057}
   - component: {fileID: 1791575185443607632}
-  - component: {fileID: 8411588374728116147}
   m_Layer: 0
   m_Name: UI
   m_TagString: Untagged
@@ -278,21 +282,8 @@ MonoBehaviour:
   iconThreshold: 2200
   icon: {fileID: 4827731379216002130}
   baseIconScale: {x: 0, y: 0, z: 0}
---- !u!114 &8411588374728116147
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8641612771079210590}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df5bf89396bd98640a793b5293e91312, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  iconPrefab: {fileID: 3023699446096780876, guid: 7695a6ef207938849b9a6f9c79eb8204,
+  minimapIcon: {fileID: 3023699446096780876, guid: 7695a6ef207938849b9a6f9c79eb8204,
     type: 3}
-  entity: {fileID: 2354351684159739100}
 --- !u!1 &9167490790678090778
 GameObject:
   m_ObjectHideFlags: 0
