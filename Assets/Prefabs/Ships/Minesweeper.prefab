@@ -77,6 +77,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
+  minimapIcon: {fileID: 3224978623766162690, guid: ccf99b924066fb045b943bb314450da3,
+    type: 3}
 --- !u!1 &6408384338978828147
 GameObject:
   m_ObjectHideFlags: 0
@@ -123,8 +125,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  follows: []
   commands: []
   intercepts: []
+  intercept3ds: []
 --- !u!1 &7096429703924061544
 GameObject:
   m_ObjectHideFlags: 0
@@ -282,19 +286,29 @@ MonoBehaviour:
   desiredSpeed: 0
   heading: 0
   desiredHeading: 0
+  health: 100
+  fuel: 100
+  range: 0
+  fuelBurnRate: 0
   acceleration: 2
   turnRate: 4
   maxSpeed: 18
   minSpeed: 0
+  cruiseSpeed: 0
   mass: 800
   length: 120
   width: 22.5
   height: 52.5
-  health: 100
-  fuel: 100
+  maxFuel: 0
+  maxRange: 0
   entityType: 2
   cameraRig: {fileID: 987795993}
   selectionCircle: {fileID: 716578568666946900}
+  owner:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1001 &2630722499617544737
 PrefabInstance:
   m_ObjectHideFlags: 0

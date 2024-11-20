@@ -46,6 +46,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
+  minimapIcon: {fileID: 3224978623766162690, guid: ccf99b924066fb045b943bb314450da3,
+    type: 3}
 --- !u!1 &3277953698877864915
 GameObject:
   m_ObjectHideFlags: 0
@@ -135,17 +137,22 @@ MonoBehaviour:
   desiredHeading: 0
   health: 0
   fuel: 0
+  range: 0
+  fuelBurnRate: 0
   acceleration: 4
   turnRate: 2
   maxSpeed: 30
   minSpeed: 0
+  cruiseSpeed: 0
   mass: 100
   length: 100
   width: 20
   height: 20
-  entityType: 0
-  cameraRig: {fileID: 0}
-  selectionCircle: {fileID: 0}
+  maxFuel: 0
+  maxRange: 0
+  entityType: 14
+  cameraRig: {fileID: 3277953698877864915}
+  selectionCircle: {fileID: 2183722947178698645}
   owner:
     name: 
     playerId: 0
@@ -324,8 +331,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  follows: []
   commands: []
   intercepts: []
+  intercept3ds: []
 --- !u!1 &9053437305950580039
 GameObject:
   m_ObjectHideFlags: 0
@@ -544,6 +553,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b1b64573597ecf94e812fd9d518ac68f, type: 3}
+--- !u!1 &2183722947178698645 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9183282935489160824, guid: b1b64573597ecf94e812fd9d518ac68f,
+    type: 3}
+  m_PrefabInstance: {fileID: 7007521167683121645}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5414614178497656361 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3034060244875282372, guid: b1b64573597ecf94e812fd9d518ac68f,

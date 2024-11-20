@@ -5,10 +5,15 @@ using UnityEngine;
 public class UIAspect : MonoBehaviour //change name to UI aspect
 {
     public Entity entity;
+
+    [Header("Minimap Parameters")]
+    public GameObject minimapIcon;
+
     // Start is called before the first frame update
     void Start()
     {
         entity = GetComponentInParent<Entity>();
+        MinimapMgr.inst.CreateMinimapIcon(entity, minimapIcon);
     }
 
     // Update is called once per frame

@@ -24,6 +24,9 @@ public class UIMgr : MonoBehaviour
     private InputAction cameraXZMove;
     private InputAction toggleRTSCam;
 
+    private InputAction mouseDelta;
+    private InputAction mouseScroll;
+
     private InputAction selectionBox;
     private InputAction singleSelect;
     private InputAction selectionCursorPosition;
@@ -47,59 +50,83 @@ public class UIMgr : MonoBehaviour
 
     private void OnEnable()
     {
+        //changes view from RTSCameraRig to entity CameraRig - bound to C
         toggleRTSCam = inputs.Camera.RTSView;
         toggleRTSCam.Enable();
         toggleRTSCam.performed += ToggleRTSView;
 
+        //yaws camera - bound to Q and E
         yawCamera = inputs.Camera.Yaw;
         yawCamera.Enable();
 
+        //pitches camera - bound to Z and X
         pitchCamera = inputs.Camera.Pitch;
         pitchCamera.Enable();
 
+        //moves camera up and down - bound to R and F, and Numpad + and -
         cameraYMove = inputs.Camera.YMove;
         cameraYMove.Enable();
 
+        //moves camera forward, backward, left, and right - bound to WASD, Arrow Keys
         cameraXZMove = inputs.Camera.XZMove;
         cameraXZMove.Enable();
 
+        //moves camera or minimap - bound to middle mouse + mouse move
+        mouseDelta = inputs.Camera.MiddleMouseMove;
+        mouseDelta.Enable();
+
+        //changes cam height and zooms in cam - bound to mouse scroll
+        mouseScroll = inputs.Camera.MouseScroll;
+        mouseScroll.Enable();
+
+        //handles box selection - bound to Left Click with a hold
         selectionBox = inputs.Selection.BoxSelect;
         selectionBox.Enable();
         selectionBox.started += OnBoxSelectPerformed;
         selectionBox.canceled += OnBoxSelectCanceled;
 
+        //handles single click selection - bound to Left Click with a tap
         singleSelect = inputs.Selection.SingleSelect;
         singleSelect.Enable();
         singleSelect.performed += OnSingleSelectPerformed;
 
+        //determines where the cursor is - bound to Mouse Screen Position
         selectionCursorPosition = inputs.Selection.CursorPosition;
         selectionCursorPosition.Enable();
 
+        //selects the next entity in the entity list - bound to Tab
         selectNextEntity = inputs.Selection.NextEntity;
         selectNextEntity.Enable();
         selectNextEntity.performed += SelectNextEntity;
 
+        //lets entities be added to already selected entities when pressed - bound to Shift
         addSelection = inputs.Selection.ClearSelection;
         addSelection.Enable();
 
+        //handles inputing new commands - bound to Right Click
         command = inputs.Entities.Command;
         command.Enable();
         command.performed += HandleCommand;
 
+        //when held down and a follow is input, that command will be an intercept - bound to Ctrl
         intercept = inputs.Entities.Intercept;
         intercept.Enable();
 
+        //when held down, commands are added, not cleared - bound to Shift
         addCommand = inputs.Entities.AddCommand;
         addCommand.Enable();
 
+        //increases/decreases selected entity speed - bound to Up/Down Arrows
         changeSpeed = inputs.Entities.Speed;
         changeSpeed.Enable();
         changeSpeed.performed += ChangeSpeed;
 
+        //increases/decreases selected entity heading - bound to Right/Left Arrows
         changeHeading = inputs.Entities.Heading;
         changeHeading.Enable();
         changeHeading.performed += ChangeHeading;
 
+        //spawns 100 entities in the scene - bound to F12
         create100 = inputs.Entities.Create100;
         create100.Enable();
         create100.performed += Create100;
@@ -112,6 +139,8 @@ public class UIMgr : MonoBehaviour
         pitchCamera.Disable();
         cameraYMove.Disable();
         cameraXZMove.Disable();
+        mouseDelta.Disable();
+        mouseScroll.Disable();
         selectionBox.Disable();
         singleSelect.Disable();
         selectionCursorPosition.Disable();
@@ -157,7 +186,8 @@ public class UIMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(SelectionMgr.inst.selectedEntity != null) {
+        if (SelectionMgr.inst.selectedEntity != null)
+        {
             Entity ent = SelectionMgr.inst.selectedEntity;
             entityName.text = ent.name;
             speed.text = ent.speed.ToString("F2") + " m/s";
@@ -168,7 +198,8 @@ public class UIMgr : MonoBehaviour
             DisplayAIInformation(ent);
 
             Oriented3dPhysics phx3d = ent.GetComponentInChildren<Oriented3dPhysics>();
-            if(phx3d != null)  {
+            if (phx3d != null)
+            {
                 altitude.text = phx3d.altitude.ToString("F2") + "m";
                 desiredAltitude.text = phx3d.desiredAltitude.ToString("F2") + "m";
             }
@@ -189,8 +220,22 @@ public class UIMgr : MonoBehaviour
         CameraMgr.inst.MoveCameraY(cameraYMove.ReadValue<Vector2>().y);
         CameraMgr.inst.MoveCameraXZ(cameraXZMove.ReadValue<Vector2>());
 
-        if(boxSelecting)
+        if (boxSelecting)
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
+
+        if (singleSelect.IsPressed())
+            MinimapMgr.inst.MoveCameraViaMinimap(selectionCursorPosition.ReadValue<Vector2>());
+
+        if (MinimapMgr.inst.CursorOverMap(selectionCursorPosition.ReadValue<Vector2>()))
+        {
+            MinimapMgr.inst.ChangeZoom(mouseScroll.ReadValue<Vector2>().y);
+            MinimapMgr.inst.ChangeCenter(mouseDelta.ReadValue<Vector2>());
+        }
+        else
+        {
+            CameraMgr.inst.MoveCameraY(mouseScroll.ReadValue<Vector2>().y);
+            CameraMgr.inst.MoveCameraXZ(mouseDelta.ReadValue<Vector2>());
+        }
     }
     
     private void DisplayAIInformation(Entity ent) {

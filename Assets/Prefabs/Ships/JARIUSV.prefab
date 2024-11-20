@@ -111,19 +111,29 @@ MonoBehaviour:
   desiredSpeed: 0
   heading: 0
   desiredHeading: 0
+  health: 100
+  fuel: 100
+  range: 0
+  fuelBurnRate: 0
   acceleration: 5
   turnRate: 20
   maxSpeed: 22
   minSpeed: 0
+  cruiseSpeed: 0
   mass: 30
   length: 15
   width: 5
   height: 7
-  health: 100
-  fuel: 100
+  maxFuel: 0
+  maxRange: 0
   entityType: 9
   cameraRig: {fileID: 6667547634042605354}
   selectionCircle: {fileID: 5401650789423696299}
+  owner:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &3616091459088600439
 GameObject:
   m_ObjectHideFlags: 0
@@ -170,6 +180,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
+  minimapIcon: {fileID: 3224978623766162690, guid: ccf99b924066fb045b943bb314450da3,
+    type: 3}
 --- !u!1 &3973805478103434808
 GameObject:
   m_ObjectHideFlags: 0
@@ -262,8 +274,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  follows: []
   commands: []
   intercepts: []
+  intercept3ds: []
 --- !u!1 &6667547634042605354
 GameObject:
   m_ObjectHideFlags: 0
