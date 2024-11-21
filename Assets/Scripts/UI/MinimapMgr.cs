@@ -7,19 +7,28 @@ using UnityEngine.UI;
 public class MinimapMgr : MonoBehaviour
 {
     public static MinimapMgr inst;
+
+    [Header("Map Parameters")]
     public RectTransform minimapImage;
     public Vector2 worldSize;
+
+    [Header("Parameters for Size Toggling")]
     public RectTransform mainCanvas;
     public RectTransform rootPanel;
     public RectTransform minimapPanel;
+
+    [Header("Parameters for Minimap Icons")]
     public GameObject cameraIconPrefab;
     GameObject cameraIcon;
     Dictionary<Entity, GameObject> mapIcons;
+
+    //conversion matrices
     Matrix4x4 worldToMapTransformationMatrix;
     Matrix4x4 mapToWorldTransformationMatrix;
-    [Range(1f, 4f)]
-    public float minimapZoom;
-    public Vector2 mapOffset;
+
+    //varaibles for zoom and move
+    float minimapZoom;
+    Vector2 mapOffset;
 
     private void Awake()
     {
@@ -45,7 +54,7 @@ public class MinimapMgr : MonoBehaviour
         UpdateMinimap();
     }
 
-    //Assumes world origin is center of the map
+    //Set the matrix that translates world position to map position
     void InitWorldToMapTransformationMatrix()
     {
         Vector2 minimapSize = minimapImage.rect.size;
@@ -55,6 +64,7 @@ public class MinimapMgr : MonoBehaviour
         worldToMapTransformationMatrix = Matrix4x4.TRS(mapOffset, Quaternion.identity, scaleRatio);
     }
 
+    //Set the matrix that translates map position to world position
     void InitMapToWorldTransformationMatrix()
     {
         Vector2 minimapSize = minimapImage.rect.size;
@@ -65,6 +75,7 @@ public class MinimapMgr : MonoBehaviour
         mapToWorldTransformationMatrix = Matrix4x4.TRS(translationVector, Quaternion.identity, scaleRatio);
     }
 
+    //Creates the minimap icon for each ent in the scene, called in UIAspect
     public void CreateMinimapIcon(Entity ent, GameObject minimapIcon)
     {
         var newIcon = Instantiate(minimapIcon);
@@ -74,9 +85,9 @@ public class MinimapMgr : MonoBehaviour
         mapIcons.Add(ent, newIcon);
     }
 
+    //Uses SetIconLocation to update the map position for all ents and the camera
     public void UpdateMinimap()
     {
-        float iconScale = 1 / minimapImage.transform.localScale.x;
         foreach (var icon in mapIcons)
         {
             Entity ent = icon.Key;
@@ -87,16 +98,22 @@ public class MinimapMgr : MonoBehaviour
 
     }
 
+    //Sets the postion of a map icon given a world position and heading
     public void SetIconLocation(GameObject mapIcon, Vector3 worldPosition, float heading)
     {
+        //Sets the scale of the icon proportional to the minimap
         float iconScale = 1 / minimapImage.transform.localScale.x;
+
+        //Converts world position to map position
         Vector2 mapPosition = worldToMapTransformationMatrix.MultiplyPoint3x4(new Vector2(worldPosition.x, worldPosition.z));
 
+        //Sets icon position, rotation, and scale
         RectTransform rt = mapIcon.GetComponent<RectTransform>();
         rt.anchoredPosition = mapPosition;
         rt.localRotation = Quaternion.Euler(new Vector3(0, 0, -heading));
         rt.localScale = Vector3.one * iconScale;
 
+        //hides icon if it's off the map
         if (Mathf.Abs(rt.localPosition.x) > minimapImage.rect.width / 2 ||
             Mathf.Abs(rt.localPosition.y) > minimapImage.rect.height / 2)
             mapIcon.SetActive(false);
@@ -104,6 +121,7 @@ public class MinimapMgr : MonoBehaviour
             mapIcon.SetActive(true);
     }
 
+    /*
     void GetFrustumOceanIntersection()
     {
         Ray bottomLeft = Camera.main.ViewportPointToRay(new Vector3(0, 0, 0));
@@ -116,17 +134,21 @@ public class MinimapMgr : MonoBehaviour
         Debug.Log("top left: " + GetPointAtHeight(topLeft, 0));
         Debug.Log("top right: " + GetPointAtHeight(topRight, 0));
     }
+    
 
     Vector3 GetPointAtHeight(Ray ray, float height)
     {
         return ray.origin + (((ray.origin.y - height) / -ray.direction.y) * ray.direction);
     }
+    */
 
+    //Checks if the mouse is over the minimap
     public bool CursorOverMap(Vector2 mousePos)
     {
         return RectTransformUtility.RectangleContainsScreenPoint(minimapImage, mousePos);
     }
 
+    //Moves the camera to the spot clicked on the minimap
     public void MoveCameraViaMinimap(Vector2 mousePos)
     {
         Vector2 localPoint;
@@ -138,6 +160,7 @@ public class MinimapMgr : MonoBehaviour
         }
     }
 
+    //Zooms in the minimap
     public void ChangeZoom(float delta)
     {
         minimapZoom -= delta * 0.1f;
@@ -146,6 +169,7 @@ public class MinimapMgr : MonoBehaviour
         InitWorldToMapTransformationMatrix();
     }
 
+    //Moves the minimap
     public void ChangeCenter(Vector2 delta)
     {
         mapOffset.x = Mathf.Clamp(mapOffset.x + delta.x,
@@ -160,7 +184,8 @@ public class MinimapMgr : MonoBehaviour
         InitWorldToMapTransformationMatrix();
     }
 
-    public bool mapIsBig;
+    //Toggles whether map is big on the screen
+    bool mapIsBig;
     public void ResizeMap()
     {
         if(mapIsBig)
