@@ -89,6 +89,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Map"",
+                    ""type"": ""Button"",
+                    ""id"": ""84b671e6-2153-46aa-ad3f-9c877d1cdfb2"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -498,6 +507,17 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""action"": ""MouseScroll"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d21781da-4a9b-4a0b-a776-82ad703d8357"",
+                    ""path"": ""<Keyboard>/m"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Map"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -826,6 +846,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Camera_YMove = m_Camera.FindAction("YMove", throwIfNotFound: true);
         m_Camera_MiddleMouseMove = m_Camera.FindAction("MiddleMouseMove", throwIfNotFound: true);
         m_Camera_MouseScroll = m_Camera.FindAction("MouseScroll", throwIfNotFound: true);
+        m_Camera_Map = m_Camera.FindAction("Map", throwIfNotFound: true);
         // Entities
         m_Entities = asset.FindActionMap("Entities", throwIfNotFound: true);
         m_Entities_Speed = m_Entities.FindAction("Speed", throwIfNotFound: true);
@@ -909,6 +930,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Camera_YMove;
     private readonly InputAction m_Camera_MiddleMouseMove;
     private readonly InputAction m_Camera_MouseScroll;
+    private readonly InputAction m_Camera_Map;
     public struct CameraActions
     {
         private @GameInputs m_Wrapper;
@@ -920,6 +942,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         public InputAction @YMove => m_Wrapper.m_Camera_YMove;
         public InputAction @MiddleMouseMove => m_Wrapper.m_Camera_MiddleMouseMove;
         public InputAction @MouseScroll => m_Wrapper.m_Camera_MouseScroll;
+        public InputAction @Map => m_Wrapper.m_Camera_Map;
         public InputActionMap Get() { return m_Wrapper.m_Camera; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -950,6 +973,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @MouseScroll.started += instance.OnMouseScroll;
             @MouseScroll.performed += instance.OnMouseScroll;
             @MouseScroll.canceled += instance.OnMouseScroll;
+            @Map.started += instance.OnMap;
+            @Map.performed += instance.OnMap;
+            @Map.canceled += instance.OnMap;
         }
 
         private void UnregisterCallbacks(ICameraActions instance)
@@ -975,6 +1001,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @MouseScroll.started -= instance.OnMouseScroll;
             @MouseScroll.performed -= instance.OnMouseScroll;
             @MouseScroll.canceled -= instance.OnMouseScroll;
+            @Map.started -= instance.OnMap;
+            @Map.performed -= instance.OnMap;
+            @Map.canceled -= instance.OnMap;
         }
 
         public void RemoveCallbacks(ICameraActions instance)
@@ -1165,6 +1194,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnYMove(InputAction.CallbackContext context);
         void OnMiddleMouseMove(InputAction.CallbackContext context);
         void OnMouseScroll(InputAction.CallbackContext context);
+        void OnMap(InputAction.CallbackContext context);
     }
     public interface IEntitiesActions
     {

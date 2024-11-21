@@ -26,6 +26,7 @@ public class UIMgr : MonoBehaviour
 
     private InputAction mouseDelta;
     private InputAction mouseScroll;
+    private InputAction toggleMap;
 
     private InputAction selectionBox;
     private InputAction singleSelect;
@@ -78,6 +79,11 @@ public class UIMgr : MonoBehaviour
         //changes cam height and zooms in cam - bound to mouse scroll
         mouseScroll = inputs.Camera.MouseScroll;
         mouseScroll.Enable();
+
+        //toggles whether map is mini or big - bound to M
+        toggleMap = inputs.Camera.Map;
+        toggleMap.Enable();
+        toggleMap.performed += ToggleMap;
 
         //handles box selection - bound to Left Click with a hold
         selectionBox = inputs.Selection.BoxSelect;
@@ -141,6 +147,7 @@ public class UIMgr : MonoBehaviour
         cameraXZMove.Disable();
         mouseDelta.Disable();
         mouseScroll.Disable();
+        toggleMap.Disable();
         selectionBox.Disable();
         singleSelect.Disable();
         selectionCursorPosition.Disable();
@@ -303,5 +310,10 @@ public class UIMgr : MonoBehaviour
     private void Create100(InputAction.CallbackContext context)
     {
         GameMgr.inst.Create100();
+    }
+
+    private void ToggleMap(InputAction.CallbackContext context)
+    {
+        MinimapMgr.inst.ResizeMap();
     }
 }

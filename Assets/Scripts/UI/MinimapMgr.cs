@@ -9,6 +9,11 @@ public class MinimapMgr : MonoBehaviour
     public static MinimapMgr inst;
     public RectTransform minimapImage;
     public Vector2 worldSize;
+    public RectTransform mainCanvas;
+    public RectTransform rootPanel;
+    public RectTransform minimapPanel;
+    public GameObject cameraIconPrefab;
+    GameObject cameraIcon;
     Dictionary<Entity, GameObject> mapIcons;
     Matrix4x4 worldToMapTransformationMatrix;
     Matrix4x4 mapToWorldTransformationMatrix;
@@ -20,6 +25,9 @@ public class MinimapMgr : MonoBehaviour
     {
         inst = this;
         minimapZoom = 1;
+        cameraIcon = Instantiate(cameraIconPrefab);
+        cameraIcon.name = "CameraIcon";
+        cameraIcon.transform.SetParent(minimapImage.transform, false);
         mapIcons = new Dictionary<Entity, GameObject>();
         InitWorldToMapTransformationMatrix();
         InitMapToWorldTransformationMatrix();
@@ -52,7 +60,6 @@ public class MinimapMgr : MonoBehaviour
         Vector2 minimapSize = minimapImage.rect.size;
 
         Vector2 scaleRatio = (worldSize / minimapZoom) / minimapSize;
-        //Vector2 translationRatio = -mapOffset *(worldSize.x/(minimapZoom*minimapSize.x));
         Vector2 translationVector = -mapOffset * scaleRatio;
 
         mapToWorldTransformationMatrix = Matrix4x4.TRS(translationVector, Quaternion.identity, scaleRatio);
@@ -74,19 +81,27 @@ public class MinimapMgr : MonoBehaviour
         {
             Entity ent = icon.Key;
             var mapIcon = icon.Value;
-            Vector2 mapPosition = worldToMapTransformationMatrix.MultiplyPoint3x4(new Vector2(ent.position.x, ent.position.z));
-
-            RectTransform rt = mapIcon.GetComponent<RectTransform>();
-            rt.anchoredPosition = mapPosition;
-            rt.localRotation = Quaternion.Euler(new Vector3(0, 0, -ent.heading));
-            rt.localScale = Vector3.one * iconScale;
-
-            if (Mathf.Abs(rt.localPosition.x) > minimapImage.rect.width / 2 ||
-                Mathf.Abs(rt.localPosition.y) > minimapImage.rect.height / 2)
-                mapIcon.SetActive(false);
-            else
-                mapIcon.SetActive(true);
+            SetIconLocation(mapIcon, ent.position, ent.heading);
         }
+        SetIconLocation(cameraIcon, Camera.main.transform.position, 0);
+
+    }
+
+    public void SetIconLocation(GameObject mapIcon, Vector3 worldPosition, float heading)
+    {
+        float iconScale = 1 / minimapImage.transform.localScale.x;
+        Vector2 mapPosition = worldToMapTransformationMatrix.MultiplyPoint3x4(new Vector2(worldPosition.x, worldPosition.z));
+
+        RectTransform rt = mapIcon.GetComponent<RectTransform>();
+        rt.anchoredPosition = mapPosition;
+        rt.localRotation = Quaternion.Euler(new Vector3(0, 0, -heading));
+        rt.localScale = Vector3.one * iconScale;
+
+        if (Mathf.Abs(rt.localPosition.x) > minimapImage.rect.width / 2 ||
+            Mathf.Abs(rt.localPosition.y) > minimapImage.rect.height / 2)
+            mapIcon.SetActive(false);
+        else
+            mapIcon.SetActive(true);
     }
 
     void GetFrustumOceanIntersection()
@@ -140,6 +155,32 @@ public class MinimapMgr : MonoBehaviour
         mapOffset.y = Mathf.Clamp(mapOffset.y + delta.y,
             -minimapZoom * (minimapImage.rect.height / 2 - (minimapImage.rect.height / (2 * minimapZoom))),
             minimapZoom * (minimapImage.rect.height / 2 - (minimapImage.rect.height / (2 * minimapZoom))));
+
+        InitMapToWorldTransformationMatrix();
+        InitWorldToMapTransformationMatrix();
+    }
+
+    public bool mapIsBig;
+    public void ResizeMap()
+    {
+        if(mapIsBig)
+        {
+            minimapImage.SetParent(minimapPanel);
+            minimapImage.anchorMax = new Vector2(0.45f, 0.45f);
+            minimapImage.anchorMin = new Vector2(0.45f, 0.45f);
+            minimapImage.anchoredPosition = Vector2.zero;
+            minimapImage.localScale = Vector3.one;
+        }
+        else
+        {
+            minimapImage.SetParent(rootPanel);
+            minimapImage.anchorMax = new Vector2(0.5f, 0.5f);
+            minimapImage.anchorMin = new Vector2(0.5f, 0.5f);
+            minimapImage.anchoredPosition = Vector2.zero;
+            minimapImage.localScale = 4*Vector3.one;
+        }
+
+        mapIsBig = !mapIsBig;
 
         InitMapToWorldTransformationMatrix();
         InitWorldToMapTransformationMatrix();
