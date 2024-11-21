@@ -173,6 +173,8 @@ public class UIMgr : MonoBehaviour
 #endif
     }
     public TextMeshProUGUI entityName;
+    
+    public Slider healthSlider;
 
     public TextMeshProUGUI fuel;
     public TextMeshProUGUI range;
@@ -197,6 +199,8 @@ public class UIMgr : MonoBehaviour
         {
             Entity ent = SelectionMgr.inst.selectedEntity;
             entityName.text = ent.name;
+            healthSlider.value = ent.health/100f;
+            
             speed.text = ent.speed.ToString("F2") + " m/s";
             desiredSpeed.text = ent.desiredSpeed.ToString("F2") + " m/s";
             heading.text = ent.heading.ToString("F1") + " deg";
