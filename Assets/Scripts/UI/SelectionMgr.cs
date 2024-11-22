@@ -143,6 +143,7 @@ public class SelectionMgr : MonoBehaviour
                 selectedEntity = ent;
                 selectedEntity.isSelected = true;
                 selectedEntities.Add(ent);
+                AudioMgr.inst.PlaySelectionSound(ent);
             }
             else if (!shouldClearSelection)
             {

@@ -63,6 +63,8 @@ public class Entity : MonoBehaviour
     public float maxRange;
 
     public EntityType entityType;
+    public ShipClasses shipClass;
+
     public GameObject cameraRig;
     public GameObject selectionCircle;
     public Player owner;
