@@ -4682,12 +4682,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 335011965}
   m_CullTransparentMesh: 1
---- !u!1 &338515852 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8633217550283041209, guid: b7416648ba0a7734da6484c02cb91194,
-    type: 3}
-  m_PrefabInstance: {fileID: 691078785}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &348455884
 GameObject:
   m_ObjectHideFlags: 0
@@ -11248,7 +11242,7 @@ MonoBehaviour:
   isActive: 0
   displayPotentialLines: 0
   displayGroupLines: 0
-  regionSelectCircle: {fileID: 338515852}
+  regionSelectCircle: {fileID: 0}
   entityName: {fileID: 1397332}
   fuel: {fileID: 1118448496}
   range: {fileID: 1669036259}
@@ -13474,7 +13468,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f307a68b0cd5d24da3eb78422925657, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deployUnits: 0
+  deployUnits: 1
   position: {x: -100, y: 0, z: -700}
   spread: 50
   colNum: 10
@@ -20100,8 +20094,7 @@ MonoBehaviour:
     type: 3}
   PotentialPrefab: {fileID: 7190143859791935742, guid: bfa38735ac7725c44979a7084bcd30c6,
     type: 3}
-  DashedPrefab: {fileID: 7731747306308124120, guid: f21a9867ee1edef4b87f8bf912f5ffa1,
-    type: 3}
+  DashedPrefab: {fileID: 0}
   lines: []
   tmp: {fileID: 0}
 --- !u!1 &1679186755
@@ -22009,6 +22002,7 @@ MonoBehaviour:
   startMousePosition: {x: 0, y: 0, z: 0}
   SelectionBoxPanel: {fileID: 588018347}
   UICanvas: {fileID: 807736470}
+  mainCanvas: {fileID: 807736473}
   numTouches: 0
   selectionSensitivity: 25
   anchorMin: {x: 0, y: 1}
