@@ -101,43 +101,43 @@ public class Entity : MonoBehaviour
     }
     // This function On Trigger Enter is just for testing purposes.
     // START
-    // void OnTriggerEnter(Collider other)
-    // {
+    void OnTriggerEnter(Collider other)
+    {
 
-    //     //this method checks if the weapon is collided by a ship and if yes then it damages the ship based on the damage matrix
-    //     Debug.Log("hit");
-    //     if (WeaponsMgr.inst.weapons.Contains(this))
-    //         {
-    //         Entity otherEntity = other.GetComponent<Entity>();
-    //         if (otherEntity != creatorsEntity)
-    //         {
-    //             float damage = DamageMatrix.GetDamage(this.entityType, otherEntity.entityType);
-    //             // Debug.Log(damage);
-    //             otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
-    //             health = 0;
-    //             if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
-    //         }
-    //     }
-    // }
+        //this method checks if the weapon is collided by a ship and if yes then it damages the ship based on the damage matrix
+        Debug.Log("hit");
+        if (WeaponsMgr.inst.weapons.Contains(this))
+            {
+            Entity otherEntity = other.GetComponent<Entity>();
+            if (otherEntity != creatorsEntity)
+            {
+                float damage = WeaponsMgr.inst.GetDamage(this.entityType, otherEntity.entityType);
+                // Debug.Log(damage);
+                otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
+                health = 0;
+                if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
+            }
+        }
+    }
     // This function  use raycast to check if the weapon is collided by a ship and if yes then it damages the ship based on the damage matrix
     void RaycastCollisonCheck()
     {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, 20))
-        {
-            if (WeaponsMgr.inst.weapons.Contains(this))
-            {
-                Entity otherEntity = hit.collider.GetComponent<Entity>();
-                if (otherEntity != creatorsEntity)
-                {
-                    float damage = DamageMatrix.GetDamage(this.entityType, otherEntity.entityType);
-                    // Debug.Log(damage);
-                    otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
-                    health = 0;
-                    if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
-                }
-            }
-        }
+        // RaycastHit hit;
+        // if (Physics.Raycast(transform.position, transform.forward, out hit, 20))
+        // {
+        //     if (WeaponsMgr.inst.weapons.Contains(this))
+        //     {
+        //         Entity otherEntity = hit.collider.GetComponent<Entity>();
+        //         if (otherEntity != creatorsEntity)
+        //         {
+        //             float damage = DamageMatrix.GetDamage(this.entityType, otherEntity.entityType);
+        //             // Debug.Log(damage);
+        //             otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
+        //             health = 0;
+        //             if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
+        //         }
+        //     }
+        // }
     }
 
     // END
