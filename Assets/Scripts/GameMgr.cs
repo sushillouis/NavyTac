@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 public class GameMgr : MonoBehaviour
 {
@@ -140,5 +139,26 @@ public class GameMgr : MonoBehaviour
 
     }
 
+
+    public void NetTest() {
+        Vector3 pos = new Vector3(0, 0, 0);
+        Entity ent;
+        for(int i = 0; i < 20; i++) {
+            ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, Vector3.zero, PlayerMgr.inst.player1);
+            pos.x += 50;
+        }
+        pos.z = 50;
+        pos.x = 0;
+        for(int i = 0; i < 20; i++) {
+            ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, Vector3.zero, PlayerMgr.inst.player2);
+            pos.x += 50;
+        }
+        pos.z = -50;
+        pos.x = 0;
+        for(int i = 0; i < 20; i++) {
+            ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, Vector3.zero, PlayerMgr.inst.player1);
+            pos.x += 50;
+        }
+    }
 
 }

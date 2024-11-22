@@ -26,6 +26,8 @@ public class WeaponsAspect : MonoBehaviour
     // Start is called before the first frame update
     void Start() {
         entity = GetComponentInParent<Entity>();
+        entity.weapons = this;
+
         foreach(WeaponData wd in weapons) {
             wd.currentWeaponEntities = new List<Entity>();
         }

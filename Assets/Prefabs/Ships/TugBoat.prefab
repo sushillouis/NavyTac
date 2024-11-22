@@ -46,8 +46,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  follows: []
   commands: []
   intercepts: []
+  intercept3ds: []
 --- !u!1 &925708814823313368
 GameObject:
   m_ObjectHideFlags: 0
@@ -140,6 +142,53 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   eulerRotation: {x: 0, y: 0, z: 0}
+--- !u!1 &4029185830110054795
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6940442172405872960}
+  - component: {fileID: 6716017670946615105}
+  m_Layer: 0
+  m_Name: Net
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6940442172405872960
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4029185830110054795}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4763621423814886639}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6716017670946615105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4029185830110054795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9fc7887027c34444a35bf05b947bd5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entity: {fileID: 0}
+  posDiff: {x: 0, y: 0, z: 0}
+  rotDiff: 0
 --- !u!1 &8626706070210449424
 GameObject:
   m_ObjectHideFlags: 0
@@ -172,6 +221,7 @@ Transform:
   - {fileID: 3222829030187416233}
   - {fileID: 104021195341359002}
   - {fileID: 8871605902837332762}
+  - {fileID: 6940442172405872960}
   m_Father: {fileID: 8941482605437012094}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8941482605391829314
@@ -254,6 +304,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f2fd9069db7d894d8e8458779069765, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  entityId: 0
   isSelected: 0
   position: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
@@ -261,19 +312,33 @@ MonoBehaviour:
   desiredSpeed: 0
   heading: 0
   desiredHeading: 0
+  health: 100
+  fuel: 100
+  range: 0
+  fuelBurnRate: 0
   acceleration: 3
   turnRate: 30
   maxSpeed: 20
   minSpeed: 0
+  cruiseSpeed: 0
   mass: 50
   length: 33
   width: 12.5
   height: 20
-  health: 100
-  fuel: 100
+  maxFuel: 0
+  maxRange: 0
   entityType: 8
   cameraRig: {fileID: 8941482605391829314}
   selectionCircle: {fileID: 345591687323572756}
+  owner:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+  net: {fileID: 0}
+  phx: {fileID: 0}
+  ai: {fileID: 0}
+  ui: {fileID: 0}
 --- !u!65 &8941482605437012090
 BoxCollider:
   m_ObjectHideFlags: 0

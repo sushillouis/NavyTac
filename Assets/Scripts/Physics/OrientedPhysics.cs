@@ -8,6 +8,7 @@ public class OrientedPhysics : MonoBehaviour
     void Start()
     {
         entity = GetComponentInParent<Entity>();
+        entity.phx = this;
         entity.position = entity.transform.localPosition;
     }
 

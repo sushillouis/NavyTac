@@ -1,21 +1,31 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 [Serializable]
 public class Player
 {
     public string name;
-    public PlayerID playerId;
+    public ulong playerId;
     public PlayerSide playerSide;
     public Color playerColor;
+    public bool isObserver;
 
-    public Player(string name, PlayerID playerId, PlayerSide playerSide, Color playerColor) {
+    public Player(string name, ulong playerId, PlayerSide playerSide, Color playerColor) {
+        Init(name, playerId, playerSide, playerColor, false);
+    }
+
+    public Player(string name, ulong playerId, PlayerSide playerSide, Color playerColor, bool isObserver) {
+        Init(name, playerId, playerSide, playerColor, isObserver);
+    }
+    void Init(string name, ulong playerId, PlayerSide playerSide, Color playerColor, bool isObserver) {
         this.name = name;
         this.playerId = playerId;
         this.playerSide = playerSide;
         this.playerColor = playerColor;
+        this.isObserver = isObserver;
     }
 }
 
@@ -24,7 +34,7 @@ public class PlayerMgr : MonoBehaviour
     public static PlayerMgr inst;
     private void Awake() {
         inst = this;
-        players.Clear();
+        
     }
     // Start is called before the first frame update
     void Start()
@@ -32,13 +42,14 @@ public class PlayerMgr : MonoBehaviour
         
     }
 
-    public Player adminPlayer;
+    [SerializeField] private int maxPlayers = 10; //includes observer and admin
+
     public Player player1;
     public Player player2;
-    public Player observer;
 
     public List<Color> playerColors = new List<Color>();
     public List<Player> players = new List<Player>();
+    List<PlayerSide> sides = new List<PlayerSide>();
 
     // Update is called once per frame
     void Update()
@@ -46,39 +57,53 @@ public class PlayerMgr : MonoBehaviour
         
     }
 
-    public Player CreatePlayer(string pname, PlayerID pid, PlayerSide side, Color c) {
+    public Player CreateAddPlayer(string pname, ulong pid, PlayerSide side, Color c) {
         Player player = new Player(pname, pid, side, c);
         players.Add(player);
         return player;
     }
 
-    public void DestroyPlayer(PlayerID playerID) {
-        Player player = players.Find(x=>x.playerId == playerID);
+    public void DestroyPlayer(ulong playerID) {
+        Player player = players.Find(x => x.playerId == playerID);
         if(player != null) {
             players.Remove(player);
         }
     }
 
     public void DestroySide(PlayerSide side) {
-        players.RemoveAll(x=>x.playerSide == side);
+        players.RemoveAll(x => x.playerSide == side);
     }
 
     [ContextMenu("CreateAllPlayers")]
     public void CreateAllPlayers() {
         Player tmp;
         players.Clear();
-        List<PlayerSide> sides = new List<PlayerSide>();
+
         foreach(PlayerSide ps in Enum.GetValues(typeof(PlayerSide))) {
             sides.Add(ps);
         }
         int i = 0;
-        foreach(PlayerID pid in Enum.GetValues(typeof(PlayerID))) {
-            tmp = CreatePlayer(pid.ToString(), pid, sides[i], playerColors[i]);
+        for(ulong pid  = 0; pid < (ulong) maxPlayers; pid++) {
+            tmp = CreateAddPlayer("AI" + pid, 999, sides[i], playerColors[i]);
             i++;
         }
-        player1 = players[(int) PlayerID.PlayerOne];
-        player2 = players[(int) PlayerID.PlayerTwo];
-        observer = players[(int) PlayerID.Observer];
-        adminPlayer = players[(int) PlayerID.Admin];
+        SetupSpecialPlayers();
     }
+
+    public void SetupSpecialPlayers() {
+        Debug.Log("Count: " + players.Count);
+        if(players.Count <= 8 && players.Count > 0) {
+            player1 = players[0];
+            player2 = players[1];
+        }
+    }
+
+
+    public void AddNetClientPlayer(ulong clientID) {
+        Player tmp = players.Find(x => x.playerId == 999);
+        if(tmp != null) {
+            tmp.playerId = clientID;
+        }
+    }
+
 }

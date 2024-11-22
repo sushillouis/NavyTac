@@ -70,6 +70,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f2fd9069db7d894d8e8458779069765, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  entityId: 0
   isSelected: 0
   position: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
@@ -77,19 +78,81 @@ MonoBehaviour:
   desiredSpeed: 0
   heading: 0
   desiredHeading: 0
+  health: 100
+  fuel: 100
+  range: 0
+  fuelBurnRate: 0
   acceleration: 5
   turnRate: 10
   maxSpeed: 14
   minSpeed: 0
+  cruiseSpeed: 0
   mass: 270
   length: 38
   width: 13.5
   height: 15
-  health: 100
-  fuel: 100
+  maxFuel: 0
+  maxRange: 0
   entityType: 10
   cameraRig: {fileID: 8242789660831846513}
   selectionCircle: {fileID: 3471284118621656153}
+  owner:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+  net: {fileID: 0}
+  phx: {fileID: 0}
+  ai: {fileID: 0}
+  ui: {fileID: 0}
+  weapons: {fileID: 0}
+--- !u!1 &2744796648054512110
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 99377865231509194}
+  - component: {fileID: 1890643341205201532}
+  m_Layer: 0
+  m_Name: Net
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &99377865231509194
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2744796648054512110}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1747651797385832923}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1890643341205201532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2744796648054512110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9fc7887027c34444a35bf05b947bd5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entity: {fileID: 0}
+  posDiff: {x: 0, y: 0, z: 0}
+  rotDiff: 0
 --- !u!1 &3900172711751269054
 GameObject:
   m_ObjectHideFlags: 0
@@ -228,8 +291,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  follows: []
   commands: []
   intercepts: []
+  intercept3ds: []
 --- !u!1 &5387512076311821637
 GameObject:
   m_ObjectHideFlags: 0
@@ -262,6 +327,7 @@ Transform:
   - {fileID: 5297544780851318707}
   - {fileID: 6464280051514964440}
   - {fileID: 4083887667456432583}
+  - {fileID: 99377865231509194}
   m_Father: {fileID: 7187487557739430685}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8242789660831846513
