@@ -19,10 +19,10 @@ public class EntityMgr : MonoBehaviour
     public GameObject entitiesRoot;
     public List<Entity> entities;
 
-    public static int entityId = 0;
+    public int entityId = 0;
 
     public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles) {
-        return CreateEntity(et, position, eulerAngles, PlayerMgr.inst.observer);
+        return CreateEntity(et, position, eulerAngles, PlayerMgr.inst.player1);
     }
 
     public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles, Player player) {
@@ -32,6 +32,7 @@ public class EntityMgr : MonoBehaviour
             GameObject entityGo = Instantiate(entityPrefab, position, Quaternion.Euler(eulerAngles), entitiesRoot.transform);
             if(entityGo != null) {
                 entity = entityGo.GetComponent<Entity>();
+                entity.entityId = entityId;
                 entityGo.name = et.ToString() + entityId++;
                 entity.owner = player;
                 entities.Add(entity);

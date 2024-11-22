@@ -9,6 +9,7 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
     void Start()
     {
         entity = GetComponentInParent<Entity>();
+        entity.ui = this;
     }
 
     // Update is called once per frame

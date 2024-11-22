@@ -9,6 +9,8 @@ public class UnitAI : MonoBehaviour
     void Start()
     {
         entity = GetComponentInParent<Entity>();
+        entity.ai = this;
+
         commands = new List<Command>();
         intercepts = new List<Intercept>();
         intercept3ds = new List<Intercept3d>();

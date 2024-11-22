@@ -26,6 +26,7 @@ public enum EntityType
 
 public class Entity : MonoBehaviour
 {
+    public int entityId;
     //------------------------------
     // values that change while running
     //------------------------------
@@ -66,6 +67,14 @@ public class Entity : MonoBehaviour
     public GameObject selectionCircle;
 
     public Player owner;
+
+
+    [Header("Aspect references")]
+    public NetAspect net = null;
+    public OrientedPhysics phx = null;
+    public UnitAI ai = null;
+    public UIAspect ui = null;
+    public WeaponsAspect weapons = null;
 
     // Start is called before the first frame update
     void Start()
