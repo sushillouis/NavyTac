@@ -23,6 +23,7 @@ public class SelectionMgr : MonoBehaviour
     public Vector3 startMousePosition;
     public RectTransform SelectionBoxPanel;
     public RectTransform UICanvas;
+    public Canvas mainCanvas;
     public int numTouches;
 
     // Update is called once per frame
@@ -47,10 +48,12 @@ public class SelectionMgr : MonoBehaviour
 
     public void UpdateSelectionBox(Vector3 end)
     {
-        SelectionBoxPanel.localPosition = 
-            new Vector3(startMousePosition.x - UICanvas.rect.width/2, startMousePosition.y - UICanvas.rect.height/2, 0);
+        Vector2 localMousePosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(UICanvas, startMousePosition, null, out localMousePosition);
+        SelectionBoxPanel.localPosition = localMousePosition;
         SetPivotAndAnchors(startMousePosition, end);
-        SelectionBoxPanel.sizeDelta = new Vector2(Mathf.Abs(end.x - startMousePosition.x), Mathf.Abs(startMousePosition.y - end.y));
+        SelectionBoxPanel.sizeDelta = 
+            new Vector2(Mathf.Abs(end.x - startMousePosition.x), Mathf.Abs(startMousePosition.y - end.y))/mainCanvas.scaleFactor;
     }
     public Vector2 anchorMin = Vector2.up;
     public Vector2 anchorMax = Vector2.up;
