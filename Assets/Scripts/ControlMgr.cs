@@ -40,12 +40,19 @@ public class ControlMgr : MonoBehaviour
 
     public void ChangeHeading(float headingChange)
     {
-        if (SelectionMgr.inst.selectedEntity != null)
-        {
+        if(SelectionMgr.inst.selectedEntity != null) {
             SelectionMgr.inst.selectedEntity.desiredHeading += headingChange * deltaHeading;
             SelectionMgr.inst.selectedEntity.desiredHeading = Utils.Degrees360(SelectionMgr.inst.selectedEntity.desiredHeading);
         }
     }
+
+    public void UpdateOnHeadingSet(float angle) {
+        Debug.Log("Angle set to: " + angle);
+        if(SelectionMgr.inst.selectedEntity != null)
+            SelectionMgr.inst.selectedEntity.desiredHeading = Utils.Degrees360(angle);
+
+    }
+
 }
 
     

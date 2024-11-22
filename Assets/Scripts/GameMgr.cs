@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 public class GameMgr : MonoBehaviour
 {
@@ -133,5 +134,12 @@ public class GameMgr : MonoBehaviour
 
         return allEntities;
     }
+
+    public void InitTestWidgetMap() {
+        Vector3 pos = Vector3.zero;
+        Entity ent = EntityMgr.inst.CreateEntity(EntityType.DDG51, pos, pos, PlayerMgr.inst.player1);
+
+    }
+
 
 }
