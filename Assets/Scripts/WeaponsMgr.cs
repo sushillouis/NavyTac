@@ -29,10 +29,12 @@ public class WeaponsMgr : MonoBehaviour
             }
             else
             {
+                launchingEntity.soundAspect.StartLaunchWeapon();
                 wd.ammoCount -= 1;
                 Vector3 pos = launchingEntity.transform.TransformPoint(wd.launchLocation);
                 Vector3 rot = launchingEntity.transform.TransformDirection(wd.launchDirection);
                 Entity ent = EntityMgr.inst.CreateEntity(wd.weaponEntityType, pos, rot, launchingEntity.owner);
+                StartCoroutine(ent.soundAspect.DelayedTravel());
                 weapons.Add(ent);
                 wd.currentWeaponEntities.Add(ent);
                 ent.creatorsEntity = launchingEntity;

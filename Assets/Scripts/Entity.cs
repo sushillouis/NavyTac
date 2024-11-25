@@ -69,6 +69,7 @@ public class Entity : MonoBehaviour
     public GameObject selectionCircle;
     public Player owner;
     public Entity creatorsEntity;
+    public SoundAspect soundAspect;
 
     void Start()
     {
@@ -76,6 +77,7 @@ public class Entity : MonoBehaviour
         //cameraRig = transform.Find("CameraRig").gameObject;
         //selectionCircle = transform.Find("Decorations").Find("SelectionCylinder").gameObject;
         fuel = maxFuel;
+        soundAspect = GetComponentInChildren<SoundAspect>();
 
     }
     void Update()
@@ -132,6 +134,7 @@ public class Entity : MonoBehaviour
                 Entity otherEntity = hit.collider.GetComponent<Entity>();
                 if (otherEntity != creatorsEntity)
                 {
+                    StartCoroutine(AudioMgr.inst.HandleExplosion(position));
                     float damage = DamageMatrix.GetDamage(this.entityType, otherEntity.entityType);
                     // Debug.Log(damage);
                     otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);

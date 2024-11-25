@@ -14,6 +14,10 @@ public class AudioMgr : MonoBehaviour
     public List<AudioClip> selectionSounds;
     public AudioSource selectionSource;
 
+    [Header("Weapons")]
+    public GameObject explosionObject;
+    public AudioClip explosionClip;
+
     [Header("Volume Control")]
     public bool muteSound;
     [Range(0, 1)]
@@ -65,5 +69,12 @@ public class AudioMgr : MonoBehaviour
             selectionSource.clip = selectionSounds[(int)ent.shipClass-1];
             selectionSource.Play();
         }
+    }
+
+    public IEnumerator HandleExplosion(Vector3 explosionPosition)
+    {
+        GameObject explosion = Instantiate(explosionObject, explosionPosition, Quaternion.identity);
+        yield return new WaitForSeconds(explosionClip.length);
+        Destroy(explosion);
     }
 }

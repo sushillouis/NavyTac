@@ -14,6 +14,8 @@ public class SoundAspect : MonoBehaviour
     }
 
     public AudioSource boatMove;
+    public AudioSource launchWeapon;
+    public AudioSource missileTravel;
     bool boatFadeIn = false;
     bool boatFadeOut = false;
 
@@ -69,5 +71,23 @@ public class SoundAspect : MonoBehaviour
             boatFadeOut = false;
             sound.Stop();
         }
+    }
+
+    public void StartMissileTravel()
+    {
+        if(missileTravel != null)
+            missileTravel.Play();
+    }
+
+    public void StartLaunchWeapon()
+    {
+        if (launchWeapon != null)
+            launchWeapon.Play();
+    }
+
+    public IEnumerator DelayedTravel()
+    {
+        yield return new WaitForEndOfFrame();
+        StartMissileTravel();
     }
 }
