@@ -13,6 +13,7 @@ public class MinimapMgr : MonoBehaviour
     public Vector2 worldSize;
 
     [Header("Parameters for Size Toggling")]
+    public RectTransform radar;
     public RectTransform mainCanvas;
     public RectTransform rootPanel;
     public RectTransform minimapPanel;
@@ -191,18 +192,25 @@ public class MinimapMgr : MonoBehaviour
         if(mapIsBig)
         {
             minimapImage.SetParent(minimapPanel);
+            rootPanel.gameObject.SetActive(false);
             minimapImage.anchorMax = new Vector2(0.45f, 0.45f);
             minimapImage.anchorMin = new Vector2(0.45f, 0.45f);
             minimapImage.anchoredPosition = Vector2.zero;
-            minimapImage.localScale = Vector3.one;
+            Vector2 oldSize = minimapImage.sizeDelta;
+            minimapImage.sizeDelta = new Vector2(200,200);
+            radar.sizeDelta *= (minimapImage.sizeDelta / oldSize);
         }
         else
         {
             minimapImage.SetParent(rootPanel);
+            rootPanel.gameObject.SetActive(true);
             minimapImage.anchorMax = new Vector2(0.5f, 0.5f);
             minimapImage.anchorMin = new Vector2(0.5f, 0.5f);
             minimapImage.anchoredPosition = Vector2.zero;
-            minimapImage.localScale = 4*Vector3.one;
+            Vector2 oldSize = minimapImage.sizeDelta;
+            float size = Mathf.Min(mainCanvas.rect.width, mainCanvas.rect.height);
+            minimapImage.sizeDelta = new Vector2(size, size);
+            radar.sizeDelta *= (minimapImage.sizeDelta / oldSize);
         }
 
         mapIsBig = !mapIsBig;
