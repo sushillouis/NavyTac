@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class ControlMgr : MonoBehaviour
+public class ControlMgr : NetworkBehaviour
 {
     public static ControlMgr inst;
 
@@ -30,7 +31,7 @@ public class ControlMgr : MonoBehaviour
 
     public void ChangeSpeed(float speedChange)
     {
-        if (SelectionMgr.inst.selectedEntity != null) 
+        if (IsOwner && SelectionMgr.inst.selectedEntity != null) 
         {
             SelectionMgr.inst.selectedEntity.desiredSpeed += speedChange * deltaSpeed;
             SelectionMgr.inst.selectedEntity.desiredSpeed =
@@ -40,7 +41,7 @@ public class ControlMgr : MonoBehaviour
 
     public void ChangeHeading(float headingChange)
     {
-        if(SelectionMgr.inst.selectedEntity != null) {
+        if(IsOwner && SelectionMgr.inst.selectedEntity != null) {
             SelectionMgr.inst.selectedEntity.desiredHeading += headingChange * deltaHeading;
             SelectionMgr.inst.selectedEntity.desiredHeading = Utils.Degrees360(SelectionMgr.inst.selectedEntity.desiredHeading);
         }
@@ -48,9 +49,10 @@ public class ControlMgr : MonoBehaviour
 
     public void UpdateOnHeadingSet(float angle) {
         Debug.Log("Angle set to: " + angle);
-        if(SelectionMgr.inst.selectedEntity != null)
+        if(IsOwner && SelectionMgr.inst.selectedEntity != null)
             SelectionMgr.inst.selectedEntity.desiredHeading = Utils.Degrees360(angle);
-
+        if(!IsOwner)
+            NetDebugConsole.inst.Log("Cannot control me: " + SelectionMgr.inst.selectedEntity.name);
     }
 
 }

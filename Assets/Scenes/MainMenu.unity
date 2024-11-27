@@ -1363,7 +1363,6 @@ MonoBehaviour:
   loginNameInputField: {fileID: 1000841630}
   hostButton: {fileID: 199057165}
   joinButton: {fileID: 199057164}
-  lstate: 0
   _lobbyState: 0
   selectedMapName: 0
 --- !u!4 &828627988 stripped
@@ -1756,16 +1755,6 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 732067115}
-    - target: {fileID: 1255019859965419368, guid: 25a77a5a7d309544b9cdd76bf96382f5,
-        type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnLogin
-      objectReference: {fileID: 0}
-    - target: {fileID: 5969119069892913039, guid: 25a77a5a7d309544b9cdd76bf96382f5,
-        type: 3}
-      propertyPath: _isVisible
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 7587122850021805978, guid: 25a77a5a7d309544b9cdd76bf96382f5,
         type: 3}
       propertyPath: m_Name
@@ -2108,26 +2097,89 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be0daf4f7e26e5e4190581955416443a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  adminPlayer:
-    name: Admin
-    playerId: 10
-    playerSide: 10
-    playerColor: {r: 0, g: 0, b: 0, a: 1}
   player1:
     name: PlayerOne
     playerId: 1
     playerSide: 1
     playerColor: {r: 1, g: 1, b: 1, a: 1}
+    isObserver: 0
+    isAdmin: 0
   player2:
     name: PlayerTwo
     playerId: 2
     playerSide: 2
     playerColor: {r: 0, g: 1, b: 0.19607843, a: 1}
-  observer:
-    name: Observer
+    isObserver: 0
+    isAdmin: 0
+  maxPlayers: 10
+  playerCount: 0
+  players:
+  - name: None
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerOne
+    playerId: 1
+    playerSide: 1
+    playerColor: {r: 1, g: 1, b: 1, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerTwo
+    playerId: 2
+    playerSide: 2
+    playerColor: {r: 0, g: 1, b: 0.19607843, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerThree
+    playerId: 3
+    playerSide: 3
+    playerColor: {r: 0, g: 0.19607843, b: 1, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerFour
+    playerId: 4
+    playerSide: 4
+    playerColor: {r: 1, g: 0.19607843, b: 0.19607843, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerFive
+    playerId: 5
+    playerSide: 5
+    playerColor: {r: 0.9048767, g: 1, b: 0, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerSix
+    playerId: 6
+    playerSide: 6
+    playerColor: {r: 0.9472699, g: 0, b: 1, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerSeven
+    playerId: 7
+    playerSide: 7
+    playerColor: {r: 1, g: 0.47452188, b: 0, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerEight
+    playerId: 8
+    playerSide: 8
+    playerColor: {r: 0, g: 1, b: 0.9142871, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: Observer
     playerId: 9
     playerSide: 9
     playerColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: Admin
+    playerId: 10
+    playerSide: 10
+    playerColor: {r: 0, g: 0, b: 0, a: 1}
+    isObserver: 0
+    isAdmin: 0
   playerColors:
   - {r: 0, g: 0, b: 0, a: 0}
   - {r: 0, g: 0.19607843, b: 1, a: 1}
@@ -2140,51 +2192,7 @@ MonoBehaviour:
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
   - {r: 0, g: 0, b: 0, a: 1}
-  players:
-  - name: None
-    playerId: 0
-    playerSide: 0
-    playerColor: {r: 0, g: 0, b: 0, a: 0}
-  - name: PlayerOne
-    playerId: 1
-    playerSide: 1
-    playerColor: {r: 1, g: 1, b: 1, a: 1}
-  - name: PlayerTwo
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 0, g: 1, b: 0.19607843, a: 1}
-  - name: PlayerThree
-    playerId: 3
-    playerSide: 3
-    playerColor: {r: 0, g: 0.19607843, b: 1, a: 1}
-  - name: PlayerFour
-    playerId: 4
-    playerSide: 4
-    playerColor: {r: 1, g: 0.19607843, b: 0.19607843, a: 1}
-  - name: PlayerFive
-    playerId: 5
-    playerSide: 5
-    playerColor: {r: 0.9048767, g: 1, b: 0, a: 1}
-  - name: PlayerSix
-    playerId: 6
-    playerSide: 6
-    playerColor: {r: 0.9472699, g: 0, b: 1, a: 1}
-  - name: PlayerSeven
-    playerId: 7
-    playerSide: 7
-    playerColor: {r: 1, g: 0.47452188, b: 0, a: 1}
-  - name: PlayerEight
-    playerId: 8
-    playerSide: 8
-    playerColor: {r: 0, g: 1, b: 0.9142871, a: 1}
-  - name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
-  - name: Admin
-    playerId: 10
-    playerSide: 10
-    playerColor: {r: 0, g: 0, b: 0, a: 1}
+  sides: 
 --- !u!1001 &1124869740
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4978,13 +4986,8 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 250376097529231850, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0.00030227008
-      objectReference: {fileID: 0}
-    - target: {fileID: 250376097529231850, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.0000035907262
+      value: 0.000034309036
       objectReference: {fileID: 0}
     - target: {fileID: 873341795395542852, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
@@ -5016,76 +5019,11 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 732067115}
-    - target: {fileID: 1145539765107020681, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnMapSelected
-      objectReference: {fileID: 0}
-    - target: {fileID: 1145539765107020681, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: MapMenuMain, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 2192034615398173451, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_Colors.m_HighlightedColor.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2192034615398173451, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_Colors.m_HighlightedColor.g
-      value: 0.9811321
-      objectReference: {fileID: 0}
-    - target: {fileID: 2192034615398173451, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_Colors.m_HighlightedColor.r
-      value: 0.8922932
-      objectReference: {fileID: 0}
-    - target: {fileID: 2680913468759657070, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2680913468759657070, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5323364989857083373, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
       propertyPath: m_Name
       value: MapSelectPanel
       objectReference: {fileID: 0}
-    - target: {fileID: 5566439145220603766, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5566439145220603766, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6187158060690055216, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6187158060690055216, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6187158060690055216, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6187158060690055216, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 6365658229988374023, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -5104,11 +5042,6 @@ PrefabInstance:
     - target: {fileID: 6403608368090304589, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6403608368090304589, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_AnchorMin.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7711627770115240329, guid: 237a1a63acdb71544844a930ca79d548,
@@ -5135,26 +5068,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8548478903526612313, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_Interactable
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8548478903526612313, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_Colors.m_HighlightedColor.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8548478903526612313, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_Colors.m_HighlightedColor.g
-      value: 0.9811321
-      objectReference: {fileID: 0}
-    - target: {fileID: 8548478903526612313, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      propertyPath: m_Colors.m_HighlightedColor.r
-      value: 0.8922932
       objectReference: {fileID: 0}
     - target: {fileID: 8627727354957610720, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
@@ -5259,36 +5172,20 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5323364989857083373, guid: 237a1a63acdb71544844a930ca79d548,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7637009912435084316}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 237a1a63acdb71544844a930ca79d548, type: 3}
---- !u!1 &7637009912435084315 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5323364989857083373, guid: 237a1a63acdb71544844a930ca79d548,
+--- !u!114 &7637009912435084316 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 18332542910719545, guid: 237a1a63acdb71544844a930ca79d548,
     type: 3}
   m_PrefabInstance: {fileID: 7637009912435084314}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7637009912435084316
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7637009912435084315}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad5fc58a93dc0dc47a926d701c60790a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  holdingPosition: {x: 0, y: 0}
-  visiblePosition: {x: 0, y: 0}
-  panel: {fileID: 0}
-  _isVisible: 0
-  isTimed: 0
-  showDuration: 5
 --- !u!4 &7731747304775403855 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7190143859791935741, guid: bfa38735ac7725c44979a7084bcd30c6,

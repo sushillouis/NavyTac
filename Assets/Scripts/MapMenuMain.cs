@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -34,7 +35,7 @@ public class MapMenuMain : MonoBehaviour
     }
 
     private void Start() {
-        lobbyState = LobbyState.Login;
+        lobbyState = LobbyState.HostOrJoin;
         hostButton.onClick.RemoveAllListeners();
         hostButton.onClick.AddListener(() => {
             isHost = true;
@@ -73,10 +74,19 @@ public class MapMenuMain : MonoBehaviour
     public MapNames selectedMapName;
     public void OnMapSelected() {
         lobbyState = LobbyState.HostOrJoin;
+        MapMgr.inst.LoadMap();
     }
 
     public void OnHostOrJoinSubmit() {
-        lobbyState = LobbyState.None;
-        MapMgr.inst.LoadMap();
+        lobbyState = LobbyState.Login;
+        if(isHost) {
+            NetworkManager.Singleton.StartHost();
+        }
+        else {
+            NetworkManager.Singleton.StartClient();
+        }
+
     }
+
+
 }
