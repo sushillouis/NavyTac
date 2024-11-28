@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using TMPro;
+using Unity.Networking.Transport;
+using System.Net.NetworkInformation;
+using System.Linq;
 
 
 public class OpenOceanMain : MonoBehaviour
@@ -12,6 +16,7 @@ public class OpenOceanMain : MonoBehaviour
 
     public string playerName = "Debugger";
     public bool IsDebugging = false;
+    public string ipAddress = "127.0.0.1";
 
     [SerializeField]
     private PanelPlus loginPanel;
@@ -26,6 +31,8 @@ public class OpenOceanMain : MonoBehaviour
 
 
     public TMP_InputField loginNameInputField;
+
+    public TMP_InputField ipAddressInputField;
     [SerializeField]
     private Button hostButton;
     [SerializeField]
@@ -51,11 +58,16 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField]
     private LobbyState _lobbyState = LobbyState.None;
 
+    [SerializeField]
+    private GameObject NetworkManagerGo;
+
     private void Awake() {
         inst = this;
         hostButton.onClick.RemoveAllListeners();
         hostButton.onClick.AddListener(() =>
         {
+            SetupIPAddressAndPort();
+
             NetworkManager.Singleton.StartHost();
 
             lobbyState = LobbyState.Login;
@@ -63,6 +75,7 @@ public class OpenOceanMain : MonoBehaviour
         clientButton.onClick.RemoveAllListeners();
         clientButton.onClick.AddListener(() =>
         {
+            SetupIPAddressAndPort();
             NetworkManager.Singleton.StartClient();
             lobbyState = LobbyState.Login;
         });
@@ -75,6 +88,13 @@ public class OpenOceanMain : MonoBehaviour
 
     }
 
+    void SetupIPAddressAndPort() {
+        string tmp = ipAddressInputField.text.Trim();
+        int count = tmp.Count(x => x == '.');
+        if(count == 3)
+            ipAddress = tmp;
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, 7777);
+    }
 
     [Header("To be filled on Login Button Press/Network setup")]
     public NetSetup localNetSetup;
