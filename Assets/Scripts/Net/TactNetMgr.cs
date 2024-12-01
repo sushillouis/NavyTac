@@ -75,6 +75,27 @@ public class TactNetMgr : NetworkBehaviour
     public void UpdateClientsClientRpc(TactCommandStruct commandSpec) {
         AIMgr.inst.HandleNetCommandSpec(commandSpec);
     }
+
+    [ServerRpc]
+    public void CreateEntityServerRpc(EntityType entityType, Vector3 pos, int parentEntityId, ulong playerId) {
+        NetDebugConsole.inst.Log($"Server: {OwnerClientId}: CreateEntityRpc: {entityType}, owner: {playerId}, {pos}, parentId: {parentEntityId}");
+        CreateEntityClientRpc(entityType, pos, parentEntityId, playerId);
+    }
+
+    [ClientRpc]
+    public void CreateEntityClientRpc(EntityType entityType, Vector3 pos, int parentEntityId, ulong playerId) {
+        NetDebugConsole.inst.Log($"Client: {OwnerClientId}: CreateEntityRpc: {entityType}, owner: {playerId}, {pos}, parentId: {parentEntityId}");
+
+        TactPlayer entityOwner = PlayerMgr.inst.GetPlayer(playerId);
+        if(parentEntityId > -1) {
+            Entity parentEnt = EntityMgr.inst.entitiesDict[parentEntityId];
+            if(parentEnt != null)
+                pos = pos + parentEnt.position;
+        }
+
+        Entity tmp = EntityMgr.inst.CreateEntity(EntityType.AntiShipMissile, pos, Vector3.zero, entityOwner);
+    }
+
     //-------------------------------------------------------------------------------------
     // Three methods to handle creating and syncing heartbeat data between all players
     //-------------------------------------------------------------------------------------
@@ -131,8 +152,11 @@ public class TactNetMgr : NetworkBehaviour
 
     private void Update() {
         if(Input.GetKeyUp(KeyCode.T)) {
-            if(IsServer)
-                InitSyncList();
+            if(IsOwner) {
+                //Entity tmp = EntityMgr.inst.CreateEntity(EntityType.AntiShipMissile, Vector3.zero, Vector3.zero, ownPlayer);
+                CreateEntityServerRpc(EntityType.AntiShipMissile, Vector3.zero, -1, OwnerClientId);
+            }
+            //    InitSyncList();
         }
         if(Input.GetKeyUp(KeyCode.U)) {
             if(IsOwner) {

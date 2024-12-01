@@ -18,6 +18,7 @@ public class OpenOceanMain : MonoBehaviour
     public bool IsDebugging = false;
     public string ipAddress = "127.0.0.1";
 
+    [Header("Panels")]
     [SerializeField]
     private PanelPlus loginPanel;
     [SerializeField]
@@ -27,34 +28,46 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField]
     private PanelPlus MainGamePanel;
     [SerializeField]
+    private PanelPlus SingleMultiplayerPanel;
+    [SerializeField]
     private RectTransform NetDebugConsolePanel;
 
+    [Header("Single / Multi player Screen")]
+    [SerializeField]
+    private Button SinglePlayerButton;
+    [SerializeField]
+    private Button MultiPlayerButton;
+    [SerializeField]
+    private Button SingleMultiQuitButton;
 
-    public TMP_InputField loginNameInputField;
-
+    [Header("Host / Join Screen")]
     public TMP_InputField ipAddressInputField;
     [SerializeField]
     private Button hostButton;
     [SerializeField]
     private Button clientButton;
     [SerializeField]
-    private Button loginButton;
-
-    [SerializeField]
     private Button HostJoinQuitButton;
+
+    [Header("Login Screen")]
+    public TMP_InputField loginNameInputField;
+    [SerializeField]
+    private Button loginButton;
     [SerializeField]
     private Button LoginQuitButton;
-
 
     public enum LobbyState
     {
         None = 0,
+        SingleMultiPlayer,
         Login,
         MapSelect,
         HostOrJoin,
         Play,
         Done,
     }
+    [Header("Lobby State and the rest")]
+
     [SerializeField]
     private LobbyState _lobbyState = LobbyState.None;
 
@@ -86,6 +99,19 @@ public class OpenOceanMain : MonoBehaviour
         LoginQuitButton.onClick.RemoveAllListeners();
         LoginQuitButton.onClick.AddListener(OnQuitButton);
 
+        //Single/Multi player screen setup
+
+        SinglePlayerButton.onClick.RemoveAllListeners();
+        SinglePlayerButton.onClick.AddListener(OnSinglePlayer);
+
+        MultiPlayerButton.onClick.RemoveAllListeners();
+        MultiPlayerButton.onClick.AddListener(OnMultiPlayer);
+
+
+        SingleMultiQuitButton.onClick.RemoveAllListeners();
+        SingleMultiQuitButton.onClick.AddListener(OnQuitButton);
+
+
     }
 
     void SetupIPAddressAndPort() {
@@ -103,7 +129,7 @@ public class OpenOceanMain : MonoBehaviour
     public NetworkObject localTactNetMgrNetworkObject;
 
     private void Start() {
-        lobbyState = LobbyState.HostOrJoin;
+        lobbyState = LobbyState.SingleMultiPlayer;
         
         loginButton.onClick.RemoveAllListeners();
         loginButton.onClick.AddListener(() =>
@@ -142,12 +168,21 @@ public class OpenOceanMain : MonoBehaviour
             HostOrJoinPanel.isVisible = (value == LobbyState.HostOrJoin);
             MainGamePanel.isVisible = (value == LobbyState.Play);
             NetDebugConsolePanel.gameObject.SetActive(IsDebugging);
+            SingleMultiplayerPanel.isVisible = (value == LobbyState.SingleMultiPlayer);
         }
     }
 
     public void OnMapSelected() {
         lobbyState = LobbyState.None;
     }
+
+    public void OnSinglePlayer() {
+        lobbyState = LobbyState.Login;
+    }
+    public void OnMultiPlayer() {
+        lobbyState = LobbyState.HostOrJoin;
+    }
+
 
     public void OnQuitButton() {
         Debug.Log("Shutting down TactNetMgr and quitting");

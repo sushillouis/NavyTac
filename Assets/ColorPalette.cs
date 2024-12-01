@@ -11,4 +11,5 @@ public class ColorPalette : MonoBehaviour
 
     public List<Color> colors = new List<Color>();
 
+
 }
