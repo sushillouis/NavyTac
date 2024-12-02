@@ -115,9 +115,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   shipModel: {fileID: 1061575964593058048}
+  shipSize: 1
   iconThreshold: 3500
   icon: {fileID: 2993314560226816291}
   baseIconScale: {x: 0, y: 0, z: 0}
+  heightMultiplier:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1788670721864899137
 GameObject:
   m_ObjectHideFlags: 0
@@ -809,6 +816,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7477007468591699842}
     m_Modifications:
+    - target: {fileID: 6283586541754885725, guid: 2ed96261046d08341bbeeee2b5429d70,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 6283586541754885725, guid: 2ed96261046d08341bbeeee2b5429d70,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 6283586541754885725, guid: 2ed96261046d08341bbeeee2b5429d70,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 6283586541754885725, guid: 2ed96261046d08341bbeeee2b5429d70,
         type: 3}
       propertyPath: m_LocalPosition.x

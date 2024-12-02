@@ -279,9 +279,43 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   shipModel: {fileID: 3714412681540701697}
+  shipSize: 2
   iconThreshold: 5500
   icon: {fileID: 4827731379216002130}
   baseIconScale: {x: 0, y: 0, z: 0}
+  heightMultiplier:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 5500
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 9300
+      value: 5
+      inSlope: 0.0010526315
+      outSlope: 0.0010526315
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &9167490790678090778
 GameObject:
   m_ObjectHideFlags: 0

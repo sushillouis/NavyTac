@@ -2,18 +2,36 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum ShipSize
+{
+    Small,
+    Medium,
+    Large,
+}
+
+[System.Serializable]
+public struct IconSizeParameters
+{
+    public ShipSize size;
+    public float threshold;
+    public AnimationCurve curve;
+}
+
 public class IconsMgr : MonoBehaviour
 {
     Camera cam;
     bool iconsOn;
+    public static IconsMgr inst;
     public bool distanceFromEntityBased;
     public float distanceThreshold;
     public AnimationCurve heightMultiplier;
+    public List<IconSizeParameters> iconSizeParameters;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         cam = Camera.main;
         iconsOn = false;
+        inst = this;
     }
 
     // Update is called once per frame
@@ -82,6 +100,10 @@ public class IconsMgr : MonoBehaviour
             if (uia.icon.activeSelf && dist <= uia.iconThreshold)
             {
                 uia.TurnOnModels();
+            }
+            if (uia.icon.activeSelf)
+            {
+                uia.ScaleIcon(dist);
             }
         }
     }

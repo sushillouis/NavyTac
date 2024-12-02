@@ -9,9 +9,11 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
     public GameObject shipModel;
 
     [Header("Distance Icon Parameters")]
+    public ShipSize shipSize;
     public float iconThreshold;
     public GameObject icon;
     public Vector3 baseIconScale;
+    public AnimationCurve heightMultiplier;
     // Start is called before the first frame update
     void Start()
     {
@@ -19,6 +21,21 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
         icon.GetComponent<Renderer>().material.color = entity.owner.playerColor;
         baseIconScale = icon.transform.localScale;
         icon.SetActive(false);
+        if(shipSize == ShipSize.Large)
+        {
+            iconThreshold = IconsMgr.inst.iconSizeParameters[0].threshold;
+            heightMultiplier = IconsMgr.inst.iconSizeParameters[0].curve;
+        }
+        else if(shipSize == ShipSize.Medium)
+        {
+            iconThreshold = IconsMgr.inst.iconSizeParameters[1].threshold;
+            heightMultiplier = IconsMgr.inst.iconSizeParameters[1].curve;
+        }
+        else
+        {
+            iconThreshold = IconsMgr.inst.iconSizeParameters[2].threshold;
+            heightMultiplier = IconsMgr.inst.iconSizeParameters[2].curve;
+        }
     }
 
     // Update is called once per frame
@@ -47,6 +64,10 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
     {
         shipModel.SetActive(false);
         icon.SetActive(true);
+    }
+    public void ScaleIcon(float height)
+    {
+        icon.transform.localScale = baseIconScale * heightMultiplier.Evaluate(height);
     }
 
 }

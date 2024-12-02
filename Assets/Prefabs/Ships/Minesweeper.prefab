@@ -79,9 +79,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   shipModel: {fileID: 2630722499617578113}
+  shipSize: 1
   iconThreshold: 2250
   icon: {fileID: 8450815964356100718}
   baseIconScale: {x: 0, y: 0, z: 0}
+  heightMultiplier:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &6408384338978828147
 GameObject:
   m_ObjectHideFlags: 0

@@ -1913,11 +1913,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: SeaHunter
       objectReference: {fileID: 0}
-    - target: {fileID: 1101535870444392007, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7187487557739430685, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2479,11 +2474,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: SeaBaby
       objectReference: {fileID: 0}
-    - target: {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2981,6 +2971,112 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  iconSizeParameters:
+  - size: 2
+    threshold: 3500
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 3500
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 9300
+        value: 2.5
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - size: 1
+    threshold: 1200
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1200
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 9300
+        value: 5
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - size: 0
+    threshold: 250
+    curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 250
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 9300
+        value: 20
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
 --- !u!1 &560670674
 GameObject:
   m_ObjectHideFlags: 0
@@ -4678,6 +4774,8 @@ MonoBehaviour:
   ToggleMultiSelect: {fileID: 1455108878}
   isActive: 0
   entityName: {fileID: 1216696430}
+  fuel: {fileID: 846262170}
+  range: {fileID: 2050649485}
   speed: {fileID: 3927103}
   desiredSpeed: {fileID: 1337279114}
   heading: {fileID: 1569143115}
@@ -4749,11 +4847,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: CVN75
-      objectReference: {fileID: 0}
-    - target: {fileID: 7105417278651847255, guid: 6f05e3291ed3b374e83bc5165bcb3f8d,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5160,11 +5253,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tanker
       objectReference: {fileID: 0}
-    - target: {fileID: 1321054300686026328, guid: c7061d8cebd1b584880025216a586789,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1321054300686026329, guid: c7061d8cebd1b584880025216a586789,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -5352,11 +5440,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Pilot vessel
-      objectReference: {fileID: 0}
-    - target: {fileID: 857272126595392923, guid: 2c4513be36911cf43af492fcdb5d3351,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5616,11 +5699,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: OrientExplorer
-      objectReference: {fileID: 0}
-    - target: {fileID: 4205535018835155151, guid: 70aafd5fa95ebb743a2cf93ed1442278,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6586,11 +6664,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: OilServiceVessel
       objectReference: {fileID: 0}
-    - target: {fileID: 8516214366006661342, guid: 8b6d19bb645cb934fa859c6b2ba600ff,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8516214366006661343, guid: 8b6d19bb645cb934fa859c6b2ba600ff,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -6664,11 +6737,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SmitHouston
-      objectReference: {fileID: 0}
-    - target: {fileID: 138629261546720789, guid: 56b421d73a8488646b28c822866b075c,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5250705106703308689, guid: 56b421d73a8488646b28c822866b075c,
         type: 3}
@@ -7119,11 +7187,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Mykola
-      objectReference: {fileID: 0}
-    - target: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7528760655783591509, guid: 8c32edeab3e41cf41b00eb272c64dad8,
         type: 3}
@@ -8700,11 +8763,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Container
       objectReference: {fileID: 0}
-    - target: {fileID: 4175921536809093428, guid: 195ecb91b20a27e4c837b4a6d3c601f4,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4175921536809093429, guid: 195ecb91b20a27e4c837b4a6d3c601f4,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -9449,6 +9507,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3c6cdf21e966be4babd97397b8e0103, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  entityPrefabs:
+  - {fileID: 2020023502598012821, guid: 4eadb14a1eece2a44a7ae893943f3d9f, type: 3}
+  - {fileID: 4175921536809093428, guid: 195ecb91b20a27e4c837b4a6d3c601f4, type: 3}
+  - {fileID: 8269003061167357734, guid: f946d7fa0cf80f741b8c5a0cce39d24f, type: 3}
+  - {fileID: 8516214366006661342, guid: 8b6d19bb645cb934fa859c6b2ba600ff, type: 3}
+  - {fileID: 4205535018835155151, guid: 70aafd5fa95ebb743a2cf93ed1442278, type: 3}
+  - {fileID: 857272126595392923, guid: 2c4513be36911cf43af492fcdb5d3351, type: 3}
+  - {fileID: 138629261546720789, guid: 56b421d73a8488646b28c822866b075c, type: 3}
+  - {fileID: 1321054300686026328, guid: c7061d8cebd1b584880025216a586789, type: 3}
+  - {fileID: 8941482605437012095, guid: 5d3b351739a98e34da31ae8acedeb828, type: 3}
+  - {fileID: 7105417278651847255, guid: 6f05e3291ed3b374e83bc5165bcb3f8d, type: 3}
+  - {fileID: 3381456826221025453, guid: d51d8d0dda5552c478afc7674abdd037, type: 3}
+  - {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8, type: 3}
+  - {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc, type: 3}
+  - {fileID: 1101535870444392007, guid: c8004372dfb0fe04b9bbdc6347b3d8fd, type: 3}
 --- !u!1 &1853669713
 GameObject:
   m_ObjectHideFlags: 0
@@ -9497,6 +9570,7 @@ MonoBehaviour:
   startMousePosition: {x: 0, y: 0, z: 0}
   SelectionBoxPanel: {fileID: 194918368}
   UICanvas: {fileID: 1491763689}
+  mainCanvas: {fileID: 1491763688}
   numTouches: 0
   selectionSensitivity: 25
   anchorMin: {x: 0, y: 1}
@@ -10372,11 +10446,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Minesweeper
-      objectReference: {fileID: 0}
-    - target: {fileID: 8269003061167357734, guid: f946d7fa0cf80f741b8c5a0cce39d24f,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11445,11 +11514,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: JARIUSV
-      objectReference: {fileID: 0}
-    - target: {fileID: 3381456826221025453, guid: d51d8d0dda5552c478afc7674abdd037,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7540985511424937849, guid: d51d8d0dda5552c478afc7674abdd037,
         type: 3}
@@ -12634,11 +12698,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: DDG51
-      objectReference: {fileID: 0}
-    - target: {fileID: 2020023502598012821, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -15663,11 +15722,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: TugBoat
-      objectReference: {fileID: 0}
-    - target: {fileID: 8941482605437012095, guid: 5d3b351739a98e34da31ae8acedeb828,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
