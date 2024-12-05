@@ -3,79 +3,199 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
+using TMPro;
+using Unity.Networking.Transport;
+using System.Net.NetworkInformation;
+using System.Linq;
 
 
 public class OpenOceanMain : MonoBehaviour
 {
     public static OpenOceanMain inst;
 
+    public string playerName = "Debugger";
+    public bool IsDebugging = false;
+    public string ipAddress = "127.0.0.1";
 
+    [Header("Panels")]
     [SerializeField]
-    private RectTransform netUIPanel;
+    private PanelPlus loginPanel;
+    [SerializeField]
+    private PanelPlus mapSelectPanel;
+    [SerializeField]
+    private PanelPlus HostOrJoinPanel;
+    [SerializeField]
+    private PanelPlus MainGamePanel;
+    [SerializeField]
+    private PanelPlus SingleMultiplayerPanel;
+    [SerializeField]
+    private RectTransform NetDebugConsolePanel;
+
+    [Header("Single / Multi player Screen")]
+    [SerializeField]
+    private Button SinglePlayerButton;
+    [SerializeField]
+    private Button MultiPlayerButton;
+    [SerializeField]
+    private Button SingleMultiQuitButton;
+
+    [Header("Host / Join Screen")]
+    public TMP_InputField ipAddressInputField;
     [SerializeField]
     private Button hostButton;
     [SerializeField]
     private Button clientButton;
     [SerializeField]
-    private Button serverButton;
+    private Button HostJoinQuitButton;
 
+    [Header("Login Screen")]
+    public TMP_InputField loginNameInputField;
+    [SerializeField]
+    private Button loginButton;
+    [SerializeField]
+    private Button LoginQuitButton;
+
+    public enum LobbyState
+    {
+        None = 0,
+        SingleMultiPlayer,
+        Login,
+        MapSelect,
+        HostOrJoin,
+        Play,
+        Done,
+    }
+    [Header("Lobby State and the rest")]
+
+    [SerializeField]
+    private LobbyState _lobbyState = LobbyState.None;
+
+    [SerializeField]
+    private GameObject NetworkManagerGo;
 
     private void Awake() {
         inst = this;
-
-        Debug.Log("Player: " + MapMenuMain.playerName);
+        hostButton.onClick.RemoveAllListeners();
         hostButton.onClick.AddListener(() =>
         {
-            NetworkManager.Singleton.StartHost();
-            ShowNetGui(false);
-        });
+            SetupIPAddressAndPort();
 
+            NetworkManager.Singleton.StartHost();
+
+            lobbyState = LobbyState.Login;
+        });
+        clientButton.onClick.RemoveAllListeners();
         clientButton.onClick.AddListener(() =>
         {
+            SetupIPAddressAndPort();
             NetworkManager.Singleton.StartClient();
-            ShowNetGui(false);
+            lobbyState = LobbyState.Login;
         });
 
-        serverButton.onClick.AddListener(() =>
+        HostJoinQuitButton.onClick.RemoveAllListeners();
+        HostJoinQuitButton.onClick.AddListener(OnQuitButton);
+
+        LoginQuitButton.onClick.RemoveAllListeners();
+        LoginQuitButton.onClick.AddListener(OnQuitButton);
+
+        //Single/Multi player screen setup
+
+        SinglePlayerButton.onClick.RemoveAllListeners();
+        SinglePlayerButton.onClick.AddListener(OnSinglePlayer);
+
+        MultiPlayerButton.onClick.RemoveAllListeners();
+        MultiPlayerButton.onClick.AddListener(OnMultiPlayer);
+
+
+        SingleMultiQuitButton.onClick.RemoveAllListeners();
+        SingleMultiQuitButton.onClick.AddListener(OnQuitButton);
+
+
+    }
+
+    void SetupIPAddressAndPort() {
+        string tmp = ipAddressInputField.text.Trim();
+        int count = tmp.Count(x => x == '.');
+        if(count == 3)
+            ipAddress = tmp;
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, 7777);
+    }
+
+    [Header("To be filled on Login Button Press/Network setup")]
+    public NetSetup localNetSetup;
+    public NetworkObject localNetSetupNetworkObject;
+    public TactNetMgr localTactNetMgr;
+    public NetworkObject localTactNetMgrNetworkObject;
+
+    private void Start() {
+        lobbyState = LobbyState.SingleMultiPlayer;
+        
+        loginButton.onClick.RemoveAllListeners();
+        loginButton.onClick.AddListener(() =>
         {
-            NetworkManager.Singleton.StartServer();
-            ShowNetGui(false);
+            playerName = loginNameInputField.text.Trim();
+            lobbyState = LobbyState.Play;
+            foreach(NetSetup ns in FindObjectsOfType<NetSetup>()) {
+                NetworkObject tmp = ns.GetComponent<NetworkObject>();
+                if(tmp.IsLocalPlayer) {
+                    localNetSetupNetworkObject = tmp;
+                    localNetSetup = ns;
+                }
+            }
+            foreach(TactNetMgr tnm in FindObjectsOfType<TactNetMgr>()) {
+                NetworkObject tmp = tnm.GetComponent<NetworkObject>();
+                if(tmp.IsLocalPlayer) {
+                    localTactNetMgrNetworkObject = tmp;
+                    localTactNetMgr = tnm;
+                }
+            }
+            localNetSetup.OnLoginButton();
         });
-
-
     }
-    // Start is called before the first frame update
-    void Start()
+
+
+    public LobbyState lobbyState
     {
-        NetDebugConsole.inst.Log("Player name: " + MapMenuMain.playerName);
-        if(MapMenuMain.playerName.Contains("Debugger")) {
-            ShowNetGui(true);
-        } else {
-            ShowNetGui(false);
-            SetupNet(MapMenuMain.isHost);
+        get {
+            return _lobbyState;
         }
-        GameMgr.inst.NetTest();
-        //GameMgr.inst.InitOpenOceanMap();
-        //GameMgr.inst.InitTestWidgetMap();
+        set {
+            _lobbyState = value;
 
-
-
-    }
-
-
-
-    public void ShowNetGui(bool shouldShow) {
-        netUIPanel.gameObject.SetActive(shouldShow);
-    }
-    void SetupNet(bool isHost) {
-        if(isHost) {
-            NetworkManager.Singleton.StartHost();
-            Debug.Log("setting up network as Host");
-        } else {
-            NetworkManager.Singleton.StartClient();
-            Debug.Log("setting up network as Client");
+            loginPanel.isVisible = (value == LobbyState.Login);
+            mapSelectPanel.isVisible = (value == LobbyState.MapSelect);
+            HostOrJoinPanel.isVisible = (value == LobbyState.HostOrJoin);
+            MainGamePanel.isVisible = (value == LobbyState.Play);
+            NetDebugConsolePanel.gameObject.SetActive(IsDebugging);
+            SingleMultiplayerPanel.isVisible = (value == LobbyState.SingleMultiPlayer);
         }
     }
 
+    public void OnMapSelected() {
+        lobbyState = LobbyState.None;
+    }
+
+    public void OnSinglePlayer() {
+        lobbyState = LobbyState.Login;
+    }
+    public void OnMultiPlayer() {
+        lobbyState = LobbyState.HostOrJoin;
+    }
+
+
+    public void OnQuitButton() {
+        Debug.Log("Shutting down TactNetMgr and quitting");
+        TactNetMgr.inst.TactNetShutdown();
+        NetworkManager.Singleton.Shutdown();
+        if(Application.isEditor) {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#endif
+        } else {
+            Application.Quit();
+        }
+
+    }
 
 }

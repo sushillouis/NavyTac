@@ -5,12 +5,14 @@ using UnityEngine;
 public class UnitAI : MonoBehaviour
 {
     public Entity entity; //public only for ease of debugging
+
+    private void Awake() {
+        entity = GetComponentInParent<Entity>();
+        entity.ai = this;
+    }
     // Start is called before the first frame update
     void Start()
     {
-        entity = GetComponentInParent<Entity>();
-        entity.ai = this;
-
         commands = new List<Command>();
         intercepts = new List<Intercept>();
         intercept3ds = new List<Intercept3d>();

@@ -3,19 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public enum @ulong
-{
-    PlayerOne = 0,
-    PlayerTwo,
-    PlayerThree,
-    PlayerFour,
-    PlayerFive,
-    PlayerSix,
-    PlayerSeven,
-    PlayerEight,
-    Observer,
-    Admin,
-}
 
 public enum PlayerSide
 {
@@ -27,8 +14,6 @@ public enum PlayerSide
     SideSix,
     SideSeven,
     SideEight,
-    Observer,
-    Admin,
 }
 
 public enum ShipClasses
@@ -83,4 +68,12 @@ public enum WeaponBehaviors
     SurfaceInterceptor,
     AirInterceptor,
     Smart,
+}
+
+public enum TactCommandTypes
+{
+    Move = 0,
+    Follow,
+    Intercept,
+    Intercept3d,
 }

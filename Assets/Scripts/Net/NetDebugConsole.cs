@@ -16,9 +16,8 @@ public class NetDebugConsole : MonoBehaviour
 
     public void Log(string msg) {
         console.text += msg + "\n> ";
+        Debug.Log(msg);
     }
-
-
 
     // Start is called before the first frame update
     void Start() {
@@ -40,7 +39,8 @@ public class NetDebugConsole : MonoBehaviour
 
     [SerializeField]
     private RectTransform root;
-    public List<NetDiffVis> diffVisList;
+    [SerializeField]
+    private List<NetDiffVis> diffVisList;
     public void GetBars(RectTransform root) {
         diffVisList = new List<NetDiffVis>();
         foreach(NetDiffVis ndv in root.GetComponentsInChildren<NetDiffVis>()) {

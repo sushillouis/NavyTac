@@ -66,7 +66,7 @@ public class Entity : MonoBehaviour
     public GameObject cameraRig;
     public GameObject selectionCircle;
 
-    public Player owner;
+    public TactPlayer owner;
 
 
     [Header("Aspect references")]

@@ -77,88 +77,17 @@ public class GameMgr : MonoBehaviour
 
     }
 
-    public void InitOpenOceanMap() {
-
-        List<Entity> allEntities = CreateCarrierGroup(Vector3.zero, 0, 300, 300, PlayerMgr.inst.player1);
-        Vector3 pos = new Vector3(0, 0, 4000);
-        bool add = false;
-        StartCoroutine(AddMoveCommandsToEnt(allEntities, pos, add, 0));
-
-        
-        List<Entity> allEntities2 = CreateCarrierGroup(new Vector3(0, 0, 3000), 180, 300, 300, PlayerMgr.inst.player2);
-        pos.z = -1000;
-        StartCoroutine(AddMoveCommandsToEnt(allEntities2, pos, add, 180));
-    }
-
-
-    List<Entity> CreateCarrierGroup(Vector3 position, float heading, float xDelta, float zDelta, Player player) {
-        List<Entity> allEntities = new List<Entity>();
-
-        Vector3 pos = new Vector3(position.x, position.y, position.z);
-        Vector3 headingVector = new Vector3(0, heading, 0);
-
-        Entity ent = EntityMgr.inst.CreateEntity(EntityType.CVN75, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x - xDelta;
-        pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.DDG51, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x + xDelta;
-        pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.DDG51, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x - xDelta / 2;
-        pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x + xDelta / 2;
-        pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x - xDelta / 2;
-        pos.z = position.z + zDelta / 2;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x + xDelta / 2;
-        pos.z = position.z + zDelta / 2;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        return allEntities;
-    }
-
-    public void InitTestWidgetMap() {
-        Vector3 pos = Vector3.zero;
-        Entity ent = EntityMgr.inst.CreateEntity(EntityType.DDG51, pos, pos, PlayerMgr.inst.player1);
-
-    }
-
-
-    public void NetTest() {
+    public void MakeMapEntities() {
         Vector3 pos = new Vector3(0, 0, 0);
         Entity ent;
-        for(int i = 0; i < 20; i++) {
-            ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, Vector3.zero, PlayerMgr.inst.player1);
-            pos.x += 50;
+        foreach(TactPlayer player in PlayerMgr.inst.players) {
+            for(int i = 0; i < 5; i++) {
+                ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, new Vector3(0, 0, 0), player);
+                pos.x += 50;
+            }
+            pos.z += 100;
+            pos.x = 0;
         }
-        pos.z = 50;
-        pos.x = 0;
-        for(int i = 0; i < 20; i++) {
-            ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, Vector3.zero, PlayerMgr.inst.player2);
-            pos.x += 50;
-        }
-        pos.z = -50;
-        pos.x = 0;
-        for(int i = 0; i < 20; i++) {
-            ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, Vector3.zero, PlayerMgr.inst.player1);
-            pos.x += 50;
-        }
-    }
 
+    }
 }
