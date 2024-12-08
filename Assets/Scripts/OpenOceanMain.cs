@@ -17,6 +17,10 @@ public class OpenOceanMain : MonoBehaviour
     public string playerName = "Debugger";
     public bool IsDebugging = false;
     public string ipAddress = "127.0.0.1";
+    [SerializeField]
+    private ushort port = 7777;
+    public bool isSinglePlayer = false;
+    
 
     [Header("Panels")]
     [SerializeField]
@@ -55,6 +59,10 @@ public class OpenOceanMain : MonoBehaviour
     private Button loginButton;
     [SerializeField]
     private Button LoginQuitButton;
+
+    [Header("Map Select Screen")]
+    [SerializeField]
+    private Button startButton;
 
     public enum LobbyState
     {
@@ -111,6 +119,10 @@ public class OpenOceanMain : MonoBehaviour
         SingleMultiQuitButton.onClick.RemoveAllListeners();
         SingleMultiQuitButton.onClick.AddListener(OnQuitButton);
 
+        // Map selected, start button
+
+        startButton.onClick.RemoveAllListeners();
+        startButton.onClick.AddListener(OnMapSelected);
 
     }
 
@@ -119,7 +131,8 @@ public class OpenOceanMain : MonoBehaviour
         int count = tmp.Count(x => x == '.');
         if(count == 3)
             ipAddress = tmp;
-        NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, 7777);
+        //else use the default ip address of 127.0.0.1 initialized above
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, port);
     }
 
     [Header("To be filled on Login Button Press/Network setup")]
@@ -135,25 +148,43 @@ public class OpenOceanMain : MonoBehaviour
         loginButton.onClick.AddListener(() =>
         {
             playerName = loginNameInputField.text.Trim();
-            lobbyState = LobbyState.Play;
-            foreach(NetSetup ns in FindObjectsOfType<NetSetup>()) {
-                NetworkObject tmp = ns.GetComponent<NetworkObject>();
-                if(tmp.IsLocalPlayer) {
-                    localNetSetupNetworkObject = tmp;
-                    localNetSetup = ns;
-                }
+            lobbyState = LobbyState.MapSelect;
+            if(isSinglePlayer) {
+                SinglePlayerSetup();
+            } else {
+                NetPlayersSetup();
             }
-            foreach(TactNetMgr tnm in FindObjectsOfType<TactNetMgr>()) {
-                NetworkObject tmp = tnm.GetComponent<NetworkObject>();
-                if(tmp.IsLocalPlayer) {
-                    localTactNetMgrNetworkObject = tmp;
-                    localTactNetMgr = tnm;
-                }
-            }
-            localNetSetup.OnLoginButton();
         });
     }
 
+    void NetPlayersSetup() {
+        Debug.Log("Setting up network multiplayer ...");
+        foreach(NetSetup ns in FindObjectsOfType<NetSetup>()) {
+            NetworkObject tmp = ns.GetComponent<NetworkObject>();
+            if(tmp.IsLocalPlayer) {
+                localNetSetupNetworkObject = tmp;
+                localNetSetup = ns;
+            }
+        }
+        foreach(TactNetMgr tnm in FindObjectsOfType<TactNetMgr>()) {
+            NetworkObject tmp = tnm.GetComponent<NetworkObject>();
+            if(tmp.IsLocalPlayer) {
+                localTactNetMgrNetworkObject = tmp;
+                localTactNetMgr = tnm;
+            }
+        }
+
+
+    }
+
+    void SinglePlayerSetup() {
+        Debug.Log("Setting up single player ...");
+        TactPlayer tmp = PlayerMgr.inst.CreateSinglePlayer(playerName);
+        PlayerMgr.inst.AddPlayer(tmp);
+        PlayerMgr.inst.localPlayer = tmp;
+
+        PlayerMgr.inst.AddPlayer(PlayerMgr.inst.CreateSinglePlayer("Ai"));
+    }
 
     public LobbyState lobbyState
     {
@@ -171,15 +202,24 @@ public class OpenOceanMain : MonoBehaviour
             SingleMultiplayerPanel.isVisible = (value == LobbyState.SingleMultiPlayer);
         }
     }
+    
+
 
     public void OnMapSelected() {
-        lobbyState = LobbyState.None;
+        if(isSinglePlayer)
+            GameMgr.inst.MakeMapEntities();
+        else 
+            localNetSetup.OnStartButton();
+        lobbyState = LobbyState.Play;
     }
 
+
     public void OnSinglePlayer() {
+        isSinglePlayer = true;
         lobbyState = LobbyState.Login;
     }
     public void OnMultiPlayer() {
+        isSinglePlayer = false;
         lobbyState = LobbyState.HostOrJoin;
     }
 

@@ -104,28 +104,54 @@ public class SelectionMgr : MonoBehaviour
 
     public void SelectNextEntity(bool clearSelection)
     {
+        List<Entity> ownedEntities = new List<Entity>();
+        foreach(Entity ent in EntityMgr.inst.entities)
+            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
+                ownedEntities.Add(ent);
+
         selectedEntityIndex = 
-            (selectedEntityIndex >= EntityMgr.inst.entities.Count - 1 ? 0 : selectedEntityIndex + 1);
-        SelectEntity(EntityMgr.inst.entities[selectedEntityIndex], 
+            (selectedEntityIndex >= ownedEntities.Count - 1 ? 0 : selectedEntityIndex + 1);
+        SelectEntity(ownedEntities[selectedEntityIndex], 
             shouldClearSelection: !clearSelection);
     }
 
     public void ClearSelection()
     {
-        foreach (Entity ent in EntityMgr.inst.entities)
+        foreach(Entity ent in EntityMgr.inst.entities)
             ent.isSelected = false;
         selectedEntities.Clear();
+        selectedEntity = null;
+    }
+
+
+    public void DeselectEntity(Entity ent) {
+        if(ent != null 
+            && ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId 
+            && selectedEntities.Contains(ent)) {
+            
+            ent.isSelected = false;
+            if(selectedEntity == ent) {
+                if(selectedEntities.Count > 0)
+                    selectedEntity = selectedEntities.Find(x => x != ent);//could be null
+                else
+                    selectedEntity = null;
+            }
+            selectedEntities.Remove(ent);
+        }
     }
 
     public void SelectEntity(Entity ent, bool shouldClearSelection = true)
     {
-        if (ent != null && (selectedEntityIndex = EntityMgr.inst.entities.FindIndex(x => (x == ent))) >= 0) {
+        if (ent != null && (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
+            && (selectedEntityIndex = EntityMgr.inst.entities.FindIndex(x => (x == ent))) >= 0) {
+           
             if (shouldClearSelection) 
                 ClearSelection();
 
             selectedEntity = ent;
             selectedEntity.isSelected = true;
-            selectedEntities.Add(ent);
+            if(!selectedEntities.Contains(ent))
+                selectedEntities.Add(ent);
         }
     }
 
@@ -134,21 +160,18 @@ public class SelectionMgr : MonoBehaviour
         RaycastHit hit;
         Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
         Entity ent = AIMgr.inst.FindClosestEntInRadius(hit.point, AIMgr.inst.rClickRadiusSq);
-        if (ent != null)
-        {
-            if (shouldClearSelection)
+        bool shouldAddSelection = !shouldClearSelection;
+        if(ent != null) {
+            if(!shouldAddSelection)
                 ClearSelection();
-            if (!SelectionMgr.inst.selectedEntities.Contains(ent))
-            {
+
+            if(!selectedEntities.Contains(ent)) {
                 selectedEntity = ent;
                 selectedEntity.isSelected = true;
                 selectedEntities.Add(ent);
-            }
-            else if (!shouldClearSelection)
-            {
-                if(selectedEntity = ent)
-                {
-                    if (SelectionMgr.inst.selectedEntities[0] != null)
+            } else if(shouldAddSelection) {
+                if(selectedEntity = ent) {
+                    if(SelectionMgr.inst.selectedEntities[0] != null)
                         selectedEntity = EntityMgr.inst.entities[0];
                     else
                         selectedEntity = null;
@@ -156,8 +179,31 @@ public class SelectionMgr : MonoBehaviour
                 ent.isSelected = false;
                 selectedEntities.Remove(ent);
             }
-        }
-        else
+        } else {
             ClearSelection();
+        }
     }
+
+    public void SelectEntity2(Vector2 mousePos, bool addSelection) {
+        RaycastHit hit;
+        Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
+        Entity ent = AIMgr.inst.FindClosestEntInRadius(hit.point, AIMgr.inst.rClickRadiusSq);
+
+        if(ent == null) {
+            ClearSelection();
+        } else {
+            if(addSelection) {
+                if(!selectedEntities.Contains(ent)) {
+                    SelectEntity(ent, false);
+                } else {
+                    DeselectEntity(ent);
+                }
+            } else {
+                SelectEntity(ent, true);
+            }
+
+        }
+
+    }
+
 }

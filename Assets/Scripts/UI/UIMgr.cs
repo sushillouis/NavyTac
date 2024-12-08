@@ -232,7 +232,8 @@ public class UIMgr : MonoBehaviour
 
     private void OnSingleSelectPerformed(InputAction.CallbackContext context)
     {
-        SelectionMgr.inst.SelectEntity(selectionCursorPosition.ReadValue<Vector2>(), !addSelection.IsPressed());
+        //SelectionMgr.inst.SelectEntity(selectionCursorPosition.ReadValue<Vector2>(), !addSelection.IsPressed());
+        SelectionMgr.inst.SelectEntity2(selectionCursorPosition.ReadValue<Vector2>(), addSelection.IsPressed());
     }
 
     private void SelectNextEntity(InputAction.CallbackContext context)

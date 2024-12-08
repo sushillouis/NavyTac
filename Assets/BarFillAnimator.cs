@@ -8,11 +8,15 @@ public class BarFillAnimator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        parentPanelPlus = transform.parent.parent.GetComponent<PanelPlus>();
         panelImage = transform.GetComponent<Image>();
         timeCountDown = timeInterval;
         fillAmount = 0;
         fillOrigin = panelImage.fillOrigin;
     }
+    [SerializeField]
+    private PanelPlus parentPanelPlus;
+
     private Image panelImage;
 
     [SerializeField]private float timeInterval = 3f;
@@ -22,22 +26,23 @@ public class BarFillAnimator : MonoBehaviour
     private float timeCountDown;
     void Update()
     {
+        if(parentPanelPlus.isVisible) {
 
-        panelImage.fillAmount = fillAmount;
+            panelImage.fillAmount = fillAmount;
 
-        timeCountDown -= Time.deltaTime;
-        if(timeCountDown < 0) {
-            timeCountDown = timeInterval;
-            fillDirectionLToR = !fillDirectionLToR;
-            panelImage.color = ColorPalette.inst.colors[Random.Range(0, 20)];
-            panelImage.fillOrigin = 1 - fillOrigin;
+            timeCountDown -= Time.deltaTime;
+            if(timeCountDown < 0) {
+                timeCountDown = timeInterval;
+                fillDirectionLToR = !fillDirectionLToR;
+                panelImage.color = ColorPalette.inst.colors[Random.Range(0, 9)];
+                panelImage.fillOrigin = 1 - fillOrigin;
+            }
+
+            if(fillDirectionLToR)
+                fillAmount = Mathf.Clamp01((timeInterval - timeCountDown) / timeInterval);
+            else
+                fillAmount = Mathf.Clamp01(timeCountDown / timeInterval);
         }
-
-        if(fillDirectionLToR)
-            fillAmount = Mathf.Clamp01((timeInterval - timeCountDown) / timeInterval);
-        else
-            fillAmount = Mathf.Clamp01(timeCountDown / timeInterval);
-
 
 
 /*

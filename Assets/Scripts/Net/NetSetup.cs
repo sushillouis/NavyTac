@@ -17,6 +17,9 @@ public class NetSetup : NetworkBehaviour
         //Players created here, one per client -- but players are named OnLoginButton below
         TactPlayer tmp = PlayerMgr.inst.CreateNetClientPlayer(OwnerClientId);
         PlayerMgr.inst.AddPlayer(tmp);
+        if(OwnerClientId == NetworkManager.Singleton.LocalClientId)
+            PlayerMgr.inst.localPlayer = tmp;
+        NetDebugConsole.inst.Log("Local player: " + tmp.ToString());
 
     }
 
@@ -34,7 +37,7 @@ public class NetSetup : NetworkBehaviour
     /// <summary>
     /// Starts off everything. Player sync. Entity creation with ownership.
     /// </summary>
-    public void OnLoginButton() {
+    public void OnStartButton() {
         if(IsOwner) {
             OnPlayerNamedServerRpc(OpenOceanMain.inst.playerName, NetworkManager.Singleton.LocalClientId);
         }
