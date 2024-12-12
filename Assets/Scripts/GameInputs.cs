@@ -504,6 +504,156 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             ]
         },
         {
+            ""name"": ""Selection"",
+            ""id"": ""ce5509f5-2920-45c3-ac1b-c591f44f94f5"",
+            ""actions"": [
+                {
+                    ""name"": ""ClearSelection"",
+                    ""type"": ""Button"",
+                    ""id"": ""6ab4753c-7e62-4d31-8890-01181afe430d"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BoxSelect"",
+                    ""type"": ""Button"",
+                    ""id"": ""d2d504d8-77e7-4511-8ff3-b71ae76aed5a"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Hold"",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SingleSelect"",
+                    ""type"": ""Button"",
+                    ""id"": ""f68c0915-7f90-43a7-8c45-effd3838469b"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Tap"",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CursorPosition"",
+                    ""type"": ""Value"",
+                    ""id"": ""2a8af9bf-3ad6-470f-99ca-178f6cd0c7bf"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""NextEntity"",
+                    ""type"": ""Button"",
+                    ""id"": ""81ca03f9-4618-4769-a171-377045b18430"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SelectAll"",
+                    ""type"": ""Button"",
+                    ""id"": ""150c2fbd-77f3-4da2-bed4-184d955a6dd2"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""25139539-d122-4edd-86fb-a80a2e765d93"",
+                    ""path"": ""<Touchscreen>/primaryTouch/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CursorPosition"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""02b1074a-c5ca-429f-b410-108e86d6ffbc"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CursorPosition"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b1b257ae-ce74-4e3a-8ce1-2a15c05be945"",
+                    ""path"": ""<Keyboard>/leftShift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ClearSelection"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7f1ce320-bf01-4f60-b382-115472fd5122"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""NextEntity"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e1b9393e-d536-4600-9d53-53a59e4b2a9f"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SingleSelect"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7aa1c846-c9f7-4915-95be-d0807b1af1fe"",
+                    ""path"": ""<Touchscreen>/Press"",
+                    ""interactions"": ""SlowTap"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BoxSelect"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b65f60b6-13e2-4dae-8656-46815aebf3ed"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BoxSelect"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""17df7612-d815-4000-867b-099b216bc0ec"",
+                    ""path"": ""<Keyboard>/f1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectAll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
             ""name"": ""Entities"",
             ""id"": ""ec6ada94-8152-4f10-a9b2-43ed64b711dc"",
             ""actions"": [
@@ -654,7 +804,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""e7de1f10-b7d0-4a1d-b982-7077d2aa5609"",
-                    ""path"": ""<Keyboard>/ctrl"",
+                    ""path"": ""<Keyboard>/leftAlt"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -685,136 +835,6 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
-        },
-        {
-            ""name"": ""Selection"",
-            ""id"": ""ce5509f5-2920-45c3-ac1b-c591f44f94f5"",
-            ""actions"": [
-                {
-                    ""name"": ""ClearSelection"",
-                    ""type"": ""Button"",
-                    ""id"": ""6ab4753c-7e62-4d31-8890-01181afe430d"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""BoxSelect"",
-                    ""type"": ""Button"",
-                    ""id"": ""d2d504d8-77e7-4511-8ff3-b71ae76aed5a"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": ""Hold"",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""SingleSelect"",
-                    ""type"": ""Button"",
-                    ""id"": ""f68c0915-7f90-43a7-8c45-effd3838469b"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": ""Tap"",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""CursorPosition"",
-                    ""type"": ""Value"",
-                    ""id"": ""2a8af9bf-3ad6-470f-99ca-178f6cd0c7bf"",
-                    ""expectedControlType"": ""Vector2"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
-                },
-                {
-                    ""name"": ""NextEntity"",
-                    ""type"": ""Button"",
-                    ""id"": ""81ca03f9-4618-4769-a171-377045b18430"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                }
-            ],
-            ""bindings"": [
-                {
-                    ""name"": """",
-                    ""id"": ""25139539-d122-4edd-86fb-a80a2e765d93"",
-                    ""path"": ""<Touchscreen>/primaryTouch/position"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""CursorPosition"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""02b1074a-c5ca-429f-b410-108e86d6ffbc"",
-                    ""path"": ""<Mouse>/position"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""CursorPosition"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""b1b257ae-ce74-4e3a-8ce1-2a15c05be945"",
-                    ""path"": ""<Keyboard>/leftShift"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""ClearSelection"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""7f1ce320-bf01-4f60-b382-115472fd5122"",
-                    ""path"": ""<Keyboard>/tab"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""NextEntity"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""e1b9393e-d536-4600-9d53-53a59e4b2a9f"",
-                    ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""SingleSelect"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""7aa1c846-c9f7-4915-95be-d0807b1af1fe"",
-                    ""path"": ""<Touchscreen>/Press"",
-                    ""interactions"": ""SlowTap"",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""BoxSelect"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""b65f60b6-13e2-4dae-8656-46815aebf3ed"",
-                    ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""BoxSelect"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                }
-            ]
         }
     ],
     ""controlSchemes"": []
@@ -827,6 +847,14 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Camera_XZMove = m_Camera.FindAction("XZMove", throwIfNotFound: true);
         m_Camera_YMove = m_Camera.FindAction("YMove", throwIfNotFound: true);
         m_Camera_MiddleMouseMove = m_Camera.FindAction("MiddleMouseMove", throwIfNotFound: true);
+        // Selection
+        m_Selection = asset.FindActionMap("Selection", throwIfNotFound: true);
+        m_Selection_ClearSelection = m_Selection.FindAction("ClearSelection", throwIfNotFound: true);
+        m_Selection_BoxSelect = m_Selection.FindAction("BoxSelect", throwIfNotFound: true);
+        m_Selection_SingleSelect = m_Selection.FindAction("SingleSelect", throwIfNotFound: true);
+        m_Selection_CursorPosition = m_Selection.FindAction("CursorPosition", throwIfNotFound: true);
+        m_Selection_NextEntity = m_Selection.FindAction("NextEntity", throwIfNotFound: true);
+        m_Selection_SelectAll = m_Selection.FindAction("SelectAll", throwIfNotFound: true);
         // Entities
         m_Entities = asset.FindActionMap("Entities", throwIfNotFound: true);
         m_Entities_Speed = m_Entities.FindAction("Speed", throwIfNotFound: true);
@@ -835,13 +863,6 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Entities_Intercept = m_Entities.FindAction("Intercept", throwIfNotFound: true);
         m_Entities_Create100 = m_Entities.FindAction("Create100", throwIfNotFound: true);
         m_Entities_AddCommand = m_Entities.FindAction("AddCommand", throwIfNotFound: true);
-        // Selection
-        m_Selection = asset.FindActionMap("Selection", throwIfNotFound: true);
-        m_Selection_ClearSelection = m_Selection.FindAction("ClearSelection", throwIfNotFound: true);
-        m_Selection_BoxSelect = m_Selection.FindAction("BoxSelect", throwIfNotFound: true);
-        m_Selection_SingleSelect = m_Selection.FindAction("SingleSelect", throwIfNotFound: true);
-        m_Selection_CursorPosition = m_Selection.FindAction("CursorPosition", throwIfNotFound: true);
-        m_Selection_NextEntity = m_Selection.FindAction("NextEntity", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -986,6 +1007,92 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     }
     public CameraActions @Camera => new CameraActions(this);
 
+    // Selection
+    private readonly InputActionMap m_Selection;
+    private List<ISelectionActions> m_SelectionActionsCallbackInterfaces = new List<ISelectionActions>();
+    private readonly InputAction m_Selection_ClearSelection;
+    private readonly InputAction m_Selection_BoxSelect;
+    private readonly InputAction m_Selection_SingleSelect;
+    private readonly InputAction m_Selection_CursorPosition;
+    private readonly InputAction m_Selection_NextEntity;
+    private readonly InputAction m_Selection_SelectAll;
+    public struct SelectionActions
+    {
+        private @GameInputs m_Wrapper;
+        public SelectionActions(@GameInputs wrapper) { m_Wrapper = wrapper; }
+        public InputAction @ClearSelection => m_Wrapper.m_Selection_ClearSelection;
+        public InputAction @BoxSelect => m_Wrapper.m_Selection_BoxSelect;
+        public InputAction @SingleSelect => m_Wrapper.m_Selection_SingleSelect;
+        public InputAction @CursorPosition => m_Wrapper.m_Selection_CursorPosition;
+        public InputAction @NextEntity => m_Wrapper.m_Selection_NextEntity;
+        public InputAction @SelectAll => m_Wrapper.m_Selection_SelectAll;
+        public InputActionMap Get() { return m_Wrapper.m_Selection; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(SelectionActions set) { return set.Get(); }
+        public void AddCallbacks(ISelectionActions instance)
+        {
+            if (instance == null || m_Wrapper.m_SelectionActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_SelectionActionsCallbackInterfaces.Add(instance);
+            @ClearSelection.started += instance.OnClearSelection;
+            @ClearSelection.performed += instance.OnClearSelection;
+            @ClearSelection.canceled += instance.OnClearSelection;
+            @BoxSelect.started += instance.OnBoxSelect;
+            @BoxSelect.performed += instance.OnBoxSelect;
+            @BoxSelect.canceled += instance.OnBoxSelect;
+            @SingleSelect.started += instance.OnSingleSelect;
+            @SingleSelect.performed += instance.OnSingleSelect;
+            @SingleSelect.canceled += instance.OnSingleSelect;
+            @CursorPosition.started += instance.OnCursorPosition;
+            @CursorPosition.performed += instance.OnCursorPosition;
+            @CursorPosition.canceled += instance.OnCursorPosition;
+            @NextEntity.started += instance.OnNextEntity;
+            @NextEntity.performed += instance.OnNextEntity;
+            @NextEntity.canceled += instance.OnNextEntity;
+            @SelectAll.started += instance.OnSelectAll;
+            @SelectAll.performed += instance.OnSelectAll;
+            @SelectAll.canceled += instance.OnSelectAll;
+        }
+
+        private void UnregisterCallbacks(ISelectionActions instance)
+        {
+            @ClearSelection.started -= instance.OnClearSelection;
+            @ClearSelection.performed -= instance.OnClearSelection;
+            @ClearSelection.canceled -= instance.OnClearSelection;
+            @BoxSelect.started -= instance.OnBoxSelect;
+            @BoxSelect.performed -= instance.OnBoxSelect;
+            @BoxSelect.canceled -= instance.OnBoxSelect;
+            @SingleSelect.started -= instance.OnSingleSelect;
+            @SingleSelect.performed -= instance.OnSingleSelect;
+            @SingleSelect.canceled -= instance.OnSingleSelect;
+            @CursorPosition.started -= instance.OnCursorPosition;
+            @CursorPosition.performed -= instance.OnCursorPosition;
+            @CursorPosition.canceled -= instance.OnCursorPosition;
+            @NextEntity.started -= instance.OnNextEntity;
+            @NextEntity.performed -= instance.OnNextEntity;
+            @NextEntity.canceled -= instance.OnNextEntity;
+            @SelectAll.started -= instance.OnSelectAll;
+            @SelectAll.performed -= instance.OnSelectAll;
+            @SelectAll.canceled -= instance.OnSelectAll;
+        }
+
+        public void RemoveCallbacks(ISelectionActions instance)
+        {
+            if (m_Wrapper.m_SelectionActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(ISelectionActions instance)
+        {
+            foreach (var item in m_Wrapper.m_SelectionActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_SelectionActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public SelectionActions @Selection => new SelectionActions(this);
+
     // Entities
     private readonly InputActionMap m_Entities;
     private List<IEntitiesActions> m_EntitiesActionsCallbackInterfaces = new List<IEntitiesActions>();
@@ -1071,84 +1178,6 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         }
     }
     public EntitiesActions @Entities => new EntitiesActions(this);
-
-    // Selection
-    private readonly InputActionMap m_Selection;
-    private List<ISelectionActions> m_SelectionActionsCallbackInterfaces = new List<ISelectionActions>();
-    private readonly InputAction m_Selection_ClearSelection;
-    private readonly InputAction m_Selection_BoxSelect;
-    private readonly InputAction m_Selection_SingleSelect;
-    private readonly InputAction m_Selection_CursorPosition;
-    private readonly InputAction m_Selection_NextEntity;
-    public struct SelectionActions
-    {
-        private @GameInputs m_Wrapper;
-        public SelectionActions(@GameInputs wrapper) { m_Wrapper = wrapper; }
-        public InputAction @ClearSelection => m_Wrapper.m_Selection_ClearSelection;
-        public InputAction @BoxSelect => m_Wrapper.m_Selection_BoxSelect;
-        public InputAction @SingleSelect => m_Wrapper.m_Selection_SingleSelect;
-        public InputAction @CursorPosition => m_Wrapper.m_Selection_CursorPosition;
-        public InputAction @NextEntity => m_Wrapper.m_Selection_NextEntity;
-        public InputActionMap Get() { return m_Wrapper.m_Selection; }
-        public void Enable() { Get().Enable(); }
-        public void Disable() { Get().Disable(); }
-        public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(SelectionActions set) { return set.Get(); }
-        public void AddCallbacks(ISelectionActions instance)
-        {
-            if (instance == null || m_Wrapper.m_SelectionActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_SelectionActionsCallbackInterfaces.Add(instance);
-            @ClearSelection.started += instance.OnClearSelection;
-            @ClearSelection.performed += instance.OnClearSelection;
-            @ClearSelection.canceled += instance.OnClearSelection;
-            @BoxSelect.started += instance.OnBoxSelect;
-            @BoxSelect.performed += instance.OnBoxSelect;
-            @BoxSelect.canceled += instance.OnBoxSelect;
-            @SingleSelect.started += instance.OnSingleSelect;
-            @SingleSelect.performed += instance.OnSingleSelect;
-            @SingleSelect.canceled += instance.OnSingleSelect;
-            @CursorPosition.started += instance.OnCursorPosition;
-            @CursorPosition.performed += instance.OnCursorPosition;
-            @CursorPosition.canceled += instance.OnCursorPosition;
-            @NextEntity.started += instance.OnNextEntity;
-            @NextEntity.performed += instance.OnNextEntity;
-            @NextEntity.canceled += instance.OnNextEntity;
-        }
-
-        private void UnregisterCallbacks(ISelectionActions instance)
-        {
-            @ClearSelection.started -= instance.OnClearSelection;
-            @ClearSelection.performed -= instance.OnClearSelection;
-            @ClearSelection.canceled -= instance.OnClearSelection;
-            @BoxSelect.started -= instance.OnBoxSelect;
-            @BoxSelect.performed -= instance.OnBoxSelect;
-            @BoxSelect.canceled -= instance.OnBoxSelect;
-            @SingleSelect.started -= instance.OnSingleSelect;
-            @SingleSelect.performed -= instance.OnSingleSelect;
-            @SingleSelect.canceled -= instance.OnSingleSelect;
-            @CursorPosition.started -= instance.OnCursorPosition;
-            @CursorPosition.performed -= instance.OnCursorPosition;
-            @CursorPosition.canceled -= instance.OnCursorPosition;
-            @NextEntity.started -= instance.OnNextEntity;
-            @NextEntity.performed -= instance.OnNextEntity;
-            @NextEntity.canceled -= instance.OnNextEntity;
-        }
-
-        public void RemoveCallbacks(ISelectionActions instance)
-        {
-            if (m_Wrapper.m_SelectionActionsCallbackInterfaces.Remove(instance))
-                UnregisterCallbacks(instance);
-        }
-
-        public void SetCallbacks(ISelectionActions instance)
-        {
-            foreach (var item in m_Wrapper.m_SelectionActionsCallbackInterfaces)
-                UnregisterCallbacks(item);
-            m_Wrapper.m_SelectionActionsCallbackInterfaces.Clear();
-            AddCallbacks(instance);
-        }
-    }
-    public SelectionActions @Selection => new SelectionActions(this);
     public interface ICameraActions
     {
         void OnYaw(InputAction.CallbackContext context);
@@ -1158,6 +1187,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnYMove(InputAction.CallbackContext context);
         void OnMiddleMouseMove(InputAction.CallbackContext context);
     }
+    public interface ISelectionActions
+    {
+        void OnClearSelection(InputAction.CallbackContext context);
+        void OnBoxSelect(InputAction.CallbackContext context);
+        void OnSingleSelect(InputAction.CallbackContext context);
+        void OnCursorPosition(InputAction.CallbackContext context);
+        void OnNextEntity(InputAction.CallbackContext context);
+        void OnSelectAll(InputAction.CallbackContext context);
+    }
     public interface IEntitiesActions
     {
         void OnSpeed(InputAction.CallbackContext context);
@@ -1166,13 +1204,5 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnIntercept(InputAction.CallbackContext context);
         void OnCreate100(InputAction.CallbackContext context);
         void OnAddCommand(InputAction.CallbackContext context);
-    }
-    public interface ISelectionActions
-    {
-        void OnClearSelection(InputAction.CallbackContext context);
-        void OnBoxSelect(InputAction.CallbackContext context);
-        void OnSingleSelect(InputAction.CallbackContext context);
-        void OnCursorPosition(InputAction.CallbackContext context);
-        void OnNextEntity(InputAction.CallbackContext context);
     }
 }

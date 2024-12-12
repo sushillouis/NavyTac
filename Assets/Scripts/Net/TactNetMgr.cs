@@ -160,7 +160,7 @@ public class TactNetMgr : NetworkBehaviour
         }
         if(Input.GetKeyUp(KeyCode.U)) {
             if(IsOwner) {
-                PrintEntityOwners();
+                //PrintEntityOwners();
                 //SendClientUpdatesToServer();
             }
 

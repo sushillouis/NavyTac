@@ -159,7 +159,7 @@ public class SelectionMgr : MonoBehaviour
     {
         RaycastHit hit;
         Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
-        Entity ent = AIMgr.inst.FindClosestEntInRadius(hit.point, AIMgr.inst.rClickRadiusSq);
+        Entity ent = UIMgr.inst.FindClosestEntInRadius(hit.point);//, AIMgr.inst.rClickRadiusSq);
         bool shouldAddSelection = !shouldClearSelection;
         if(ent != null) {
             if(!shouldAddSelection)
@@ -187,21 +187,46 @@ public class SelectionMgr : MonoBehaviour
     public void SelectEntity2(Vector2 mousePos, bool addSelection) {
         RaycastHit hit;
         Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
-        Entity ent = AIMgr.inst.FindClosestEntInRadius(hit.point, AIMgr.inst.rClickRadiusSq);
+        Entity ent = UIMgr.inst.FindClosestEntInRadius(hit.point);
 
         if(ent == null) {
             ClearSelection();
         } else {
             if(addSelection) {
                 if(!selectedEntities.Contains(ent)) {
-                    SelectEntity(ent, false);
+                    SelectEntity(ent, shouldClearSelection: false);
                 } else {
                     DeselectEntity(ent);
                 }
             } else {
-                SelectEntity(ent, true);
+                SelectEntity(ent, shouldClearSelection: true);
             }
 
+        }
+    }
+
+
+    /// <summary>
+    /// Assigns selected entities for control group given by groupNumber param
+    /// </summary>
+    /// <param name="groupNumber"></param>
+    public void SelectControlGroup(int groupNumber) {
+        ClearSelection();
+        TacticalAIMgr.inst.SelectControlGroup(groupNumber);
+    }
+
+    public void SelectAll() {
+        ClearSelection();
+        foreach(Entity ent in EntityMgr.inst.entities) {
+            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId) {
+                SelectEntity(ent, shouldClearSelection: false);
+            }
+        }
+    }
+
+    public void FormControlGroup(int groupNumber) {
+        if(selectedEntities.Count > 0) {
+            TacticalAIMgr.inst.CreateBindControlGroup(selectedEntities, groupNumber);
         }
 
     }

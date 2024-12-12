@@ -60,7 +60,8 @@ public class NetSetup : NetworkBehaviour
         if(IsOwner) {
             //NetDebugConsole.inst.Log("Owner client has players: ");
             //NetDebugConsole.inst.Log(PlayerMgr.inst.StringAllPlayers());
-            GameMgr.inst.MakeMapEntities();
+            //GameMgr.inst.MakeMapEntities();
+            GameMgr.inst.OpenOcean1x1();
             TactNetMgr.inst.InitSyncList();
         }
             //StartCoroutine(WaitAndStartupOnClient()); //Awaiting proper countdown and game start
@@ -75,7 +76,8 @@ public class NetSetup : NetworkBehaviour
     [SerializeField] private float waitTime = 2f;
     private IEnumerator WaitAndStartupOnClient() {
         yield return new WaitForSeconds(waitTime);
-        GameMgr.inst.MakeMapEntities();
+        //GameMgr.inst.MakeMapEntities();
+        GameMgr.inst.OpenOcean1x1();
     }
 
 

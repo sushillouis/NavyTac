@@ -1,9 +1,32 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 
 
+[Serializable]
+public enum EntityType
+{
+    DDG51,
+    Container,
+    MineSweeper,
+    OilServiceVessel,
+    OrientExplorer,
+    PilotVessel,
+    SmitHouston,
+    Tanker,
+    TugBoat,
+    JARIUSV,
+    SeaHunter,
+    Mykola,
+    SeaBaby,
+    CVN75,
+    Submarine,
+    AntiShipMissile,
+}
+
+[Serializable]
 public enum PlayerSide
 {
     SideOne = 0,
@@ -16,7 +39,8 @@ public enum PlayerSide
     SideEight,
 }
 
-public enum ShipClasses
+[Serializable]
+public enum EntityClass
 {
     None = 0,
     Carrier,
@@ -30,9 +54,13 @@ public enum ShipClasses
     Tug,
     LHA,
     Supply,
+    Sub,
+    Missile,
+    Airplane,//more classes for airplanes easy to confuse with roles
 }
 
-public enum ShipRoles
+[Serializable]
+public enum EntityRole
 {
     None = 0,
     Carrier,
@@ -42,18 +70,26 @@ public enum ShipRoles
     ISR,
     ASW,
     NonCombat,
+    AirSuperiority,
+    GroundAttack,
+    Bomber,
+    CAP,
+    SEAD,
 }
 
+[Serializable]
 public enum TacticsType
 {
-    None = 0,
+    Cancel = 0,
     Pincer,
-    Formate,
-    FormationAttack,
-    AttackDistract,
+    FormMove,
+    FormAtk,
+    AtkDistract,
     Scout,
+    Choose,
 }
 
+[Serializable]
 public enum MapNames
 {
     None = 0,
@@ -61,6 +97,7 @@ public enum MapNames
     FourCorners,
 }
 
+[Serializable]
 public enum WeaponBehaviors
 {
     None = 0,
@@ -70,6 +107,7 @@ public enum WeaponBehaviors
     Smart,
 }
 
+[Serializable]
 public enum TactCommandTypes
 {
     Move = 0,

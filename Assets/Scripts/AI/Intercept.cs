@@ -21,7 +21,7 @@ public class Intercept : Follow
     public override void Tick()
     {
         //movePosition = targetEntity.transform.position;
-        float dh = ComputePredictiveDH(Vector3.zero);
+        float dh = ComputePredictiveDH(targetEntity.transform.position);
         entity.desiredHeading = dh;
         entity.desiredSpeed = entity.maxSpeed;
 
@@ -44,7 +44,7 @@ public class Intercept : Follow
         targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
         targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
         Vector3 deadRot = targetEntity.transform.localEulerAngles;
-        deadRot.z = 90;
+        deadRot.x = 90;
         targetEntity.transform.localEulerAngles = deadRot;
 
     }

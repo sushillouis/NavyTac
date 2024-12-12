@@ -112,7 +112,7 @@ public class AIMgr : NetworkBehaviour
                 //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
                 Vector3 pos = hit.point;
                 pos.y = 0;
-                Entity ent = FindClosestEntInRadius(pos, rClickRadiusSq);
+                Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
                 if(ent == null) {
                     HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
                 } else {
@@ -193,23 +193,6 @@ public class AIMgr : NetworkBehaviour
 
     }
 
-    public float rClickRadiusSq = 10000;
-    public Entity FindClosestEntInRadius(Vector3 point, float rsq)
-    {
-        Entity minEnt = null;
-        float min = float.MaxValue;
-        foreach (Entity ent in EntityMgr.inst.entities) {
-            float distanceSq = (ent.transform.position - point).sqrMagnitude;
-            if (distanceSq < rsq) {
-                if (distanceSq < min) {
-                    minEnt = ent;
-                    min = distanceSq;
-                }
-            }    
-        }
-        return minEnt;
-    }
-
     //Networking -----------------------------------------------------------------
     void NetTellAllClients(TactCommandTypes cmdType, List<Entity> entities, Vector3 pos, Entity target, bool add) {
         if(!OpenOceanMain.inst.isSinglePlayer) {
@@ -282,3 +265,24 @@ public class AIMgr : NetworkBehaviour
     }
     //Networking -----------------------------------------------------------------
 }
+
+
+/*
+ * 
+    public float rClickRadiusSq = 10000;
+    public Entity FindClosestEntInRadius(Vector3 point, float rsq)
+    {
+        Entity minEnt = null;
+        float min = float.MaxValue;
+        foreach (Entity ent in EntityMgr.inst.entities) {
+            float distanceSq = (ent.transform.position - point).sqrMagnitude;
+            if (distanceSq < rsq) {
+                if (distanceSq < min) {
+                    minEnt = ent;
+                    min = distanceSq;
+                }
+            }    
+        }
+        return minEnt;
+    }
+*/

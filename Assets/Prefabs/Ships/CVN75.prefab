@@ -95,8 +95,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
+  sync:
+    entityId: 0
+    pos: {x: 0, y: 0, z: 0}
+    heading: 0
   posDiff: {x: 0, y: 0, z: 0}
+  posDelta: {x: 0, y: 0, z: 0}
   rotDiff: 0
+  rotDelta: 0
+  oldNetUpdateTime: 0
+  diffNetUpdateTime: 0
+  diffUpdateTime: 0
+  nSteps: 0
 --- !u!1 &4121095257397637222
 GameObject:
   m_ObjectHideFlags: 0
@@ -152,8 +162,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4785934218609609843}
-  - component: {fileID: 2640003344522192420}
   - component: {fileID: 2354351684159739100}
+  - component: {fileID: 2640003344522192420}
   m_Layer: 0
   m_Name: CVN75
   m_TagString: Untagged
@@ -180,27 +190,6 @@ Transform:
   - {fileID: 507195225276926981}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &2640003344522192420
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7105417278651847255}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 70, y: 120, z: 350}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2354351684159739100
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -225,6 +214,7 @@ MonoBehaviour:
   fuel: 100
   range: 0
   fuelBurnRate: 0
+  entityRole: 1
   acceleration: 2
   turnRate: 2
   maxSpeed: 15
@@ -237,6 +227,7 @@ MonoBehaviour:
   maxFuel: 0
   maxRange: 0
   entityType: 13
+  entityClass: 1
   cameraRig: {fileID: 9167490790678090778}
   selectionCircle: {fileID: 5460552826247094139}
   owner:
@@ -244,10 +235,34 @@ MonoBehaviour:
     playerId: 0
     playerSide: 0
     playerColor: {r: 0, g: 0, b: 0, a: 0}
+    isObserver: 0
+    isAdmin: 0
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}
   ui: {fileID: 0}
+  weapons: {fileID: 0}
+--- !u!65 &2640003344522192420
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7105417278651847255}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 70, y: 120, z: 350}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7569291517623868110
 GameObject:
   m_ObjectHideFlags: 0

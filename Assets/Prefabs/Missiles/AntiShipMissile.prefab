@@ -45,8 +45,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
+  sync:
+    entityId: 0
+    pos: {x: 0, y: 0, z: 0}
+    heading: 0
   posDiff: {x: 0, y: 0, z: 0}
+  posDelta: {x: 0, y: 0, z: 0}
   rotDiff: 0
+  rotDelta: 0
+  oldNetUpdateTime: 0
+  diffNetUpdateTime: 0
+  diffUpdateTime: 0
+  nSteps: 0
 --- !u!1 &296488676089481560
 GameObject:
   m_ObjectHideFlags: 0
@@ -838,6 +848,7 @@ MonoBehaviour:
   fuel: 0
   range: 0
   fuelBurnRate: 0
+  entityRole: 2
   acceleration: 100
   turnRate: 20
   maxSpeed: 240
@@ -850,6 +861,7 @@ MonoBehaviour:
   maxFuel: 520
   maxRange: 124000
   entityType: 15
+  entityClass: 13
   cameraRig: {fileID: 9145676869908812067}
   selectionCircle: {fileID: 5332817206858276288}
   owner:
@@ -857,10 +869,13 @@ MonoBehaviour:
     playerId: 0
     playerSide: 0
     playerColor: {r: 0, g: 0, b: 0, a: 0}
+    isObserver: 0
+    isAdmin: 0
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}
   ui: {fileID: 0}
+  weapons: {fileID: 0}
 --- !u!1001 &585764857335644956
 PrefabInstance:
   m_ObjectHideFlags: 0

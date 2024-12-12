@@ -4281,8 +4281,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
+  sync:
+    entityId: 0
+    pos: {x: 0, y: 0, z: 0}
+    heading: 0
   posDiff: {x: 0, y: 0, z: 0}
+  posDelta: {x: 0, y: 0, z: 0}
   rotDiff: 0
+  rotDelta: 0
+  oldNetUpdateTime: 0
+  diffNetUpdateTime: 0
+  diffUpdateTime: 0
+  nSteps: 0
 --- !u!1 &7367219407611056622
 GameObject:
   m_ObjectHideFlags: 0
@@ -5620,8 +5630,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1695902252603385349}
-  - component: {fileID: 5639986647331956541}
   - component: {fileID: 2789499054413799532}
+  - component: {fileID: 5639986647331956541}
   m_Layer: 0
   m_Name: SeaBaby
   m_TagString: Untagged
@@ -5648,27 +5658,6 @@ Transform:
   - {fileID: 2830238956957208213}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &5639986647331956541
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9157969438270272206}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.25, y: 2.25, z: 5.5}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2789499054413799532
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5693,6 +5682,7 @@ MonoBehaviour:
   fuel: 100
   range: 0
   fuelBurnRate: 0
+  entityRole: 3
   acceleration: 5
   turnRate: 20
   maxSpeed: 25
@@ -5705,6 +5695,7 @@ MonoBehaviour:
   maxFuel: 0
   maxRange: 0
   entityType: 12
+  entityClass: 5
   cameraRig: {fileID: 4805782802242031908}
   selectionCircle: {fileID: 1595804327537665117}
   owner:
@@ -5712,10 +5703,34 @@ MonoBehaviour:
     playerId: 0
     playerSide: 0
     playerColor: {r: 0, g: 0, b: 0, a: 0}
+    isObserver: 0
+    isAdmin: 0
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}
   ui: {fileID: 0}
+  weapons: {fileID: 0}
+--- !u!65 &5639986647331956541
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9157969438270272206}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.25, y: 2.25, z: 5.5}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &9166180847996618745
 GameObject:
   m_ObjectHideFlags: 0

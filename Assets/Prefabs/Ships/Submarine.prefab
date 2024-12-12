@@ -138,6 +138,7 @@ MonoBehaviour:
   fuel: 0
   range: 0
   fuelBurnRate: 0
+  entityRole: 5
   acceleration: 4
   turnRate: 2
   maxSpeed: 30
@@ -150,6 +151,7 @@ MonoBehaviour:
   maxFuel: 0
   maxRange: 0
   entityType: 14
+  entityClass: 12
   cameraRig: {fileID: 3277953698877864915}
   selectionCircle: {fileID: 2183722947178698645}
   owner:
@@ -157,6 +159,8 @@ MonoBehaviour:
     playerId: 0
     playerSide: 0
     playerColor: {r: 0, g: 0, b: 0, a: 0}
+    isObserver: 0
+    isAdmin: 0
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}
@@ -288,8 +292,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
+  sync:
+    entityId: 0
+    pos: {x: 0, y: 0, z: 0}
+    heading: 0
   posDiff: {x: 0, y: 0, z: 0}
+  posDelta: {x: 0, y: 0, z: 0}
   rotDiff: 0
+  rotDelta: 0
+  oldNetUpdateTime: 0
+  diffNetUpdateTime: 0
+  diffUpdateTime: 0
+  nSteps: 0
 --- !u!1 &8194149523381779418
 GameObject:
   m_ObjectHideFlags: 0

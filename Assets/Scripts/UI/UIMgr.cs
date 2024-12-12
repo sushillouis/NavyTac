@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
@@ -6,6 +7,22 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.Windows;
+
+[Serializable]
+public class WorldPosEntity
+{
+    public Vector3 worldPosition;
+    public Entity entity;
+
+    public WorldPosEntity(Vector3 wp, Entity ent) {
+        worldPosition = wp; 
+        entity = ent;
+    }
+
+    public override string ToString() {
+        return "Pos: " + worldPosition.ToString() + ", E: " + entity?.ToString();
+    }
+}
 
 /// <summary>
 /// Key and mouse bindings are all in this document: _______________
@@ -39,6 +56,10 @@ public class UIMgr : MonoBehaviour
 
     private InputAction create100;
 
+    private InputAction selectAll;
+    private InputAction selectGroup1;
+
+
     private void Awake()
     {
         inst = this;
@@ -47,6 +68,8 @@ public class UIMgr : MonoBehaviour
 
     private void OnEnable()
     {
+        inputs.Enable();
+
         toggleRTSCam = inputs.Camera.RTSView;
         toggleRTSCam.Enable();
         toggleRTSCam.performed += ToggleRTSView;
@@ -103,6 +126,17 @@ public class UIMgr : MonoBehaviour
         create100 = inputs.Entities.Create100;
         create100.Enable();
         create100.performed += Create100;
+
+        //Groups
+
+        selectAll = inputs.Selection.SelectAll;
+        selectAll.Enable();
+        selectAll.performed += OnSelectAllPerformed;
+
+        //selectGroup1 = inputs.Selection.SelectGroup1;
+        //selectGroup1.Enable();
+        //selectGroup1.performed += OnGroupSelectPerformed;
+
     }
 
     private void OnDisable()
@@ -123,18 +157,26 @@ public class UIMgr : MonoBehaviour
         changeSpeed.Disable();
         changeHeading.Disable();
         create100.Disable();
+
+        selectAll.Disable();
+        //selectGroup1.Disable();
+
+
     }
 
     // Start is called before the first frame update
     void Start()
     {
         ToggleMultiSelect.SetActive(false);
-        #if UNITY_ANDROID
+#if UNITY_ANDROID
             ToggleMultiSelect.SetActive(true);
-        #endif
-        #if UNITY_ANDROID
+#endif
+#if UNITY_ANDROID
             ToggleMultiSelect.SetActive(true);
-        #endif
+#endif
+
+       
+
     }
     public TextMeshProUGUI entityName;
 
@@ -191,6 +233,7 @@ public class UIMgr : MonoBehaviour
 
         if(boxSelecting)
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
+
     }
     
     private void DisplayAIInformation(Entity ent) {
@@ -260,4 +303,47 @@ public class UIMgr : MonoBehaviour
     {
         GameMgr.inst.Create100();
     }
+
+    private void OnSelectAllPerformed(InputAction.CallbackContext context) {
+        SelectionMgr.inst.SelectAll();
+    }
+
+
+    public WorldPosEntity MousePosToWorldPosEntity(Vector2 mousePos) {
+        RaycastHit hit = new RaycastHit();
+        int layerMask = 512; //Ocean layer = 9, 2^9 = 512
+        if(Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask)) {
+            //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
+            Vector3 pos = hit.point;
+            pos.y = 0;
+            Entity ent = FindClosestEntInRadius(pos);//, rClickRadiusSq);//
+            WorldPosEntity wpe = new WorldPosEntity(pos, ent);
+            return wpe;
+        }
+        return null;
+    }
+
+    public const float rClickRadiusSq = 10000;
+    public Entity FindClosestEntInRadius(Vector3 point, float rsq = rClickRadiusSq) {
+        Entity minEnt = null;
+        float min = float.MaxValue;
+        foreach(Entity ent in EntityMgr.inst.entities) {
+            float distanceSq = (ent.transform.position - point).sqrMagnitude;
+            if(distanceSq < rsq) {
+                if(distanceSq < min) {
+                    minEnt = ent;
+                    min = distanceSq;
+                }
+            }
+        }
+        return minEnt;
+    }
+
+    public void ActivateEntityCommands(bool shouldActivate) {
+        if(shouldActivate)
+            inputs.Entities.Enable();
+        else
+            inputs.Entities.Disable();
+    }
+
 }

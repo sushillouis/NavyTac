@@ -207,7 +207,7 @@ public class OpenOceanMain : MonoBehaviour
 
     public void OnMapSelected() {
         if(isSinglePlayer)
-            GameMgr.inst.MakeMapEntities();
+            GameMgr.inst.OpenOcean1x1(); //GameMgr.inst.MakeMapEntities();
         else 
             localNetSetup.OnStartButton();
         lobbyState = LobbyState.Play;

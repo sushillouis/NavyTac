@@ -27,7 +27,7 @@ public class Move : Command
     {
         DHDS dhds;
         if (AIMgr.inst.isPotentialFieldsMovement)
-            dhds = ComputePotentialDHDS();
+            dhds = ComputePotentialDHDS(movePosition);
         else
             dhds = ComputeDHDS();
 
@@ -52,7 +52,7 @@ public class Move : Command
 
     }
 
-    public DHDS ComputePotentialDHDS()
+    public DHDS ComputePotentialDHDS(Vector3 movePosition)
     {
         diff = movePosition - entity.position;
         Potential p;
@@ -61,7 +61,8 @@ public class Move : Command
             if (ent == entity) continue;
             p = DistanceMgr.inst.GetPotential(entity, ent);
             if (p.distance < AIMgr.inst.potentialDistanceThreshold) {
-                repulsivePotential += p.direction * entity.mass *
+                //repulsivePotential += p.direction * entity.mass *
+                repulsivePotential += p.direction * ent.mass *
                     AIMgr.inst.repulsiveCoefficient * Mathf.Pow(p.diff.magnitude, AIMgr.inst.repulsiveExponent);
                 //repulsivePotential += p.diff;
             }
