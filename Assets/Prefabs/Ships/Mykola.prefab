@@ -46,8 +46,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  follows: []
   commands: []
   intercepts: []
+  intercept3ds: []
 --- !u!1 &3556541186096080935
 GameObject:
   m_ObjectHideFlags: 0
@@ -57,8 +59,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7528760655783591509}
-  - component: {fileID: 982035830108023137}
   - component: {fileID: 6790248644350216942}
+  - component: {fileID: 982035830108023137}
   m_Layer: 0
   m_Name: Mykola
   m_TagString: Untagged
@@ -85,6 +87,58 @@ Transform:
   - {fileID: 6545618796790287692}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6790248644350216942
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3556541186096080935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f2fd9069db7d894d8e8458779069765, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entityId: 0
+  isSelected: 0
+  position: {x: 0, y: 0, z: 0}
+  velocity: {x: 0, y: 0, z: 0}
+  speed: 0
+  desiredSpeed: 0
+  heading: 0
+  desiredHeading: 0
+  health: 100
+  fuel: 100
+  range: 0
+  fuelBurnRate: 0
+  entityRole: 3
+  acceleration: 5
+  turnRate: 20
+  maxSpeed: 22
+  minSpeed: 0
+  cruiseSpeed: 0
+  mass: 10
+  length: 3.6
+  width: 1
+  height: 0.5
+  maxFuel: 0
+  maxRange: 0
+  entityType: 11
+  entityClass: 5
+  cameraRig: {fileID: 5874644380946906988}
+  selectionCircle: {fileID: 9221041256722303278}
+  owner:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+    isObserver: 0
+    isAdmin: 0
+  net: {fileID: 0}
+  phx: {fileID: 0}
+  ai: {fileID: 0}
+  ui: {fileID: 0}
+  weapons: {fileID: 0}
 --- !u!65 &982035830108023137
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -106,38 +160,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2, y: 3, z: 5}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6790248644350216942
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3556541186096080935}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f2fd9069db7d894d8e8458779069765, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isSelected: 0
-  position: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
-  speed: 0
-  desiredSpeed: 0
-  heading: 0
-  desiredHeading: 0
-  acceleration: 5
-  turnRate: 20
-  maxSpeed: 22
-  minSpeed: 0
-  mass: 10
-  length: 3.6
-  width: 1
-  height: 0.5
-  health: 100
-  fuel: 100
-  entityType: 11
-  cameraRig: {fileID: 5874644380946906988}
-  selectionCircle: {fileID: 9221041256722303278}
 --- !u!1 &3687414678093537068
 GameObject:
   m_ObjectHideFlags: 0
@@ -293,8 +315,66 @@ Transform:
   - {fileID: 6593626303382197857}
   - {fileID: 3157201557585560239}
   - {fileID: 5727433510677716404}
+  - {fileID: 6318845359278599963}
   m_Father: {fileID: 7528760655783591509}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7719844932520057577
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6318845359278599963}
+  - component: {fileID: 6775629495031735387}
+  m_Layer: 0
+  m_Name: Net
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6318845359278599963
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7719844932520057577}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6545618796790287692}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6775629495031735387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7719844932520057577}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9fc7887027c34444a35bf05b947bd5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entity: {fileID: 0}
+  sync:
+    entityId: 0
+    pos: {x: 0, y: 0, z: 0}
+    heading: 0
+  posDiff: {x: 0, y: 0, z: 0}
+  posDelta: {x: 0, y: 0, z: 0}
+  rotDiff: 0
+  rotDelta: 0
+  oldNetUpdateTime: 0
+  diffNetUpdateTime: 0
+  diffUpdateTime: 0
+  nSteps: 0
 --- !u!1001 &37764952984612694
 PrefabInstance:
   m_ObjectHideFlags: 0

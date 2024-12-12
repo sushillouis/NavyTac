@@ -4,14 +4,21 @@ using UnityEngine;
 
 public class OrientedPhysics : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
+    public Entity entity;
+    
+    private void Awake() {
         entity = GetComponentInParent<Entity>();
+        entity.phx = this;
         entity.position = entity.transform.localPosition;
     }
 
-    public Entity entity;
+    // Start is called before the first frame update
+    void Start()
+    {
+
+    }
+
+
 
 
     // FixedUpdate is called once per frame

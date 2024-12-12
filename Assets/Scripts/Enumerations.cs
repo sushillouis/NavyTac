@@ -1,39 +1,46 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 
-public enum PlayerID
+
+[Serializable]
+public enum EntityType
 {
-    None = 0,
-    PlayerOne = 1,
-    PlayerTwo = 2,
-    PlayerThree = 3,
-    PlayerFour = 4,
-    PlayerFive = 5,
-    PlayerSix = 6,
-    PlayerSeven = 7,
-    PlayerEight = 8,
-    Observer = 9,
-    Admin = 10,
+    DDG51,
+    Container,
+    MineSweeper,
+    OilServiceVessel,
+    OrientExplorer,
+    PilotVessel,
+    SmitHouston,
+    Tanker,
+    TugBoat,
+    JARIUSV,
+    SeaHunter,
+    Mykola,
+    SeaBaby,
+    CVN75,
+    Submarine,
+    AntiShipMissile,
 }
 
+[Serializable]
 public enum PlayerSide
 {
-    None = 0,
-    SideOne = 1,
-    SideTwo = 2,
-    SideThree = 3,
-    SideFour = 4,
-    SideFive = 5,
-    SideSix = 6,
-    SideSeven = 7,
-    SideEight = 8,
-    Observer = 9,
-    Admin = 10,
+    SideOne = 0,
+    SideTwo, 
+    SideThree,
+    SideFour,
+    SideFive,
+    SideSix,
+    SideSeven,
+    SideEight,
 }
 
-public enum ShipClasses
+[Serializable]
+public enum EntityClass
 {
     None = 0,
     Carrier,
@@ -47,9 +54,13 @@ public enum ShipClasses
     Tug,
     LHA,
     Supply,
+    Sub,
+    Missile,
+    Airplane,//more classes for airplanes easy to confuse with roles
 }
 
-public enum ShipRoles
+[Serializable]
+public enum EntityRole
 {
     None = 0,
     Carrier,
@@ -59,18 +70,26 @@ public enum ShipRoles
     ISR,
     ASW,
     NonCombat,
+    AirSuperiority,
+    GroundAttack,
+    Bomber,
+    CAP,
+    SEAD,
 }
 
+[Serializable]
 public enum TacticsType
 {
-    None = 0,
+    Cancel = 0,
     Pincer,
-    Formate,
-    FormationAttack,
-    AttackDistract,
+    FormMove,
+    FormAtk,
+    AtkDistract,
     Scout,
+    Choose,
 }
 
+[Serializable]
 public enum MapNames
 {
     None = 0,
@@ -78,6 +97,7 @@ public enum MapNames
     FourCorners,
 }
 
+[Serializable]
 public enum WeaponBehaviors
 {
     None = 0,
@@ -85,4 +105,13 @@ public enum WeaponBehaviors
     SurfaceInterceptor,
     AirInterceptor,
     Smart,
+}
+
+[Serializable]
+public enum TactCommandTypes
+{
+    Move = 0,
+    Follow,
+    Intercept,
+    Intercept3d,
 }

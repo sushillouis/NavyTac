@@ -1,9 +1,77 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class AIMgr : MonoBehaviour
+
+/// <summary>
+/// Struct used to package and sent list of entities and the one command being applied to them
+/// </summary>
+[Serializable]
+public struct TactCommandStruct: INetworkSerializable, IEquatable<TactCommandStruct>
+{
+    public TactCommandTypes commandType;
+    public int[] entityIds;
+    public int targetEntityId;
+    public Vector3 targetOrOffsetPosition;
+    public bool add;
+
+    public bool Equals(TactCommandStruct other) {
+        return (commandType == other.commandType
+            && IntArrayEqual(entityIds, other.entityIds)
+            && targetEntityId == other.targetEntityId
+            && targetOrOffsetPosition == other.targetOrOffsetPosition
+            && add == other.add);
+    }
+
+    public bool IntArrayEqual(int[] a, int[] b) {
+        if(a.Length != b.Length) return false;
+
+        for(int i = 0; i < a.Length; i++) {
+            if(a[i] != b[i])
+                return false;
+        }
+        return true;
+    }
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter {
+        serializer.SerializeValue(ref commandType);
+        if(serializer.IsWriter) {//serialize deserialize array
+            int length = entityIds.Length;
+            serializer.SerializeValue(ref length);
+            for(int i = 0; i < length; i++) {
+                serializer.SerializeValue(ref entityIds[i]);
+            }
+
+        } else {
+            int length = 0;
+            serializer.SerializeValue(ref length);
+            entityIds = new int[length];
+            for(int i = 0; i < length; i++) {
+                serializer.SerializeValue(ref entityIds[i]);
+            }
+        }
+        serializer.SerializeValue(ref targetEntityId);
+        serializer.SerializeValue(ref targetOrOffsetPosition);
+        serializer.SerializeValue(ref add);
+    }
+
+    public override string ToString() {
+        StringBuilder sb = new StringBuilder();
+        sb.Append("[");
+        for(int i = 0; i < entityIds.Length; i++) {
+            sb.Append(entityIds[i].ToString() + ", ");
+        }
+        sb.Append("]");
+        return $"Eid: {sb.ToString()}, Cmd: {commandType}, TGT: {targetEntityId}, Pos: {targetOrOffsetPosition}, Add?: {add}";
+    }
+}
+
+public class AIMgr : NetworkBehaviour
 {
     public static AIMgr inst;
     private void Awake()
@@ -33,35 +101,39 @@ public class AIMgr : MonoBehaviour
         
     }
 
+    //I need to be entity owner to command entities.
+    //If I select a number of entities, I will only command the entities I own
+    // Does not yet handle AI players
     public void HandleCommand(Vector2 mousePos, bool intercept, bool add)
     {
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
-        {
-            //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
-            Vector3 pos = hit.point;
-            pos.y = 0;
-            Entity ent = FindClosestEntInRadius(pos, rClickRadiusSq);
-            if (ent == null)
-            {
-                HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
+       
+        if(SelectionMgr.inst.selectedEntities.Count > 0) {
+            if(Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask)) {
+                //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
+                Vector3 pos = hit.point;
+                pos.y = 0;
+                Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
+                if(ent == null) {
+                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
+                } else {
+                    if(intercept)
+                        HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
+                    else
+                        HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
+                }
+            } else {
+                //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
             }
-            else
-            {
-                if (intercept)
-                    HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
-                else
-                    HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
-            }
-        }
-        else
-        {
-            //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
         }
     }
 
-    public void HandleMove(List<Entity> entities, Vector3 point, bool add)
-    {
-        foreach (Entity entity in entities) {
+    public void HandleMove(List<Entity> entities, Vector3 point, bool add, bool isLocalCommand = true)
+    {    //if this machine's client commanded, then tell everyone
+        if(isLocalCommand ) {
+            NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
+        }
+        //Then do the command
+        foreach(Entity entity in entities) {
             Move m = new Move(entity, point);
             UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             AddOrSet(m, uai, add);
@@ -70,17 +142,19 @@ public class AIMgr : MonoBehaviour
 
     void AddOrSet(Command c, UnitAI uai, bool add)
     {
-        if (add)
+        //if I can command ent, execute command
+        if(add)
             uai.AddCommand(c);
         else
             uai.SetCommand(c);
     }
 
-
-
-    public void HandleFollow(List<Entity> entities, Entity ent, Vector3 offset, bool add)
+    public void HandleFollow(List<Entity> entities, Entity ent, Vector3 offset, bool add, bool isLocalCommand = true)
     {
-        foreach (Entity entity in entities) {
+        if(isLocalCommand) {
+            NetTellAllClients(TactCommandTypes.Follow, entities, offset, ent, add);
+        }
+        foreach(Entity entity in entities) {
             if(ent != entity) {
                 Follow f = new Follow(entity, ent, offset);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
@@ -89,12 +163,13 @@ public class AIMgr : MonoBehaviour
         }
     }
 
-    public void HandleIntercept(List<Entity> entities, Entity ent, bool add)
+    public void HandleIntercept(List<Entity> entities, Entity ent, bool add, bool isLocalCommand = true)
     {
-        foreach(Entity entity in entities)
-        {
-            if(ent != entity)
-            {
+        if(isLocalCommand) {
+            NetTellAllClients(TactCommandTypes.Intercept, entities, Vector3.zero, ent, add);
+        }
+        foreach(Entity entity in entities) {
+            if(ent != entity) {
                 Intercept intercept = new Intercept(entity, ent);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
                 AddOrSet(intercept, uai, add);
@@ -103,12 +178,13 @@ public class AIMgr : MonoBehaviour
 
     }
 
-    public void Handle3dIntercept(List<Entity> entities, Entity ent, bool add)
+    public void Handle3dIntercept(List<Entity> entities, Entity ent, bool add, bool isLocalCommand = true)
     {
-        foreach(Entity entity in entities)
-        {
-            if(ent != entity)
-            {
+        if(isLocalCommand) {
+            NetTellAllClients(TactCommandTypes.Intercept3d, entities, Vector3.zero, ent, add);
+        } 
+        foreach(Entity entity in entities){
+            if(ent != entity) {
                 Intercept3d intercept3d = new Intercept3d(entity, ent);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
                 AddOrSet(intercept3d, uai, add);
@@ -117,6 +193,82 @@ public class AIMgr : MonoBehaviour
 
     }
 
+    //Networking -----------------------------------------------------------------
+    void NetTellAllClients(TactCommandTypes cmdType, List<Entity> entities, Vector3 pos, Entity target, bool add) {
+        if(!OpenOceanMain.inst.isSinglePlayer) {
+            TactCommandStruct netCommand = MakeNetCommandStruct(cmdType, entities, pos, target, add);
+            OpenOceanMain.inst.localTactNetMgr.CommandUpdateServerRpc(netCommand);
+        }
+    }
+
+    TactCommandStruct MakeNetCommandStruct(TactCommandTypes cmdType, List<Entity> entities, Vector3 pos, Entity target, bool add) {
+        TactCommandStruct netCommand = new TactCommandStruct();
+
+        netCommand.commandType = cmdType;
+        netCommand.add = add;
+        if(target != null)
+            netCommand.targetEntityId = target.entityId;
+        netCommand.targetOrOffsetPosition = pos;
+
+        netCommand.entityIds = new int[entities.Count];
+        int i = 0;
+        foreach(Entity ent in entities) {
+            netCommand.entityIds[i] = ent.entityId;
+            i++;
+        }
+
+        return netCommand;
+    }
+
+
+    public void HandleNetCommandSpec(TactCommandStruct command) {
+        //Debug.Log(OwnerClientId + " recvd Command: " + command.ToString());
+
+        List<Entity> entities = new List<Entity>();
+        Entity entTmp;
+        for(int i = 0; i < command.entityIds.Length; i++) {
+            entTmp = EntityMgr.inst.entitiesDict[command.entityIds[i]];
+            if(entTmp != null) {
+                entities.Add(entTmp);
+            }
+        }
+
+        switch(command.commandType) {
+            case TactCommandTypes.Move:
+                //Debug.Log("NetCmd: MoveTo pos:" + command.targetOrOffsetPosition);
+                HandleMove(entities, command.targetOrOffsetPosition, command.add, false);
+                break;
+            case TactCommandTypes.Follow:
+                Entity target = EntityMgr.inst.entitiesDict[command.targetEntityId];
+                if(target != null) {
+                    HandleFollow(entities, target, command.targetOrOffsetPosition, command.add, false);
+                }
+                break;
+            case TactCommandTypes.Intercept:
+                Entity interceptTarget = EntityMgr.inst.entitiesDict[command.targetEntityId];
+                if(interceptTarget != null) {
+                    HandleIntercept(entities, interceptTarget, command.add, false);
+                }
+                break;
+            case TactCommandTypes.Intercept3d:
+                Entity intercept3dTarget = EntityMgr.inst.entitiesDict[command.targetEntityId];
+                if(intercept3dTarget != null) {
+                    Handle3dIntercept(entities, intercept3dTarget, command.add, false);
+                }
+                break;
+            default:
+                Debug.Log("Unknown Command: " + command.ToString());
+                HandleMove(entities, command.targetOrOffsetPosition, command.add, false);
+                break;
+        }
+        
+    }
+    //Networking -----------------------------------------------------------------
+}
+
+
+/*
+ * 
     public float rClickRadiusSq = 10000;
     public Entity FindClosestEntInRadius(Vector3 point, float rsq)
     {
@@ -133,4 +285,4 @@ public class AIMgr : MonoBehaviour
         }
         return minEnt;
     }
-}
+*/

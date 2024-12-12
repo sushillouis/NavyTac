@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 public class GameMgr : MonoBehaviour
 {
@@ -75,70 +74,74 @@ public class GameMgr : MonoBehaviour
         }
         AIMgr.inst.HandleMove(allEntities, movePos, shouldAdd);
         //AIMgr.inst.HandleMove(allEntities, new Vector3(3000, 0, 0), true);
-
-    }
-
-    public void InitOpenOceanMap() {
-
-        List<Entity> allEntities = CreateCarrierGroup(Vector3.zero, 0, 300, 300, PlayerMgr.inst.player1);
-        Vector3 pos = new Vector3(0, 0, 4000);
-        bool add = false;
-        StartCoroutine(AddMoveCommandsToEnt(allEntities, pos, add, 0));
-
-        
-        List<Entity> allEntities2 = CreateCarrierGroup(new Vector3(0, 0, 3000), 180, 300, 300, PlayerMgr.inst.player2);
-        pos.z = -1000;
-        StartCoroutine(AddMoveCommandsToEnt(allEntities2, pos, add, 180));
     }
 
 
-    List<Entity> CreateCarrierGroup(Vector3 position, float heading, float xDelta, float zDelta, Player player) {
-        List<Entity> allEntities = new List<Entity>();
 
-        Vector3 pos = new Vector3(position.x, position.y, position.z);
-        Vector3 headingVector = new Vector3(0, heading, 0);
-
-        Entity ent = EntityMgr.inst.CreateEntity(EntityType.CVN75, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x - xDelta;
-        pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.DDG51, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x + xDelta;
-        pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.DDG51, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x - xDelta / 2;
-        pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x + xDelta / 2;
-        pos.z = position.z + zDelta;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x - xDelta / 2;
-        pos.z = position.z + zDelta / 2;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        pos.x = position.x + xDelta / 2;
-        pos.z = position.z + zDelta / 2;
-        ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, headingVector, player);
-        allEntities.Add(ent);
-
-        return allEntities;
-    }
-
-    public void InitTestWidgetMap() {
-        Vector3 pos = Vector3.zero;
-        Entity ent = EntityMgr.inst.CreateEntity(EntityType.DDG51, pos, pos, PlayerMgr.inst.player1);
+    public void MakeMapEntities() {
+        Vector3 pos = new Vector3(0, 0, 0);
+        Entity ent;
+        foreach(TactPlayer player in PlayerMgr.inst.players) {
+            for(int i = 0; i < 5; i++) {
+                ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, new Vector3(0, 0, 0), player);
+                pos.x += 50;
+            }
+            pos.z += 100;
+            pos.x = 0;
+        }
 
     }
 
+    public void OpenOcean1x1() {
+        Vector3 posPlayer1 = new Vector3(0, 0, 0);
+        Vector3 posPlayer2 = new Vector3(0, 0, 5 * Utils.FromNauticalMiles);
+        MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1);
+        MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
+
+    }
+
+    public void MakeEntsForPlayer(Vector3 initPos, float initHeading, TactPlayer player) {
+        Vector3 eulerAngles = new Vector3(0, initHeading, 0);
+        Entity initEnt = EntityMgr.inst.CreateEntity(EntityType.CVN75, initPos, eulerAngles, player);
+        Entity tmpEnt;
+
+        //Escort on right
+        Vector3 offset = initEnt.transform.right * 1000;
+        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
+
+        //USV on right
+        offset = tmpEnt.transform.right * 500;
+        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
+
+        //USV in front
+        offset = initEnt.transform.forward * 1000;
+        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
+
+        //USV in behind
+        offset = -initEnt.transform.forward * 1000;
+        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
+
+        //Escort on left
+        offset = -initEnt.transform.right * 1000;
+        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
+
+        //USV on left
+        offset = -initEnt.transform.right * 500;
+        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
+
+        offset = initEnt.transform.forward * 500;
+        offset.x -= 250;
+        for(int i = 0; i < 5; i++) {
+            tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);
+            offset.x += 100;
+        }
+        offset = -initEnt.transform.forward * 500;
+        offset.x -= 200;
+        for(int i = 0; i < 5; i++) {
+            tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);
+            offset.x += 100;
+        }
+
+    }
 
 }

@@ -77,6 +77,63 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   eulerRotation: {x: 0, y: 0, z: 0}
+--- !u!1 &3648418517809331785
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7958651540415891025}
+  - component: {fileID: 8740787711671968842}
+  m_Layer: 0
+  m_Name: Net
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7958651540415891025
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3648418517809331785}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3369388881020421164}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8740787711671968842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3648418517809331785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9fc7887027c34444a35bf05b947bd5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entity: {fileID: 0}
+  sync:
+    entityId: 0
+    pos: {x: 0, y: 0, z: 0}
+    heading: 0
+  posDiff: {x: 0, y: 0, z: 0}
+  posDelta: {x: 0, y: 0, z: 0}
+  rotDiff: 0
+  rotDelta: 0
+  oldNetUpdateTime: 0
+  diffNetUpdateTime: 0
+  diffUpdateTime: 0
+  nSteps: 0
 --- !u!1 &4205535018835155151
 GameObject:
   m_ObjectHideFlags: 0
@@ -86,8 +143,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3924768975102359382}
-  - component: {fileID: 1124869743}
   - component: {fileID: 1124869747}
+  - component: {fileID: 1124869743}
   m_Layer: 0
   m_Name: OrientExplorer
   m_TagString: Untagged
@@ -114,6 +171,58 @@ Transform:
   - {fileID: 3369388881020421164}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1124869747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4205535018835155151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f2fd9069db7d894d8e8458779069765, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entityId: 0
+  isSelected: 0
+  position: {x: 0, y: 0, z: 0}
+  velocity: {x: 0, y: 0, z: 0}
+  speed: 0
+  desiredSpeed: 0
+  heading: 0
+  desiredHeading: 0
+  health: 100
+  fuel: 100
+  range: 0
+  fuelBurnRate: 0
+  entityRole: 7
+  acceleration: 4
+  turnRate: 4
+  maxSpeed: 20
+  minSpeed: 0
+  cruiseSpeed: 0
+  mass: 1200
+  length: 167.5
+  width: 50
+  height: 65
+  maxFuel: 0
+  maxRange: 0
+  entityType: 4
+  entityClass: 8
+  cameraRig: {fileID: 1938027698}
+  selectionCircle: {fileID: 5565473671781557266}
+  owner:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+    isObserver: 0
+    isAdmin: 0
+  net: {fileID: 0}
+  phx: {fileID: 0}
+  ai: {fileID: 0}
+  ui: {fileID: 0}
+  weapons: {fileID: 0}
 --- !u!65 &1124869743
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -135,38 +244,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 40, y: 80, z: 200}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1124869747
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4205535018835155151}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f2fd9069db7d894d8e8458779069765, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isSelected: 0
-  position: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
-  speed: 0
-  desiredSpeed: 0
-  heading: 0
-  desiredHeading: 0
-  acceleration: 4
-  turnRate: 4
-  maxSpeed: 20
-  minSpeed: 0
-  mass: 1200
-  length: 167.5
-  width: 50
-  height: 65
-  health: 100
-  fuel: 100
-  entityType: 4
-  cameraRig: {fileID: 1938027698}
-  selectionCircle: {fileID: 5565473671781557266}
 --- !u!1 &4320618659404282984
 GameObject:
   m_ObjectHideFlags: 0
@@ -199,6 +276,7 @@ Transform:
   - {fileID: 164742645177438737}
   - {fileID: 1933500042828784231}
   - {fileID: 4678296192665160221}
+  - {fileID: 7958651540415891025}
   m_Father: {fileID: 3924768975102359382}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8638150733448648443
@@ -293,8 +371,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  follows: []
   commands: []
   intercepts: []
+  intercept3ds: []
 --- !u!1001 &3429548707755959603
 PrefabInstance:
   m_ObjectHideFlags: 0

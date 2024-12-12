@@ -46,8 +46,67 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  follows: []
   commands: []
   intercepts: []
+  intercept3ds: []
+--- !u!1 &2304421755187861849
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1479669588105260957}
+  - component: {fileID: 6872475374245959699}
+  m_Layer: 0
+  m_Name: Net
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1479669588105260957
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2304421755187861849}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 507195225276926981}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6872475374245959699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2304421755187861849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9fc7887027c34444a35bf05b947bd5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entity: {fileID: 0}
+  sync:
+    entityId: 0
+    pos: {x: 0, y: 0, z: 0}
+    heading: 0
+  posDiff: {x: 0, y: 0, z: 0}
+  posDelta: {x: 0, y: 0, z: 0}
+  rotDiff: 0
+  rotDelta: 0
+  oldNetUpdateTime: 0
+  diffNetUpdateTime: 0
+  diffUpdateTime: 0
+  nSteps: 0
 --- !u!1 &4121095257397637222
 GameObject:
   m_ObjectHideFlags: 0
@@ -103,8 +162,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4785934218609609843}
-  - component: {fileID: 2640003344522192420}
   - component: {fileID: 2354351684159739100}
+  - component: {fileID: 2640003344522192420}
   m_Layer: 0
   m_Name: CVN75
   m_TagString: Untagged
@@ -131,6 +190,58 @@ Transform:
   - {fileID: 507195225276926981}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2354351684159739100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7105417278651847255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f2fd9069db7d894d8e8458779069765, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entityId: 0
+  isSelected: 0
+  position: {x: 0, y: 0, z: 0}
+  velocity: {x: 0, y: 0, z: 0}
+  speed: 0
+  desiredSpeed: 0
+  heading: 0
+  desiredHeading: 0
+  health: 100
+  fuel: 100
+  range: 0
+  fuelBurnRate: 0
+  entityRole: 1
+  acceleration: 2
+  turnRate: 2
+  maxSpeed: 15
+  minSpeed: 0
+  cruiseSpeed: 0
+  mass: 12000
+  length: 340
+  width: 82.5
+  height: 75
+  maxFuel: 0
+  maxRange: 0
+  entityType: 13
+  entityClass: 1
+  cameraRig: {fileID: 9167490790678090778}
+  selectionCircle: {fileID: 5460552826247094139}
+  owner:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+    isObserver: 0
+    isAdmin: 0
+  net: {fileID: 0}
+  phx: {fileID: 0}
+  ai: {fileID: 0}
+  ui: {fileID: 0}
+  weapons: {fileID: 0}
 --- !u!65 &2640003344522192420
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -152,38 +263,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 70, y: 120, z: 350}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &2354351684159739100
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7105417278651847255}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f2fd9069db7d894d8e8458779069765, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isSelected: 0
-  position: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
-  speed: 0
-  desiredSpeed: 0
-  heading: 0
-  desiredHeading: 0
-  acceleration: 2
-  turnRate: 2
-  maxSpeed: 15
-  minSpeed: 0
-  mass: 12000
-  length: 340
-  width: 82.5
-  height: 75
-  health: 100
-  fuel: 100
-  entityType: 13
-  cameraRig: {fileID: 9167490790678090778}
-  selectionCircle: {fileID: 5460552826247094139}
 --- !u!1 &7569291517623868110
 GameObject:
   m_ObjectHideFlags: 0
@@ -216,6 +295,7 @@ Transform:
   - {fileID: 8844111233423992057}
   - {fileID: 5222630027906201821}
   - {fileID: 684846137612397450}
+  - {fileID: 1479669588105260957}
   m_Father: {fileID: 4785934218609609843}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8641612771079210590

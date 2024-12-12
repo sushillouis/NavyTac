@@ -482,6 +482,156 @@
             ]
         },
         {
+            "name": "Selection",
+            "id": "ce5509f5-2920-45c3-ac1b-c591f44f94f5",
+            "actions": [
+                {
+                    "name": "ClearSelection",
+                    "type": "Button",
+                    "id": "6ab4753c-7e62-4d31-8890-01181afe430d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BoxSelect",
+                    "type": "Button",
+                    "id": "d2d504d8-77e7-4511-8ff3-b71ae76aed5a",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Hold",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SingleSelect",
+                    "type": "Button",
+                    "id": "f68c0915-7f90-43a7-8c45-effd3838469b",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Tap",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "CursorPosition",
+                    "type": "Value",
+                    "id": "2a8af9bf-3ad6-470f-99ca-178f6cd0c7bf",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "NextEntity",
+                    "type": "Button",
+                    "id": "81ca03f9-4618-4769-a171-377045b18430",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SelectAll",
+                    "type": "Button",
+                    "id": "150c2fbd-77f3-4da2-bed4-184d955a6dd2",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "25139539-d122-4edd-86fb-a80a2e765d93",
+                    "path": "<Touchscreen>/primaryTouch/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CursorPosition",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "02b1074a-c5ca-429f-b410-108e86d6ffbc",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CursorPosition",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b1b257ae-ce74-4e3a-8ce1-2a15c05be945",
+                    "path": "<Keyboard>/leftShift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ClearSelection",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7f1ce320-bf01-4f60-b382-115472fd5122",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "NextEntity",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e1b9393e-d536-4600-9d53-53a59e4b2a9f",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SingleSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7aa1c846-c9f7-4915-95be-d0807b1af1fe",
+                    "path": "<Touchscreen>/Press",
+                    "interactions": "SlowTap",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BoxSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b65f60b6-13e2-4dae-8656-46815aebf3ed",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BoxSelect",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "17df7612-d815-4000-867b-099b216bc0ec",
+                    "path": "<Keyboard>/f1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectAll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
             "name": "Entities",
             "id": "ec6ada94-8152-4f10-a9b2-43ed64b711dc",
             "actions": [
@@ -632,7 +782,7 @@
                 {
                     "name": "",
                     "id": "e7de1f10-b7d0-4a1d-b982-7077d2aa5609",
-                    "path": "<Keyboard>/ctrl",
+                    "path": "<Keyboard>/leftAlt",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -659,136 +809,6 @@
                     "processors": "",
                     "groups": "",
                     "action": "AddCommand",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                }
-            ]
-        },
-        {
-            "name": "Selection",
-            "id": "ce5509f5-2920-45c3-ac1b-c591f44f94f5",
-            "actions": [
-                {
-                    "name": "ClearSelection",
-                    "type": "Button",
-                    "id": "6ab4753c-7e62-4d31-8890-01181afe430d",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "BoxSelect",
-                    "type": "Button",
-                    "id": "d2d504d8-77e7-4511-8ff3-b71ae76aed5a",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "Hold",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "SingleSelect",
-                    "type": "Button",
-                    "id": "f68c0915-7f90-43a7-8c45-effd3838469b",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "Tap",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "CursorPosition",
-                    "type": "Value",
-                    "id": "2a8af9bf-3ad6-470f-99ca-178f6cd0c7bf",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                },
-                {
-                    "name": "NextEntity",
-                    "type": "Button",
-                    "id": "81ca03f9-4618-4769-a171-377045b18430",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                }
-            ],
-            "bindings": [
-                {
-                    "name": "",
-                    "id": "25139539-d122-4edd-86fb-a80a2e765d93",
-                    "path": "<Touchscreen>/primaryTouch/position",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "CursorPosition",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "02b1074a-c5ca-429f-b410-108e86d6ffbc",
-                    "path": "<Mouse>/position",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "CursorPosition",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "b1b257ae-ce74-4e3a-8ce1-2a15c05be945",
-                    "path": "<Keyboard>/leftShift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "ClearSelection",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "7f1ce320-bf01-4f60-b382-115472fd5122",
-                    "path": "<Keyboard>/tab",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "NextEntity",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "e1b9393e-d536-4600-9d53-53a59e4b2a9f",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "SingleSelect",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "7aa1c846-c9f7-4915-95be-d0807b1af1fe",
-                    "path": "<Touchscreen>/Press",
-                    "interactions": "SlowTap",
-                    "processors": "",
-                    "groups": "",
-                    "action": "BoxSelect",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "b65f60b6-13e2-4dae-8656-46815aebf3ed",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "BoxSelect",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -5,10 +5,15 @@ using UnityEngine;
 public class UIAspect : MonoBehaviour //change name to UI aspect
 {
     public Entity entity;
+    private void Awake() {
+        entity = GetComponentInParent<Entity>();
+        entity.ui = this;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        entity = GetComponentInParent<Entity>();
+
     }
 
     // Update is called once per frame

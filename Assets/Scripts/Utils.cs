@@ -7,6 +7,7 @@ public static class Utils {
 
     public static float EPSILON = 0.01f;
     public static float ToNautialMiles = 0.000539957f;
+    public static float FromNauticalMiles = 1852f;
     public static bool ApproximatelyEqual(float a, float b)
     {
         return (Mathf.Abs(a - b) < EPSILON);

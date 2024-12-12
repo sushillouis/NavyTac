@@ -1948,6 +1948,7 @@ Transform:
   - {fileID: 3783066428330351228}
   - {fileID: 4656913785136500352}
   - {fileID: 7676953844620476761}
+  - {fileID: 5261666266979598043}
   m_Father: {fileID: 1695902252603385349}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3864623691356958010
@@ -3816,8 +3817,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  follows: []
   commands: []
   intercepts: []
+  intercept3ds: []
 --- !u!1 &6686030525774372362
 GameObject:
   m_ObjectHideFlags: 0
@@ -4233,6 +4236,63 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &7156165164135162236
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5261666266979598043}
+  - component: {fileID: 4384800761493872937}
+  m_Layer: 0
+  m_Name: Net
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5261666266979598043
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7156165164135162236}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2830238956957208213}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4384800761493872937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7156165164135162236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9fc7887027c34444a35bf05b947bd5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entity: {fileID: 0}
+  sync:
+    entityId: 0
+    pos: {x: 0, y: 0, z: 0}
+    heading: 0
+  posDiff: {x: 0, y: 0, z: 0}
+  posDelta: {x: 0, y: 0, z: 0}
+  rotDiff: 0
+  rotDelta: 0
+  oldNetUpdateTime: 0
+  diffNetUpdateTime: 0
+  diffUpdateTime: 0
+  nSteps: 0
 --- !u!1 &7367219407611056622
 GameObject:
   m_ObjectHideFlags: 0
@@ -5570,8 +5630,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1695902252603385349}
-  - component: {fileID: 5639986647331956541}
   - component: {fileID: 2789499054413799532}
+  - component: {fileID: 5639986647331956541}
   m_Layer: 0
   m_Name: SeaBaby
   m_TagString: Untagged
@@ -5598,6 +5658,58 @@ Transform:
   - {fileID: 2830238956957208213}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2789499054413799532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9157969438270272206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f2fd9069db7d894d8e8458779069765, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entityId: 0
+  isSelected: 0
+  position: {x: 0, y: 0, z: 0}
+  velocity: {x: 0, y: 0, z: 0}
+  speed: 0
+  desiredSpeed: 0
+  heading: 0
+  desiredHeading: 0
+  health: 100
+  fuel: 100
+  range: 0
+  fuelBurnRate: 0
+  entityRole: 3
+  acceleration: 5
+  turnRate: 20
+  maxSpeed: 25
+  minSpeed: 0
+  cruiseSpeed: 0
+  mass: 10
+  length: 7
+  width: 2
+  height: 1
+  maxFuel: 0
+  maxRange: 0
+  entityType: 12
+  entityClass: 5
+  cameraRig: {fileID: 4805782802242031908}
+  selectionCircle: {fileID: 1595804327537665117}
+  owner:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+    isObserver: 0
+    isAdmin: 0
+  net: {fileID: 0}
+  phx: {fileID: 0}
+  ai: {fileID: 0}
+  ui: {fileID: 0}
+  weapons: {fileID: 0}
 --- !u!65 &5639986647331956541
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5619,38 +5731,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.25, y: 2.25, z: 5.5}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &2789499054413799532
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9157969438270272206}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f2fd9069db7d894d8e8458779069765, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isSelected: 0
-  position: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
-  speed: 0
-  desiredSpeed: 0
-  heading: 0
-  desiredHeading: 0
-  acceleration: 5
-  turnRate: 20
-  maxSpeed: 25
-  minSpeed: 0
-  mass: 10
-  length: 7
-  width: 2
-  height: 1
-  health: 100
-  fuel: 100
-  entityType: 12
-  cameraRig: {fileID: 4805782802242031908}
-  selectionCircle: {fileID: 1595804327537665117}
 --- !u!1 &9166180847996618745
 GameObject:
   m_ObjectHideFlags: 0
