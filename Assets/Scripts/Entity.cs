@@ -23,6 +23,9 @@ public enum EntityType
     CVN75,
     Submarine,
     AntiShipMissile,
+    SM2To6,
+    ESSM,
+    Tomahawk
 }
 
 

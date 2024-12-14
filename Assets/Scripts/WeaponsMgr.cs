@@ -133,38 +133,35 @@ public class WeaponsMgr : MonoBehaviour
         }
 
     }
-    public void DestroyEntity(Entity entity)
-{
-    // Toggle RTS view if necessary
-    if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name)
-    {
-        CameraMgr.inst.ToggleRTSView();
-    }
-
-    // Stop and remove all commands from UnitAI, if present
-    UnitAI unitAI = entity.GetComponentInChildren<UnitAI>();
-    if (unitAI != null)
-    {
-        unitAI.StopAndRemoveAllCommands();
-    }
-
-    // Remove entity from the selection if it is currently selected
-    if (SelectionMgr.inst.selectedEntities.Contains(entity))
-    {
-        SelectionMgr.inst.selectedEntities.Remove(entity);
-        SelectionMgr.inst.selectedEntity = SelectionMgr.inst.selectedEntities.Count > 0
-            ? SelectionMgr.inst.selectedEntities[0]
-            : null;
-    }
-
-    // Remove the entity from EntityMgr and reinitialize DistanceMgr
-    EntityMgr.inst.entities.Remove(entity);
-    DistanceMgr.inst.Initialize();
-
-    // Destroy the entity's GameObject
-    Destroy(entity.gameObject);
-}
+    public void DestroyEntity(Entity entity) {
+    
+        // Toggle RTS view if necessary
+        if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name) {
+            CameraMgr.inst.ToggleRTSView();
+        }
         
+        // Stop and remove all commands from UnitAI, if present
+        UnitAI unitAI = entity.GetComponentInChildren<UnitAI>();
+        if (unitAI != null){
+            unitAI.StopAndRemoveAllCommands();
+        }
+        
+        // Remove entity from the selection if it is currently selected
+        if (SelectionMgr.inst.selectedEntities.Contains(entity))  {
+            SelectionMgr.inst.selectedEntities.Remove(entity);
+            SelectionMgr.inst.selectedEntity = SelectionMgr.inst.selectedEntities.Count > 0
+                ? SelectionMgr.inst.selectedEntities[0]
+                : null;
+        }
+        
+        // Remove the entity from EntityMgr and reinitialize DistanceMgr
+        EntityMgr.inst.entities.Remove(entity);
+        DistanceMgr.inst.Initialize();
+        
+        // Destroy the entity's GameObject
+        Destroy(entity.gameObject);
+    }
+    
     public GameObject MovableEntitiesRoot;
     public GameObject WeaponsAspectPrefab;
 
