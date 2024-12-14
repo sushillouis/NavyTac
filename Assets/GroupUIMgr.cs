@@ -107,7 +107,8 @@ public class GroupUIMgr : MonoBehaviour
             case TacticsType.Cancel:
                 break;
             case TacticsType.FormMove:
-                currentGroup.CreateExecuteFormMove(worldPosAndEntity.worldPosition);
+                if(worldPosAndEntity != null)
+                    currentGroup.CreateExecuteFormMove(worldPosAndEntity.worldPosition);
                 break;
             case TacticsType.Scout:
             case TacticsType.AtkDistract:
