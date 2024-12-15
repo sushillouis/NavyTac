@@ -211,8 +211,10 @@ public class SelectionMgr : MonoBehaviour
     /// </summary>
     /// <param name="groupNumber"></param>
     public void SelectControlGroup(int groupNumber) {
-        ClearSelection();
-        TacticalAIMgr.inst.SelectControlGroup(groupNumber);
+        if(TacticalAIMgr.inst.Exists(groupNumber)) {
+            ClearSelection();
+            TacticalAIMgr.inst.SelectControlGroup(groupNumber);
+        }
     }
 
     public void SelectAll() {

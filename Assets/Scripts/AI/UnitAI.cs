@@ -43,32 +43,25 @@ public class UnitAI : MonoBehaviour
     void StopAndRemoveCommand(int index)
     {
         Command cmd = commands[index];
-        if(cmd is Move) {
+        commands.RemoveAt(index);
+
+        if(cmd is Intercept3d) {//reverse inheritance order...
+            Intercept3d intercept3d = (Intercept3d) cmd;
+            intercept3d.Stop();
+            intercept3ds.Remove(intercept3d);
+        } else if(cmd is Intercept) {
+            Intercept intercept = (Intercept) cmd;
+            intercept.Stop();
+            intercepts.Remove(intercept);
+        } else if(cmd is Follow) {
+            Follow follow = (Follow) cmd;
+            follow.Stop();
+            follows.Remove(follow);
+        } else if(cmd is Move) {
             Move move = (Move)cmd;
             move.Stop();
             moves.Remove(move);
-        }
-
-        if(cmd is Intercept) {
-            Intercept intercept = (Intercept)cmd;
-            intercept.Stop();
-            intercepts.Remove(intercept);
-        }
-        
-        if(cmd is Intercept3d) {
-            Intercept3d intercept3d = (Intercept3d)cmd;
-            intercept3d.Stop();
-            intercept3ds.Remove(intercept3d);
-        }
-
-        if(cmd is Follow){
-            Follow follow = (Follow)cmd;
-            follow.Stop();
-            follows.Remove(follow);
-        }
-            
-        commands.RemoveAt(index);
-
+        } 
 
     }
     

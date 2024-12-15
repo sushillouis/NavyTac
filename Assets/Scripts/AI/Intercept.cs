@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 [System.Serializable]
 public class Intercept : Follow
@@ -35,17 +36,19 @@ public class Intercept : Follow
         return diff.sqrMagnitude < doneDistanceSq;
     }
 
-    public override void Stop()
-    {
-        base.Stop();
+    public override void Stop() {
+        //base.Stop();
+
+        FXMgr.inst.CreateExplosionAt(entity.position, 1);
+
         entity.desiredSpeed = 0;
         entity.speed = 0;
+
         targetEntity.desiredSpeed = 0;
+        Vector3 sunkenOffset = new Vector3(0, -5, 0);
         targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
         targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
-        Vector3 deadRot = targetEntity.transform.localEulerAngles;
-        deadRot.x = 90;
-        targetEntity.transform.localEulerAngles = deadRot;
+        targetEntity.transform.position += sunkenOffset;
 
     }
 
