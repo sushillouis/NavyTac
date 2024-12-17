@@ -12,7 +12,7 @@ public class FormationMoveTactic : Tactic
 
 
     public FormationMoveTactic(List<Entity> ents, Vector3 movePos) : base(ents) {
-        tacticsType = TacticsType.FormMove;
+        tacticsType = TacticsType.EscortMove;
         movePosition = movePos;
     }
     public override void Init() {

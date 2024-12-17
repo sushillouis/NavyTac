@@ -37,7 +37,7 @@ public class TacticalAIMgr : MonoBehaviour
     }
 
     public bool Exists(int groupNumber) {
-        return controlGroups.ContainsKey(groupNumber) && (controlGroups[groupNumber].entities.Count > 0);
+        return controlGroups.ContainsKey(groupNumber) && (controlGroups[groupNumber].groupEntities.Count > 0);
     }
 
     public void CreateBindControlGroup(List<Entity> entities, int groupNumber) {
@@ -52,7 +52,7 @@ public class TacticalAIMgr : MonoBehaviour
 
     public void SelectControlGroup(int groupNumber) {
         if(controlGroups.ContainsKey(groupNumber)) {
-            foreach(Entity ent in controlGroups[groupNumber].entities) {
+            foreach(Entity ent in controlGroups[groupNumber].groupEntities) {
                 SelectionMgr.inst.SelectEntity(ent, false);
             }
         }

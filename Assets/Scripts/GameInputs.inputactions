@@ -688,6 +688,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ControlKey",
+                    "type": "Button",
+                    "id": "cb62f960-5bd3-4883-9843-4be1510f29cf",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -809,6 +818,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "AddCommand",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "668409c3-5996-4319-b686-c396c616ac79",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ControlKey",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

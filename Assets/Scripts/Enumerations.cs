@@ -80,13 +80,14 @@ public enum EntityRole
 [Serializable]
 public enum TacticsType
 {
-    Cancel = 0,
+    EscortMove = 0,
     Pincer,
-    FormMove,
-    FormAtk,
+    AtkMove,
     AtkDistract,
+    Defend,
     Scout,
-    Choose,
+    Cancel,
+    None,
 }
 
 [Serializable]

@@ -13,7 +13,7 @@ public class Tactic
     public Tactic(List<Entity> ents) {
         entities = ents;
         highValueUnit = null;
-        tacticsType = TacticsType.Cancel;
+        tacticsType = TacticsType.None;
     }
 
     public virtual void Init() {

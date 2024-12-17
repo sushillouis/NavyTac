@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class GroupUIMgr : MonoBehaviour
 {
@@ -18,6 +19,13 @@ public class GroupUIMgr : MonoBehaviour
     [SerializeField]
     private RectTransform mainCanvas;
 
+    [SerializeField]
+    private PanelPlus TacticalCommandsPanel;
+
+    [SerializeField]
+    private List<Button> tacticsButtonsList = new List<Button>();
+
+
     private void Awake() {
         inst = this;
     }
@@ -29,15 +37,17 @@ public class GroupUIMgr : MonoBehaviour
         UIMapControlGroups();
 
         groupInputs.Tactical.ShowTactics.Enable();
-        groupInputs.Tactical.ShowTactics.performed += HandleTacticalCommand;
+        groupInputs.Tactical.ShowTactics.performed += HandleTacticalCommand2;
         groupInputs.Tactical.CursorPosition.Enable();
 
+        /*
         TacDropdownPanel.gameObject.SetActive(false);
         tacDropdown.onValueChanged.AddListener(HandleDropdown);
         InitDropdown();
-        
+        */
+        InitGroupCommandButtons();
         //-----------------------------------------------------------------------------
-        Debug.Log("GroupUI Manager started...");
+        
     }
 
 
@@ -91,57 +101,64 @@ public class GroupUIMgr : MonoBehaviour
             RectTransformUtility.ScreenPointToLocalPointInRectangle(mainCanvas, mousePos, null, out localPoint);
             TacDropdownPanel.localPosition = localPoint;
             TacDropdownPanel.gameObject.SetActive(true);
+
             currentGroup = TacticalAIMgr.inst.CreateGroup(SelectionMgr.inst.selectedEntities);
 
-            tacDropdown.SetValueWithoutNotify((int) TacticsType.Choose);
+            //tacDropdown.SetValueWithoutNotify((int) TacticsType.Choose);
+        }
+    }
+
+
+    void HandleTacticalCommand2(InputAction.CallbackContext context) {
+        if(SelectionMgr.inst.selectedEntities.Count > 1) { // a group is more than 1
+            Vector2 mousePos = groupInputs.Tactical.CursorPosition.ReadValue<Vector2>();
+            worldPosAndEntity = UIMgr.inst.MousePosToWorldPosEntity(mousePos);
+            currentGroup = TacticalAIMgr.inst.CreateGroup(SelectionMgr.inst.selectedEntities);
+            TacticalCommandsPanel.isVisible = true; //becomes invisible after 5 secs
         }
     }
 
     public WorldPosEntity worldPosAndEntity;
     public Group currentGroup;
 
-    public void HandleDropdown(int val) {
-        TacDropdownPanel.gameObject.SetActive(false);
-        TacticsType tt = (TacticsType) val;
+
+    void HandleButton(TacticsType tt) {
+        //TacticsType tt = (TacticsType) i;
+        Debug.Log("handling button: " + tt);
+
         switch(tt) {
-            case TacticsType.Cancel:
-                break;
-            case TacticsType.FormMove:
+            case TacticsType.EscortMove:
                 if(worldPosAndEntity != null)
-                    currentGroup.CreateExecuteFormMove(worldPosAndEntity.worldPosition);
+                    currentGroup.CreateExecuteEscortMove(worldPosAndEntity.worldPosition);
                 break;
             case TacticsType.Scout:
             case TacticsType.AtkDistract:
             case TacticsType.Pincer:
-            case TacticsType.FormAtk:
+            case TacticsType.AtkMove:
+            case TacticsType.Defend:
                 Debug.Log("Not implemented yet");
                 break;
+            case TacticsType.Cancel:
+                CancelEntCommands(currentGroup.groupEntities);
+                break;
             default:
+                Debug.Log("None: Not implemented yet");
                 break;
         }
-
-        //Dropdown choosing kills selection because of interaction with unity input, so 
-        SelectionMgr.inst.ClearSelection();
-        foreach(Entity ent in currentGroup.entities) {
-            SelectionMgr.inst.SelectEntity(ent, false);
-        }
-        UIMgr.inst.ActivateEntityCommands(true);
+        TacticalCommandsPanel.isVisible = false;
     }
 
-    public void OnMouseUp() {
-        TacDropdownPanel.gameObject.SetActive(false);
-    }
+    void InitGroupCommandButtons() {
 
-
-    void InitDropdown() {
-        tacDropdown.ClearOptions();
-        List<string> options = new List<string>();
         foreach(TacticsType tt in Enum.GetValues(typeof(TacticsType))) {
-            options.Add(tt.ToString());
+            if(tt != TacticsType.None) {
+                //Debug.Log("Button: " + tt);
+                Button tb = tacticsButtonsList[(int) tt];
+                tb.GetComponentInChildren<TextMeshProUGUI>().text = Utils.SplitCamelCase(tt.ToString());
+                tacticsButtonsList[(int) tt].onClick.AddListener(() => HandleButton(tt));
+            }
         }
-        tacDropdown.AddOptions(options);
     }
-
 
     void UIMapDisable() {
 
@@ -250,3 +267,50 @@ public class GroupUIMgr : MonoBehaviour
 
 
 }
+
+
+/*
+ * 
+ * 
+    public void HandleDropdown(int val) {
+        TacDropdownPanel.gameObject.SetActive(false);
+        TacticsType tt = (TacticsType) val;
+        switch(tt) {
+            //case TacticsType.Cancel:
+            //    break;
+            case TacticsType.GroupMove:
+                if(worldPosAndEntity != null)
+                    currentGroup.CreateExecuteFormMove(worldPosAndEntity.worldPosition);
+                break;
+            case TacticsType.Scout:
+            case TacticsType.AtkDistract:
+            case TacticsType.Pincer:
+            case TacticsType.AtkMove:
+                Debug.Log("Not implemented yet");
+                break;
+            default:
+                break;
+        }
+
+        //Dropdown choosing kills selection because of interaction with unity input, so 
+        SelectionMgr.inst.ClearSelection();
+        foreach(Entity ent in currentGroup.entities) {
+            SelectionMgr.inst.SelectEntity(ent, false);
+        }
+        UIMgr.inst.ActivateEntityCommands(true);
+    }
+
+    public void OnMouseUp() {
+        TacDropdownPanel.gameObject.SetActive(false);
+    }
+
+
+    void InitDropdown() {
+        tacDropdown.ClearOptions();
+        List<string> options = new List<string>();
+        foreach(TacticsType tt in Enum.GetValues(typeof(TacticsType))) {
+            options.Add(tt.ToString());
+        }
+        tacDropdown.AddOptions(options);
+    }
+*/

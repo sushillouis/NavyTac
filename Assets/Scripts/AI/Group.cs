@@ -6,7 +6,7 @@ using UnityEngine;
 [Serializable]
 public class Group 
 {
-    public List<Entity> entities = new List<Entity>();
+    public List<Entity> groupEntities = new List<Entity>();
     public int groupNumber = -1;
     public bool isInitialized;
     public bool isDone;
@@ -14,9 +14,10 @@ public class Group
     [SerializeField]
     private List<Tactic> tactics = new List<Tactic>();
 
-    public Group(List<Entity> entities, int gn) {
-        foreach(Entity ent in entities)
-            this.entities.Add(ent);
+    public Group(List<Entity> ents, int gn) {
+        groupEntities.Clear();
+        foreach(Entity ent in ents)
+            groupEntities.Add(ent);
         groupNumber = gn;
         tactics.Clear();
         isInitialized = false;
@@ -24,28 +25,28 @@ public class Group
     }
 
     public bool isEntityInGroup(Entity entity) {
-        return entities.Contains(entity);
+        return groupEntities.Contains(entity);
     }
 
     public void AddEntity(Entity entity) {
-        entities.Add(entity);
+        groupEntities.Add(entity);
     }
 
     public void RemoveEntity(Entity entity) {
-        entities.Remove(entity);
+        groupEntities.Remove(entity);
     }
 
     public void AddEntities(List<Entity> entitiesToAdd, bool shouldClear) {
         if(shouldClear)
-            entities.Clear();
+            groupEntities.Clear();
 
         foreach(Entity entity in entitiesToAdd) 
-            if(!entities.Contains(entity))
-                entities.Add(entity);
+            if(!groupEntities.Contains(entity))
+                groupEntities.Add(entity);
     }
 
     public void ClearEntities() {
-        entities.Clear();
+        groupEntities.Clear();
     }
 
     public void AddTactic(Tactic tactic) {
@@ -72,8 +73,8 @@ public class Group
         isInitialized = true;
     }
 
-    public void CreateExecuteFormMove(Vector3 pos) {
-        FormationMoveTactic fmt = new FormationMoveTactic(entities, pos);
+    public void CreateExecuteEscortMove(Vector3 pos) {
+        FormationMoveTactic fmt = new FormationMoveTactic(groupEntities, pos);
         fmt.Init();
         tactics.Add(fmt);
         formations.Add(fmt);

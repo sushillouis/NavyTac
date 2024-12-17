@@ -66,8 +66,7 @@ public class UIMgr : MonoBehaviour
         inputs = new GameInputs();
     }
 
-    private void OnEnable()
-    {
+    private void OnEnable() {
         inputs.Enable();
 
         toggleRTSCam = inputs.Camera.RTSView;
@@ -133,12 +132,10 @@ public class UIMgr : MonoBehaviour
         selectAll.Enable();
         selectAll.performed += OnSelectAllPerformed;
 
-        //selectGroup1 = inputs.Selection.SelectGroup1;
-        //selectGroup1.Enable();
-        //selectGroup1.performed += OnGroupSelectPerformed;
+        //Ctrl key signifies group commands so when we do right mouse button we run only if ctrl is not pressed
+        inputs.Entities.ControlKey.Enable();
 
     }
-
     private void OnDisable()
     {
         toggleRTSCam.Disable();
@@ -159,8 +156,7 @@ public class UIMgr : MonoBehaviour
         create100.Disable();
 
         selectAll.Disable();
-        //selectGroup1.Disable();
-
+        inputs.Entities.ControlKey.Disable();
 
     }
 
@@ -286,7 +282,8 @@ public class UIMgr : MonoBehaviour
 
     private void HandleCommand(InputAction.CallbackContext context)
     {
-        AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
+        if(!inputs.Entities.ControlKey.IsPressed()) 
+            AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
     }
 
     private void ChangeSpeed(InputAction.CallbackContext context) 

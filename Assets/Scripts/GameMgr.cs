@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameMgr : MonoBehaviour
 {
@@ -16,18 +18,47 @@ public class GameMgr : MonoBehaviour
     {
 
         EntityMgr.inst.movableEntitiesRoot.SetActive(false);
+
+        plusButton.onClick.RemoveAllListeners();
+        plusButton.onClick.AddListener(() => DeltaScale(1));
+        minusButton.onClick.RemoveAllListeners();
+        minusButton.onClick.AddListener(() => DeltaScale(-1));
+
     }
 
     public Vector3 position;
     public float spread = 20;
     public float colNum = 10;
     public float initZ;
+
+    [SerializeField]
+    private Button plusButton;
+    [SerializeField]
+    private Button minusButton;
+    [SerializeField]
+    private TextMeshProUGUI simSpeedButtonText;
+
+    public float timeScale = 1;
+
     // Update is called once per frame
     void Update()
     {
-        
+        if(Input.GetKeyUp(KeyCode.Equals)) {
+            DeltaScale(1);
+        }
+        if(Input.GetKeyUp(KeyCode.Minus)) {
+            DeltaScale(-1);
+        }
+
     }
 
+    public void DeltaScale(float delta) {
+        if(Time.timeScale + delta >= 0) {
+            Time.timeScale += delta;
+            Time.timeScale = Mathf.Clamp(Time.timeScale, 0, 16);
+            simSpeedButtonText.text = Time.timeScale.ToString("0");
+        }
+    }
     public void Create100()
     {
         initZ = position.z;
@@ -96,7 +127,7 @@ public class GameMgr : MonoBehaviour
         Vector3 posPlayer1 = new Vector3(0, 0, 0);
         Vector3 posPlayer2 = new Vector3(0, 0, 1 * Utils.FromNauticalMiles);
         MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1);
-        MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
+        //MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
 
     }
 
@@ -108,6 +139,7 @@ public class GameMgr : MonoBehaviour
         //Escort on right
         Vector3 offset = initEnt.transform.right * 1000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
+
 
         //USV on right
         offset = tmpEnt.transform.right * 500;
@@ -124,7 +156,7 @@ public class GameMgr : MonoBehaviour
         //Escort on left
         offset = -initEnt.transform.right * 1000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
-
+        /*
         //USV on left
         offset = -initEnt.transform.right * 500;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
@@ -141,7 +173,7 @@ public class GameMgr : MonoBehaviour
             tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);
             offset.x += 100;
         }
-
+        */
     }
 
 }

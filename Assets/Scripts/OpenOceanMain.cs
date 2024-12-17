@@ -14,12 +14,12 @@ public class OpenOceanMain : MonoBehaviour
 {
     public static OpenOceanMain inst;
 
-    public string playerName = "Debugger";
+    public string playerName = "PFTest";
     public bool IsDebugging = false;
     public string ipAddress = "127.0.0.1";
     [SerializeField]
     private ushort port = 7777;
-    public bool isSinglePlayer = false;
+    public bool isSinglePlayer = true;
     
 
     [Header("Panels")]
@@ -142,19 +142,26 @@ public class OpenOceanMain : MonoBehaviour
     public NetworkObject localTactNetMgrNetworkObject;
 
     private void Start() {
-        lobbyState = LobbyState.SingleMultiPlayer;
-        
-        loginButton.onClick.RemoveAllListeners();
-        loginButton.onClick.AddListener(() =>
-        {
-            playerName = loginNameInputField.text.Trim();
-            lobbyState = LobbyState.MapSelect;
-            if(isSinglePlayer) {
-                SinglePlayerSetup();
-            } else {
-                NetPlayersSetup();
-            }
-        });
+        if(IsDebugging) {
+            lobbyState = LobbyState.Play;
+            SinglePlayerSetup();
+            GameMgr.inst.OpenOcean1x1(); //GameMgr.inst.MakeMapEntities();
+        } else {
+
+            lobbyState = LobbyState.SingleMultiPlayer;
+
+            loginButton.onClick.RemoveAllListeners();
+            loginButton.onClick.AddListener(() =>
+            {
+                playerName = loginNameInputField.text.Trim();
+                lobbyState = LobbyState.MapSelect;
+                if(isSinglePlayer) {
+                    SinglePlayerSetup();
+                } else {
+                    NetPlayersSetup();
+                }
+            });
+        }
     }
 
     void NetPlayersSetup() {

@@ -56,15 +56,18 @@ public class Move : Command
     {
         diff = movePosition - entity.position;
         Potential p;
-        repulsivePotential = Vector3.one; repulsivePotential.y = 0;
+        repulsivePotential = Vector3.one; 
+        repulsivePotential.y = 0;
         foreach (Entity ent in EntityMgr.inst.entities) {
             if (ent == entity) continue;
+
+
             p = DistanceMgr.inst.GetPotential(entity, ent);
             if (p.distance < AIMgr.inst.potentialDistanceThreshold) {
                 //repulsivePotential += p.direction * entity.mass *
                 repulsivePotential += p.direction * ent.mass *
                     AIMgr.inst.repulsiveCoefficient * Mathf.Pow(p.diff.magnitude, AIMgr.inst.repulsiveExponent);
-                //repulsivePotential += p.diff;
+
             }
         }
         //repulsivePotential *= repulsiveCoefficient * Mathf.Pow(repulsivePotential.magnitude, repulsiveExponent);

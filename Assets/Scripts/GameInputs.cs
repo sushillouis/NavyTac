@@ -710,6 +710,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ControlKey"",
+                    ""type"": ""Button"",
+                    ""id"": ""cb62f960-5bd3-4883-9843-4be1510f29cf"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -833,6 +842,17 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""action"": ""AddCommand"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""668409c3-5996-4319-b686-c396c616ac79"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ControlKey"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -863,6 +883,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Entities_Intercept = m_Entities.FindAction("Intercept", throwIfNotFound: true);
         m_Entities_Create100 = m_Entities.FindAction("Create100", throwIfNotFound: true);
         m_Entities_AddCommand = m_Entities.FindAction("AddCommand", throwIfNotFound: true);
+        m_Entities_ControlKey = m_Entities.FindAction("ControlKey", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -1102,6 +1123,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Entities_Intercept;
     private readonly InputAction m_Entities_Create100;
     private readonly InputAction m_Entities_AddCommand;
+    private readonly InputAction m_Entities_ControlKey;
     public struct EntitiesActions
     {
         private @GameInputs m_Wrapper;
@@ -1112,6 +1134,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         public InputAction @Intercept => m_Wrapper.m_Entities_Intercept;
         public InputAction @Create100 => m_Wrapper.m_Entities_Create100;
         public InputAction @AddCommand => m_Wrapper.m_Entities_AddCommand;
+        public InputAction @ControlKey => m_Wrapper.m_Entities_ControlKey;
         public InputActionMap Get() { return m_Wrapper.m_Entities; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1139,6 +1162,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @AddCommand.started += instance.OnAddCommand;
             @AddCommand.performed += instance.OnAddCommand;
             @AddCommand.canceled += instance.OnAddCommand;
+            @ControlKey.started += instance.OnControlKey;
+            @ControlKey.performed += instance.OnControlKey;
+            @ControlKey.canceled += instance.OnControlKey;
         }
 
         private void UnregisterCallbacks(IEntitiesActions instance)
@@ -1161,6 +1187,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @AddCommand.started -= instance.OnAddCommand;
             @AddCommand.performed -= instance.OnAddCommand;
             @AddCommand.canceled -= instance.OnAddCommand;
+            @ControlKey.started -= instance.OnControlKey;
+            @ControlKey.performed -= instance.OnControlKey;
+            @ControlKey.canceled -= instance.OnControlKey;
         }
 
         public void RemoveCallbacks(IEntitiesActions instance)
@@ -1204,5 +1233,6 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnIntercept(InputAction.CallbackContext context);
         void OnCreate100(InputAction.CallbackContext context);
         void OnAddCommand(InputAction.CallbackContext context);
+        void OnControlKey(InputAction.CallbackContext context);
     }
 }

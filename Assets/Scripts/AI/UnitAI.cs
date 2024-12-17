@@ -26,6 +26,10 @@ public class UnitAI : MonoBehaviour
     public List<Intercept> intercepts;
     public List<Intercept3d> intercept3ds;
 
+    [Header("PF nodes")]
+    public List<Transform> pfList = new List<Transform>();
+
+
     // Update is called once per frame
     void FixedUpdate()
     {
