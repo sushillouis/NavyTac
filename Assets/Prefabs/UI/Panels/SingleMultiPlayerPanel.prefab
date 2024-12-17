@@ -2294,6 +2294,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3355222719185362792}
     m_Modifications:
+    - target: {fileID: 243180329204553154, guid: 71d514b11087b08429a9f01596e9d344,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3dc5267b4d0a61f4d9d4cd547987c6fb,
+        type: 3}
+    - target: {fileID: 861132509697076466, guid: 71d514b11087b08429a9f01596e9d344,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 2098758761686059475, guid: 71d514b11087b08429a9f01596e9d344,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3dc5267b4d0a61f4d9d4cd547987c6fb,
+        type: 3}
+    - target: {fileID: 3941180145257287563, guid: 71d514b11087b08429a9f01596e9d344,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: f12772911a288154193a6df9f64b33da,
+        type: 3}
     - target: {fileID: 8625187719205314412, guid: 71d514b11087b08429a9f01596e9d344,
         type: 3}
       propertyPath: m_Pivot.x
@@ -2398,6 +2421,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: DecorPanelRoot
+      objectReference: {fileID: 0}
+    - target: {fileID: 9141988240702742479, guid: 71d514b11087b08429a9f01596e9d344,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
