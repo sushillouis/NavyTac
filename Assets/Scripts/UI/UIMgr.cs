@@ -41,6 +41,10 @@ public class UIMgr : MonoBehaviour
     private InputAction cameraXZMove;
     private InputAction toggleRTSCam;
 
+    private InputAction mouseDelta;
+    private InputAction mouseScroll;
+    private InputAction toggleMap;
+
     private InputAction selectionBox;
     private InputAction singleSelect;
     private InputAction selectionCursorPosition;
@@ -84,6 +88,21 @@ public class UIMgr : MonoBehaviour
 
         cameraXZMove = inputs.Camera.XZMove;
         cameraXZMove.Enable();
+
+
+        //moves camera or minimap - bound to middle mouse + mouse move
+        mouseDelta = inputs.Camera.MiddleMouseMove;
+        mouseDelta.Enable();
+
+        //changes cam height and zooms in cam - bound to mouse scroll
+        mouseScroll = inputs.Camera.MouseScroll;
+        mouseScroll.Enable();
+
+        //toggles whether map is mini or big - bound to M
+        toggleMap = inputs.Camera.Map;
+        toggleMap.Enable();
+        toggleMap.performed += ToggleMap;
+
 
         selectionBox = inputs.Selection.BoxSelect;
         selectionBox.Enable();
@@ -143,6 +162,11 @@ public class UIMgr : MonoBehaviour
         pitchCamera.Disable();
         cameraYMove.Disable();
         cameraXZMove.Disable();
+        //
+        mouseDelta.Disable();
+        mouseScroll.Disable();
+        toggleMap.Disable();
+        //
         selectionBox.Disable();
         singleSelect.Disable();
         selectionCursorPosition.Disable();
@@ -230,8 +254,21 @@ public class UIMgr : MonoBehaviour
         if(boxSelecting)
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
 
+
+        if(singleSelect.IsPressed())
+            MinimapMgr.inst.MoveCameraViaMinimap(selectionCursorPosition.ReadValue<Vector2>());
+
+        if(MinimapMgr.inst.CursorOverMap(selectionCursorPosition.ReadValue<Vector2>())) {
+            MinimapMgr.inst.ChangeZoom(mouseScroll.ReadValue<Vector2>().y);
+            MinimapMgr.inst.ChangeCenter(mouseDelta.ReadValue<Vector2>());
+        } else {
+            CameraMgr.inst.MoveCameraY(mouseScroll.ReadValue<Vector2>().y);
+            CameraMgr.inst.MoveCameraXZ(mouseDelta.ReadValue<Vector2>());
+        }
+
+
     }
-    
+
     private void DisplayAIInformation(Entity ent) {
         UnitAI uai = ent.GetComponentInChildren<UnitAI>();
         if(uai.commands.Count > 0) {
@@ -300,6 +337,12 @@ public class UIMgr : MonoBehaviour
     {
         GameMgr.inst.Create100();
     }
+
+
+    private void ToggleMap(InputAction.CallbackContext context) {
+        MinimapMgr.inst.ResizeMap();
+    }
+
 
     private void OnSelectAllPerformed(InputAction.CallbackContext context) {
         SelectionMgr.inst.SelectAll();

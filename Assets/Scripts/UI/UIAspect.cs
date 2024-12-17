@@ -5,6 +5,11 @@ using UnityEngine;
 public class UIAspect : MonoBehaviour //change name to UI aspect
 {
     public Entity entity;
+
+    [Header("Minimap Icon")]
+    [SerializeField]
+    private GameObject minimapIcon;
+
     private void Awake() {
         entity = GetComponentInParent<Entity>();
         entity.ui = this;
@@ -13,6 +18,8 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
     // Start is called before the first frame update
     void Start()
     {
+        MinimapMgr.inst.CreateMinimapIcon(entity, minimapIcon);
+
 
     }
 
@@ -22,14 +29,5 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
         if(entity != null)
             entity.selectionCircle.SetActive(entity.isSelected);
     }
-
-    /*
-    private void OnMouseDown()
-    {
-        //if (Input.GetMouseButtonDown(0)) {
-            SelectionMgr.inst.SelectEntity(entity);
-        //}
-    }
-    */
 
 }
