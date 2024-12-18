@@ -215,6 +215,10 @@ public class UIMgr : MonoBehaviour
     public TextMeshProUGUI timeOnTarget;
     public TextMeshProUGUI targetRange;
 
+    [SerializeField]
+    private Image healthImage;
+    [SerializeField]
+    private TextMeshProUGUI healthText;
 
     // Update is called once per frame
     void Update()
@@ -228,6 +232,7 @@ public class UIMgr : MonoBehaviour
             desiredHeading.text = ent.desiredHeading.ToString("F1") + " deg";
 
             DisplayAIInformation(ent);
+            UpdateHealth(ent);
 
             Oriented3dPhysics phx3d = ent.GetComponentInChildren<Oriented3dPhysics>();
             if(phx3d != null)  {
@@ -267,6 +272,24 @@ public class UIMgr : MonoBehaviour
         }
 
 
+    }
+
+    private float maxHealth = 100;
+    private float greenHealth = 67;
+    private float orangeHealth = 33;
+    private void UpdateHealth(Entity ent) {
+        float health = 100f * Mathf.Clamp(ent.health, 0, maxHealth) / maxHealth;
+        //text
+        healthText.text = health.ToString("000");
+        //fill
+        healthImage.fillAmount = health/100;
+        //Color
+        if(health >= greenHealth)
+            healthImage.color = Color.green;
+        else if (health > orangeHealth && health < greenHealth)
+            healthImage.color = ColorPalette.inst.colors[15];
+        else
+            healthImage.color = ColorPalette.inst.colors[17];
     }
 
     private void DisplayAIInformation(Entity ent) {
