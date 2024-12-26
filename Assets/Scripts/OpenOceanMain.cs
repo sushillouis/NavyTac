@@ -15,11 +15,13 @@ public class OpenOceanMain : MonoBehaviour
     public static OpenOceanMain inst;
 
     public string playerName = "PFTest";
-    public bool IsDebugging = false;
     public string ipAddress = "127.0.0.1";
+    public bool IsDebugging = false;
+    public bool IsNetDebugging = false;
+    public bool isSinglePlayer = true;
+
     [SerializeField]
     private ushort port = 7777;
-    public bool isSinglePlayer = true;
     
 
     [Header("Panels")]
@@ -205,7 +207,7 @@ public class OpenOceanMain : MonoBehaviour
             mapSelectPanel.isVisible = (value == LobbyState.MapSelect);
             HostOrJoinPanel.isVisible = (value == LobbyState.HostOrJoin);
             MainGamePanel.isVisible = (value == LobbyState.Play);
-            NetDebugConsolePanel.gameObject.SetActive(IsDebugging);
+            NetDebugConsolePanel.gameObject.SetActive(IsDebugging && IsNetDebugging);
             SingleMultiplayerPanel.isVisible = (value == LobbyState.SingleMultiPlayer);
         }
     }

@@ -187,9 +187,9 @@ MonoBehaviour:
   entityRole: 5
   acceleration: 5
   turnRate: 20
-  maxSpeed: 22
+  maxSpeed: 20
   minSpeed: 0
-  cruiseSpeed: 0
+  cruiseSpeed: 15
   mass: 30
   length: 15
   width: 5
@@ -382,6 +382,7 @@ MonoBehaviour:
   pfList:
   - {fileID: 2355611783138327884}
   - {fileID: 7917665086149703647}
+  potentialsL: []
 --- !u!1 &6667547634042605354
 GameObject:
   m_ObjectHideFlags: 0

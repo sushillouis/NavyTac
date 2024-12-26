@@ -6,7 +6,7 @@ using UnityEngine;
 [Serializable]
 public class SubPotential{
     public Vector3 diff;
-    public float distanceSq;
+    public float distance;
     public Vector3 direction;
     public Transform pfTransform;
 }
@@ -24,6 +24,8 @@ public class Potential
     public CPAInfo cpaInfo;
     public float targetAngle;
 
+    public int framecount;
+
     public List<SubPotential> subPotentials;
 
     public Potential(Entity own, Entity tgt)
@@ -35,7 +37,7 @@ public class Potential
         subPotentials = new List<SubPotential> ();
         foreach(Transform t in own.ai.pfList) {
             SubPotential subPotential = new SubPotential();
-            subPotential.distanceSq = 0;
+            subPotential.distance = 0;
             subPotential.diff = Vector3.zero;
             subPotential.direction = Vector3.zero;
             subPotential.pfTransform = t;
@@ -53,6 +55,22 @@ public class Potential
         //relativeBearingDegrees = 0;
         cpaInfo = new CPAInfo(ownship, target);
         targetAngle = 0;
+    }
+
+    public void ReCompute() {
+
+        framecount = Time.frameCount;
+
+        diff = target.position - ownship.position;
+        distance = diff.magnitude;
+        direction = diff.normalized;
+        cpaInfo.ReCompute();
+        //subpotentials
+        foreach(SubPotential sp in subPotentials) {
+            sp.diff = target.position - sp.pfTransform.position;
+            sp.direction = sp.diff.normalized;
+            sp.distance = sp.diff.magnitude;
+        }
     }
 }
 
@@ -227,14 +245,22 @@ public class DistanceMgr : MonoBehaviour
         p2.relativeVelocity = p2.cpaInfo.relativeVelocity;
         p2.targetAngle = p2.cpaInfo.targetAngle;
         ComputeSubPotentials(p2, p1);
+    }
+
+    public Potential ComputeEntityPotential(Entity ownship, Entity target) {
+        Potential pot = new Potential(ownship, target);
+
+
+        return pot;
 
     }
+
 
     public void ComputeSubPotentials(Potential p1, Potential p2) {
         foreach(SubPotential sp in p1.subPotentials) {
             sp.diff = p1.target.position - sp.pfTransform.position;
             sp.direction = sp.diff.normalized;
-            sp.distanceSq = sp.diff.sqrMagnitude;
+            sp.distance = sp.diff.sqrMagnitude;
         }
 
     }
@@ -246,5 +272,8 @@ public class DistanceMgr : MonoBehaviour
             p = potentialsDictionary[e1][e2];
         return p;
     }
+
+
+
 
 }

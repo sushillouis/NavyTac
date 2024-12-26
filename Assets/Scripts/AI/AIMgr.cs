@@ -86,10 +86,14 @@ public class AIMgr : NetworkBehaviour
 
     public bool isPotentialFieldsMovement = false;
     public float potentialDistanceThreshold = 1000;
+    public float potentialDistanceThresholdSq = 25000000;
     public float attractionCoefficient = 500;
     public float attractiveExponent = -1;
     public float repulsiveCoefficient = 60000;
     public float repulsiveExponent = -2.0f;
+    [Header("Experimatal PF")]
+    public float repulsive2Coefficient = 1000;
+    public float attraction2Coefficient = 10000;
 
 
     public RaycastHit hit;

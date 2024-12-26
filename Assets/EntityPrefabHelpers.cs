@@ -31,7 +31,7 @@ public class EntityPrefabHelpers : MonoBehaviour
             UnitAI uai = ent.gameObject.GetComponentInChildren<UnitAI>();
             if(uai != null) {
                 uai.pfList.Clear();
-                foreach(Transform t in uai.GetComponentsInChildren<Transform>()){
+                foreach(Transform t in uai.GetComponentsInChildren<Transform>()) {
                     if(t.gameObject.name.Contains("PF")) {
                         uai.pfList.Add(t);
                         Debug.Log("Added: " + ent.name + ": " + t.gameObject.name);
@@ -40,5 +40,18 @@ public class EntityPrefabHelpers : MonoBehaviour
             }
         }
 
+    }
+
+    [ContextMenu("MovePFObjects")]
+    public void MovePFPbjects() {
+        foreach(Entity ent in GetComponentsInChildren<Entity>()) {
+            UnitAI uai = ent.gameObject.GetComponentInChildren<UnitAI>();
+            float entLength = ent.length;
+            Vector3 start = new Vector3(0, 0, ent.length / 2);
+            Vector3 stride = new Vector3(0, 0, -ent.length/3);
+            Debug.Log("ent: " + ent.name + ", start: " + start + ", " + stride);
+            uai.pfList[0].localPosition = start + stride;
+            uai.pfList[1].localPosition = start + stride * 2;
+        }
     }
 }

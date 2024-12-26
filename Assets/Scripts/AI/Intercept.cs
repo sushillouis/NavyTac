@@ -26,14 +26,14 @@ public class Intercept : Follow
         entity.desiredHeading = dh;
         entity.desiredSpeed = entity.maxSpeed;
 
-        range = diff.magnitude;
+        range = diffToMovePosition.magnitude;
         timeOnTarget = range / entity.speed;
 
     }
 
     public override bool IsDone()
     {
-        return diff.sqrMagnitude < doneDistanceSq;
+        return diffToMovePosition.sqrMagnitude < doneDistanceSq;
     }
 
     public override void Stop() {

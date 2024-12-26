@@ -34,13 +34,13 @@ public class Follow : Move
         movePosition = targetEntity.transform.position + offset;
         entity.desiredHeading = ComputePredictiveDH(movePosition);
        // entity.desiredHeading = ComputeDHDS().dh;
-        if (diff.sqrMagnitude < followThresholdSq) {
+        if (diffToMovePosition.sqrMagnitude < followThresholdSq) {
             entity.desiredSpeed = targetEntity.speed;
             entity.desiredHeading = targetEntity.heading;
         } else {
             entity.desiredSpeed = entity.maxSpeed;
         }
-        range = diff.magnitude;
+        range = diffToMovePosition.magnitude;
         timeOnTarget = range / entity.speed;
     }
 
@@ -68,9 +68,9 @@ public class Follow : Move
     {
         float dh;
         //movePosition = targetEntity.position + targetEntity.transform.TransformVector(relativeOffset);
-        diff = movePosition - entity.position + randomizedOffset; 
+        diffToMovePosition = movePosition - entity.position + randomizedOffset; 
         relativeVelocity = entity.velocity - targetEntity.velocity;
-        predictedInterceptTime = diff.magnitude / relativeVelocity.magnitude;
+        predictedInterceptTime = diffToMovePosition.magnitude / relativeVelocity.magnitude;
         if (predictedInterceptTime >= 0) {
             predictedMovePosition = movePosition + (targetEntity.velocity * predictedInterceptTime);
 

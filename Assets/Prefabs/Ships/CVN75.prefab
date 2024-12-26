@@ -32,6 +32,7 @@ Transform:
   m_Children:
   - {fileID: 4051356047154646470}
   - {fileID: 4319785596457417241}
+  - {fileID: 5777201365847788636}
   m_Father: {fileID: 507195225276926981}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5936202316230511761
@@ -55,6 +56,8 @@ MonoBehaviour:
   pfList:
   - {fileID: 4051356047154646470}
   - {fileID: 4319785596457417241}
+  - {fileID: 5777201365847788636}
+  potentialsL: []
 --- !u!1 &1295503231340974492
 GameObject:
   m_ObjectHideFlags: 0
@@ -80,7 +83,7 @@ Transform:
   m_GameObject: {fileID: 1295503231340974492}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 56.666664}
+  m_LocalPosition: {x: 0, y: 0, z: 110.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -143,6 +146,37 @@ MonoBehaviour:
   diffNetUpdateTime: 0
   diffUpdateTime: 0
   nSteps: 0
+--- !u!1 &2604775783074429062
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5777201365847788636}
+  m_Layer: 0
+  m_Name: PF3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5777201365847788636
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2604775783074429062}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -141.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5222630027906201821}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4121095257397637222
 GameObject:
   m_ObjectHideFlags: 0
@@ -253,10 +287,10 @@ MonoBehaviour:
   entityRole: 1
   acceleration: 2
   turnRate: 2
-  maxSpeed: 15
+  maxSpeed: 20
   minSpeed: 0
-  cruiseSpeed: 0
-  mass: 1200
+  cruiseSpeed: 9
+  mass: 2000
   length: 340
   width: 82.5
   height: 75
@@ -324,7 +358,7 @@ Transform:
   m_GameObject: {fileID: 7213936099336330823}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -56.66667}
+  m_LocalPosition: {x: 0, y: 0, z: -42.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

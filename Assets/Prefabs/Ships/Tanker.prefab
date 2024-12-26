@@ -95,9 +95,9 @@ MonoBehaviour:
   entityRole: 7
   acceleration: 3
   turnRate: 2
-  maxSpeed: 15
+  maxSpeed: 9
   minSpeed: 0
-  cruiseSpeed: 0
+  cruiseSpeed: 7
   mass: 1500
   length: 275
   width: 47
@@ -444,6 +444,7 @@ MonoBehaviour:
   pfList:
   - {fileID: 2297015119881069940}
   - {fileID: 2697353662083641537}
+  potentialsL: []
 --- !u!1001 &661453475531234226
 PrefabInstance:
   m_ObjectHideFlags: 0

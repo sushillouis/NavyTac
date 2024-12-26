@@ -207,7 +207,7 @@ MonoBehaviour:
   turnRate: 2
   maxSpeed: 30
   minSpeed: 0
-  cruiseSpeed: 0
+  cruiseSpeed: 25
   mass: 100
   length: 100
   width: 20
@@ -469,6 +469,7 @@ MonoBehaviour:
   pfList:
   - {fileID: 1510958460200529840}
   - {fileID: 8484965880559396004}
+  potentialsL: []
 --- !u!1 &9053437305950580039
 GameObject:
   m_ObjectHideFlags: 0

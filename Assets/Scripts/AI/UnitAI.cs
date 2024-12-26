@@ -1,6 +1,14 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+[Serializable]
+public class EntityPotential
+{
+    public Entity entity;
+    public Potential potential;
+}
 
 public class UnitAI : MonoBehaviour
 {
@@ -9,6 +17,8 @@ public class UnitAI : MonoBehaviour
     private void Awake() {
         entity = GetComponentInParent<Entity>();
         entity.ai = this;
+        potentialsD = new Dictionary<Entity, Potential>();
+        potentialsL = new List<EntityPotential>();
     }
     // Start is called before the first frame update
     void Start()
@@ -18,6 +28,7 @@ public class UnitAI : MonoBehaviour
         intercept3ds = new List<Intercept3d>();
         follows = new List<Follow>();
         moves = new List<Move>();
+
     }
 
     public List<Move> moves;
@@ -28,7 +39,8 @@ public class UnitAI : MonoBehaviour
 
     [Header("PF nodes")]
     public List<Transform> pfList = new List<Transform>();
-
+    public Dictionary<Entity, Potential> potentialsD;
+    public List<EntityPotential> potentialsL;
 
     // Update is called once per frame
     void FixedUpdate()
