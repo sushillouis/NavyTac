@@ -600,6 +600,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "RegionSelect",
+                    "type": "Button",
+                    "id": "f0bf018e-d60a-4efd-ba9e-e253c44feea0",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Hold(duration=0.2)",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -688,6 +697,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "SelectAll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d417400e-85be-46ee-a013-d13491502683",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "Hold(duration=0.2)",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RegionSelect",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -62,6 +62,8 @@ public class UIMgr : MonoBehaviour
 
     private InputAction selectAll;
     private InputAction selectGroup1;
+    [SerializeReference] GameObject regionSelectCircle;
+    private InputAction regionSelect;
 
 
     private void Awake()
@@ -153,6 +155,11 @@ public class UIMgr : MonoBehaviour
 
         //Ctrl key signifies group commands so when we do right mouse button we run only if ctrl is not pressed
         inputs.Entities.ControlKey.Enable();
+
+        regionSelect = inputs.Selection.RegionSelect;
+        regionSelect.Enable();
+        regionSelect.started += RegionSelectStart;
+        regionSelect.performed += RegionSelect;
 
     }
     private void OnDisable()
@@ -271,7 +278,14 @@ public class UIMgr : MonoBehaviour
             CameraMgr.inst.MoveCameraXZ(mouseDelta.ReadValue<Vector2>());
         }
 
-
+        if(displayRegionCircle) {
+            regionSelectCircle.transform.position = selectRegionStart;
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(selectionCursorPosition.ReadValue<Vector2>()), out RaycastHit hit, float.MaxValue, AIMgr.inst.layerMask)) {
+                selectRegionEnd = hit.point;
+                regionSelectCircle.transform.localScale = Vector3.one * (selectRegionStart - selectRegionEnd + Vector3.up*10).magnitude/140f;
+            }
+            
+        }
     }
 
     private float maxHealth = 100;
@@ -409,4 +423,21 @@ public class UIMgr : MonoBehaviour
             inputs.Entities.Disable();
     }
 
+
+    public Vector3 selectRegionStart = Vector3.zero;
+    public Vector3 selectRegionEnd = Vector3.zero;
+    public bool displayRegionCircle = false;
+
+
+
+    private void RegionSelectStart(InputAction.CallbackContext context) {
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(selectionCursorPosition.ReadValue<Vector2>()), out RaycastHit hit, float.MaxValue, AIMgr.inst.layerMask)) {
+            selectRegionStart = hit.point + Vector3.up*10;
+        }
+    }
+
+    private void RegionSelect(InputAction.CallbackContext context) {
+        displayRegionCircle=true;
+        regionSelectCircle.SetActive(true);
+    }
 }

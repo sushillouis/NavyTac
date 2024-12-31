@@ -136,7 +136,10 @@ public class GroupUIMgr : MonoBehaviour
             case TacticsType.AtkDistract:
             case TacticsType.Pincer:
             case TacticsType.AtkMove:
-                currentGroup.CreateExecuteAttack();
+                if(UIMgr.inst.displayRegionCircle) {
+                    currentGroup.CreateExecuteAttack(SelectionMgr.inst.GetEnemiesInSelectionCircle(UIMgr.inst.selectRegionStart,UIMgr.inst.selectRegionEnd,PlayerMgr.inst.localPlayer));
+                }
+            break;
             case TacticsType.Defend:
                 Debug.Log("Not implemented yet");
                 break;

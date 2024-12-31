@@ -96,6 +96,21 @@ public class SelectionMgr : MonoBehaviour
                 SelectEntity(ent, shouldClearSelection: false);
 
     }
+
+    public List<Entity> GetEnemiesInSelectionCircle(Vector3 circleCenter, Vector3 circleEdge, TactPlayer player)
+    {
+        float radius = Vector3.Distance(circleCenter,circleEdge);
+        List<Entity> inCircle = new();
+
+        foreach (var ent in EntityMgr.inst.entities)
+        {
+            if(ent.owner != player && Vector3.Distance(circleCenter,ent.position) < radius) {
+                inCircle.Add(ent);
+            }
+        }
+        return inCircle;
+
+    }
     //----------------------------------------------------------------------------------------------------
 
     public int selectedEntityIndex = -1;

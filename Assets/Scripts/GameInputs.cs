@@ -622,6 +622,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RegionSelect"",
+                    ""type"": ""Button"",
+                    ""id"": ""f0bf018e-d60a-4efd-ba9e-e253c44feea0"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Hold(duration=0.2)"",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -710,6 +719,17 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""SelectAll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d417400e-85be-46ee-a013-d13491502683"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": ""Hold(duration=0.2)"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RegionSelect"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -939,6 +959,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Selection_CursorPosition = m_Selection.FindAction("CursorPosition", throwIfNotFound: true);
         m_Selection_NextEntity = m_Selection.FindAction("NextEntity", throwIfNotFound: true);
         m_Selection_SelectAll = m_Selection.FindAction("SelectAll", throwIfNotFound: true);
+        m_Selection_RegionSelect = m_Selection.FindAction("RegionSelect", throwIfNotFound: true);
         // Entities
         m_Entities = asset.FindActionMap("Entities", throwIfNotFound: true);
         m_Entities_Speed = m_Entities.FindAction("Speed", throwIfNotFound: true);
@@ -1117,6 +1138,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Selection_CursorPosition;
     private readonly InputAction m_Selection_NextEntity;
     private readonly InputAction m_Selection_SelectAll;
+    private readonly InputAction m_Selection_RegionSelect;
     public struct SelectionActions
     {
         private @GameInputs m_Wrapper;
@@ -1127,6 +1149,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         public InputAction @CursorPosition => m_Wrapper.m_Selection_CursorPosition;
         public InputAction @NextEntity => m_Wrapper.m_Selection_NextEntity;
         public InputAction @SelectAll => m_Wrapper.m_Selection_SelectAll;
+        public InputAction @RegionSelect => m_Wrapper.m_Selection_RegionSelect;
         public InputActionMap Get() { return m_Wrapper.m_Selection; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1154,6 +1177,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @SelectAll.started += instance.OnSelectAll;
             @SelectAll.performed += instance.OnSelectAll;
             @SelectAll.canceled += instance.OnSelectAll;
+            @RegionSelect.started += instance.OnRegionSelect;
+            @RegionSelect.performed += instance.OnRegionSelect;
+            @RegionSelect.canceled += instance.OnRegionSelect;
         }
 
         private void UnregisterCallbacks(ISelectionActions instance)
@@ -1176,6 +1202,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @SelectAll.started -= instance.OnSelectAll;
             @SelectAll.performed -= instance.OnSelectAll;
             @SelectAll.canceled -= instance.OnSelectAll;
+            @RegionSelect.started -= instance.OnRegionSelect;
+            @RegionSelect.performed -= instance.OnRegionSelect;
+            @RegionSelect.canceled -= instance.OnRegionSelect;
         }
 
         public void RemoveCallbacks(ISelectionActions instance)
@@ -1306,6 +1335,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnCursorPosition(InputAction.CallbackContext context);
         void OnNextEntity(InputAction.CallbackContext context);
         void OnSelectAll(InputAction.CallbackContext context);
+        void OnRegionSelect(InputAction.CallbackContext context);
     }
     public interface IEntitiesActions
     {
