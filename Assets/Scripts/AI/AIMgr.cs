@@ -71,6 +71,8 @@ public struct TactCommandStruct: INetworkSerializable, IEquatable<TactCommandStr
     }
 }
 
+
+
 public class AIMgr : NetworkBehaviour
 {
     public static AIMgr inst;

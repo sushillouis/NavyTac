@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 
-public class Entity : MonoBehaviour
+public class Entity : MonoBehaviour, IComparable<Entity>
 {
     public int entityId;
     //------------------------------
@@ -87,5 +88,37 @@ public class Entity : MonoBehaviour
         fuel = Mathf.Clamp(fuel, 0, maxFuel);
         range = Mathf.Clamp(fuel * cruiseSpeed, 0, maxRange);
 
+    }
+
+    public int CompareTo(Entity other)
+    {   
+        if(other == null) return 1;
+
+
+        if(other.entityType == this.entityType) {
+            return 0;
+        }
+
+        return Utils.costDict[this.entityType] > Utils.costDict[other.entityType] ? 1 : -1;
+    }
+
+    
+}
+
+public class EntityStrengthCompararer: IComparer<Entity> {
+
+    public int Compare(Entity left, Entity right)
+    {
+        if(left != null && right != null) {
+            return Utils.strengthDict[left.entityType] > Utils.strengthDict[right.entityType] ? 1 : -1;
+        }
+
+        if(right == null && left ==null) {
+            return 0;
+        }
+        if(left!=null) {
+            return 1;
+        }
+        return -1;
     }
 }

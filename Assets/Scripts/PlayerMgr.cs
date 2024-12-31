@@ -12,21 +12,23 @@ public class TactPlayer
     public Color playerColor;
     public bool isObserver;
     public bool isAdmin;
+    public bool isBot;
+    public BotAI botAI;
 
-    public TactPlayer(string name, ulong playerId, PlayerSide playerSide, Color playerColor) {
-        Init(name, playerId, playerSide, playerColor, false);
+    public TactPlayer(string name, ulong playerId, PlayerSide playerSide, Color playerColor, bool isObserver = false, bool isBot = false) {
+        Init(name, playerId, playerSide, playerColor, isObserver, isBot);
     }
-
-    public TactPlayer(string name, ulong playerId, PlayerSide playerSide, Color playerColor, bool isObserver) {
-        Init(name, playerId, playerSide, playerColor, isObserver);
-    }
-    void Init(string name, ulong playerId, PlayerSide playerSide, Color playerColor, bool isObserver) {
+    void Init(string name, ulong playerId, PlayerSide playerSide, Color playerColor, bool isObserver, bool isBot) {
         this.name = name;
         this.playerId = playerId;
         this.playerSide = playerSide;
         this.playerColor = playerColor;
         this.isObserver = isObserver;
         this.isAdmin = false; //while developing
+        this.isBot=isBot;
+        if(isBot) {
+            this.botAI = new BotAI(this);
+        }
     }
 
     public override string ToString() {
@@ -64,7 +66,12 @@ public class PlayerMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        foreach (TactPlayer player in players)
+        {
+            if(player.isBot) {
+                player.botAI.Tick();
+            }
+        }
     }
 
     public TactPlayer CreateAddPlayer(string pname, ulong pid, PlayerSide side, Color c) {
@@ -73,8 +80,8 @@ public class PlayerMgr : MonoBehaviour
         return player;
     }
 
-    public TactPlayer CreatePlayer(string pname, ulong pid, PlayerSide side, Color c) {
-        TactPlayer player = new TactPlayer(pname, pid, side, c);
+    public TactPlayer CreatePlayer(string pname, ulong pid, PlayerSide side, Color c,bool isBot = false) {
+        TactPlayer player = new TactPlayer(pname, pid, side, c, false, isBot);
         return player;
     }
 
@@ -122,6 +129,18 @@ public class PlayerMgr : MonoBehaviour
         }
         return null;
     }
+
+    public TactPlayer CreateAIPlayer(string name) {
+        if(playerCount < maxPlayers) {
+            TactPlayer player = CreatePlayer(name, (ulong) playerCount, sides[playerCount], playerColors[playerCount],true);
+            AddTestPlayer1And2(player, playerCount);
+            playerCount++;
+            Debug.Log("Added player: " + player.ToString());
+            return player;
+        }
+        return null;
+    }
+
 
 
     public TactPlayer GetPlayer(ulong clientID) {

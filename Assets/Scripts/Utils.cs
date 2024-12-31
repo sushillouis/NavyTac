@@ -71,4 +71,42 @@ public static class Utils {
         );
     }
 
+    public static readonly Dictionary<EntityType, int> costDict = new Dictionary<EntityType, int>{
+        {EntityType.DDG51,50},
+        {EntityType.Container,30},
+        {EntityType.MineSweeper,20},
+        {EntityType.OilServiceVessel,17},
+        {EntityType.OrientExplorer,17},
+        {EntityType.PilotVessel,10},
+        {EntityType.SmitHouston,20},
+        {EntityType.Tanker,25},
+        {EntityType.TugBoat,15},
+        {EntityType.JARIUSV,25},
+        {EntityType.SeaHunter,20},
+        {EntityType.Mykola,10},
+        {EntityType.SeaBaby,5},
+        {EntityType.CVN75,100},
+        {EntityType.Submarine,40},
+        {EntityType.AntiShipMissile,1}
+    };
+
+    public static readonly Dictionary<EntityType, int> strengthDict = new Dictionary<EntityType, int>{
+        {EntityType.DDG51,50},
+        {EntityType.Container,0},
+        {EntityType.MineSweeper,0},
+        {EntityType.OilServiceVessel,0},
+        {EntityType.OrientExplorer,0},
+        {EntityType.PilotVessel,5},
+        {EntityType.SmitHouston,0},
+        {EntityType.Tanker,0},
+        {EntityType.TugBoat,0},
+        {EntityType.JARIUSV,25},
+        {EntityType.SeaHunter,20},
+        {EntityType.Mykola,10},
+        {EntityType.SeaBaby,5},
+        {EntityType.CVN75,100},
+        {EntityType.Submarine,40},
+        {EntityType.AntiShipMissile,1}
+    };
+
 }

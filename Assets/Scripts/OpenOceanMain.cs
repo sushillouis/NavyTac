@@ -192,7 +192,7 @@ public class OpenOceanMain : MonoBehaviour
         PlayerMgr.inst.AddPlayer(tmp);
         PlayerMgr.inst.localPlayer = tmp;
 
-        PlayerMgr.inst.AddPlayer(PlayerMgr.inst.CreateSinglePlayer("Ai"));
+        PlayerMgr.inst.AddPlayer(PlayerMgr.inst.CreateAIPlayer("Ai"));
     }
 
     public LobbyState lobbyState

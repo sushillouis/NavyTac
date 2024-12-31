@@ -28,7 +28,6 @@ public class Intercept : Follow
 
         range = diffToMovePosition.magnitude;
         timeOnTarget = range / entity.speed;
-
     }
 
     public override bool IsDone()

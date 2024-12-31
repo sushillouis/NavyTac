@@ -10,6 +10,8 @@ public class Group
     public int groupNumber = -1;
     public bool isInitialized;
     public bool isDone;
+    public int totalCost;
+    public int totalStrength;
 
     [SerializeField]
     private List<Tactic> tactics = new List<Tactic>();
@@ -22,7 +24,24 @@ public class Group
         tactics.Clear();
         isInitialized = false;
         isDone = false;
+        totalCost = -1;
+        totalStrength = -1;
     }
+
+    public int GetTotalStrength() {
+        totalStrength = 0;
+        foreach(Entity entity in groupEntities) 
+            totalStrength+=Utils.strengthDict[entity.entityType];
+
+        return totalStrength;
+    } 
+    public int GetTotalCost() {
+        totalCost = 0;
+        foreach(Entity entity in groupEntities) 
+            totalCost+=Utils.costDict[entity.entityType];
+        
+        return totalCost;
+    } 
 
     public bool isEntityInGroup(Entity entity) {
         return groupEntities.Contains(entity);
@@ -78,6 +97,14 @@ public class Group
         fmt.Init();
         tactics.Add(fmt);
         formations.Add(fmt);
+        isInitialized= true;
+    }
+
+    public void CreateExecuteAttack(List<Entity> targets) {
+        GroupAttackTactic fmt = new GroupAttackTactic(groupEntities, targets);
+        fmt.Init();
+        tactics.Add(fmt);
+        // formations.Add(fmt);
         isInitialized= true;
     }
 

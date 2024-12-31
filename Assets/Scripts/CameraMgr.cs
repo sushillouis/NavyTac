@@ -45,7 +45,7 @@ public class CameraMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        moveCoefficent = Mathf.Log(YawNode.transform.position.y * heightSensitivty);
+        moveCoefficent = Mathf.Log((YawNode.transform.position.y+RTSCameraRig.transform.position.y) * heightSensitivty);
         moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);        
     }
     public bool isRTSMode = true;
@@ -54,7 +54,7 @@ public class CameraMgr : MonoBehaviour
     {
         Vector3 moveVector = Vector3.zero;
         moveVector.y = yMoveValue * moveCoefficent;
-        YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
+        YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed * .25f);
         float newY = Mathf.Clamp(YawNode.transform.position.y, minCameraHeight, maxCameraHeight);
         YawNode.transform.position = new(YawNode.transform.position.x, newY, YawNode.transform.position.z);
     }

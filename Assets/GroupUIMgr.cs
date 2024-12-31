@@ -24,6 +24,7 @@ public class GroupUIMgr : MonoBehaviour
 
     [SerializeField]
     private List<Button> tacticsButtonsList = new List<Button>();
+    [SerializeField] List<Entity> selectedTargets;
 
 
     private void Awake() {
@@ -135,6 +136,7 @@ public class GroupUIMgr : MonoBehaviour
             case TacticsType.AtkDistract:
             case TacticsType.Pincer:
             case TacticsType.AtkMove:
+                currentGroup.CreateExecuteAttack();
             case TacticsType.Defend:
                 Debug.Log("Not implemented yet");
                 break;

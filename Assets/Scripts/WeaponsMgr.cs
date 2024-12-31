@@ -60,10 +60,11 @@ public class WeaponsMgr : MonoBehaviour
 
     public void WeaponDone(Entity weapon)
     {
-        Entity ent = weapons.Find(x => x.name.Contains(weapon.name));
-        if(ent != null)
+        int index = weapons.IndexOf(weapon);
+        // Entity ent = weapons.Find(x => x.name.Contains(weapon.name));
+        if(index == -1)
         {
-            weapons.Remove(ent);
+            weapons.RemoveAt(index);
         }
     }
 

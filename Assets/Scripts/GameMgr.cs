@@ -125,10 +125,12 @@ public class GameMgr : MonoBehaviour
 
     public void OpenOcean1x1() {
         Vector3 posPlayer1 = new Vector3(0, 0, 0);
-        Vector3 posPlayer2 = new Vector3(0, 0, 1 * Utils.FromNauticalMiles);
+        // Vector3 posPlayer2 = new Vector3(0, 0, 1 * Utils.FromNauticalMiles);
+        Vector3 posAiPlayer3 = new Vector3(0,0,1 * Utils.FromNauticalMiles);
+        // TactPlayer aiP3 = PlayerMgr.inst.CreatePlayer("AI1",404,PlayerSide.SideThree,Color.green,true);
         MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1);
-        //MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
-
+        // MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
+        MakeEntsForPlayer(posAiPlayer3, 180, PlayerMgr.inst.player2);
     }
 
     public void MakeEntsForPlayer(Vector3 initPos, float initHeading, TactPlayer player) {
