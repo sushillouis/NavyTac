@@ -12,7 +12,13 @@ public class WeaponsMgr : MonoBehaviour
 
     public List<GameObject> WeaponPrefabs = new List<GameObject>();
     public List<Entity> weapons = new List<Entity>();
-
+    [Header("DebugIsh")]
+    [SerializeReference] GameObject judeMissilePrefab;
+    public GameObject LaunchMissile(Vector3 position, Entity targetEntity) {
+        GameObject temp = Instantiate(judeMissilePrefab,position,Quaternion.identity,this.transform);
+        temp.GetComponent<JudeMissile>().target = targetEntity;
+        return temp;
+    }
 
     public void LaunchWeapon(Entity launchingEntity, EntityType weaponEntityType, Entity target)
     {

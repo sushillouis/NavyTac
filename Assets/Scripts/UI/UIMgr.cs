@@ -160,6 +160,7 @@ public class UIMgr : MonoBehaviour
         regionSelect.Enable();
         regionSelect.started += RegionSelectStart;
         regionSelect.performed += RegionSelect;
+        regionSelect.canceled += RegionSelectEnd;
 
     }
     private void OnDisable()
@@ -227,6 +228,8 @@ public class UIMgr : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI healthText;
 
+    float regionTimer = 0f;
+
     // Update is called once per frame
     void Update()
     {
@@ -278,13 +281,18 @@ public class UIMgr : MonoBehaviour
             CameraMgr.inst.MoveCameraXZ(mouseDelta.ReadValue<Vector2>());
         }
 
-        if(displayRegionCircle) {
+        if(changeRegionCircle) {
             regionSelectCircle.transform.position = selectRegionStart;
             if (Physics.Raycast(Camera.main.ScreenPointToRay(selectionCursorPosition.ReadValue<Vector2>()), out RaycastHit hit, float.MaxValue, AIMgr.inst.layerMask)) {
                 selectRegionEnd = hit.point;
                 regionSelectCircle.transform.localScale = Vector3.one * (selectRegionStart - selectRegionEnd + Vector3.up*10).magnitude/140f;
             }
-            
+            regionTimer = regionTimeout;
+        } else if(regionSelectCircle.activeSelf) {
+            regionTimer -= Time.deltaTime;
+            if(regionTimer<=0) {
+                SetRegionCircleVis(false);
+            }
         }
     }
 
@@ -426,7 +434,8 @@ public class UIMgr : MonoBehaviour
 
     public Vector3 selectRegionStart = Vector3.zero;
     public Vector3 selectRegionEnd = Vector3.zero;
-    public bool displayRegionCircle = false;
+    public bool changeRegionCircle = false;
+    [SerializeField] float regionTimeout = 5f;
 
 
 
@@ -437,7 +446,19 @@ public class UIMgr : MonoBehaviour
     }
 
     private void RegionSelect(InputAction.CallbackContext context) {
-        displayRegionCircle=true;
+        changeRegionCircle=true;
         regionSelectCircle.SetActive(true);
+    }
+
+    private void RegionSelectEnd(InputAction.CallbackContext context) {
+        changeRegionCircle=false;
+    }
+
+    public void SetRegionCircleVis(bool state) {
+        regionSelectCircle.SetActive(state);
+    }
+
+    public bool GetRegionVis() {
+        return regionSelectCircle.activeSelf;
     }
 }

@@ -24,7 +24,7 @@ public class TactPlayer
         this.playerSide = playerSide;
         this.playerColor = playerColor;
         this.isObserver = isObserver;
-        this.isAdmin = false; //while developing
+        this.isAdmin = true; //while developing
         this.isBot=isBot;
         if(isBot) {
             this.botAI = new BotAI(this);

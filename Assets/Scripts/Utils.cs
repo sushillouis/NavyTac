@@ -9,6 +9,9 @@ public static class Utils {
     public static float EPSILON = 0.01f;
     public static float ToNautialMiles = 0.000539957f;
     public static float FromNauticalMiles = 1852f;
+    public const float GRAVITY = 9.8f;
+    public const float DRAG_COEFFICENT = 0.04f;
+    public const float ANGULAR_DRAG_COEFFICENT = 0.01f;
     public static bool ApproximatelyEqual(float a, float b)
     {
         return (Mathf.Abs(a - b) < EPSILON);

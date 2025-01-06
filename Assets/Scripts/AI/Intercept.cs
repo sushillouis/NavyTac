@@ -6,6 +6,9 @@ using UnityEngine.VFX;
 [System.Serializable]
 public class Intercept : Follow
 {
+    float missileLaunchTimer = 2f;
+    int missileCount = 20;
+    float missileLaunchCooldown = 2f;
     public Intercept(Entity ent, Entity target): base(ent, target, Vector3.zero)
     {
         //Follow does all the work
@@ -28,6 +31,13 @@ public class Intercept : Follow
 
         range = diffToMovePosition.magnitude;
         timeOnTarget = range / entity.speed;
+
+        if(missileLaunchTimer<=0) {
+            missileLaunchTimer = 2f;
+            WeaponsMgr.inst.LaunchMissile(entity.position,targetEntity);
+        } else {    
+            missileLaunchTimer-=Time.deltaTime;
+        }
     }
 
     public override bool IsDone()

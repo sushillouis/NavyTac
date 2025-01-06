@@ -3,15 +3,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum Activity
+{
+    None,
+    Forming,
+    Scout,
+    Persue,
+    Fighting,
+    Retreating
+}
+
 [Serializable]
 public class Group 
 {
+    public Entity target = null;
     public List<Entity> groupEntities = new List<Entity>();
     public int groupNumber = -1;
     public bool isInitialized;
     public bool isDone;
     public int totalCost;
     public int totalStrength;
+    // This is just for the AI;
+    public Activity activity = Activity.None;
 
     [SerializeField]
     private List<Tactic> tactics = new List<Tactic>();
@@ -26,6 +39,11 @@ public class Group
         isDone = false;
         totalCost = -1;
         totalStrength = -1;
+    }
+
+    public void FindTarget() {
+        groupEntities.Sort();
+        target = groupEntities[0];
     }
 
     public int GetTotalStrength() {
@@ -101,7 +119,7 @@ public class Group
     }
 
     public void CreateExecuteAttack(List<Entity> targets) {
-        GroupAttackTactic fmt = new GroupAttackTactic(groupEntities, targets);
+        FormationAttackTactic fmt = new FormationAttackTactic(groupEntities, targets);
         fmt.Init();
         tactics.Add(fmt);
         // formations.Add(fmt);
@@ -123,4 +141,36 @@ public class Group
             Stop();
     }
 
+}
+
+public class GroupProximityComparer: IComparer<Group> {
+
+    Vector3 location;
+    public GroupProximityComparer(Vector3 location) {
+        this.location = location;
+        
+    }   
+    public int Compare(Group left, Group right)
+    {
+        if(left != null && right != null) {
+            if(left.target==null) {
+                left.FindTarget();
+            }
+            
+            if(right.target==null) {
+                right.FindTarget();
+            }
+            float mag1 = Vector3.Distance(location, left.target.position);
+            float mag2 = Vector3.Distance(location, right.target.position);
+            return mag1 > mag2 ? -1 : 1;
+        }
+
+        if(right == null && left ==null) {
+            return 0;
+        }
+        if(left!=null) {
+            return -1;
+        }
+        return 1;
+    }
 }

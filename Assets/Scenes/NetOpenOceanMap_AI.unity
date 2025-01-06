@@ -497,7 +497,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.1430663e+27, y: NaN, z: 2.9965768e+32, w: 1.0505619e-38}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 1.78e-43, z: 6.9621e-41, w: 1.1295317e-19}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -1922,6 +1922,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   WeaponPrefabs: []
   weapons: []
+  judeMissilePrefab: {fileID: 6607427578281771949, guid: 20ffa97720a4a0943b7d279dbd93cfb6,
+    type: 3}
   MovableEntitiesRoot: {fileID: 382953079}
   WeaponsAspectPrefab: {fileID: 2140764748}
 --- !u!1 &544093354 stripped
@@ -2671,7 +2673,8 @@ MonoBehaviour:
   healthText: {fileID: 1182770964}
   selectRegionStart: {x: 0, y: 0, z: 0}
   selectRegionEnd: {x: 0, y: 0, z: 0}
-  displayRegionCircle: 0
+  changeRegionCircle: 0
+  regionTimeout: 5
 --- !u!1001 &958908199
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4190,12 +4193,14 @@ MonoBehaviour:
     worldPosition: {x: 0, y: 0, z: 0}
     entity: {fileID: 0}
   currentGroup:
+    target: {fileID: 0}
     groupEntities: []
     groupNumber: 0
     isInitialized: 0
     isDone: 0
     totalCost: 0
     totalStrength: 0
+    activity: 0
     tactics: []
     formations: []
 --- !u!1 &1400833978
@@ -4473,12 +4478,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   groups: []
   currentGroup:
+    target: {fileID: 0}
     groupEntities: []
     groupNumber: 0
     isInitialized: 0
     isDone: 0
     totalCost: 0
     totalStrength: 0
+    activity: 0
     tactics: []
     formations: []
 --- !u!1 &1576919499

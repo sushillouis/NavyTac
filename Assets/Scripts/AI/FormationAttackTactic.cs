@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class GroupAttackTactic : Tactic
+public class FormationAttackTactic : Tactic
 {
     [SerializeField]
     private Vector3 movePosition;
     [SerializeField] List<Entity> targets;
-    public GroupAttackTactic(List<Entity> ents, List<Entity> n_targets) : base(ents) {
+    public FormationAttackTactic(List<Entity> ents, List<Entity> n_targets) : base(ents) {
         tacticsType = TacticsType.EscortMove;
         targets = n_targets;
     }
@@ -35,7 +35,8 @@ public class GroupAttackTactic : Tactic
         List<Entity> notSubs = entities.FindAll(x => x.entityClass != EntityClass.Sub);
         notSubs.Sort();
         targets.Sort(new EntityStrengthCompararer());
-        float entRatio = entities.Count/targets.Count; 
+        float entRatio = entities.Count/(float)targets.Count; 
+        Debug.Log(entRatio);
         foreach (Entity ent in targets)
         {
             switch(ent.entityClass) {
@@ -100,7 +101,8 @@ public class GroupAttackTactic : Tactic
     }
 
     public override bool IsDone() {
-        return false;
+        // Need some way to actually see if ships are sunk.
+        return targets.Count==0;
     }
 
     public override void Stop() {

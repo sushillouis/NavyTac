@@ -941,6 +941,18 @@ MonoBehaviour:
     playerColor: {r: 0, g: 0, b: 0, a: 0}
     isObserver: 0
     isAdmin: 0
+    isBot: 0
+    botAI:
+      agressiveness: 0
+      maxAttackRange: 0
+      cowardice: 0
+      engagementRadis: 0
+      desperation: 0
+      maxSubGroupSize: 0
+      maxGroupStrength: 0
+      refreshrate: 0
+      attackingGroups: []
+      entities: []
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}

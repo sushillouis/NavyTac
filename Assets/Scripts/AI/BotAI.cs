@@ -4,15 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-// public enum Activity
-// {
-//     None,
-//     Forming,
-//     Scout,
-//     Persue,
-//     Fighting,
-//     Retreating
-// }
+
 
 [Serializable]
 public class BotAI
@@ -20,7 +12,7 @@ public class BotAI
     [Header("Paramaters")]
     // Max Ratio of enemy fleet to ai fleet to start an attack
     [SerializeField] float agressiveness = 1f;
-    [SerializeField] float maxAttackRange = 5 * Utils.FromNauticalMiles;
+    [SerializeField] float maxAttackRange = 5f * Utils.FromNauticalMiles;
     // Min Ratio of enemy fleet to ai fleet to start a retreat
     [SerializeField] float cowardice = 2f;
     [SerializeField] float engagementRadis = 1.5f * Utils.FromNauticalMiles;
@@ -113,12 +105,79 @@ public class BotAI
         tickCounter = 0;
 
         List<Entity> enemyEnts = GetAllEnemyEntities();
-        bool[] attacking = new bool[enemyEnts.Count];
+
+        // bool[] attacking = new bool[enemyEnts.Count];
+        List<Group> tempAttackingGroups = new(attackingGroups);
         enemyEnts.Sort();
-        for (int i =0;i<attackingGroups.Count;i++) {
-            
+        int attackingIterator = 0;
+        for (int i =0;i<attackingGroups.Count*2;i++) {
+            if(enemyEnts.Count==0 || tempAttackingGroups.Count==0) {
+                break; 
+            }
+            tempAttackingGroups.Sort(new GroupProximityComparer(enemyEnts[0].position));
+            if(tempAttackingGroups[attackingIterator].target==null) {
+                tempAttackingGroups[attackingIterator].FindTarget();
+            }
+            if(Vector3.Distance(enemyEnts[0].position,tempAttackingGroups[attackingIterator].target.position)<maxAttackRange) {
+                List<Entity> newGroup = FindEnemiesInEngageRadius(enemyEnts[0],enemyEnts);
+
+                int totalStrength = 0;
+                foreach(Entity entity in newGroup) {
+                    totalStrength+=Utils.strengthDict[entity.entityType];
+                }
+                
+                if(tempAttackingGroups[attackingIterator].activity==Activity.Fighting) {
+                    if(totalStrength*cowardice>tempAttackingGroups[attackingIterator].GetTotalStrength()) {
+                        if(tempAttackingGroups[attackingIterator].activity!=Activity.Retreating) {
+                            tempAttackingGroups[attackingIterator].activity=Activity.Retreating;
+                            tempAttackingGroups[attackingIterator].CreateExecuteEscortMove(
+                                ((tempAttackingGroups[attackingIterator].target.position
+                                -enemyEnts[0].position).normalized 
+                                * maxAttackRange)
+                                +tempAttackingGroups[attackingIterator].target.position);
+                        }
+                        continue;
+                    }
+                    tempAttackingGroups.RemoveAt(attackingIterator);
+                    continue;
+                }
+
+                if(totalStrength>tempAttackingGroups[attackingIterator].GetTotalStrength() * agressiveness) {
+                    attackingIterator++;
+                    continue;
+                }
+                tempAttackingGroups[attackingIterator].activity=Activity.Fighting;
+                tempAttackingGroups[attackingIterator].CreateExecuteAttack(newGroup);
+                foreach (Entity ent in newGroup)
+                {
+                    enemyEnts.Remove(ent);
+                    // Debug.Log(ent.name);
+                }
+                // Debug.Log("All Done");
+                tempAttackingGroups.RemoveAt(attackingIterator);
+                continue;
+            } 
+            if(tempAttackingGroups[attackingIterator].activity!=Activity.Persue) {
+                tempAttackingGroups[attackingIterator].activity=Activity.Persue;
+                tempAttackingGroups[attackingIterator].CreateExecuteEscortMove(enemyEnts[0].position);
+            }
         }
 
+    }
+
+    public List<Entity> FindEnemiesInEngageRadius(Entity target, List<Entity> enemyEnts) {
+        List<Entity> temp = new();
+        foreach (Entity ent in enemyEnts)
+        {
+            if(ent==target) {
+                temp.Add(ent);
+                continue;
+            }
+            if(Vector3.Distance(ent.position,target.position)<engagementRadis) {
+                temp.Add(ent);
+            }
+        }
+        return temp;
     }
 
     List<Entity> GetAllTeamEntities() {

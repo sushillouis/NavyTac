@@ -136,8 +136,9 @@ public class GroupUIMgr : MonoBehaviour
             case TacticsType.AtkDistract:
             case TacticsType.Pincer:
             case TacticsType.AtkMove:
-                if(UIMgr.inst.displayRegionCircle) {
+                if(UIMgr.inst.GetRegionVis()) {
                     currentGroup.CreateExecuteAttack(SelectionMgr.inst.GetEnemiesInSelectionCircle(UIMgr.inst.selectRegionStart,UIMgr.inst.selectRegionEnd,PlayerMgr.inst.localPlayer));
+                    
                 }
             break;
             case TacticsType.Defend:
@@ -151,6 +152,7 @@ public class GroupUIMgr : MonoBehaviour
                 break;
         }
         TacticalCommandsPanel.isVisible = false;
+        UIMgr.inst.SetRegionCircleVis(false);
     }
 
     void InitGroupCommandButtons() {

@@ -629,7 +629,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""id"": ""f0bf018e-d60a-4efd-ba9e-e253c44feea0"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": ""Hold(duration=0.2)"",
+                    ""interactions"": ""Hold(duration=0.5,pressPoint=0.5)"",
                     ""initialStateCheck"": false
                 }
             ],
@@ -726,7 +726,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""d417400e-85be-46ee-a013-d13491502683"",
                     ""path"": ""<Mouse>/rightButton"",
-                    ""interactions"": ""Hold(duration=0.2)"",
+                    ""interactions"": ""Hold(duration=0.5)"",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""RegionSelect"",
