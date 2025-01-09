@@ -7,6 +7,7 @@ using UnityEngine.XR;
 using System;
 using System.IO;
 using System.Text;
+using System.Transactions;
 
 public class WeaponsMgr : MonoBehaviour
 {
@@ -115,17 +116,20 @@ public class WeaponsMgr : MonoBehaviour
             WeaponData wd = weaponsAspect.weapons.Find(x => x.behaviorType == behaviorType);
             if (wd != null)
             {
-                if (UIMgr.inst.getTargetPosition(mousePos, out Vector3 targetPosition))
+                RaycastHit hit;
+                Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
+                Entity targetEntity = UIMgr.inst.FindClosestEntInRadius(hit.point);
+                if (hit.point != null)
                 {
                     if (behaviorType == WeaponBehaviors.Dumb){
-                        LaunchWeapon(selectedEnt, wd, null, targetPosition);
+                        LaunchWeapon(selectedEnt, wd, null, hit.point);
                         continue;
                     }
-                    Entity targetEntity = UIMgr.inst.GetTargetEntity(targetPosition);
+    
                     if (targetEntity != null && targetEntity.owner != selectedEnt.owner)
                     {
                         Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType + " at " + targetEntity.name);
-                        LaunchWeapon(selectedEnt, wd, targetEntity, targetPosition);
+                        LaunchWeapon(selectedEnt, wd, targetEntity, hit.point);
                     }
                     
                 }

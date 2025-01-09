@@ -4,33 +4,9 @@ using System.Data.Common;
 using UnityEngine;
 
 
-[System.Serializable]
-public enum EntityType
-{
-    DDG51,
-    Container,
-    MineSweeper,
-    OilServiceVessel,
-    OrientExplorer,
-    PilotVessel,
-    SmitHouston,
-    Tanker,
-    TugBoat,
-    JARIUSV,
-    SeaHunter,
-    Mykola,
-    SeaBaby,
-    CVN75,
-    Submarine,
-    AntiShipMissile,
-    SM2To6,
-    ESSM,
-    Tomahawk
-}
-
-
 public class Entity : MonoBehaviour
 {
+    public int entityId;
     //------------------------------
     // values that change while running
     //------------------------------
@@ -47,6 +23,7 @@ public class Entity : MonoBehaviour
     public float fuel;
     public float range;
     public float fuelBurnRate;
+    public EntityRole entityRole;
 
     [Header("Const values")]
     //------------------------------
@@ -66,10 +43,20 @@ public class Entity : MonoBehaviour
     public float maxRange;
 
     public EntityType entityType;
+    public EntityClass entityClass;
+
     public GameObject cameraRig;
     public GameObject selectionCircle;
-    public Player owner;
+    public TactPlayer owner;
     public Entity creatorsEntity;
+
+
+    [Header("Aspect references")]
+    public NetAspect net = null;
+    public OrientedPhysics phx = null;
+    public UnitAI ai = null;
+    public UIAspect ui = null;
+    public WeaponsAspect weapons = null;
 
     void Start()
     {

@@ -18,12 +18,12 @@ public class SmartIntercept : Intercept
     public override void Tick()
     {
         //movePosition = targetEntity.transform.position; 
-        float dh = ComputePotentialPredictiveDHDS(Vector3.zero).dh;
-        float ds = ComputePotentialPredictiveDHDS(Vector3.zero).ds;
-        entity.desiredHeading = dh;
-        entity.desiredSpeed = ds;
-        range = diff.magnitude;
-        timeOnTarget = range / entity.speed;
+        // float dh = ComputePotentialPredictiveDHDS(Vector3.zero).dh;
+        // float ds = ComputePotentialPredictiveDHDS(Vector3.zero).ds;
+        // entity.desiredHeading = dh;
+        // entity.desiredSpeed = ds;
+        // range = diff.magnitude;
+        // timeOnTarget = range / entity.speed;
     }
 
     

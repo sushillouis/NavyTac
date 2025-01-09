@@ -9,6 +9,7 @@ public class EntityMgr : MonoBehaviour
     {
         inst = this;
         entities = new List<Entity>();
+        entitiesDict = new Dictionary<int, Entity> ();
         //foreach(Entity ent in movableEntitiesRoot.GetComponentsInChildren<Entity>()) {
         //    entities.Add(ent);
         //}
@@ -18,14 +19,15 @@ public class EntityMgr : MonoBehaviour
     public List<GameObject> entityPrefabs;
     public GameObject entitiesRoot;
     public List<Entity> entities;
+    public Dictionary<int, Entity> entitiesDict;
 
-    public static int entityId = 0;
+    public int entityId = 0;
 
     public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles) {
-        return CreateEntity(et, position, eulerAngles, PlayerMgr.inst.observer);
+        return CreateEntity(et, position, eulerAngles, PlayerMgr.inst.player1);
     }
 
-    public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles, Player player) {
+    public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles, TactPlayer player) {
         Entity entity = null;
         GameObject entityPrefab = entityPrefabs.Find(x => (x.GetComponent<Entity>().entityType == et));
         if(entityPrefab != null) {
@@ -33,12 +35,16 @@ public class EntityMgr : MonoBehaviour
             entityGo.SetActive(true);
             if(entityGo != null) {
                 entity = entityGo.GetComponent<Entity>();
+                entity.entityId = entityId;
                 entityGo.name = et.ToString() + entityId++;
                 entity.owner = player;
+                entity.heading = entity.desiredHeading = eulerAngles.y;
                 entities.Add(entity);
+                entitiesDict.Add(entity.entityId, entity);
             }
         }
         DistanceMgr.inst.Initialize();
+
         return entity;
     }
 

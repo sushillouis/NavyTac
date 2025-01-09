@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 public static class Utils {
@@ -7,6 +8,7 @@ public static class Utils {
 
     public static float EPSILON = 0.01f;
     public static float ToNautialMiles = 0.000539957f;
+    public static float FromNauticalMiles = 1852f;
     public static bool ApproximatelyEqual(float a, float b)
     {
         return (Mathf.Abs(a - b) < EPSILON);
@@ -51,4 +53,22 @@ public static class Utils {
 
 
     }
+
+    /// <summary>
+    /// From https://stackoverflow.com/questions/5796383/insert-spaces-between-words-on-a-camel-cased-token
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static string SplitCamelCase(string str) {
+        return Regex.Replace(
+            Regex.Replace(
+                str,
+                @"(\P{Ll})(\P{Ll}\p{Ll})",
+                "$1 $2"
+            ),
+            @"(\p{Ll})(\P{Ll})",
+            "$1 $2"
+        );
+    }
+
 }

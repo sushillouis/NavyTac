@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using static UnityEditor.PlayerSettings;
+//using UnityEngine.InputSystem;
+
 
 
 public class SelectionMgr : MonoBehaviour
@@ -48,12 +48,12 @@ public class SelectionMgr : MonoBehaviour
 
     public void UpdateSelectionBox(Vector3 end)
     {
-        SelectionBoxPanel.localPosition = 
-            new Vector3(startMousePosition.x/mainCanvas.scaleFactor - UICanvas.rect.width/2, 
-            startMousePosition.y/mainCanvas.scaleFactor - UICanvas.rect.height/2, 0);
+        Vector2 localMousePosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(UICanvas, startMousePosition, null, out localMousePosition);
+        SelectionBoxPanel.localPosition = localMousePosition;
         SetPivotAndAnchors(startMousePosition, end);
         SelectionBoxPanel.sizeDelta = 
-            new Vector2(Mathf.Abs(end.x - startMousePosition.x), Mathf.Abs(startMousePosition.y - end.y));
+            new Vector2(Mathf.Abs(end.x - startMousePosition.x), Mathf.Abs(startMousePosition.y - end.y))/mainCanvas.scaleFactor;
     }
     public Vector2 anchorMin = Vector2.up;
     public Vector2 anchorMax = Vector2.up;
@@ -104,51 +104,74 @@ public class SelectionMgr : MonoBehaviour
 
     public void SelectNextEntity(bool clearSelection)
     {
+        List<Entity> ownedEntities = new List<Entity>();
+        foreach(Entity ent in EntityMgr.inst.entities)
+            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
+                ownedEntities.Add(ent);
+
         selectedEntityIndex = 
-            (selectedEntityIndex >= EntityMgr.inst.entities.Count - 1 ? 0 : selectedEntityIndex + 1);
-        SelectEntity(EntityMgr.inst.entities[selectedEntityIndex], 
+            (selectedEntityIndex >= ownedEntities.Count - 1 ? 0 : selectedEntityIndex + 1);
+        SelectEntity(ownedEntities[selectedEntityIndex], 
             shouldClearSelection: !clearSelection);
     }
 
     public void ClearSelection()
     {
-        foreach (Entity ent in EntityMgr.inst.entities)
+        foreach(Entity ent in EntityMgr.inst.entities)
             ent.isSelected = false;
         selectedEntities.Clear();
+        selectedEntity = null;
+    }
+
+
+    public void DeselectEntity(Entity ent) {
+        if(ent != null 
+            && ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId 
+            && selectedEntities.Contains(ent)) {
+            
+            ent.isSelected = false;
+            if(selectedEntity == ent) {
+                if(selectedEntities.Count > 0)
+                    selectedEntity = selectedEntities.Find(x => x != ent);//could be null
+                else
+                    selectedEntity = null;
+            }
+            selectedEntities.Remove(ent);
+        }
     }
 
     public void SelectEntity(Entity ent, bool shouldClearSelection = true)
     {
-        if (ent != null && (selectedEntityIndex = EntityMgr.inst.entities.FindIndex(x => (x == ent))) >= 0) {
+        if (ent != null && (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
+            && (selectedEntityIndex = EntityMgr.inst.entities.FindIndex(x => (x == ent))) >= 0) {
+           
             if (shouldClearSelection) 
                 ClearSelection();
 
             selectedEntity = ent;
             selectedEntity.isSelected = true;
-            selectedEntities.Add(ent);
+            if(!selectedEntities.Contains(ent))
+                selectedEntities.Add(ent);
         }
     }
 
     public void SelectEntity(Vector2 mousePos, bool shouldClearSelection = true)
     {
-        Vector3 targetPosition;
-        UIMgr.inst.getTargetPosition(mousePos, out targetPosition);
-        Entity ent = UIMgr.inst.GetTargetEntity(targetPosition);
-        if (ent != null)
-        {
-            if (shouldClearSelection)
+        RaycastHit hit;
+        Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
+        Entity ent = UIMgr.inst.FindClosestEntInRadius(hit.point);//, AIMgr.inst.rClickRadiusSq);
+        bool shouldAddSelection = !shouldClearSelection;
+        if(ent != null) {
+            if(!shouldAddSelection)
                 ClearSelection();
-            if (!SelectionMgr.inst.selectedEntities.Contains(ent))
-            {
+
+            if(!selectedEntities.Contains(ent)) {
                 selectedEntity = ent;
                 selectedEntity.isSelected = true;
                 selectedEntities.Add(ent);
-            }
-            else if (!shouldClearSelection)
-            {
-                if(selectedEntity = ent)
-                {
-                    if (SelectionMgr.inst.selectedEntities[0] != null)
+            } else if(shouldAddSelection) {
+                if(selectedEntity = ent) {
+                    if(SelectionMgr.inst.selectedEntities[0] != null)
                         selectedEntity = EntityMgr.inst.entities[0];
                     else
                         selectedEntity = null;
@@ -156,8 +179,58 @@ public class SelectionMgr : MonoBehaviour
                 ent.isSelected = false;
                 selectedEntities.Remove(ent);
             }
-        }
-        else
+        } else {
             ClearSelection();
+        }
     }
+
+    public void SelectEntity2(Vector2 mousePos, bool addSelection) {
+        RaycastHit hit;
+        Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
+        Entity ent = UIMgr.inst.FindClosestEntInRadius(hit.point);
+
+        if(ent == null) {
+            ClearSelection();
+        } else {
+            if(addSelection) {
+                if(!selectedEntities.Contains(ent)) {
+                    SelectEntity(ent, shouldClearSelection: false);
+                } else {
+                    DeselectEntity(ent);
+                }
+            } else {
+                SelectEntity(ent, shouldClearSelection: true);
+            }
+
+        }
+    }
+
+
+    /// <summary>
+    /// Assigns selected entities for control group given by groupNumber param
+    /// </summary>
+    /// <param name="groupNumber"></param>
+    public void SelectControlGroup(int groupNumber) {
+        if(TacticalAIMgr.inst.Exists(groupNumber)) {
+            ClearSelection();
+            TacticalAIMgr.inst.SelectControlGroup(groupNumber);
+        }
+    }
+
+    public void SelectAll() {
+        ClearSelection();
+        foreach(Entity ent in EntityMgr.inst.entities) {
+            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId) {
+                SelectEntity(ent, shouldClearSelection: false);
+            }
+        }
+    }
+
+    public void FormControlGroup(int groupNumber) {
+        if(selectedEntities.Count > 0) {
+            TacticalAIMgr.inst.CreateBindControlGroup(selectedEntities, groupNumber);
+        }
+
+    }
+
 }

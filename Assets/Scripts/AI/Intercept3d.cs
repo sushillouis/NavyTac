@@ -22,8 +22,8 @@ public class Intercept3d : Intercept
 
     public override void Tick()    {
         base.Tick();
-        diff = targetEntity.position - entity.position;
-        if(diff.sqrMagnitude < terminalPhaseDistanceSq)
+        diffToMovePosition = targetEntity.position - entity.position;
+        if(diffToMovePosition.sqrMagnitude < terminalPhaseDistanceSq)
             phx3d.desiredAltitude = 0;
     }
 

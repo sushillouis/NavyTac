@@ -27,13 +27,19 @@ public class WeaponsAspect : MonoBehaviour
     public Entity entity;
     public List<WeaponData> weapons = new List<WeaponData>();
 
-    // Start is called before the first frame update
-    void Start() {
+    private void Awake() {
         entity = GetComponentInParent<Entity>();
+        entity.weapons = this;
+
         foreach(WeaponData wd in weapons) {
             wd.currentWeaponEntities = new List<Entity>();
             wd.lastShotTime = -wd.cooldown;
         }
+
+    }
+
+    // Start is called before the first frame update
+    void Start() {
 
     }
 
