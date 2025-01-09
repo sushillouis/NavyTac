@@ -30,6 +30,8 @@ public class WeaponsMgr : MonoBehaviour
         public EntityType targetType;
         public float damageValue;
     }
+    public string fileNameCSV = "WeaponDamageMatrix.csv";
+    public TextAsset csvFile;
     public List<WeaponDamage> weaponDamages;
     public List<GameObject> WeaponPrefabs = new List<GameObject>();
     public List<Entity> weapons = new List<Entity>();
@@ -263,15 +265,15 @@ public class WeaponsMgr : MonoBehaviour
         }
 
         // Save the CSV file
-        string filePath = Application.dataPath + "/DamageMatrix.csv";
+        string filePath = Application.dataPath +"/"+fileNameCSV;
         File.WriteAllText(filePath, csvContent.ToString());
         Debug.Log("Damage matrix saved to " + filePath);
     }
-
     [ContextMenu("CSV To Damage Matrix")]
     public void CSVToDamageMatrix()
     {
-        string filePath = Application.dataPath + "/DamageMatrix.csv";
+        string filePath = Application.dataPath +"/"+csvFile.name+".csv";
+    
 
         // Check if the file exists
         if (!File.Exists(filePath))

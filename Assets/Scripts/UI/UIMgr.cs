@@ -259,7 +259,7 @@ public class UIMgr : MonoBehaviour
         {
             Entity ent = SelectionMgr.inst.selectedEntity;
             entityName.text = ent.name;
-            healthSlider.value = ent.health/100f;
+            // healthSlider.value = ent.health/100f;
             
             speed.text = ent.speed.ToString("F2") + " m/s";
             desiredSpeed.text = ent.desiredSpeed.ToString("F2") + " m/s";
