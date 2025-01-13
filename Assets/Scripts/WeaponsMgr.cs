@@ -30,11 +30,65 @@ public class WeaponsMgr : MonoBehaviour
         public EntityType targetType;
         public float damageValue;
     }
-    public string fileNameCSV = "WeaponDamageMatrix.csv";
-    public TextAsset csvFile;
+    
     public List<WeaponDamage> weaponDamages;
     public List<GameObject> WeaponPrefabs = new List<GameObject>();
     public List<Entity> weapons = new List<Entity>();
+    
+    public void handleWeapon(Vector2 mousePos, WeaponBehaviors behaviorType){
+        List<Entity> selectedEntities = SelectionMgr.inst.selectedEntities;
+        if (selectedEntities == null) return;
+        foreach (Entity selectedEnt in selectedEntities)
+        {
+            WeaponsAspect weaponsAspect = selectedEnt.GetComponentInChildren<WeaponsAspect>();
+            if (weaponsAspect = null) continue;
+            WeaponData wd = weaponsAspect.weapons.Find(x => x.behaviorType == behaviorType);
+            if (wd != null)
+            {
+                RaycastHit hit;
+                Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
+                Entity targetEntity = UIMgr.inst.FindClosestEntInRadius(hit.point);
+                if (hit.point != null)
+                {
+                    if (behaviorType == WeaponBehaviors.Dumb){
+                        LaunchWeapon(selectedEnt, wd, null, hit.point);
+                        continue;
+                    }
+    
+                    if (targetEntity != null && targetEntity.owner != selectedEnt.owner)
+                    {
+                        Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType + " at " + targetEntity.name);
+                        LaunchWeapon(selectedEnt, wd, targetEntity, hit.point);
+                    }
+                    
+                }
+            }
+        }
+    }
+    IEnumerator TargetEntity(Entity weapon, WeaponData wd, Entity targetEntity, Vector3 targetPosition)
+    {
+        yield return new WaitForFixedUpdate();
+        List<Entity> entities = new List<Entity>();
+        entities.Add(weapon);
+        switch(wd.behaviorType)
+        {
+            case WeaponBehaviors.SurfaceInterceptor:
+                AIMgr.inst.HandleIntercept(entities, targetEntity, false);
+                break;
+            case WeaponBehaviors.AirInterceptor:
+                AIMgr.inst.Handle3dIntercept(entities, targetEntity, false);
+                break;
+            case WeaponBehaviors.Dumb:
+                AIMgr.inst.HandleDumbMove(entities, targetPosition , false);
+                break;
+            case WeaponBehaviors.Smart:
+                AIMgr.inst.HandleSmartIntercept(entities, targetEntity, false);
+                break;
+            default:
+                AIMgr.inst.HandleFollow(entities, targetEntity, Vector3.zero, false);
+                break;
+        }
+    }
     public void LaunchWeapon(Entity launchingEntity, WeaponData wd , Entity target, Vector3 targetPosition)
     {
         if(wd == null) Debug.Log("Could not find weapon: " + wd.weaponEntityType);
@@ -60,84 +114,30 @@ public class WeaponsMgr : MonoBehaviour
         }
     }
 
-    IEnumerator TargetEntity(Entity weapon, WeaponData wd, Entity targetEntity, Vector3 targetPosition)
-    {
-        yield return new WaitForFixedUpdate();
-        List<Entity> entities = new List<Entity>();
-        entities.Add(weapon);
-        switch(wd.behaviorType)
-        {
-            case WeaponBehaviors.SurfaceInterceptor:
-                AIMgr.inst.HandleIntercept(entities, targetEntity, false);
-                break;
-            case WeaponBehaviors.AirInterceptor:
-                AIMgr.inst.Handle3dIntercept(entities, targetEntity, false);
-                break;
-            case WeaponBehaviors.Dumb:
-                AIMgr.inst.HandleDumbMove(entities, targetPosition , false);
-                break;
-            case WeaponBehaviors.Smart:
-                AIMgr.inst.HandleSmartIntercept(entities, targetEntity, false);
-                break;
-            default:
-                AIMgr.inst.HandleFollow(entities, targetEntity, Vector3.zero, false);
-                break;
-        }
-    }
-
-   
-    public void WeaponDone(Entity weapon)
-    {
-        Entity ent = weapons.Find(x => x.name.Contains(weapon.name));
-        if(ent != null)
-        {
-            weapons.Remove(ent);
-        }
-    }
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    public void handleWeapon(Vector2 mousePos, WeaponBehaviors behaviorType){
-         List<Entity> selectedEntities = SelectionMgr.inst.selectedEntities;
-        if (selectedEntities == null) return;
-        foreach (Entity selectedEnt in selectedEntities)
-        {
-            WeaponsAspect weaponsAspect = selectedEnt.GetComponentInChildren<WeaponsAspect>();
-            if (weaponsAspect == null) continue;
-            WeaponData wd = weaponsAspect.weapons.Find(x => x.behaviorType == behaviorType);
-            if (wd != null)
-            {
-                RaycastHit hit;
-                Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
-                Entity targetEntity = UIMgr.inst.FindClosestEntInRadius(hit.point);
-                if (hit.point != null)
-                {
-                    if (behaviorType == WeaponBehaviors.Dumb){
-                        LaunchWeapon(selectedEnt, wd, null, hit.point);
-                        continue;
-                    }
     
-                    if (targetEntity != null && targetEntity.owner != selectedEnt.owner)
-                    {
-                        Debug.Log("Smart selected: " + selectedEnt.name + " with weapon: " + wd.weaponEntityType + " at " + targetEntity.name);
-                        LaunchWeapon(selectedEnt, wd, targetEntity, hit.point);
-                    }
-                    
-                }
-            }
+    public float GetDamage(EntityType weaponType, EntityType targetType)
+    {
+        // Find the WeaponDamage entry for this weapon type
+        WeaponDamage weaponDamage = weaponDamages.Find(wd => wd.weaponType == weaponType);
+
+        // If no weapon damage entry found, return 0
+        if (weaponDamage == null)
+        {
+            Debug.LogWarning($"No damage entry found for weapon type: {weaponType}");
+            return 0f;
         }
 
+        // Find the TargetDamage entry for this target type
+        TargetDamage targetDamage = weaponDamage.targetDamages.Find(td => td.targetType == targetType);
+
+        // If no target damage entry found, return 0
+        if (targetDamage == null)
+        {
+            Debug.LogWarning($"No damage entry found for weapon type: {weaponType} against target type: {targetType}");
+            return 0f;
+        }
+
+        return targetDamage.damageValue;
     }
     public void DestroyEntity(Entity entity) {
     
@@ -168,10 +168,12 @@ public class WeaponsMgr : MonoBehaviour
         Destroy(entity.gameObject);
     }
     
+    
+    
+    // All context menu functions are defined here
+    [Header("Context Menu")]
     public GameObject MovableEntitiesRoot;
-    public GameObject WeaponsAspectPrefab;
-
-    [ContextMenu("AddWeaponsAspectToAllEntities")]
+    [ContextMenu("Add Weapons Aspect To All Entities")]
     public void AddWeaponsAspectToAllEntities()
     {
         foreach(UIAspect uiAspect in MovableEntitiesRoot.transform.GetComponentsInChildren<UIAspect>(true))
@@ -181,13 +183,18 @@ public class WeaponsMgr : MonoBehaviour
             {
                 if(!aspectRoot.transform.parent.name.Contains("DDG"))
                 {
-                    //GameObject go = Instantiate(WeaponsAspectPrefab, WeaponsAspectPrefab.transform);
                     Debug.Log("Added weapons aspect to " + aspectRoot.transform.parent.name);
                 }
             }
         }
     }
 
+    // if there is no csv file, it create one with default values 
+    // we can name the csv File  as we want from the inspector
+    // this saves a damage matrix to a CSV file 
+    
+    public string fileNameCSV = "WeaponDamageMatrix.csv";
+    public TextAsset csvFile;
     [ContextMenu("Damage Matrix to CSV")]
     public void DamageMatrixToCSV()
     {
@@ -269,6 +276,7 @@ public class WeaponsMgr : MonoBehaviour
         File.WriteAllText(filePath, csvContent.ToString());
         Debug.Log("Damage matrix saved to " + filePath);
     }
+    // This Loads the CSV file and stores all the damage values
     [ContextMenu("CSV To Damage Matrix")]
     public void CSVToDamageMatrix()
     {
@@ -373,28 +381,5 @@ public class WeaponsMgr : MonoBehaviour
 
         Debug.Log("Damage matrix loaded from " + filePath);
     }
-    public float GetDamage(EntityType weaponType, EntityType targetType)
-    {
-        // Find the WeaponDamage entry for this weapon type
-        WeaponDamage weaponDamage = weaponDamages.Find(wd => wd.weaponType == weaponType);
-
-        // If no weapon damage entry found, return 0
-        if (weaponDamage == null)
-        {
-            Debug.LogWarning($"No damage entry found for weapon type: {weaponType}");
-            return 0f;
-        }
-
-        // Find the TargetDamage entry for this target type
-        TargetDamage targetDamage = weaponDamage.targetDamages.Find(td => td.targetType == targetType);
-
-        // If no target damage entry found, return 0
-        if (targetDamage == null)
-        {
-            Debug.LogWarning($"No damage entry found for weapon type: {weaponType} against target type: {targetType}");
-            return 0f;
-        }
-
-        return targetDamage.damageValue;
-    }
+    
 }

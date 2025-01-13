@@ -103,11 +103,8 @@ public class UnitAI : MonoBehaviour
             Follow follow = (Follow)cmd;
             follow.Stop();
             follows.Remove(follow);
-        }
-            
+        }            
         commands.RemoveAt(index);
-
-
     }
     
     public void StopAndRemoveAllCommands()

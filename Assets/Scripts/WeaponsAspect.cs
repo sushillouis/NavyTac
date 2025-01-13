@@ -15,13 +15,9 @@ public class WeaponData
     public Vector3 launchLocation;
     public Vector3 launchDirection;
     public float ammoCount;
-
     [NonSerialized]
-
     public float lastShotTime;
-
 }
-
 public class WeaponsAspect : MonoBehaviour
 {
     public Entity entity;
@@ -36,16 +32,5 @@ public class WeaponsAspect : MonoBehaviour
             wd.lastShotTime = -wd.cooldown;
         }
 
-    }
-
-    // Start is called before the first frame update
-    void Start() {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
