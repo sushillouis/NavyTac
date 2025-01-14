@@ -18,6 +18,10 @@ public class AudioMgr : MonoBehaviour
     public float ambientVolume;
     [Range(0, 1)]
     public float bgmVolume;
+    [Range(0, 1)]
+    public float UIVolume;
+
+    public AudioSource buttonSound;
 
     void Awake()
     {
@@ -36,6 +40,7 @@ public class AudioMgr : MonoBehaviour
         mixer.SetFloat("MasterVolume", ScaleSound(masterVolume));
         mixer.SetFloat("AmbientVolume", ScaleSound(ambientVolume));
         mixer.SetFloat("BGMVolume", ScaleSound(bgmVolume));
+        mixer.SetFloat("UIVolume", ScaleSound(UIVolume));
 
         if (muteSound)
         {
@@ -48,5 +53,10 @@ public class AudioMgr : MonoBehaviour
     {
         float input = scaleConst * (Mathf.Log10(sliderValue + 0.1f) + 1);
         return Mathf.Lerp(-80f, 0f, input);
+    }
+
+    public void PlayButtonSound()
+    {
+        buttonSound.Play();
     }
 }
