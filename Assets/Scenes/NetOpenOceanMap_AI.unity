@@ -497,7 +497,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.02e-43, y: 1.78e-43, z: 6.9621e-41, w: 1.1295317e-19}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 6e-44, z: 5.6e-44, w: 4.8195e-41}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -1149,6 +1149,7 @@ MonoBehaviour:
   - {fileID: 1101535870444392007, guid: c8004372dfb0fe04b9bbdc6347b3d8fd, type: 3}
   - {fileID: 975355222}
   - {fileID: 2027549853}
+  - {fileID: 2035721990061947620, guid: dbb20000d4074c84cb8560863fef38b0, type: 3}
   entitiesRoot: {fileID: 1142393662}
   entities: []
   entityId: 0
@@ -1924,6 +1925,7 @@ MonoBehaviour:
   weapons: []
   judeMissilePrefab: {fileID: 6607427578281771949, guid: 20ffa97720a4a0943b7d279dbd93cfb6,
     type: 3}
+  judeAAMissilePrefab: {fileID: 0}
   MovableEntitiesRoot: {fileID: 382953079}
   WeaponsAspectPrefab: {fileID: 2140764748}
 --- !u!1 &544093354 stripped
@@ -4419,7 +4421,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.01, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 10, y: 1, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2125724151}
@@ -5051,6 +5053,12 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1783885011}
   m_CullTransparentMesh: 1
+--- !u!1 &1842399891 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2124383089996945971, guid: 0b142338381541d4a8bd3360a7df145e,
+    type: 3}
+  m_PrefabInstance: {fileID: 2125724150}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1852731777
 GameObject:
   m_ObjectHideFlags: 0
@@ -6023,6 +6031,21 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7191540881604954376, guid: 0b142338381541d4a8bd3360a7df145e,
         type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 7191540881604954376, guid: 0b142338381541d4a8bd3360a7df145e,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 7191540881604954376, guid: 0b142338381541d4a8bd3360a7df145e,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 7191540881604954376, guid: 0b142338381541d4a8bd3360a7df145e,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -6071,10 +6094,20 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 7191540881604954376, guid: 0b142338381541d4a8bd3360a7df145e,
+        type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 5411729196212908098, guid: 0b142338381541d4a8bd3360a7df145e, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2124383089996945971, guid: 0b142338381541d4a8bd3360a7df145e,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2125724154}
   m_SourcePrefab: {fileID: 100100000, guid: 0b142338381541d4a8bd3360a7df145e, type: 3}
 --- !u!4 &2125724151 stripped
 Transform:
@@ -6082,6 +6115,14 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2125724150}
   m_PrefabAsset: {fileID: 0}
+--- !u!33 &2125724154
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842399891}
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &2140764748 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 161534766714707508, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
