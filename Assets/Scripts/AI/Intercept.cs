@@ -32,9 +32,14 @@ public class Intercept : Follow
         range = diffToMovePosition.magnitude;
         timeOnTarget = range / entity.speed;
 
-        if(missileLaunchTimer<=0) {
+        if(missileLaunchTimer<=0 && entity.entityClass == EntityClass.Destroyer) {
             missileLaunchTimer = 2f;
-            WeaponsMgr.inst.LaunchMissile(entity.position,targetEntity);
+            WeaponsMgr.inst.LaunchCruseMissile(entity.position,targetEntity,new(-90,0,0));
+        } else if(missileLaunchTimer<=0 && entity.entityClass == EntityClass.Airplane) {
+            missileLaunchTimer = 2f;
+            JudeMissile temp = WeaponsMgr.inst.LaunchCruseMissile(entity.position,targetEntity,new(0,entity.heading,0)).GetComponent<JudeMissile>();
+            temp.velocity = Quaternion.Euler(0,90,0)*entity.velocity;
+            temp.phase = 1;
         } else {    
             missileLaunchTimer-=Time.deltaTime;
         }
@@ -48,16 +53,20 @@ public class Intercept : Follow
     public override void Stop() {
         //base.Stop();
 
-        FXMgr.inst.CreateExplosionAt(entity.position, 1);
+        // FXMgr.inst.CreateExplosionAt(entity.position, 1);
 
         entity.desiredSpeed = 0;
         entity.speed = 0;
 
-        targetEntity.desiredSpeed = 0;
-        Vector3 sunkenOffset = new Vector3(0, -5, 0);
-        targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
-        targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
-        targetEntity.transform.position += sunkenOffset;
+        LineMgr.inst.DestroyLR(line);
+
+        line=null;
+
+        // targetEntity.desiredSpeed = 0;
+        // Vector3 sunkenOffset = new Vector3(0, -5, 0);
+        // targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
+        // targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
+        // targetEntity.transform.position += sunkenOffset;
 
     }
 

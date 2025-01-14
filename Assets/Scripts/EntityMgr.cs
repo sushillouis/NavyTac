@@ -47,6 +47,26 @@ public class EntityMgr : MonoBehaviour
         return entity;
     }
 
+    public PlaneEntity CreatePlaneEntity(Vector3 position, Vector3 eulerAngles, TactPlayer player) {
+        PlaneEntity entity = null;
+        GameObject entityPrefab = entityPrefabs.Find(x => (x.GetComponent<Entity>().entityType == EntityType.Plane));
+        if(entityPrefab != null) {
+            GameObject entityGo = Instantiate(entityPrefab, position, Quaternion.Euler(eulerAngles), entitiesRoot.transform);
+            if(entityGo != null) {
+                entity = entityGo.GetComponent<PlaneEntity>();
+                entity.entityId = entityId;
+                entityGo.name = "Plane" + entityId++;
+                entity.owner = player;
+                entity.heading = entity.desiredHeading = eulerAngles.y;
+                entities.Add(entity);
+                entitiesDict.Add(entity.entityId, entity);
+            }
+        }
+        DistanceMgr.inst.Initialize();
+
+        return entity;
+    }
+
 
 
 

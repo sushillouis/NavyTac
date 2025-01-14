@@ -56,7 +56,7 @@ public class UnitAI : MonoBehaviour
         }
     }
 
-    void StopAndRemoveCommand(int index)
+    protected void StopAndRemoveCommand(int index)
     {
         Command cmd = commands[index];
         commands.RemoveAt(index);
@@ -88,10 +88,10 @@ public class UnitAI : MonoBehaviour
         }
     }
 
-    public void AddCommand(Command c)
+    public virtual void AddCommand(Command c)
     {
         //print("Adding command; " + c.ToString());
-        c.Init();
+
         commands.Add(c);
         if(c is Intercept3d)
             intercept3ds.Add(c as Intercept3d);
@@ -101,6 +101,7 @@ public class UnitAI : MonoBehaviour
             follows.Add(c as Follow);
         else
             moves.Add(c as Move);
+        c.Init();
     }
 
     public void SetCommand(Command c)
@@ -117,7 +118,7 @@ public class UnitAI : MonoBehaviour
     }
     //---------------------------------
 
-    public void DecorateAll()
+    public virtual void DecorateAll()
     {
         Command prior = null;
         foreach(Command c in commands) {
@@ -127,7 +128,7 @@ public class UnitAI : MonoBehaviour
     }
 
     //decoration logic (UI logic) in general is always convoluted. Ugh
-    public void Decorate(Command prior, Command current)
+    public virtual void Decorate(Command prior, Command current)
     {
         if (current.line != null) {
             current.line.gameObject.SetActive(entity.isSelected);

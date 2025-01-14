@@ -24,6 +24,8 @@ public enum EntityType
     CVN75,
     Submarine,
     AntiShipMissile,
+    AAMissle,
+    Plane,
 }
 
 [Serializable]

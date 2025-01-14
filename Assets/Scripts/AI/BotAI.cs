@@ -29,6 +29,7 @@ public class BotAI
     readonly TactPlayer self;
     public BotAI(TactPlayer player) {
         self = player;
+        tickCounter = refreshrate;
     }
 
     public void Tick() {
@@ -56,6 +57,7 @@ public class BotAI
                             subGroup.Clear();
                         }
                     break;
+                    case EntityClass.Airplane:
                     case EntityClass.Carrier:
                     case EntityClass.Cruiser:
                     case EntityClass.Destroyer:
@@ -108,12 +110,14 @@ public class BotAI
 
         // bool[] attacking = new bool[enemyEnts.Count];
         List<Group> tempAttackingGroups = new(attackingGroups);
+        Debug.Log("TAGCount: "+tempAttackingGroups.Count);
         enemyEnts.Sort();
         int attackingIterator = 0;
         for (int i =0;i<attackingGroups.Count*2;i++) {
             if(enemyEnts.Count==0 || tempAttackingGroups.Count==0) {
                 break; 
             }
+            Debug.Log("AttackingIterator: "+attackingIterator);
             tempAttackingGroups.Sort(new GroupProximityComparer(enemyEnts[0].position));
             if(tempAttackingGroups[attackingIterator].target==null) {
                 tempAttackingGroups[attackingIterator].FindTarget();
@@ -139,10 +143,12 @@ public class BotAI
                         continue;
                     }
                     tempAttackingGroups.RemoveAt(attackingIterator);
+                    attackingIterator--;
                     continue;
                 }
 
                 if(totalStrength>tempAttackingGroups[attackingIterator].GetTotalStrength() * agressiveness) {
+                    Debug.Log("Total Strength: "+totalStrength);
                     attackingIterator++;
                     continue;
                 }

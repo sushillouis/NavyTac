@@ -126,7 +126,7 @@ public class GameMgr : MonoBehaviour
     public void OpenOcean1x1() {
         Vector3 posPlayer1 = new Vector3(0, 0, 0);
         // Vector3 posPlayer2 = new Vector3(0, 0, 1 * Utils.FromNauticalMiles);
-        Vector3 posAiPlayer3 = new Vector3(0,0,1 * Utils.FromNauticalMiles);
+        Vector3 posAiPlayer3 = new Vector3(0,0,1 * Utils.FromNauticalMiles*5);
         // TactPlayer aiP3 = PlayerMgr.inst.CreatePlayer("AI1",404,PlayerSide.SideThree,Color.green,true);
         MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1);
         // MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
@@ -138,32 +138,42 @@ public class GameMgr : MonoBehaviour
         Entity initEnt = EntityMgr.inst.CreateEntity(EntityType.CVN75, initPos, eulerAngles, player);
         Entity tmpEnt;
 
+
+        //Plane over Carrier
+        Vector3 offset = Vector3.up*500;
+        PlaneEntity tempPlane = EntityMgr.inst.CreatePlaneEntity(initPos + offset, eulerAngles, player);
+
+        for(int i = 0;i<6;i++) {
+            offset += Vector3.right*100;
+            tempPlane = EntityMgr.inst.CreatePlaneEntity(initPos + offset, eulerAngles, player);
+        }
         //Escort on right
-        Vector3 offset = initEnt.transform.right * 1000;
+        offset = initEnt.transform.right * 10000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
 
 
         //USV on right
-        offset = tmpEnt.transform.right * 500;
+        offset = tmpEnt.transform.right * 5000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
 
         //USV in front
-        offset = initEnt.transform.forward * 1000;
+        offset = initEnt.transform.forward * 10000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
 
         //USV in behind
-        offset = -initEnt.transform.forward * 1000;
+        offset = -initEnt.transform.forward * 10000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
 
         //Escort on left
-        offset = -initEnt.transform.right * 1000;
+        offset = -initEnt.transform.right * 10000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
-        /*
+
+    
         //USV on left
-        offset = -initEnt.transform.right * 500;
+        offset = -initEnt.transform.right * 5000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
 
-        offset = initEnt.transform.forward * 500;
+        offset = initEnt.transform.forward * 5000;
         offset.x -= 250;
         for(int i = 0; i < 5; i++) {
             tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);
@@ -175,7 +185,7 @@ public class GameMgr : MonoBehaviour
             tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);
             offset.x += 100;
         }
-        */
+
     }
 
 }

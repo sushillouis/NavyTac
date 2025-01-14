@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class JudeMissile : MonoBehaviour
+public class JudeAAMissile : MonoBehaviour
 {
     public float thrust =100f;
     public float turnStrength = 90f;
     public float maxSpeed = 1000f;
-    public float cruseAltitude = 500f;
+    // public float cruseAltitude = 500f;
     public float terminalRadius;
     public Entity target = null;
     [SerializeField] PIDController pitchPID;
@@ -15,13 +15,13 @@ public class JudeMissile : MonoBehaviour
     [SerializeField] PIDController yawPID;
     [SerializeField] Vector3 velocity = Vector3.zero;
     [SerializeField] Vector3 angularVelocity = Vector3.zero;
-    [SerializeField] Wake wake;
-    [SerializeField] int phase = 0;
+    // [SerializeField] Wake wake;
+    // [SerializeField] int phase = 0;
     static Vector3 flat = new(1,0,1);
 
     void FixedUpdate()
     {
-        if(target==null || (phase==2 && Vector3.Distance(transform.position,target.position)<60f)) {
+        if(target==null) {
             target=EntityMgr.inst.entities[0];
             FXMgr.inst.CreateExplosionAt(transform.position);
             Destroy(gameObject);
@@ -30,25 +30,8 @@ public class JudeMissile : MonoBehaviour
         float throttle = 1f;
         Vector3 targetVector = Vector3.up;
         
-        if(phase==0) {
-            if(transform.position.y>=cruseAltitude-1f) {
-                phase=1;
-            }
-        } else if(phase==1) {
-            throttle=.8f;
-            Vector3 temp = target.position-transform.position;
-            temp.y=0;
-            targetVector=temp.normalized+(.5f*Vector3.up);
-            Vector3 temp1 = transform.position;
-            temp1.y=0;
-            Vector3 temp2 = target.position;
-            temp2.y=0;
-            if(Vector3.Distance(temp1,temp2)<terminalRadius) {
-                phase=2;
-            }
-        } else if(phase==2) {
-            targetVector=target.position-transform.position;
-        }
+        targetVector=target.position-transform.position;
+        
         Vector3 targetAngleEuler = Quaternion.LookRotation(targetVector,Vector3.up).eulerAngles;
         float pitchThrottle = pitchPID.UpdateAngle(Time.fixedDeltaTime, transform.eulerAngles.x, targetAngleEuler.x);
         float rollThrottle = rollPID.UpdateAngle(Time.fixedDeltaTime, transform.eulerAngles.y, targetAngleEuler.y);

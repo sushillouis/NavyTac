@@ -11,7 +11,7 @@ public static class Utils {
     public static float FromNauticalMiles = 1852f;
     public const float GRAVITY = 9.8f;
     public const float DRAG_COEFFICENT = 0.04f;
-    public const float ANGULAR_DRAG_COEFFICENT = 0.01f;
+    public const float ANGULAR_DRAG_COEFFICENT = 0.02f;
     public static bool ApproximatelyEqual(float a, float b)
     {
         return (Mathf.Abs(a - b) < EPSILON);
@@ -90,7 +90,8 @@ public static class Utils {
         {EntityType.SeaBaby,5},
         {EntityType.CVN75,100},
         {EntityType.Submarine,40},
-        {EntityType.AntiShipMissile,1}
+        {EntityType.AntiShipMissile,1},
+        {EntityType.Plane,15}
     };
 
     public static readonly Dictionary<EntityType, int> strengthDict = new Dictionary<EntityType, int>{
@@ -109,7 +110,8 @@ public static class Utils {
         {EntityType.SeaBaby,5},
         {EntityType.CVN75,100},
         {EntityType.Submarine,40},
-        {EntityType.AntiShipMissile,1}
+        {EntityType.AntiShipMissile,1},
+        {EntityType.Plane,15}
     };
 
 }
