@@ -8,18 +8,32 @@ public class Group
 {
     public List<Entity> groupEntities = new List<Entity>();
     public int groupNumber = -1;
-    public bool isInitialized;
-    public bool isDone;
+    public bool isInitialized = false;
+    public bool isDone = false;
+    public bool isControl = false;
 
-    [SerializeField]
-    private List<Tactic> tactics = new List<Tactic>();
+    public List<Tactic> tactics = new List<Tactic>();
+    public List<FormationMoveTactic> formations = new List<FormationMoveTactic>();
 
     public Group(List<Entity> ents, int gn) {
+        Construct(ents, gn);
+        if(gn >= 0)
+            isControl = true;
+
+    }
+
+    public Group(List<Entity> ents) {
+        Construct(ents, -1);
+        isControl = false;
+    }
+    
+    public void Construct(List<Entity> ents, int gn) {
         groupEntities.Clear();
         foreach(Entity ent in ents)
-            groupEntities.Add(ent);
+            groupEntities.Add(ent);//copy the entity pointers to this list
         groupNumber = gn;
         tactics.Clear();
+        formations.Clear();
         isInitialized = false;
         isDone = false;
     }
@@ -63,25 +77,10 @@ public class Group
             isDone = true;
     }
 
-    [SerializeField]
-    private List<FormationMoveTactic> formations = new List<FormationMoveTactic>();
     public void Init() {
-        /*FormationMoveTactic fmt = new FormationMoveTactic(entities, new Vector3(0, 0, 2500));
-        fmt.Init();
-        tactics.Add(fmt);
-        formations.Add(fmt);*/
         isInitialized = true;
     }
 
-    public void CreateExecuteEscortMove(Vector3 pos) {
-        FormationMoveTactic fmt = new FormationMoveTactic(groupEntities, pos);
-        fmt.Init();
-        tactics.Add(fmt);
-        formations.Add(fmt);
-        isInitialized= true;
-    }
-
-    
 
     public void Tick() {
         if(tactics.Count > 0) {

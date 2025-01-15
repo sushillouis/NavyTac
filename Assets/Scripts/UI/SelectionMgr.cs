@@ -95,6 +95,7 @@ public class SelectionMgr : MonoBehaviour
             if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 
                 SelectEntity(ent, shouldClearSelection: false);
 
+        TacticalAIMgr.inst.currentGroup = new Group(new List<Entity>());
     }
     //----------------------------------------------------------------------------------------------------
 
@@ -155,6 +156,7 @@ public class SelectionMgr : MonoBehaviour
         }
     }
 
+    /*
     public void SelectEntity(Vector2 mousePos, bool shouldClearSelection = true)
     {
         RaycastHit hit;
@@ -183,6 +185,7 @@ public class SelectionMgr : MonoBehaviour
             ClearSelection();
         }
     }
+    */
 
     public void SelectEntity2(Vector2 mousePos, bool addSelection) {
         RaycastHit hit;

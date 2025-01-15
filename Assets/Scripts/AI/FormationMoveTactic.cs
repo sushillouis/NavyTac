@@ -27,6 +27,8 @@ public class FormationMoveTactic : Tactic
             highValueUnit = entities.Find(x => x.entityType == EntityType.CVN75);
         } else if(entities.Exists(x => x.entityType == EntityType.DDG51)) {
             highValueUnit = entities.Find(x => x.entityType == EntityType.DDG51);
+        } else {
+            highValueUnit = entities[0];
         }
 
         AIMgr.inst.HandleMove(new List<Entity> { highValueUnit }, movePosition, false);
@@ -71,10 +73,7 @@ public class FormationMoveTactic : Tactic
                 startAngle = Utils.Degrees360(startAngle + deltaAngle);
                 offset = RoRMath.VectorFromAngle(startAngle).normalized * distance;
             }
-
-
         }
-
     }
 
     Entity FindClosest(Entity hvu, Vector3 relativeOffset, List<Entity> escorts) {

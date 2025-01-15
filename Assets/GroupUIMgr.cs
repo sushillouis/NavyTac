@@ -70,7 +70,7 @@ public class GroupUIMgr : MonoBehaviour
 
     public void Retreive(InputAction.CallbackContext context) {
         int groupNumber = ParseContextForControlGroupNumber(context.control.path);
-        NetDebugConsole.inst.Log("Retreiving..." + context.control + " : " + groupNumber);
+        NetDebugConsole.inst?.Log("Retreiving..." + context.control + " : " + groupNumber);
         SelectionMgr.inst.SelectControlGroup(groupNumber);
     }
     int ParseContextForControlGroupNumber(string path) {
@@ -85,67 +85,26 @@ public class GroupUIMgr : MonoBehaviour
         }
     }
 
-    void HandleTacticalCommand(InputAction.CallbackContext context) {
-        //Vector2 mousePos = Mouse.current.position.value;
-        if(SelectionMgr.inst.selectedEntities.Count > 1) { // a group is more than 1
-            //Cancel single ent commands brought on by right click
-            CancelEntCommands(SelectionMgr.inst.selectedEntities);
-            UIMgr.inst.ActivateEntityCommands(false);
-
-            Vector2 mousePos = groupInputs.Tactical.CursorPosition.ReadValue<Vector2>();
-            //Debug.Log("ctx: " + context);  Debug.Log("mpos: " + mousePos);
-            worldPosAndEntity = UIMgr.inst.MousePosToWorldPosEntity(mousePos);
-            //Debug.Log(worldPosAndEntity);
-
-            Vector2 localPoint = new Vector2(0, 0);
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(mainCanvas, mousePos, null, out localPoint);
-            TacDropdownPanel.localPosition = localPoint;
-            TacDropdownPanel.gameObject.SetActive(true);
-
-            currentGroup = TacticalAIMgr.inst.CreateGroup(SelectionMgr.inst.selectedEntities);
-
-            //tacDropdown.SetValueWithoutNotify((int) TacticsType.Choose);
-        }
-    }
-
-
+ 
+    //public List<Entity> tacticalEntityList;
     void HandleTacticalCommand2(InputAction.CallbackContext context) {
         if(SelectionMgr.inst.selectedEntities.Count > 1) { // a group is more than 1
             Vector2 mousePos = groupInputs.Tactical.CursorPosition.ReadValue<Vector2>();
             worldPosAndEntity = UIMgr.inst.MousePosToWorldPosEntity(mousePos);
-            currentGroup = TacticalAIMgr.inst.CreateGroup(SelectionMgr.inst.selectedEntities);
+            commandableGroup = new Group(SelectionMgr.inst.selectedEntities);
             TacticalCommandsPanel.isVisible = true; //becomes invisible after 5 secs
-        }
+        } 
     }
 
     public WorldPosEntity worldPosAndEntity;
-    public Group currentGroup;
+    public Group commandableGroup;
 
 
     void HandleButton(TacticsType tt) {
-        //TacticsType tt = (TacticsType) i;
         Debug.Log("handling button: " + tt);
-
-        switch(tt) {
-            case TacticsType.EscortMove:
-                if(worldPosAndEntity != null)
-                    currentGroup.CreateExecuteEscortMove(worldPosAndEntity.worldPosition);
-                break;
-            case TacticsType.Scout:
-            case TacticsType.AtkDistract:
-            case TacticsType.Pincer:
-            case TacticsType.AtkMove:
-            case TacticsType.Defend:
-                Debug.Log("Not implemented yet");
-                break;
-            case TacticsType.Cancel:
-                CancelEntCommands(currentGroup.groupEntities);
-                break;
-            default:
-                Debug.Log("None: Not implemented yet");
-                break;
-        }
+        TacticalAIMgr.inst.HandleTacticalCommand(commandableGroup, worldPosAndEntity, tt);
         TacticalCommandsPanel.isVisible = false;
+        TacticalCommandsPanel.StopAllCoroutines();
     }
 
     void InitGroupCommandButtons() {
@@ -314,3 +273,27 @@ public class GroupUIMgr : MonoBehaviour
         tacDropdown.AddOptions(options);
     }
 */
+/*
+ void HandleTacticalCommand(InputAction.CallbackContext context) {
+     //Vector2 mousePos = Mouse.current.position.value;
+     if(SelectionMgr.inst.selectedEntities.Count > 1) { // a group is more than 1
+         //Cancel single ent commands brought on by right click
+         CancelEntCommands(SelectionMgr.inst.selectedEntities);
+         UIMgr.inst.ActivateEntityCommands(false);
+
+         Vector2 mousePos = groupInputs.Tactical.CursorPosition.ReadValue<Vector2>();
+         //Debug.Log("ctx: " + context);  Debug.Log("mpos: " + mousePos);
+         worldPosAndEntity = UIMgr.inst.MousePosToWorldPosEntity(mousePos);
+         //Debug.Log(worldPosAndEntity);
+
+         Vector2 localPoint = new Vector2(0, 0);
+         RectTransformUtility.ScreenPointToLocalPointInRectangle(mainCanvas, mousePos, null, out localPoint);
+         TacDropdownPanel.localPosition = localPoint;
+         TacDropdownPanel.gameObject.SetActive(true);
+
+         commandableGroup = TacticalAIMgr.inst.CreateGroup(SelectionMgr.inst.selectedEntities);
+
+         //tacDropdown.SetValueWithoutNotify((int) TacticsType.Choose);
+     }
+ }
+ */
