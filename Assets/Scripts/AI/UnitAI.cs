@@ -41,6 +41,8 @@ public class UnitAI : MonoBehaviour
     public List<Transform> pfList = new List<Transform>();
     public Dictionary<Entity, Potential> potentialsD;
     public List<EntityPotential> potentialsL;
+    public delegate void DieEventMethod(Entity ent);
+    public List<DieEventMethod> dieEvents = new();
 
     // Update is called once per frame
     void FixedUpdate()
@@ -54,6 +56,19 @@ public class UnitAI : MonoBehaviour
                 DecorateAll();
             }
         }
+    }
+
+    public void Die() {
+        StopAndRemoveAllCommands();
+        FXMgr.inst.CreateExplosionAt(entity.position);
+        EntityMgr.inst.entities.Remove(entity);
+        EntityMgr.inst.entitiesDict.Remove(entity.entityId);
+        entity.gameObject.SetActive(false);
+        for(int i =0;i<dieEvents.Count;i++) {
+            dieEvents[i](entity);
+        }
+        dieEvents.Clear();
+        //Destroy(entity.gameObject);
     }
 
     protected void StopAndRemoveCommand(int index)

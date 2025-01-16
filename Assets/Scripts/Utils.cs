@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -12,6 +13,7 @@ public static class Utils {
     public const float GRAVITY = 9.8f;
     public const float DRAG_COEFFICENT = 0.04f;
     public const float ANGULAR_DRAG_COEFFICENT = 0.02f;
+    public static Vector3 flat = new(1,0,1);
     public static bool ApproximatelyEqual(float a, float b)
     {
         return (Mathf.Abs(a - b) < EPSILON);
@@ -112,6 +114,11 @@ public static class Utils {
         {EntityType.Submarine,40},
         {EntityType.AntiShipMissile,1},
         {EntityType.Plane,15}
+    };
+
+    public static readonly Dictionary<(WeaponType, EntityClass), float> weaponDamageScalar = new() {
+        {(WeaponType.AAMissle,EntityClass.Airplane), 2f},
+        {(WeaponType.AAMissle,EntityClass.Destroyer), .1f},
     };
 
 }

@@ -10,8 +10,9 @@ public class PlaneMove : Move
 
     public override void Init() {
         //Debug.Log("MoveInit:\tMoving to: " + movePosition);
-        line = LineMgr.inst.CreateMoveLine(entity.position, movePosition);
+        line = LineMgr.inst.CreateMoveLine(entity.position, movePosition+entity.position.y*Vector3.up);
         line.gameObject.SetActive(false);
+        doneDistanceSq=10000f;
     }
 
 
@@ -24,5 +25,10 @@ public class PlaneMove : Move
         range = diffToMovePosition.magnitude;
         timeOnTarget = range / entity.speed;
 
+    }
+
+    public override bool IsDone()
+    {
+        return (Vector3.Scale(entity.position,Utils.flat) - movePosition).sqrMagnitude < doneDistanceSq;
     }
 }

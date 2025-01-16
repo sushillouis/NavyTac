@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
@@ -16,7 +17,6 @@ public class JudeOriented3dPID : OrientedPhysics
     [SerializeField] Vector3 angularVelocity = Vector3.zero;
     [SerializeField] int phase = 0;
     [SerializeField] Transform parentTransform;
-    static Vector3 flat = new(1,0,1);
     public const float LIFT_COFFEFICENT = 0.8f;
 
     /// <summary>
@@ -55,8 +55,12 @@ public class JudeOriented3dPID : OrientedPhysics
         // }
         Vector3 targetAngleEuler = Quaternion.LookRotation(targetVector,Vector3.up).eulerAngles;
         float pitchThrottle = pitchPID.UpdateAngle(Time.fixedDeltaTime, parentTransform.eulerAngles.x, targetAngleEuler.x);
-        float rollThrottle = rollPID.UpdateAngle(Time.fixedDeltaTime, parentTransform.eulerAngles.y, targetAngleEuler.y);
-        float yawThrottle = yawPID.UpdateAngle(Time.fixedDeltaTime, parentTransform.eulerAngles.z, targetAngleEuler.z);
+        float yawThrottle = rollPID.UpdateAngle(Time.fixedDeltaTime, parentTransform.eulerAngles.y, targetAngleEuler.y);
+        targetAngleEuler.z= (parentTransform.eulerAngles.y-targetAngleEuler.y)*Math.Abs(yawThrottle)*.66f;
+        if(Mathf.Abs(targetAngleEuler.z)>90) {
+            targetAngleEuler.z/=2;
+        }
+        float rollThrottle = yawPID.UpdateAngle(Time.fixedDeltaTime, parentTransform.eulerAngles.z, targetAngleEuler.z);
 
         // print("Pitch: "+pitchThrottle);
         // print("Roll: "+rollThrottle);
@@ -72,22 +76,22 @@ public class JudeOriented3dPID : OrientedPhysics
         entity.velocity+=throttle*thrust*Time.fixedDeltaTime*parentTransform.forward;
         
         angularVelocity.x+=pitchThrottle*turnStrength*Time.fixedDeltaTime;
-        angularVelocity.y+=rollThrottle*turnStrength*Time.fixedDeltaTime;
-        angularVelocity.z+=yawThrottle*turnStrength*Time.fixedDeltaTime;
+        angularVelocity.y+=yawThrottle*turnStrength*Time.fixedDeltaTime;
+        angularVelocity.z+=rollThrottle*turnStrength*Time.fixedDeltaTime;
 
-        float steepness = Vector3.Angle(parentTransform.forward,Vector3.Scale(parentTransform.forward,flat));
+        float steepness = Vector3.Angle(parentTransform.forward,Vector3.Scale(parentTransform.forward,Utils.flat));
 
         if(steepness>90) {
             steepness-=90;
         }
 
-        float tempY = Mathf.Abs(parentTransform.eulerAngles.y);
+        float rollAmmount = Mathf.Abs(parentTransform.eulerAngles.z);
 
-        while(tempY>90) {
-            tempY-=90;
+        while(rollAmmount>90) {
+            rollAmmount-=90;
         }
 
-        float liftFactor = 1-((1-(steepness/90))*(1-(tempY/90))*LIFT_COFFEFICENT);
+        float liftFactor = 1-((1-(steepness/90))*(1-(rollAmmount/90))*LIFT_COFFEFICENT);
         
 
         entity.velocity+=Utils.GRAVITY*Time.fixedDeltaTime*Vector3.down*liftFactor;
@@ -101,5 +105,8 @@ public class JudeOriented3dPID : OrientedPhysics
         velocityDrag=Mathf.Clamp(velocityDrag,0f,1f);
         angularVelocity*=1-angluarDrag;
         entity.velocity*=1-velocityDrag;
+
+        entity.speed=entity.velocity.magnitude;
+        
     }
 }

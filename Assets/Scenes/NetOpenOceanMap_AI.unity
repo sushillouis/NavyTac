@@ -1925,7 +1925,8 @@ MonoBehaviour:
   weapons: []
   judeMissilePrefab: {fileID: 6607427578281771949, guid: 20ffa97720a4a0943b7d279dbd93cfb6,
     type: 3}
-  judeAAMissilePrefab: {fileID: 0}
+  judeAAMissilePrefab: {fileID: 6607427578281771949, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+    type: 3}
   MovableEntitiesRoot: {fileID: 382953079}
   WeaponsAspectPrefab: {fileID: 2140764748}
 --- !u!1 &544093354 stripped
@@ -3065,6 +3066,79 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1054568532}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1110961804
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -507.6563
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.36
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 77.086945
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6607427578281771949, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_Name
+      value: JudeAAMissile
+      objectReference: {fileID: 0}
+    - target: {fileID: 6607427578281771949, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 840bcb58a986a4d4b8aa5011f2788ed5, type: 3}
 --- !u!114 &1114976719 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4420802208855306084, guid: 18405f1d958baba43a6188f28c98fb43,
@@ -9008,3 +9082,4 @@ SceneRoots:
   - {fileID: 2144337140}
   - {fileID: 404090926}
   - {fileID: 484715720}
+  - {fileID: 1110961804}

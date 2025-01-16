@@ -126,7 +126,7 @@ public class GameMgr : MonoBehaviour
     public void OpenOcean1x1() {
         Vector3 posPlayer1 = new Vector3(0, 0, 0);
         // Vector3 posPlayer2 = new Vector3(0, 0, 1 * Utils.FromNauticalMiles);
-        Vector3 posAiPlayer3 = new Vector3(0,0,1 * Utils.FromNauticalMiles*5);
+        Vector3 posAiPlayer3 = new Vector3(0,0,1 * Utils.FromNauticalMiles*2);
         // TactPlayer aiP3 = PlayerMgr.inst.CreatePlayer("AI1",404,PlayerSide.SideThree,Color.green,true);
         MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1);
         // MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
@@ -143,10 +143,11 @@ public class GameMgr : MonoBehaviour
         Vector3 offset = Vector3.up*500;
         PlaneEntity tempPlane = EntityMgr.inst.CreatePlaneEntity(initPos + offset, eulerAngles, player);
 
-        for(int i = 0;i<6;i++) {
+        for(int i = 0;i<20;i++) {
             offset += Vector3.right*100;
             tempPlane = EntityMgr.inst.CreatePlaneEntity(initPos + offset, eulerAngles, player);
         }
+        /*
         //Escort on right
         offset = initEnt.transform.right * 10000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
@@ -185,7 +186,7 @@ public class GameMgr : MonoBehaviour
             tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);
             offset.x += 100;
         }
-
+        */
     }
 
 }

@@ -18,15 +18,32 @@ public class JudeMissile : MonoBehaviour
     [SerializeField] Vector3 angularVelocity = Vector3.zero;
     [SerializeField] Wake wake;
     public int phase = 0;
-    static Vector3 flat = new(1,0,1);
     public const float LIFT_COFFEFICENT = 0.85f;
+
+    public void Init() {
+        target.ai.dieEvents.Add(TargetDead);
+    }
+
+    public void TargetDead(Entity target) {
+        //TODO Find New Target
+        FXMgr.inst.CreateExplosionAt(transform.position);
+        Destroy(gameObject);
+    }
+
+    public void Explode() {
+        FXMgr.inst.CreateExplosionAt(transform.position);
+        target.ai.dieEvents.Remove(TargetDead);
+        Destroy(gameObject);
+    }
 
     void FixedUpdate()
     {
-        if(target==null || (phase==2 && (Vector3.Distance(transform.position,target.position)<60f || transform.position.y<=2f))) {
-            target=EntityMgr.inst.entities[0];
-            FXMgr.inst.CreateExplosionAt(transform.position);
-            Destroy(gameObject);
+        if(phase==2 && (Vector3.Distance(transform.position,target.position)<60f)) {
+            WeaponsMgr.inst.CalculateAndDealDamage(target, WeaponType.CruseMissile, 25f);
+            Explode();
+            return;
+        } else if(phase==2 && transform.position.y<=2f) {
+            Explode();
             return;
         }
         float throttle = .5f;
@@ -54,8 +71,8 @@ public class JudeMissile : MonoBehaviour
         }
         Vector3 targetAngleEuler = Quaternion.LookRotation(targetVector,Vector3.up).eulerAngles;
         float pitchThrottle = pitchPID.UpdateAngle(Time.fixedDeltaTime, transform.eulerAngles.x, targetAngleEuler.x);
-        float rollThrottle = rollPID.UpdateAngle(Time.fixedDeltaTime, transform.eulerAngles.y, targetAngleEuler.y);
-        float yawThrottle = yawPID.UpdateAngle(Time.fixedDeltaTime, transform.eulerAngles.z, targetAngleEuler.z);
+        float yawThrottle = rollPID.UpdateAngle(Time.fixedDeltaTime, transform.eulerAngles.y, targetAngleEuler.y);
+        float rollThrottle = yawPID.UpdateAngle(Time.fixedDeltaTime, transform.eulerAngles.z, targetAngleEuler.z);
 
         // print("Pitch: "+pitchThrottle);
         // print("Roll: "+rollThrottle);
@@ -71,10 +88,10 @@ public class JudeMissile : MonoBehaviour
         velocity+=throttle*thrust*Time.fixedDeltaTime*transform.forward;
         
         angularVelocity.x+=pitchThrottle*turnStrength*Time.fixedDeltaTime;
-        angularVelocity.y+=rollThrottle*turnStrength*Time.fixedDeltaTime;
-        angularVelocity.z+=yawThrottle*turnStrength*Time.fixedDeltaTime;
+        angularVelocity.y+=yawThrottle*turnStrength*Time.fixedDeltaTime;
+        angularVelocity.z+=rollThrottle*turnStrength*Time.fixedDeltaTime;
 
-        float steepness = Vector3.Angle(transform.forward,Vector3.Scale(transform.forward,flat));
+        float steepness = Vector3.Angle(transform.forward,Vector3.Scale(transform.forward,Utils.flat));
 
         if(steepness>90) {
             steepness-=90;

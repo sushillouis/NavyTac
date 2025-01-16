@@ -9,10 +9,16 @@ public class Intercept : Follow
     float missileLaunchTimer = 2f;
     int missileCount = 20;
     float missileLaunchCooldown = 2f;
+    bool isDoneOverride = false;
     public Intercept(Entity ent, Entity target): base(ent, target, Vector3.zero)
     {
         //Follow does all the work
 
+    }
+
+    public void TargetDead(Entity target) {
+        Stop();
+        isDoneOverride=true;
     }
 
     public override void Init()
@@ -20,6 +26,7 @@ public class Intercept : Follow
         //Debug.Log("Intercept:\t ing: " + targetEntity.gameObject.name);
         line = LineMgr.inst.CreateInterceptLine(entity.position, targetEntity.position, targetEntity.position);
         line.gameObject.SetActive(false);
+        targetEntity.ai.dieEvents.Add(TargetDead);
     }
 
     public override void Tick()
@@ -37,9 +44,14 @@ public class Intercept : Follow
             WeaponsMgr.inst.LaunchCruseMissile(entity.position,targetEntity,new(-90,0,0));
         } else if(missileLaunchTimer<=0 && entity.entityClass == EntityClass.Airplane) {
             missileLaunchTimer = 2f;
-            JudeMissile temp = WeaponsMgr.inst.LaunchCruseMissile(entity.position,targetEntity,new(0,entity.heading,0)).GetComponent<JudeMissile>();
-            temp.velocity = Quaternion.Euler(0,90,0)*entity.velocity;
-            temp.phase = 1;
+            if(targetEntity.entityClass==EntityClass.Airplane) {
+                JudeAAMissile temp = WeaponsMgr.inst.LaunchAAMissile(entity.position,targetEntity,new(0,entity.heading,0)).GetComponent<JudeAAMissile>();
+                temp.velocity = Quaternion.Euler(0,90,0)*entity.velocity;
+            } else {
+                JudeMissile temp = WeaponsMgr.inst.LaunchCruseMissile(entity.position,targetEntity,new(0,entity.heading,0)).GetComponent<JudeMissile>();
+                temp.velocity = Quaternion.Euler(0,90,0)*entity.velocity;
+                temp.phase = 1;
+            }
         } else {    
             missileLaunchTimer-=Time.deltaTime;
         }
@@ -47,7 +59,7 @@ public class Intercept : Follow
 
     public override bool IsDone()
     {
-        return diffToMovePosition.sqrMagnitude < doneDistanceSq;
+        return diffToMovePosition.sqrMagnitude < doneDistanceSq || isDoneOverride;
     }
 
     public override void Stop() {
@@ -61,6 +73,8 @@ public class Intercept : Follow
         LineMgr.inst.DestroyLR(line);
 
         line=null;
+        
+        targetEntity.ai.dieEvents.Remove(TargetDead);
 
         // targetEntity.desiredSpeed = 0;
         // Vector3 sunkenOffset = new Vector3(0, -5, 0);
@@ -69,5 +83,6 @@ public class Intercept : Follow
         // targetEntity.transform.position += sunkenOffset;
 
     }
+
 
 }

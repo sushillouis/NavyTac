@@ -35,11 +35,12 @@ public class EntityMgr : MonoBehaviour
             if(entityGo != null) {
                 entity = entityGo.GetComponent<Entity>();
                 entity.entityId = entityId;
-                entityGo.name = et.ToString() + entityId++;
+                entityGo.name = et.ToString() + entityId;
                 entity.owner = player;
                 entity.heading = entity.desiredHeading = eulerAngles.y;
                 entities.Add(entity);
                 entitiesDict.Add(entity.entityId, entity);
+                entityId++;
             }
         }
         DistanceMgr.inst.Initialize();

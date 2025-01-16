@@ -300,7 +300,7 @@ public class UIMgr : MonoBehaviour
     private float greenHealth = 67;
     private float orangeHealth = 33;
     private void UpdateHealth(Entity ent) {
-        float health = 100f * Mathf.Clamp(ent.health, 0, maxHealth) / maxHealth;
+        float health = 100f * Mathf.Clamp(ent.health/ent.maxHealth, 0, 1f);
         //text
         healthText.text = health.ToString("000");
         //fill

@@ -173,7 +173,6 @@ MonoBehaviour:
     integrationStored: 0
     velocity: 0
     derivativeInitialized: 0
-  velocity: {x: 0, y: 0, z: 0}
   angularVelocity: {x: 0, y: 0, z: 0}
   phase: 0
   parentTransform: {fileID: 0}
@@ -480,7 +479,7 @@ MonoBehaviour:
   desiredSpeed: 0
   heading: 0
   desiredHeading: 0
-  health: 0
+  health: 100
   fuel: 100
   range: 0
   fuelBurnRate: 0

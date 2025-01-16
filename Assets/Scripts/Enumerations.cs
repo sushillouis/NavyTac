@@ -118,3 +118,13 @@ public enum TactCommandTypes
     Intercept,
     Intercept3d,
 }
+
+[Serializable]
+public enum WeaponType {
+    None = 0,
+    AAMissle,
+    CruseMissile,
+    SmallMachineGun,
+    LargeMachineGun,
+    BattleShipShell,
+}

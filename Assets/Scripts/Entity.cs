@@ -41,6 +41,7 @@ public class Entity : MonoBehaviour, IComparable<Entity>
 
     public float maxFuel;
     public float maxRange;
+    public float maxHealth=100;
 
     public EntityType entityType;
     public EntityClass entityClass;
@@ -65,7 +66,7 @@ public class Entity : MonoBehaviour, IComparable<Entity>
         //cameraRig = transform.Find("CameraRig").gameObject;
         //selectionCircle = transform.Find("Decorations").Find("SelectionCylinder").gameObject;
         fuel = maxFuel;
-
+        health=maxHealth;
     }
 
     // Update is called once per frame

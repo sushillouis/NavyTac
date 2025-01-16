@@ -17,15 +17,28 @@ public class WeaponsMgr : MonoBehaviour
     [SerializeReference] GameObject judeAAMissilePrefab;
     public GameObject LaunchCruseMissile(Vector3 position, Entity targetEntity, Vector3 angle) {
         GameObject temp = Instantiate(judeMissilePrefab,position,Quaternion.identity,this.transform);
-        temp.GetComponent<JudeMissile>().target = targetEntity;
+        JudeMissile missile = temp.GetComponent<JudeMissile>();
+        missile.target = targetEntity;
+        missile.Init();
         temp.transform.Rotate(angle);
         return temp;
     }
 
-    public GameObject LaunchAAMissile(Vector3 position, PlaneEntity targetEntity) {
+    public GameObject LaunchAAMissile(Vector3 position, Entity targetEntity, Vector3 angle) {
         GameObject temp = Instantiate(judeAAMissilePrefab,position,Quaternion.identity,this.transform);
-        temp.GetComponent<JudeAAMissile>().target = targetEntity;
+        JudeAAMissile missile = temp.GetComponent<JudeAAMissile>();
+        missile.target = targetEntity;
+        missile.Init();
+        temp.transform.Rotate(angle);
         return temp;
+    }
+
+    public void CalculateAndDealDamage(Entity target, WeaponType weapon,float baseDamage) {
+        float scalar = Utils.weaponDamageScalar.TryGetValue((weapon,target.entityClass), out scalar) ? scalar: 1f;
+        target.health-=baseDamage*scalar;
+        if(target.health<=0f) {
+            target.ai.Die();
+        }
     }
 
     public void LaunchWeapon(Entity launchingEntity, EntityType weaponEntityType, Entity target)

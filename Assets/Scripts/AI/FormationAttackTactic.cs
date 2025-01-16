@@ -54,6 +54,7 @@ public class FormationAttackTactic : Tactic
                 case EntityClass.Destroyer:
                 case EntityClass.Frigate:
                 case EntityClass.LHA:
+                case EntityClass.Airplane:
                 case EntityClass.USV:
                     for(int countUp = 0;countUp < entRatio;countUp++){
                         if(surfaceIterator >= notSubs.Count) {
