@@ -2,69 +2,79 @@
 #pragma kernel RevealAreas
 #pragma kernel ApplyToTexture
 
-// Grid parameters (set from C#)
+// Grid parameters
 int GridWidth;
 int GridHeight;
 float GridCellSize;
-float2 GridOrigin; // X = world X, Y = world Z (matches Unity's XZ plane)
+float2 GridOrigin;
 float4 FogColor;
+float4 PreviouslyRevealedColor; // RGBA(0.5, 0.5, 0.5, 0.5)
 
 // Buffers & Textures
-RWStructuredBuffer<uint> Grid;         // 0 = fogged, 1 = revealed
-StructuredBuffer<float4> Entities;     // XYZ = world position, W = radius
-RWTexture2D<float4> FogTexture;        // Output texture (RGBA)
+RWStructuredBuffer<float> Grid;        // Current visibility (0-1)
+RWStructuredBuffer<float> VisitedGrid; // Persistent visibility (0-1)
+StructuredBuffer<float4> Entities;     // XYZ = position, W = radius
+RWTexture2D<float4> FogTexture;        // Output texture
 
 ///////////////////////////////////////////////////////////
-// Kernel 1: ClearGrid - Reset all cells to fogged state
+// Kernel 1: ClearGrid - Reset current visibility
 ///////////////////////////////////////////////////////////
 [numthreads(8, 8, 1)]
 void ClearGrid(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= GridWidth || id.y >= GridHeight) return;
-    Grid[id.x + id.y * GridWidth] = 0;
+    Grid[id.x + id.y * GridWidth] = 0.0f;
 }
 
 ///////////////////////////////////////////////////////////
-// Kernel 2: RevealAreas - Mark cells within entity radii
+// Kernel 2: RevealAreas - Calculate visibility
 ///////////////////////////////////////////////////////////
 [numthreads(8, 8, 1)]
 void RevealAreas(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= GridWidth || id.y >= GridHeight) return;
-    
-    // Calculate world position of this grid cell (XZ plane)
-    float2 worldPos = GridOrigin + float2(
+
+    float2 cellCenter = GridOrigin + float2(
         (id.x + 0.5) * GridCellSize,
         (id.y + 0.5) * GridCellSize
     );
 
-    // Check against all entities
+    float maxVisibility = 0.0f;
+
     for (uint i = 0; i < Entities.Length; i++)
     {
         float4 entity = Entities[i];
-        float2 entityPos = entity.xz; // Use X/Z coordinates (ignore Y)
+        float2 entityPos = entity.xz;
         float radius = entity.w;
 
-        // Calculate distance squared
-        float2 delta = worldPos - entityPos;
-        float distSq = dot(delta, delta);
-        
-        if (distSq <= radius * radius)
-        {
-            Grid[id.x + id.y * GridWidth] = 1;
-            break; // No need to check other entities
-        }
+        float dist = distance(cellCenter, entityPos);
+        float visibility = 1.0f - smoothstep(radius * 0.8f, radius, dist);
+        maxVisibility = max(maxVisibility, visibility);
+    }
+
+    if (maxVisibility > 0)
+    {
+        Grid[id.x + id.y * GridWidth] = maxVisibility;
+        VisitedGrid[id.x + id.y * GridWidth] = max(maxVisibility, VisitedGrid[id.x + id.y * GridWidth]);
     }
 }
 
 ///////////////////////////////////////////////////////////
-// Kernel 3: ApplyToTexture - Convert grid data to texture
+// Kernel 3: ApplyToTexture - Smooth blending
 ///////////////////////////////////////////////////////////
 [numthreads(8, 8, 1)]
 void ApplyToTexture(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= GridWidth || id.y >= GridHeight) return;
-    
-    uint revealed = Grid[id.x + id.y * GridWidth];
-    FogTexture[id.xy] = revealed ? float4(0, 0, 0, 0) : FogColor;
+
+    float currentVisibility = Grid[id.x + id.y * GridWidth];
+    float visitedVisibility = VisitedGrid[id.x + id.y * GridWidth];
+
+    // 1. Blend between fog and grey based on visited history
+    float4 visitedColor = lerp(FogColor, PreviouslyRevealedColor, visitedVisibility);
+
+    // 2. Blend between visited color and fully transparent
+    float4 finalColor = lerp(visitedColor, float4(0, 0, 0, 0), currentVisibility);
+
+    FogTexture[id.xy] = finalColor;
 }

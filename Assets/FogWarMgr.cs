@@ -128,33 +128,53 @@ public class FogWarMgr : MonoBehaviour
             fogPlane.transform.position.z - fogPlaneSize.y / 2
         );
     }
+    private ComputeBuffer visitedGridBuffer;
 
-    void InitializeComputeResources()
+   void InitializeComputeResources()
+{
+    // Create compute buffers with CORRECT TYPES
+    gridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(float)); // Changed to float
+    visitedGridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(uint));
+
+    // Initialize buffers
+    float[] gridData = new float[gridWidth * gridHeight];
+    uint[] visitedGridData = new uint[gridWidth * gridHeight];
+    gridBuffer.SetData(gridData);
+    visitedGridBuffer.SetData(visitedGridData);
+
+    // Create render texture
+    fogRenderTexture = new RenderTexture(gridWidth, gridHeight, 0, RenderTextureFormat.ARGB32)
     {
-        // Create compute buffers
-        gridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(uint));
-        
-        // Create render texture
-        fogRenderTexture = new RenderTexture(gridWidth, gridHeight, 0, RenderTextureFormat.ARGB32)
-        {
-            enableRandomWrite = true,
-            filterMode = FilterMode.Point
-        };
-        fogRenderTexture.Create();
+        enableRandomWrite = true,
+        filterMode = FilterMode.Point
+    };
+    fogRenderTexture.Create();
 
-        // Set up material
-        fogMaterial.SetTexture("_FogTex", fogRenderTexture);
+    // Set up material
+    fogMaterial.SetTexture("_FogTex", fogRenderTexture);
 
-        // Get kernel indices
-        clearKernel = fogComputeShader.FindKernel("ClearGrid");
-        revealKernel = fogComputeShader.FindKernel("RevealAreas");
-        updateKernel = fogComputeShader.FindKernel("ApplyToTexture");
-    }
+    // Get kernel indices
+    clearKernel = fogComputeShader.FindKernel("ClearGrid");
+    revealKernel = fogComputeShader.FindKernel("RevealAreas");
+    updateKernel = fogComputeShader.FindKernel("ApplyToTexture");
+
+    // Bind buffers to ALL KERNELS
+    fogComputeShader.SetBuffer(clearKernel, "Grid", gridBuffer);
+    fogComputeShader.SetBuffer(revealKernel, "Grid", gridBuffer);
+    fogComputeShader.SetBuffer(updateKernel, "Grid", gridBuffer);
+    
+    fogComputeShader.SetBuffer(revealKernel, "VisitedGrid", visitedGridBuffer);
+    fogComputeShader.SetBuffer(updateKernel, "VisitedGrid", visitedGridBuffer);
+
+    // Set colors
+    fogComputeShader.SetVector("FogColor", Color.black);
+    fogComputeShader.SetVector("PreviouslyRevealedColor", new Color(0.5f, 0.5f, 0.5f, 0.5f));
+}
 
     void UpdateFog()
 {
     if (revelers.Count == 0) return;
-
+    fogComputeShader.SetVector("PreviouslyRevealedColor", new Color(0.5f, 0.5f, 0.5f, 0.5f));
     // Set parameters
     fogComputeShader.SetInt("GridWidth", gridWidth);
     fogComputeShader.SetInt("GridHeight", gridHeight);
@@ -227,6 +247,7 @@ public class FogWarMgr : MonoBehaviour
     {
         gridBuffer?.Release();
         entitiesBuffer?.Release();
+        visitedGridBuffer?.Release(); 
         if (fogRenderTexture != null && fogRenderTexture.IsCreated())
             fogRenderTexture.Release();
     }
@@ -234,6 +255,7 @@ public class FogWarMgr : MonoBehaviour
     void OnDestroy()
     {
         CleanupComputeResources();
+        Debug.Log("Compute resources released.");
     }
 
     // Rest of existing methods (WorldToGridPosition, OnDrawGizmosSelected, etc.)
