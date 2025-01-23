@@ -1,0 +1,70 @@
+#pragma kernel ClearGrid
+#pragma kernel RevealAreas
+#pragma kernel ApplyToTexture
+
+// Grid parameters (set from C#)
+int GridWidth;
+int GridHeight;
+float GridCellSize;
+float2 GridOrigin; // X = world X, Y = world Z (matches Unity's XZ plane)
+float4 FogColor;
+
+// Buffers & Textures
+RWStructuredBuffer<uint> Grid;         // 0 = fogged, 1 = revealed
+StructuredBuffer<float4> Entities;     // XYZ = world position, W = radius
+RWTexture2D<float4> FogTexture;        // Output texture (RGBA)
+
+///////////////////////////////////////////////////////////
+// Kernel 1: ClearGrid - Reset all cells to fogged state
+///////////////////////////////////////////////////////////
+[numthreads(8, 8, 1)]
+void ClearGrid(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= GridWidth || id.y >= GridHeight) return;
+    Grid[id.x + id.y * GridWidth] = 0;
+}
+
+///////////////////////////////////////////////////////////
+// Kernel 2: RevealAreas - Mark cells within entity radii
+///////////////////////////////////////////////////////////
+[numthreads(8, 8, 1)]
+void RevealAreas(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= GridWidth || id.y >= GridHeight) return;
+    
+    // Calculate world position of this grid cell (XZ plane)
+    float2 worldPos = GridOrigin + float2(
+        (id.x + 0.5) * GridCellSize,
+        (id.y + 0.5) * GridCellSize
+    );
+
+    // Check against all entities
+    for (uint i = 0; i < Entities.Length; i++)
+    {
+        float4 entity = Entities[i];
+        float2 entityPos = entity.xz; // Use X/Z coordinates (ignore Y)
+        float radius = entity.w;
+
+        // Calculate distance squared
+        float2 delta = worldPos - entityPos;
+        float distSq = dot(delta, delta);
+        
+        if (distSq <= radius * radius)
+        {
+            Grid[id.x + id.y * GridWidth] = 1;
+            break; // No need to check other entities
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////
+// Kernel 3: ApplyToTexture - Convert grid data to texture
+///////////////////////////////////////////////////////////
+[numthreads(8, 8, 1)]
+void ApplyToTexture(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= GridWidth || id.y >= GridHeight) return;
+    
+    uint revealed = Grid[id.x + id.y * GridWidth];
+    FogTexture[id.xy] = revealed ? float4(0, 0, 0, 0) : FogColor;
+}
