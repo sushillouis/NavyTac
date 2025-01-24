@@ -109,7 +109,7 @@ public class FogWarMgr : MonoBehaviour
         float scaleX = fogPlaneSize.x / 10f;
         float scaleZ = fogPlaneSize.y / 10f;
         fogPlane.transform.localScale = new Vector3(scaleX, 1f, scaleZ);
-        fogPlane.transform.position = new Vector3(0f, heightAboveMap, 0f);
+        fogPlane.transform.position = new Vector3(200f, heightAboveMap, -800f);
         fogPlane.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
 
         if (fogMaterial != null)
@@ -167,14 +167,14 @@ public class FogWarMgr : MonoBehaviour
     fogComputeShader.SetBuffer(updateKernel, "VisitedGrid", visitedGridBuffer);
 
     // Set colors
-    fogComputeShader.SetVector("FogColor", Color.black);
+    fogComputeShader.SetVector("FogColor", new Color(0.05f, 0.05f, 0.05f, 0.8f));
     fogComputeShader.SetVector("PreviouslyRevealedColor", new Color(0.5f, 0.5f, 0.5f, 0.5f));
 }
 
     void UpdateFog()
 {
     if (revelers.Count == 0) return;
-    fogComputeShader.SetVector("PreviouslyRevealedColor", new Color(0.5f, 0.5f, 0.5f, 0.5f));
+
     // Set parameters
     fogComputeShader.SetInt("GridWidth", gridWidth);
     fogComputeShader.SetInt("GridHeight", gridHeight);

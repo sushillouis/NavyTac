@@ -1,7 +1,7 @@
-Shader "Custom/FogOfWar" {
+Shader "Custom/FogOfWar_Transparent" {
     Properties {
-        _FogColor ("Fog Color", Color) = (0,0,0,1)  // Fogged = opaque, Revealed = transparent
-        _FogTex ("Fog Texture", 2D) = "white" {}     // Revealed areas have alpha=0
+        _FogColor ("Fog Color", Color) = (0, 0, 0, 0.8)  // 80% opacity black
+        _FogTex ("Fog Texture", 2D) = "white" {}
     }
 
     SubShader {
@@ -9,6 +9,7 @@ Shader "Custom/FogOfWar" {
             "Queue"="Transparent" 
             "RenderType"="Transparent" 
         }
+        ZWrite Off  // Disable depth writing
         Blend SrcAlpha OneMinusSrcAlpha  // Standard alpha blending
         LOD 200
 

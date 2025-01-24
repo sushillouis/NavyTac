@@ -70,6 +70,12 @@ void ApplyToTexture(uint3 id : SV_DispatchThreadID)
     float currentVisibility = Grid[id.x + id.y * GridWidth];
     float visitedVisibility = VisitedGrid[id.x + id.y * GridWidth];
 
+    // Check if the cell is out of bounds
+    if (id.x < 0 || id.x >= GridWidth || id.y < 0 || id.y >= GridHeight) {
+        FogTexture[id.xy] = FogColor; // Fully fogged out
+        return;
+    }
+
     // 1. Blend between fog and grey based on visited history
     float4 visitedColor = lerp(FogColor, PreviouslyRevealedColor, visitedVisibility);
 
