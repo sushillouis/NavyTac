@@ -43,6 +43,7 @@ public class UnitAI : MonoBehaviour
     public List<EntityPotential> potentialsL;
     public delegate void DieEventMethod(Entity ent);
     public List<DieEventMethod> dieEvents = new();
+    public List<WeaponDeployAspect> weaponDeployAspects= new();
 
     // Update is called once per frame
     void FixedUpdate()
@@ -55,6 +56,20 @@ public class UnitAI : MonoBehaviour
                 commands[0].isRunning = true;
                 DecorateAll();
             }
+        }
+    }
+
+    public void SetAllWeaponsActive(bool set) {
+        foreach (WeaponDeployAspect wep in weaponDeployAspects)
+        {
+            wep.isFreeToFire = set;
+        }
+    }
+
+    public void SetAllWeaponsTarget(Entity newTarget) {
+        foreach (WeaponDeployAspect wep in weaponDeployAspects)
+        {
+            wep.SetTarget(newTarget);
         }
     }
 

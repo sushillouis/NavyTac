@@ -38,11 +38,10 @@ public class JudeMissile : MonoBehaviour
 
     void FixedUpdate()
     {
-        if(phase==2 && (Vector3.Distance(transform.position,target.position)<60f)) {
-            WeaponsMgr.inst.CalculateAndDealDamage(target, WeaponType.CruseMissile, 25f);
-            Explode();
-            return;
-        } else if(phase==2 && transform.position.y<=2f) {
+        if(phase==2 && transform.position.y<=2f) {
+            if (Vector3.Distance(transform.position,target.position)<60f+target.width) {
+                WeaponsMgr.inst.CalculateAndDealDamage(target, WeaponType.CruseMissile, 25f);
+            }            
             Explode();
             return;
         }

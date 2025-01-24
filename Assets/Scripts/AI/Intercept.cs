@@ -27,6 +27,8 @@ public class Intercept : Follow
         line = LineMgr.inst.CreateInterceptLine(entity.position, targetEntity.position, targetEntity.position);
         line.gameObject.SetActive(false);
         targetEntity.ai.dieEvents.Add(TargetDead);
+        entity.ai.SetAllWeaponsTarget(targetEntity);
+        entity.ai.SetAllWeaponsActive(true);
     }
 
     public override void Tick()
@@ -39,22 +41,22 @@ public class Intercept : Follow
         range = diffToMovePosition.magnitude;
         timeOnTarget = range / entity.speed;
 
-        if(missileLaunchTimer<=0 && entity.entityClass == EntityClass.Destroyer) {
-            missileLaunchTimer = 2f;
-            WeaponsMgr.inst.LaunchCruseMissile(entity.position,targetEntity,new(-90,0,0));
-        } else if(missileLaunchTimer<=0 && entity.entityClass == EntityClass.Airplane) {
-            missileLaunchTimer = 2f;
-            if(targetEntity.entityClass==EntityClass.Airplane) {
-                JudeAAMissile temp = WeaponsMgr.inst.LaunchAAMissile(entity.position,targetEntity,new(0,entity.heading,0)).GetComponent<JudeAAMissile>();
-                temp.velocity = Quaternion.Euler(0,90,0)*entity.velocity;
-            } else {
-                JudeMissile temp = WeaponsMgr.inst.LaunchCruseMissile(entity.position,targetEntity,new(0,entity.heading,0)).GetComponent<JudeMissile>();
-                temp.velocity = Quaternion.Euler(0,90,0)*entity.velocity;
-                temp.phase = 1;
-            }
-        } else {    
-            missileLaunchTimer-=Time.deltaTime;
-        }
+        // if(missileLaunchTimer<=0 && entity.entityClass == EntityClass.Destroyer) {
+        //     missileLaunchTimer = 2f;
+        //     WeaponsMgr.inst.LaunchCruseMissile(entity.position,targetEntity,new(-90,0,0));
+        // } else if(missileLaunchTimer<=0 && entity.entityClass == EntityClass.Airplane) {
+        //     missileLaunchTimer = 2f;
+        //     if(targetEntity.entityClass==EntityClass.Airplane) {
+        //         JudeAAMissile temp = WeaponsMgr.inst.LaunchAAMissile(entity.position,targetEntity,new(0,entity.heading,0)).GetComponent<JudeAAMissile>();
+        //         temp.velocity = Quaternion.Euler(0,90,0)*entity.velocity;
+        //     } else {
+        //         JudeMissile temp = WeaponsMgr.inst.LaunchCruseMissile(entity.position,targetEntity,new(0,entity.heading,0)).GetComponent<JudeMissile>();
+        //         temp.velocity = Quaternion.Euler(0,90,0)*entity.velocity;
+        //         temp.phase = 1;
+        //     }
+        // } else {    
+        //     missileLaunchTimer-=Time.deltaTime;
+        // }
     }
 
     public override bool IsDone()
@@ -75,6 +77,8 @@ public class Intercept : Follow
         line=null;
         
         targetEntity.ai.dieEvents.Remove(TargetDead);
+        entity.ai.SetAllWeaponsTarget(null);
+        entity.ai.SetAllWeaponsActive(false);
 
         // targetEntity.desiredSpeed = 0;
         // Vector3 sunkenOffset = new Vector3(0, -5, 0);

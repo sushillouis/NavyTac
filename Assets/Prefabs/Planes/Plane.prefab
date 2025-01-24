@@ -81,6 +81,7 @@ Transform:
   - {fileID: 1652495837342558367}
   - {fileID: 1343326413031595266}
   - {fileID: 184518668571862243}
+  - {fileID: 6521032780485656090}
   m_Father: {fileID: 1660569260040626270}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &661008955525244942
@@ -176,6 +177,75 @@ MonoBehaviour:
   angularVelocity: {x: 0, y: 0, z: 0}
   phase: 0
   parentTransform: {fileID: 0}
+--- !u!1 &1271966268916085933
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6521032780485656090}
+  - component: {fileID: 1335204010259249992}
+  - component: {fileID: 5171814187930901566}
+  m_Layer: 0
+  m_Name: Weapons
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6521032780485656090
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1271966268916085933}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7534599398814901027}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1335204010259249992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1271966268916085933}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeea6b9fade44fc43a26daddbb3b53f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitAI: {fileID: 6407272234446172749}
+  range: 10
+  ammo: 999
+  cooldown: 2
+  isEnabledToFire: 0
+  _target: {fileID: 0}
+--- !u!114 &5171814187930901566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1271966268916085933}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e8129a5978a27a408aa1a13c161d9e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitAI: {fileID: 6407272234446172749}
+  range: 6
+  ammo: 999
+  cooldown: 4
+  isEnabledToFire: 0
+  _target: {fileID: 0}
 --- !u!1 &1474846446478668882
 GameObject:
   m_ObjectHideFlags: 0
@@ -228,6 +298,7 @@ MonoBehaviour:
   intercept3ds: []
   pfList: []
   potentialsL: []
+  weaponDeployAspects: []
 --- !u!1 &6021501893477512876
 GameObject:
   m_ObjectHideFlags: 0
@@ -495,6 +566,7 @@ MonoBehaviour:
   height: 5
   maxFuel: 0
   maxRange: 0
+  maxHealth: 100
   entityType: 17
   entityClass: 14
   cameraRig: {fileID: 6642544053813938113}
