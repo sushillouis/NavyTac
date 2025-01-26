@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class FogWarMgr : MonoBehaviour
 {
+    public PlayerSide playerSide;
+
     [Header("Fog Plane Settings")]
     public Material fogMaterial;
     [SerializeField] private Vector2 minFogPlaneSize = new Vector2(10f, 10f);
@@ -60,7 +62,7 @@ public class FogWarMgr : MonoBehaviour
     }
 
     void Start() {
-        revelers = EntityMgr.inst.entities;
+        // revelers = EntityMgr.inst.entities;
         InitializeFogSystem();
     }
 
@@ -173,8 +175,13 @@ public class FogWarMgr : MonoBehaviour
 
     void UpdateFog()
 {
+    revelers = EntityMgr.inst.entities.FindAll(entity => 
+        entity != null && 
+        entity.owner != null && 
+        entity.owner.playerSide == playerSide);
+        
     if (revelers.Count == 0) return;
-
+    
     // Set parameters
     fogComputeShader.SetInt("GridWidth", gridWidth);
     fogComputeShader.SetInt("GridHeight", gridHeight);
@@ -214,11 +221,8 @@ public class FogWarMgr : MonoBehaviour
         entityData[i] = new EntityComputeData
         {
             position = pos,
-            radius = revelers[i].length
+            radius = Mathf.Max(revelers[i].length,150f) // It checks how much area to reveal based on length only if length is greater than 150 else it makes the radius of reveal area 150
         };
-        
-        // Debug log to verify movement
-        Debug.Log($"Entity {i} Position: {pos}");
     }
 
     entitiesBuffer?.Release();
@@ -226,23 +230,6 @@ public class FogWarMgr : MonoBehaviour
     entitiesBuffer.SetData(entityData);
     fogComputeShader.SetBuffer(revealKernel, "Entities", entitiesBuffer);
 }
-
-    // void DispatchKernel(int kernel, params ComputeBuffer[] buffers)
-    // {
-    //     foreach (var buffer in buffers)
-    //     {
-    //         fogComputeShader.SetBuffer(kernel, "Grid", buffer);
-    //     }
-
-    //     uint threadX, threadY, threadZ;
-    //     fogComputeShader.GetKernelThreadGroupSizes(kernel, out threadX, out threadY, out threadZ);
-        
-    //     int groupsX = Mathf.CeilToInt(gridWidth / (float)threadX);
-    //     int groupsY = Mathf.CeilToInt(gridHeight / (float)threadY);
-        
-    //     fogComputeShader.Dispatch(kernel, groupsX, groupsY, 1);
-    // }
-
     void CleanupComputeResources()
     {
         gridBuffer?.Release();
