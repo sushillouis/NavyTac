@@ -8,8 +8,8 @@ int GridWidth;
 int GridHeight;
 float GridCellSize;
 float2 GridOrigin;
-float4 FogColor = float4(0, 0, 0, 0.8); // RGBA(0, 0, 0, 0.8)
-float4 PreviouslyRevealedColor;
+float4 FogColor = float4(0, 0, 0, 0.8); 
+float4 PreviouslyRevealedColor ; 
 int NonRevealerCount;
 
 // Buffers & Textures
@@ -26,7 +26,7 @@ void ClearGrid(uint3 id : SV_DispatchThreadID)
     if (id.x >= GridWidth || id.y >= GridHeight) return;
     Grid[id.x + id.y * GridWidth] = 0.0f;
 }
-[numthreads(8, 8, 1)]
+[numthreads(8, 8, 1)] 
 void RevealAreas(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= GridWidth || id.y >= GridHeight) return;
@@ -45,8 +45,8 @@ void RevealAreas(uint3 id : SV_DispatchThreadID)
         float radius = entity.w;
 
         float dist = distance(cellCenter, entityPos);
-        float visibility = 1.0f - smoothstep(radius * 0.8f, radius, dist);
-        maxVisibility = max(maxVisibility, visibility);
+        float visibility = 1.0f - smoothstep(radius * 0.8f, radius, dist); // Smoothstep to avoid hard edges 
+        maxVisibility = max(maxVisibility, visibility); // Keep the highest visibility
     }
 
     if (maxVisibility > 0)
