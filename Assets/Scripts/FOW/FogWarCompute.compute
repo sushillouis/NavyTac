@@ -15,10 +15,6 @@ RWStructuredBuffer<float> Grid;        // Current visibility (0-1)
 RWStructuredBuffer<float> VisitedGrid; // Persistent visibility (0-1)
 StructuredBuffer<float4> Entities;     // XYZ = position, W = radius
 RWTexture2D<float4> FogTexture;        // Output texture
-
-///////////////////////////////////////////////////////////
-// Kernel 1: ClearGrid - Reset current visibility
-///////////////////////////////////////////////////////////
 [numthreads(8, 8, 1)]
 void ClearGrid(uint3 id : SV_DispatchThreadID)
 {
@@ -26,9 +22,6 @@ void ClearGrid(uint3 id : SV_DispatchThreadID)
     Grid[id.x + id.y * GridWidth] = 0.0f;
 }
 
-///////////////////////////////////////////////////////////
-// Kernel 2: RevealAreas - Calculate visibility
-///////////////////////////////////////////////////////////
 [numthreads(8, 8, 1)]
 void RevealAreas(uint3 id : SV_DispatchThreadID)
 {
@@ -58,10 +51,6 @@ void RevealAreas(uint3 id : SV_DispatchThreadID)
         VisitedGrid[id.x + id.y * GridWidth] = max(maxVisibility, VisitedGrid[id.x + id.y * GridWidth]);
     }
 }
-
-///////////////////////////////////////////////////////////
-// Kernel 3: ApplyToTexture - Smooth blending
-///////////////////////////////////////////////////////////
 [numthreads(8, 8, 1)]
 void ApplyToTexture(uint3 id : SV_DispatchThreadID)
 {

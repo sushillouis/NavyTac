@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -6,43 +5,24 @@ using UnityEngine;
 public class FogWarMgr : MonoBehaviour
 {
     public PlayerSide playerSide;
-
+    
     [Header("Fog Plane Settings")]
     public Material fogMaterial;
-    [SerializeField] private Vector2 minFogPlaneSize = new Vector2(10f, 10f);
-    
-    [SerializeField] 
-    private Vector2 _fogPlaneSize = new Vector2(1000f, 1000f);
-    public Vector2 fogPlaneSize
-    {
-        get => _fogPlaneSize;
-        set
-        {
-            if (_fogPlaneSize != value)
-            {
-                _fogPlaneSize = new Vector2(
-                    Mathf.Max(value.x, minFogPlaneSize.x),
-                    Mathf.Max(value.y, minFogPlaneSize.y)
-                );
-                RefreshFogSystem();
-            }
-        }
-    }
-
+    public Vector2 fogPlaneSize = new Vector2(18250f, 18250f);
     public float heightAboveMap = 50f;
 
     [Header("Grid Settings")]
     [Min(0.1f)] public float gridCellSize = 10f;
-    public bool showGridGizmos = true;
     public List<Entity> revelers = new List<Entity>();
-
+    public List<Entity> nonRevelers = new List<Entity>();
+    
     [Header("Compute Shader")]
     public ComputeShader fogComputeShader;
     [SerializeField] private float updateInterval = 0.1f;
 
-    // Compute resources
     private ComputeBuffer gridBuffer;
     private ComputeBuffer entitiesBuffer;
+    private ComputeBuffer visitedGridBuffer;
     private RenderTexture fogRenderTexture;
     private int clearKernel;
     private int revealKernel;
@@ -51,7 +31,6 @@ public class FogWarMgr : MonoBehaviour
     private GameObject fogPlane;
     private Vector2 gridOrigin;
     private int gridWidth;
-    public float visionRadius;
     private int gridHeight;
     private float updateTimer;
 
@@ -62,16 +41,9 @@ public class FogWarMgr : MonoBehaviour
     }
 
     void Start() {
-        // revelers = EntityMgr.inst.entities;
-        InitializeFogSystem();
-    }
-
-    void OnValidate()
-    {
-        if (Application.isPlaying && fogPlane != null)
-        {
-            RefreshFogSystem();
-        }
+        InitializeFogPlane();
+        InitializeGrid();
+        InitializeComputeResources();
     }
 
     void Update()
@@ -82,21 +54,6 @@ public class FogWarMgr : MonoBehaviour
             UpdateFog();
             updateTimer = updateInterval;
         }
-    }
-
-    void InitializeFogSystem()
-    {
-        InitializeFogPlane();
-        InitializeGrid();
-        InitializeComputeResources();
-    }
-
-    void RefreshFogSystem()
-    {
-        CleanupComputeResources();
-        InitializeFogPlane();
-        InitializeGrid();
-        InitializeComputeResources();
     }
 
     void InitializeFogPlane()
@@ -130,80 +87,74 @@ public class FogWarMgr : MonoBehaviour
             fogPlane.transform.position.z - fogPlaneSize.y / 2
         );
     }
-    private ComputeBuffer visitedGridBuffer;
 
-   void InitializeComputeResources()
-{
-    // Create compute buffers with CORRECT TYPES
-    gridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(float)); // Changed to float
-    visitedGridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(uint));
-
-    // Initialize buffers
-    float[] gridData = new float[gridWidth * gridHeight];
-    uint[] visitedGridData = new uint[gridWidth * gridHeight];
-    gridBuffer.SetData(gridData);
-    visitedGridBuffer.SetData(visitedGridData);
-
-    // Create render texture
-    fogRenderTexture = new RenderTexture(gridWidth, gridHeight, 0, RenderTextureFormat.ARGB32)
+    void InitializeComputeResources()
     {
-        enableRandomWrite = true,
-        filterMode = FilterMode.Point
-    };
-    fogRenderTexture.Create();
+        gridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(float));
+        visitedGridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(uint));
 
-    // Set up material
-    fogMaterial.SetTexture("_FogTex", fogRenderTexture);
+        float[] gridData = new float[gridWidth * gridHeight];
+        uint[] visitedGridData = new uint[gridWidth * gridHeight];
+        gridBuffer.SetData(gridData);
+        visitedGridBuffer.SetData(visitedGridData);
 
-    // Get kernel indices
-    clearKernel = fogComputeShader.FindKernel("ClearGrid");
-    revealKernel = fogComputeShader.FindKernel("RevealAreas");
-    updateKernel = fogComputeShader.FindKernel("ApplyToTexture");
+        fogRenderTexture = new RenderTexture(gridWidth, gridHeight, 0, RenderTextureFormat.ARGB32)
+        {
+            enableRandomWrite = true,
+            filterMode = FilterMode.Point
+        };
+        fogRenderTexture.Create();
 
-    // Bind buffers to ALL KERNELS
-    fogComputeShader.SetBuffer(clearKernel, "Grid", gridBuffer);
-    fogComputeShader.SetBuffer(revealKernel, "Grid", gridBuffer);
-    fogComputeShader.SetBuffer(updateKernel, "Grid", gridBuffer);
-    
-    fogComputeShader.SetBuffer(revealKernel, "VisitedGrid", visitedGridBuffer);
-    fogComputeShader.SetBuffer(updateKernel, "VisitedGrid", visitedGridBuffer);
+        fogMaterial.SetTexture("_FogTex", fogRenderTexture);
 
-    // Set colors
-    fogComputeShader.SetVector("FogColor", new Color(0.05f, 0.05f, 0.05f, 0.8f));
-    fogComputeShader.SetVector("PreviouslyRevealedColor", new Color(0.5f, 0.5f, 0.5f, 0.5f));
-}
+        clearKernel = fogComputeShader.FindKernel("ClearGrid");
+        revealKernel = fogComputeShader.FindKernel("RevealAreas");
+        updateKernel = fogComputeShader.FindKernel("ApplyToTexture");
+
+        fogComputeShader.SetBuffer(clearKernel, "Grid", gridBuffer);
+        fogComputeShader.SetBuffer(revealKernel, "Grid", gridBuffer);
+        fogComputeShader.SetBuffer(updateKernel, "Grid", gridBuffer);
+        
+        fogComputeShader.SetBuffer(revealKernel, "VisitedGrid", visitedGridBuffer);
+        fogComputeShader.SetBuffer(updateKernel, "VisitedGrid", visitedGridBuffer);
+
+        fogComputeShader.SetVector("FogColor", new Color(0.05f, 0.05f, 0.05f, 0.8f));
+        fogComputeShader.SetVector("PreviouslyRevealedColor", new Color(0.5f, 0.5f, 0.5f, 0.5f));
+    }
 
     void UpdateFog()
-{
-    revelers = EntityMgr.inst.entities.FindAll(entity => 
-        entity != null && 
-        entity.owner != null && 
-        entity.owner.playerSide == playerSide);
+    {
+        revelers = EntityMgr.inst.entities.FindAll(entity => 
+            entity != null && 
+            entity.owner != null && 
+            entity.owner.playerSide == playerSide);
         
-    if (revelers.Count == 0) return;
-    
-    // Set parameters
-    fogComputeShader.SetInt("GridWidth", gridWidth);
-    fogComputeShader.SetInt("GridHeight", gridHeight);
-    fogComputeShader.SetFloat("GridCellSize", gridCellSize);
-    fogComputeShader.SetVector("GridOrigin", gridOrigin);
-    fogComputeShader.SetVector("FogColor", Color.black);
+        nonRevelers = EntityMgr.inst.entities.FindAll(entity => 
+            entity != null && 
+            entity.owner != null && 
+            entity.owner.playerSide != playerSide);
+        
+        foreach (Entity entity in nonRevelers)
+        {
+            if(entity.gameObject.activeSelf == false) continue;
+            entity.gameObject.SetActive(false);
+        }
 
-    // Clear grid
-    fogComputeShader.SetBuffer(clearKernel, "Grid", gridBuffer);
-    DispatchCompute(clearKernel);
+        if (revelers.Count == 0) return;
+        
+        fogComputeShader.SetInt("GridWidth", gridWidth);
+        fogComputeShader.SetInt("GridHeight", gridHeight);
+        fogComputeShader.SetFloat("GridCellSize", gridCellSize);
+        fogComputeShader.SetVector("GridOrigin", gridOrigin);
 
-    // Reveal areas
-    UpdateEntityBuffer();
-    fogComputeShader.SetBuffer(revealKernel, "Grid", gridBuffer);
-    fogComputeShader.SetBuffer(revealKernel, "Entities", entitiesBuffer);
-    DispatchCompute(revealKernel);
+        DispatchCompute(clearKernel);
+        UpdateEntityBuffer();
+        fogComputeShader.SetBuffer(revealKernel, "Entities", entitiesBuffer);
+        DispatchCompute(revealKernel);
+        fogComputeShader.SetTexture(updateKernel, "FogTexture", fogRenderTexture);
+        DispatchCompute(updateKernel);
+    }
 
-    // Update texture
-    fogComputeShader.SetTexture(updateKernel, "FogTexture", fogRenderTexture);
-    fogComputeShader.SetBuffer(updateKernel, "Grid", gridBuffer);
-    DispatchCompute(updateKernel);
-}
     void DispatchCompute(int kernel)
     {
         fogComputeShader.GetKernelThreadGroupSizes(kernel, out uint x, out uint y, out _);
@@ -211,30 +162,30 @@ public class FogWarMgr : MonoBehaviour
         int groupsY = Mathf.CeilToInt(gridHeight / (float)y);
         fogComputeShader.Dispatch(kernel, groupsX, groupsY, 1);
     }
+
     void UpdateEntityBuffer()
-{
-    EntityComputeData[] entityData = new EntityComputeData[revelers.Count];
-    for (int i = 0; i < revelers.Count; i++)
     {
-        // Get FRESH position every update
-        Vector3 pos = revelers[i].transform.position;
-        entityData[i] = new EntityComputeData
+        EntityComputeData[] entityData = new EntityComputeData[revelers.Count];
+        for (int i = 0; i < revelers.Count; i++)
         {
-            position = pos,
-            radius = Mathf.Max(revelers[i].length,150f) // It checks how much area to reveal based on length only if length is greater than 150 else it makes the radius of reveal area 150
-        };
+            Vector3 pos = revelers[i].transform.position;
+            entityData[i] = new EntityComputeData
+            {
+                position = pos,
+                radius = Mathf.Max(revelers[i].length, 150f)
+            };
+        }
+
+        entitiesBuffer?.Release();
+        entitiesBuffer = new ComputeBuffer(revelers.Count, Marshal.SizeOf<EntityComputeData>());
+        entitiesBuffer.SetData(entityData);
     }
 
-    entitiesBuffer?.Release();
-    entitiesBuffer = new ComputeBuffer(revelers.Count, Marshal.SizeOf<EntityComputeData>());
-    entitiesBuffer.SetData(entityData);
-    fogComputeShader.SetBuffer(revealKernel, "Entities", entitiesBuffer);
-}
     void CleanupComputeResources()
     {
         gridBuffer?.Release();
         entitiesBuffer?.Release();
-        visitedGridBuffer?.Release(); 
+        visitedGridBuffer?.Release();
         if (fogRenderTexture != null && fogRenderTexture.IsCreated())
             fogRenderTexture.Release();
     }
@@ -242,45 +193,5 @@ public class FogWarMgr : MonoBehaviour
     void OnDestroy()
     {
         CleanupComputeResources();
-        Debug.Log("Compute resources released.");
-    }
-
-    // Rest of existing methods (WorldToGridPosition, OnDrawGizmosSelected, etc.)
-    public Vector2Int WorldToGridPosition(Vector3 worldPos)
-    {
-        float x = (worldPos.x - gridOrigin.x) / gridCellSize;
-        float z = (worldPos.z - gridOrigin.y) / gridCellSize;
-
-        return new Vector2Int(
-            Mathf.Clamp(Mathf.FloorToInt(x), 0, gridWidth - 1),
-            Mathf.Clamp(Mathf.FloorToInt(z), 0, gridHeight - 1)
-        );
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        if (!showGridGizmos || !Application.isPlaying) return;
-
-        Gizmos.color = Color.cyan;
-        Vector3 startPos = fogPlane.transform.position - new Vector3(fogPlaneSize.x/2, 0, fogPlaneSize.y/2);
-
-        for (int x = 0; x <= gridWidth; x++)
-        {
-            Vector3 lineStart = startPos + new Vector3(x * gridCellSize, 0, 0);
-            Vector3 lineEnd = lineStart + new Vector3(0, 0, gridHeight * gridCellSize);
-            Gizmos.DrawLine(lineStart, lineEnd);
-        }
-
-        for (int z = 0; z <= gridHeight; z++)
-        {
-            Vector3 lineStart = startPos + new Vector3(0, 0, z * gridCellSize);
-            Vector3 lineEnd = lineStart + new Vector3(gridWidth * gridCellSize, 0, 0);
-            Gizmos.DrawLine(lineStart, lineEnd);
-        }
-    }
-
-    public void SetFogVisibility(bool visible)
-    {
-        if (fogPlane != null) fogPlane.SetActive(visible);
     }
 }
