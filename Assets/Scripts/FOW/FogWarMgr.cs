@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class FogWarMgr : MonoBehaviour
@@ -10,7 +11,7 @@ public class FogWarMgr : MonoBehaviour
     public Material fogMaterial;
     public Vector2 fogPlaneSize = new Vector2(18250f, 18250f);
     public float heightAboveMap = 50f;
-
+    public Color previouslyRevealedColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
     [Header("Grid Settings")]
     [Min(0.1f)] public float gridCellSize = 10f;
     public List<Entity> revelers = new List<Entity>();
@@ -19,20 +20,26 @@ public class FogWarMgr : MonoBehaviour
     [Header("Compute Shader")]
     public ComputeShader fogComputeShader;
     [SerializeField] private float updateInterval = 0.1f;
+    [SerializeField] private float visibilityCheckInterval = 0.2f;
 
     private ComputeBuffer gridBuffer;
     private ComputeBuffer entitiesBuffer;
     private ComputeBuffer visitedGridBuffer;
+    private ComputeBuffer nonRevealersBuffer;
+    private ComputeBuffer visibilityResultsBuffer;
     private RenderTexture fogRenderTexture;
     private int clearKernel;
     private int revealKernel;
     private int updateKernel;
+    private int visibilityKernel;
 
     private GameObject fogPlane;
     private Vector2 gridOrigin;
     private int gridWidth;
     private int gridHeight;
     private float updateTimer;
+    private float visibilityCheckTimer;
+    private bool[] visibilityResults;
 
     struct EntityComputeData
     {
@@ -53,6 +60,13 @@ public class FogWarMgr : MonoBehaviour
         {
             UpdateFog();
             updateTimer = updateInterval;
+        }
+        
+        visibilityCheckTimer -= Time.deltaTime;
+        if (visibilityCheckTimer <= 0)
+        {
+            UpdateNonRevealerVisibility();
+            visibilityCheckTimer = visibilityCheckInterval;
         }
     }
 
@@ -91,12 +105,13 @@ public class FogWarMgr : MonoBehaviour
     void InitializeComputeResources()
     {
         gridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(float));
-        visitedGridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(uint));
+        visitedGridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(float));
+        nonRevealersBuffer = new ComputeBuffer(1, Marshal.SizeOf<EntityComputeData>());
+        visibilityResultsBuffer = new ComputeBuffer(1, sizeof(uint));
 
         float[] gridData = new float[gridWidth * gridHeight];
-        uint[] visitedGridData = new uint[gridWidth * gridHeight];
         gridBuffer.SetData(gridData);
-        visitedGridBuffer.SetData(visitedGridData);
+        visitedGridBuffer.SetData(gridData);
 
         fogRenderTexture = new RenderTexture(gridWidth, gridHeight, 0, RenderTextureFormat.ARGB32)
         {
@@ -110,16 +125,19 @@ public class FogWarMgr : MonoBehaviour
         clearKernel = fogComputeShader.FindKernel("ClearGrid");
         revealKernel = fogComputeShader.FindKernel("RevealAreas");
         updateKernel = fogComputeShader.FindKernel("ApplyToTexture");
+        visibilityKernel = fogComputeShader.FindKernel("CalculateVisibility");
 
         fogComputeShader.SetBuffer(clearKernel, "Grid", gridBuffer);
         fogComputeShader.SetBuffer(revealKernel, "Grid", gridBuffer);
         fogComputeShader.SetBuffer(updateKernel, "Grid", gridBuffer);
-        
         fogComputeShader.SetBuffer(revealKernel, "VisitedGrid", visitedGridBuffer);
         fogComputeShader.SetBuffer(updateKernel, "VisitedGrid", visitedGridBuffer);
+        fogComputeShader.SetBuffer(visibilityKernel, "Grid", gridBuffer);
+        fogComputeShader.SetBuffer(visibilityKernel, "NonRevealers", nonRevealersBuffer);
+        fogComputeShader.SetBuffer(visibilityKernel, "VisibilityResults", visibilityResultsBuffer);
 
-        fogComputeShader.SetVector("FogColor", new Color(0.05f, 0.05f, 0.05f, 0.8f));
-        fogComputeShader.SetVector("PreviouslyRevealedColor", new Color(0.5f, 0.5f, 0.5f, 0.5f));
+        fogComputeShader.SetVector("FogColor", new Color(0.05f, 0.05f, 0.05f, 0.5f));
+        fogComputeShader.SetVector("PreviouslyRevealedColor", previouslyRevealedColor);
     }
 
     void UpdateFog()
@@ -127,18 +145,13 @@ public class FogWarMgr : MonoBehaviour
         revelers = EntityMgr.inst.entities.FindAll(entity => 
             entity != null && 
             entity.owner != null && 
+            entity.owner.isObserver != true &&
             entity.owner.playerSide == playerSide);
         
         nonRevelers = EntityMgr.inst.entities.FindAll(entity => 
             entity != null && 
             entity.owner != null && 
             entity.owner.playerSide != playerSide);
-        
-        foreach (Entity entity in nonRevelers)
-        {
-            if(entity.gameObject.activeSelf == false) continue;
-            entity.gameObject.SetActive(false);
-        }
 
         if (revelers.Count == 0) return;
         
@@ -153,6 +166,57 @@ public class FogWarMgr : MonoBehaviour
         DispatchCompute(revealKernel);
         fogComputeShader.SetTexture(updateKernel, "FogTexture", fogRenderTexture);
         DispatchCompute(updateKernel);
+    }
+
+    private void UpdateNonRevealerVisibility()
+    {
+        // Filter out null entities to prevent processing invalid entries
+        
+        if (nonRevelers.Count == 0) return;
+
+        EntityComputeData[] nonRevealerData = new EntityComputeData[nonRevelers.Count];
+        for (int i = 0; i < nonRevelers.Count; i++)
+        {
+            Entity entity = nonRevelers[i];
+            Vector3 pos = entity.transform.position;
+            nonRevealerData[i] = new EntityComputeData
+            {
+                position = pos,
+                radius = Mathf.Max(entity.length,150f)
+            };
+        }
+
+        // Release old buffers and create new ones with correct size
+        nonRevealersBuffer?.Release();
+        nonRevealersBuffer = new ComputeBuffer(nonRevelers.Count, Marshal.SizeOf<EntityComputeData>());
+        nonRevealersBuffer.SetData(nonRevealerData);
+
+        visibilityResultsBuffer?.Release();
+        visibilityResultsBuffer = new ComputeBuffer(nonRevelers.Count, sizeof(uint));
+
+        // Re-bind buffers to compute shader kernel
+        fogComputeShader.SetBuffer(visibilityKernel, "NonRevealers", nonRevealersBuffer);
+        fogComputeShader.SetBuffer(visibilityKernel, "VisibilityResults", visibilityResultsBuffer);
+
+        // Update shader parameters
+        fogComputeShader.SetInt("NonRevealerCount", nonRevelers.Count);
+        fogComputeShader.SetFloat("GridCellSize", gridCellSize);
+        fogComputeShader.SetVector("GridOrigin", gridOrigin);
+
+        // Calculate dispatch groups
+        fogComputeShader.GetKernelThreadGroupSizes(visibilityKernel, out uint threadGroupSize, out _, out _);
+        int groups = Mathf.CeilToInt(nonRevelers.Count / (float)threadGroupSize);
+        fogComputeShader.Dispatch(visibilityKernel, groups, 1, 1);
+
+        // Retrieve and apply results
+        uint[] results = new uint[nonRevelers.Count];
+        visibilityResultsBuffer.GetData(results);
+
+        for (int i = 0; i < nonRevelers.Count; i++)
+        {
+            bool isVisible = results[i] != 0;
+            nonRevelers[i].gameObject.SetActive(isVisible);
+        }
     }
 
     void DispatchCompute(int kernel)
@@ -186,6 +250,8 @@ public class FogWarMgr : MonoBehaviour
         gridBuffer?.Release();
         entitiesBuffer?.Release();
         visitedGridBuffer?.Release();
+        nonRevealersBuffer?.Release();
+        visibilityResultsBuffer?.Release();
         if (fogRenderTexture != null && fogRenderTexture.IsCreated())
             fogRenderTexture.Release();
     }

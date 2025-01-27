@@ -1,6 +1,6 @@
 Shader "Custom/FogOfWar_Transparent" {
     Properties {
-        _FogColor ("Fog Color", Color) = (0, 0, 0, 0.8)  // 80% opacity black
+        _FogColor ("Fog Color", Color) = (0, 0, 0, 0)  
         _FogTex ("Fog Texture", 2D) = "white" {}
     }
 
@@ -42,10 +42,8 @@ Shader "Custom/FogOfWar_Transparent" {
             fixed4 frag (v2f i) : SV_Target {
                 // Get fog texture alpha (0 = revealed, 1 = fogged)
                 fixed fogAlpha = tex2D(_FogTex, i.uv).a;
-                
-                // Apply alpha to fog color
-                fixed4 result = _FogColor;
-                result.a = fogAlpha;  // Revealed areas become transparent
+    
+                fixed4 result = fixed4(_FogColor.rgb, _FogColor.a * fogAlpha);
                 return result;
             }
             ENDCG

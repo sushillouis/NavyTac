@@ -1,27 +1,31 @@
 #pragma kernel ClearGrid
 #pragma kernel RevealAreas
 #pragma kernel ApplyToTexture
+#pragma kernel CalculateVisibility
 
 // Grid parameters
 int GridWidth;
 int GridHeight;
 float GridCellSize;
 float2 GridOrigin;
-float4 FogColor;
-float4 PreviouslyRevealedColor; // RGBA(0.5, 0.5, 0.5, 0.5)
+float4 FogColor = float4(0, 0, 0, 0.8); // RGBA(0, 0, 0, 0.8)
+float4 PreviouslyRevealedColor;
+int NonRevealerCount;
 
 // Buffers & Textures
-RWStructuredBuffer<float> Grid;        // Current visibility (0-1)
-RWStructuredBuffer<float> VisitedGrid; // Persistent visibility (0-1)
-StructuredBuffer<float4> Entities;     // XYZ = position, W = radius
-RWTexture2D<float4> FogTexture;        // Output texture
+RWStructuredBuffer<float> Grid;
+RWStructuredBuffer<float> VisitedGrid;
+StructuredBuffer<float4> Entities;
+StructuredBuffer<float4> NonRevealers;
+RWStructuredBuffer<uint> VisibilityResults;
+RWTexture2D<float4> FogTexture;
+
 [numthreads(8, 8, 1)]
 void ClearGrid(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= GridWidth || id.y >= GridHeight) return;
     Grid[id.x + id.y * GridWidth] = 0.0f;
 }
-
 [numthreads(8, 8, 1)]
 void RevealAreas(uint3 id : SV_DispatchThreadID)
 {
@@ -72,4 +76,49 @@ void ApplyToTexture(uint3 id : SV_DispatchThreadID)
     float4 finalColor = lerp(visitedColor, float4(0, 0, 0, 0), currentVisibility);
 
     FogTexture[id.xy] = finalColor;
+}
+
+[numthreads(64, 1, 1)]
+void CalculateVisibility(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= NonRevealerCount) return;
+
+    float4 entity = NonRevealers[id.x];
+    float2 entityPos = entity.xz;
+    float visionRadius = entity.w;
+    
+    // Calculate grid bounds affected by vision radius
+    float2 minGrid = (entityPos - visionRadius - GridOrigin) / GridCellSize;
+    float2 maxGrid = (entityPos + visionRadius - GridOrigin) / GridCellSize;
+    
+    int2 minCell = int2(floor(minGrid.x), floor(minGrid.y));
+    int2 maxCell = int2(ceil(maxGrid.x), ceil(maxGrid.y));
+    
+    bool visible = false;
+    
+    // Check all potential grid cells in radius
+    for(int x = minCell.x; x <= maxCell.x; x++)
+    {
+        for(int y = minCell.y; y <= maxCell.y; y++)
+        {
+            if(x < 0 || x >= GridWidth || y < 0 || y >= GridHeight) continue;
+            
+            // Get cell center position
+            float2 cellCenter = GridOrigin + float2(
+                (x + 0.5) * GridCellSize,
+                (y + 0.5) * GridCellSize
+            );
+            
+            // Check both cell visibility and distance
+            if(Grid[y * GridWidth + x] > 0.5f && 
+               distance(entityPos, cellCenter) <= visionRadius)
+            {
+                visible = true;
+                break;
+            }
+        }
+        if(visible) break;
+    }
+    
+    VisibilityResults[id.x] = visible ? 1 : 0;
 }
