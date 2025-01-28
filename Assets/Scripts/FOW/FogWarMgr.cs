@@ -58,43 +58,45 @@ public class FogWarMgr : MonoBehaviour
         lastPlayerSide = playerSide;
     }
 
-    void OnValidate()
-    {
-        if (!FOW)
-        {
-            CleanupComputeResources();
-            Destroy(fogPlane);
-            revelers.Clear();
-            foreach (Entity entity in nonRevelers)
-            {
-                if (entity != null)
-                    entity.gameObject.SetActive(true);
-            }
-            nonRevelers.Clear();
-        }
-        else
-        {
-            InitializeFogPlane();
-            InitializeGrid();
-            InitializeComputeResources();
-        }
-        if (playerSide != lastPlayerSide)
-        {
-            lastPlayerSide = playerSide;
-            CleanupComputeResources();
-            Destroy(fogPlane);
-            revelers.Clear();
-            foreach (Entity entity in nonRevelers)
-            {
-                if (entity != null)
-                    entity.gameObject.SetActive(true);
-            }
-            nonRevelers.Clear();
-            InitializeFogPlane();
-            InitializeGrid();
-            InitializeComputeResources();
-        }
-    }
+    // void OnValidate()
+    // {
+    //     if (!FOW)
+    //     {
+    //         CleanupComputeResources();
+            
+    //         revelers.Clear();
+    //         foreach (Entity entity in nonRevelers)
+    //         {
+    //             if (entity != null)
+    //                 entity.gameObject.SetActive(true);
+    //         }
+    //         nonRevelers.Clear();
+    //     }
+    //     else
+    //     {
+    //         CleanupComputeResources();
+            
+    //         // InitializeFogPlane();
+    //         InitializeGrid();
+    //         InitializeComputeResources();
+    //     }
+    //     if (playerSide != lastPlayerSide)
+    //     {
+    //         lastPlayerSide = playerSide;
+    //         CleanupComputeResources();
+
+    //         revelers.Clear();
+    //         foreach (Entity entity in nonRevelers)
+    //         {
+    //             if (entity != null)
+    //                 entity.gameObject.SetActive(true);
+    //         }
+    //         nonRevelers.Clear();
+    //         // InitializeFogPlane();
+    //         InitializeGrid();
+    //         InitializeComputeResources();
+    //     } 
+    // }
     void Update()
     {
         if (!FOW) return;
