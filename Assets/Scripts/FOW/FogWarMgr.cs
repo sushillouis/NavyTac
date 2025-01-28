@@ -42,6 +42,7 @@ public class FogWarMgr : MonoBehaviour
     private float updateTimer;
     private float visibilityCheckTimer;
     private bool[] visibilityResults;
+    private PlayerSide lastPlayerSide;
 
     struct EntityComputeData
     {
@@ -54,8 +55,46 @@ public class FogWarMgr : MonoBehaviour
         InitializeFogPlane();
         InitializeGrid();
         InitializeComputeResources();
+        lastPlayerSide = playerSide;
     }
 
+    void OnValidate()
+    {
+        if (!FOW)
+        {
+            CleanupComputeResources();
+            Destroy(fogPlane);
+            revelers.Clear();
+            foreach (Entity entity in nonRevelers)
+            {
+                if (entity != null)
+                    entity.gameObject.SetActive(true);
+            }
+            nonRevelers.Clear();
+        }
+        else
+        {
+            InitializeFogPlane();
+            InitializeGrid();
+            InitializeComputeResources();
+        }
+        if (playerSide != lastPlayerSide)
+        {
+            lastPlayerSide = playerSide;
+            CleanupComputeResources();
+            Destroy(fogPlane);
+            revelers.Clear();
+            foreach (Entity entity in nonRevelers)
+            {
+                if (entity != null)
+                    entity.gameObject.SetActive(true);
+            }
+            nonRevelers.Clear();
+            InitializeFogPlane();
+            InitializeGrid();
+            InitializeComputeResources();
+        }
+    }
     void Update()
     {
         if (!FOW) return;
@@ -72,6 +111,7 @@ public class FogWarMgr : MonoBehaviour
             UpdateNonRevealerVisibility();
             visibilityCheckTimer = visibilityCheckInterval;
         }
+
     }
 
     void InitializeFogPlane()
