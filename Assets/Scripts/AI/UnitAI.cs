@@ -28,7 +28,9 @@ public class UnitAI : MonoBehaviour
         intercept3ds = new List<Intercept3d>();
         follows = new List<Follow>();
         moves = new List<Move>();
-
+        if(entity.radarAspect) {
+            entity.radarAspect.isEnabled=true;
+        }
     }
 
     public List<Move> moves;
@@ -42,8 +44,21 @@ public class UnitAI : MonoBehaviour
     public Dictionary<Entity, Potential> potentialsD;
     public List<EntityPotential> potentialsL;
     public delegate void DieEventMethod(Entity ent);
-    public List<DieEventMethod> dieEvents = new();
+    public event DieEventMethod OnDieEvent;
     public List<WeaponDeployAspect> weaponDeployAspects= new();
+    public List<AntiMissileWeaponDeployAspect> antiWeaponDeployAspects= new();
+    /// <summary>
+    /// Update is called every frame, if the MonoBehaviour is enabled.
+    /// </summary>
+    void Update()
+    {
+        if(entity.radarAspect!=null && entity.radarAspect.inboundMissiles.Count>0) {
+            foreach (AntiMissileWeaponDeployAspect wep in antiWeaponDeployAspects) {
+                wep.isFreeToFire = true;
+                wep.SetTarget(entity.radarAspect.GetClosestMissileIterate());
+            }
+        }
+    }
 
     // Update is called once per frame
     void FixedUpdate()
@@ -60,15 +75,13 @@ public class UnitAI : MonoBehaviour
     }
 
     public void SetAllWeaponsActive(bool set) {
-        foreach (WeaponDeployAspect wep in weaponDeployAspects)
-        {
+        foreach (WeaponDeployAspect wep in weaponDeployAspects) {
             wep.isFreeToFire = set;
         }
     }
 
     public void SetAllWeaponsTarget(Entity newTarget) {
-        foreach (WeaponDeployAspect wep in weaponDeployAspects)
-        {
+        foreach (WeaponDeployAspect wep in weaponDeployAspects) {
             wep.SetTarget(newTarget);
         }
     }
@@ -79,10 +92,8 @@ public class UnitAI : MonoBehaviour
         EntityMgr.inst.entities.Remove(entity);
         EntityMgr.inst.entitiesDict.Remove(entity.entityId);
         entity.gameObject.SetActive(false);
-        for(int i =0;i<dieEvents.Count;i++) {
-            dieEvents[i](entity);
-        }
-        dieEvents.Clear();
+        // Should be destroy WIP
+        this.OnDieEvent(this.entity);
         //Destroy(entity.gameObject);
     }
 

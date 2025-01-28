@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class WeaponDeployAspect : MonoBehaviour
+public class AntiMissileWeaponDeployAspect : MonoBehaviour
 {
     public UnitAI unitAI;
     float _range;
@@ -12,29 +12,29 @@ public class WeaponDeployAspect : MonoBehaviour
     public float cooldown;
     float cooldownTimer = 0;
     public bool isFreeToFire = false;
-    [SerializeField] protected Entity target = null;
-    public virtual void SetTarget(Entity newTarget) {
+    [SerializeField] protected GenericMissile target = null;
+    public virtual void SetTarget(GenericMissile newTarget) {
         if(target!=null && target!=newTarget) {
-            target.ai.OnDieEvent-= TargetDead;
+            target.OnDieEvent -=TargetDead;
         }
-        if(newTarget!=null && target!=newTarget  && newTarget.entityClass != EntityClass.Airplane) {
-            newTarget.ai.OnDieEvent+= TargetDead;
+        if(newTarget!=null && target!=newTarget) {
+            newTarget.OnDieEvent +=TargetDead;
             target=newTarget;
         }
     }
 
-    public Entity GetTarget() {
+    public GenericMissile GetTarget() {
         return target;
     }
 
-    public void TargetDead(Entity target) {
+    public void TargetDead(GenericMissile target) {
         target=null;
     }
     // Start is called before the first frame update
     void Start()
     {
         _range = range*Utils.FromNauticalMiles;
-        unitAI.weaponDeployAspects.Add(this);
+        unitAI.antiWeaponDeployAspects.Add(this);
     }
 
     // Update is called once per frame
@@ -54,8 +54,8 @@ public class WeaponDeployAspect : MonoBehaviour
     }
 
     public virtual void FireWeapon() {
-        JudeMissile temp = WeaponsMgr.inst.LaunchCruseMissile(unitAI.entity.position,target,new(0,unitAI.entity.heading,0),unitAI.entity.owner).GetComponent<JudeMissile>();
+        AntiMissileMissile temp = WeaponsMgr.inst.LaunchAntiMissile(unitAI.entity.position,target,new(0,90,0),unitAI.entity.owner).GetComponent<AntiMissileMissile>();
         temp.velocity = Quaternion.Euler(0,90,0)*unitAI.entity.velocity;
-        temp.phase = 1;
+        temp.phase = 0;
     }
 }

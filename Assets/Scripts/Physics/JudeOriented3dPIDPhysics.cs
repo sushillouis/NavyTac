@@ -56,7 +56,7 @@ public class JudeOriented3dPID : OrientedPhysics
         Vector3 targetAngleEuler = Quaternion.LookRotation(targetVector,Vector3.up).eulerAngles;
         float pitchThrottle = pitchPID.UpdateAngle(Time.fixedDeltaTime, parentTransform.eulerAngles.x, targetAngleEuler.x);
         float yawThrottle = rollPID.UpdateAngle(Time.fixedDeltaTime, parentTransform.eulerAngles.y, targetAngleEuler.y);
-        targetAngleEuler.z= (parentTransform.eulerAngles.y-targetAngleEuler.y)*Math.Abs(yawThrottle)*.66f;
+        targetAngleEuler.z= Utils.AngleDiffPosNeg(parentTransform.eulerAngles.y,targetAngleEuler.y)*Math.Abs(yawThrottle)*.66f;
         if(Mathf.Abs(targetAngleEuler.z)>90) {
             targetAngleEuler.z/=2;
         }

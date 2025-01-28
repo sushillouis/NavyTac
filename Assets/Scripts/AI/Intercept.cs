@@ -26,7 +26,7 @@ public class Intercept : Follow
         //Debug.Log("Intercept:\t ing: " + targetEntity.gameObject.name);
         line = LineMgr.inst.CreateInterceptLine(entity.position, targetEntity.position, targetEntity.position);
         line.gameObject.SetActive(false);
-        targetEntity.ai.dieEvents.Add(TargetDead);
+        targetEntity.ai.OnDieEvent+= TargetDead;
         entity.ai.SetAllWeaponsTarget(targetEntity);
         entity.ai.SetAllWeaponsActive(true);
     }
@@ -76,7 +76,7 @@ public class Intercept : Follow
 
         line=null;
         
-        targetEntity.ai.dieEvents.Remove(TargetDead);
+        targetEntity.ai.OnDieEvent-= TargetDead;
         entity.ai.SetAllWeaponsTarget(null);
         entity.ai.SetAllWeaponsActive(false);
 

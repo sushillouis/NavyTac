@@ -58,6 +58,7 @@ public class Entity : MonoBehaviour, IComparable<Entity>
     public UnitAI ai = null;
     public UIAspect ui = null;
     public WeaponsAspect weapons = null;
+    public RadarAspect radarAspect;
 
     // Start is called before the first frame update
     void Start()

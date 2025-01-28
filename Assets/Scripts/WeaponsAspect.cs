@@ -25,7 +25,7 @@ public class WeaponsAspect : MonoBehaviour
 
     private void Awake() {
         entity = GetComponentInParent<Entity>();
-        entity.weapons = this;
+        // entity.weapons = this;
 
         foreach(WeaponData wd in weapons) {
             wd.currentWeaponEntities = new List<Entity>();

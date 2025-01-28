@@ -2,38 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class JudeMissile : MonoBehaviour
+public class JudeMissile : BasicMissile
 {
-    public float thrust = 200f;
-    public float turnStrength = 90f;
-    public float highSpeed = 1000f;
-    public float highRotSpeed = 55f;
-    public float cruseAltitude = 500f;
-    public float terminalRadius;
-    public Entity target = null;
-    [SerializeField] PIDController pitchPID;
-    [SerializeField] PIDController rollPID;
-    [SerializeField] PIDController yawPID;
-    public Vector3 velocity = Vector3.zero;
-    [SerializeField] Vector3 angularVelocity = Vector3.zero;
-    [SerializeField] Wake wake;
-    public int phase = 0;
-    public const float LIFT_COFFEFICENT = 0.85f;
 
-    public void Init() {
-        target.ai.dieEvents.Add(TargetDead);
-    }
-
-    public void TargetDead(Entity target) {
-        //TODO Find New Target
-        FXMgr.inst.CreateExplosionAt(transform.position);
-        Destroy(gameObject);
-    }
-
-    public void Explode() {
-        FXMgr.inst.CreateExplosionAt(transform.position);
-        target.ai.dieEvents.Remove(TargetDead);
-        Destroy(gameObject);
+    public override void Init(TactPlayer player) {
+        target.ai.OnDieEvent +=TargetDead;
+        team = player;
     }
 
     void FixedUpdate()
@@ -84,7 +58,7 @@ public class JudeMissile : MonoBehaviour
         // } else {
         //     wake.gameObject.SetActive(false);
         // }
-        velocity+=throttle*thrust*Time.fixedDeltaTime*transform.forward;
+        _velocity+=throttle*thrust*Time.fixedDeltaTime*transform.forward;
         
         angularVelocity.x+=pitchThrottle*turnStrength*Time.fixedDeltaTime;
         angularVelocity.y+=yawThrottle*turnStrength*Time.fixedDeltaTime;
@@ -103,16 +77,17 @@ public class JudeMissile : MonoBehaviour
         }
 
         float liftFactor = 1-((1-(steepness/90))*(1-(tempY/90))*LIFT_COFFEFICENT);
-        
 
-        velocity+=Utils.GRAVITY*Time.fixedDeltaTime*Vector3.down*liftFactor;
-        transform.position+=velocity*Time.fixedDeltaTime;
+
+        _velocity += Utils.GRAVITY * Time.fixedDeltaTime * Vector3.down * liftFactor;
+        transform.position+=_velocity*Time.fixedDeltaTime;
         transform.Rotate(angularVelocity);
         float angluarDrag = Utils.ANGULAR_DRAG_COEFFICENT*(angularVelocity.magnitude/highRotSpeed);
-        float velocityDrag = Utils.DRAG_COEFFICENT*(velocity.magnitude/highSpeed);
+        float velocityDrag = Utils.DRAG_COEFFICENT*(_velocity.magnitude/highSpeed);
         angluarDrag=Mathf.Clamp(angluarDrag,0f,1f);
         velocityDrag=Mathf.Clamp(velocityDrag,0f,1f);
         angularVelocity*=1-angluarDrag;
-        velocity*=1-velocityDrag;
+        _velocity*=1-velocityDrag;
+        
     }
 }

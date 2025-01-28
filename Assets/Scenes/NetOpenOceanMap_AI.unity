@@ -497,7 +497,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.02e-43, y: 6e-44, z: 5.6e-44, w: 4.8195e-41}
+  m_BoundingSphereOverride: {x: 6.01e-43, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -1927,8 +1927,10 @@ MonoBehaviour:
     type: 3}
   judeAAMissilePrefab: {fileID: 6607427578281771949, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
     type: 3}
+  judeAntiMissilePrefab: {fileID: 7462934908326116036, guid: d34ed868bfc5c6449b47e28c9acfa1ac,
+    type: 3}
   MovableEntitiesRoot: {fileID: 382953079}
-  WeaponsAspectPrefab: {fileID: 2140764748}
+  WeaponsAspectPrefab: {fileID: 0}
 --- !u!1 &544093354 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6093058090645874861, guid: 3769d37cb4868da47b56c4040c02c3a9,
@@ -3066,79 +3068,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1054568532}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &1110961804
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -507.6563
-      objectReference: {fileID: 0}
-    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 2.36
-      objectReference: {fileID: 0}
-    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 77.086945
-      objectReference: {fileID: 0}
-    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3015655847111369479, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6607427578281771949, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_Name
-      value: JudeAAMissile
-      objectReference: {fileID: 0}
-    - target: {fileID: 6607427578281771949, guid: 840bcb58a986a4d4b8aa5011f2788ed5,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 840bcb58a986a4d4b8aa5011f2788ed5, type: 3}
 --- !u!114 &1114976719 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4420802208855306084, guid: 18405f1d958baba43a6188f28c98fb43,
@@ -6197,12 +6126,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1842399891}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &2140764748 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 161534766714707508, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-    type: 3}
-  m_PrefabInstance: {fileID: 2020023503048458507}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2144337139
 GameObject:
   m_ObjectHideFlags: 0
@@ -9082,4 +9005,3 @@ SceneRoots:
   - {fileID: 2144337140}
   - {fileID: 404090926}
   - {fileID: 484715720}
-  - {fileID: 1110961804}

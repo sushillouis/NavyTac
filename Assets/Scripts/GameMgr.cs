@@ -147,40 +147,43 @@ public class GameMgr : MonoBehaviour
             offset += Vector3.right*100;
             tempPlane = EntityMgr.inst.CreatePlaneEntity(initPos + offset, eulerAngles, player);
         }
-        /*
-        //Escort on right
-        offset = initEnt.transform.right * 10000;
+        
+        //Escort on right + Left
+        offset = initEnt.transform.right * 1000;
+        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
+        
+        offset = initEnt.transform.right * -1000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
 
-
+        /*
         //USV on right
-        offset = tmpEnt.transform.right * 5000;
+        offset = tmpEnt.transform.right * 500;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
 
         //USV in front
-        offset = initEnt.transform.forward * 10000;
+        offset = initEnt.transform.forward * 1000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
 
         //USV in behind
-        offset = -initEnt.transform.forward * 10000;
+        offset = -initEnt.transform.forward * 1000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
 
         //Escort on left
-        offset = -initEnt.transform.right * 10000;
+        offset = -initEnt.transform.right * 1000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
 
     
         //USV on left
-        offset = -initEnt.transform.right * 5000;
+        offset = -initEnt.transform.right * 500;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
 
-        offset = initEnt.transform.forward * 5000;
+        offset = initEnt.transform.forward * 500;
         offset.x -= 250;
         for(int i = 0; i < 5; i++) {
             tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);
             offset.x += 100;
         }
-        offset = -initEnt.transform.forward * 500;
+        offset = -initEnt.transform.forward * 50;
         offset.x -= 200;
         for(int i = 0; i < 5; i++) {
             tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);

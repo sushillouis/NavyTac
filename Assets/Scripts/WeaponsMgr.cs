@@ -12,23 +12,37 @@ public class WeaponsMgr : MonoBehaviour
 
     public List<GameObject> WeaponPrefabs = new List<GameObject>();
     public List<Entity> weapons = new List<Entity>();
+    public List<GenericMissile> activeMissiles = new List<GenericMissile>();
     [Header("DebugIsh")]
     [SerializeReference] GameObject judeMissilePrefab;
     [SerializeReference] GameObject judeAAMissilePrefab;
-    public GameObject LaunchCruseMissile(Vector3 position, Entity targetEntity, Vector3 angle) {
+    [SerializeReference] GameObject judeAntiMissilePrefab;
+    public GameObject LaunchCruseMissile(Vector3 position, Entity targetEntity, Vector3 angle, TactPlayer team) {
         GameObject temp = Instantiate(judeMissilePrefab,position,Quaternion.identity,this.transform);
         JudeMissile missile = temp.GetComponent<JudeMissile>();
         missile.target = targetEntity;
-        missile.Init();
+        activeMissiles.Add(missile);
+        missile.Init(team);
         temp.transform.Rotate(angle);
         return temp;
     }
 
-    public GameObject LaunchAAMissile(Vector3 position, Entity targetEntity, Vector3 angle) {
+    public GameObject LaunchAAMissile(Vector3 position, Entity targetEntity, Vector3 angle, TactPlayer team) {
         GameObject temp = Instantiate(judeAAMissilePrefab,position,Quaternion.identity,this.transform);
         JudeAAMissile missile = temp.GetComponent<JudeAAMissile>();
         missile.target = targetEntity;
-        missile.Init();
+        activeMissiles.Add(missile);
+        missile.Init(team);
+        temp.transform.Rotate(angle);
+        return temp;
+    }
+
+    public GameObject LaunchAntiMissile(Vector3 position, GenericMissile targetMissile, Vector3 angle, TactPlayer team) {
+        GameObject temp = Instantiate(judeAntiMissilePrefab,position,Quaternion.identity,this.transform);
+        AntiMissileMissile missile = temp.GetComponent<AntiMissileMissile>();
+        missile.target = targetMissile;
+        // activeMissiles.Add(missile);
+        missile.Init(team);
         temp.transform.Rotate(angle);
         return temp;
     }
