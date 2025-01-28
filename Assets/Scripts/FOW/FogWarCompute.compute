@@ -8,7 +8,7 @@ int GridWidth;
 int GridHeight;
 float GridCellSize;
 float2 GridOrigin;
-float4 FogColor = float4(0, 0, 0, 0.8); 
+float4 FogColor ;
 float4 PreviouslyRevealedColor ; 
 int NonRevealerCount;
 

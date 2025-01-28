@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class FogWarMgr : MonoBehaviour
 {
+    public bool FOW;
     public PlayerSide playerSide;
     
     [Header("Fog Plane Settings")]
@@ -12,6 +13,7 @@ public class FogWarMgr : MonoBehaviour
     public Vector2 fogPlaneSize = new Vector2(18250f, 18250f);
     public float heightAboveMap = 50f;
     public Color previouslyRevealedColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+    public Color fogColor = new Color(0.05f, 0.05f, 0.05f, 0f);
     [Header("Grid Settings")]
     [Min(0.1f)] public float gridCellSize = 10f;
     public List<Entity> revelers = new List<Entity>();
@@ -21,7 +23,7 @@ public class FogWarMgr : MonoBehaviour
     public ComputeShader fogComputeShader;
     [SerializeField] private float updateInterval = 0.1f;
     [SerializeField] private float visibilityCheckInterval = 0.2f;
-
+    
     private ComputeBuffer gridBuffer;
     private ComputeBuffer entitiesBuffer;
     private ComputeBuffer visitedGridBuffer;
@@ -48,6 +50,7 @@ public class FogWarMgr : MonoBehaviour
     }
 
     void Start() {
+        if (!FOW) return;
         InitializeFogPlane();
         InitializeGrid();
         InitializeComputeResources();
@@ -55,6 +58,7 @@ public class FogWarMgr : MonoBehaviour
 
     void Update()
     {
+        if (!FOW) return;
         updateTimer -= Time.deltaTime;
         if (updateTimer <= 0)
         {
@@ -182,7 +186,7 @@ public class FogWarMgr : MonoBehaviour
             nonRevealerData[i] = new EntityComputeData
             {
                 position = pos,
-                radius = Mathf.Max(entity.length,150f)
+                radius = 10f
             };
         }
 

@@ -43,7 +43,7 @@ Shader "Custom/FogOfWar_Transparent" {
                 // Get fog texture alpha (0 = revealed, 1 = fogged)
                 fixed fogAlpha = tex2D(_FogTex, i.uv).a;
     
-                fixed4 result = fixed4(_FogColor.rgb, _FogColor.a * fogAlpha);
+                fixed4 result = fixed4(_FogColor.rgb , fogAlpha);
                 return result;
             }
             ENDCG
