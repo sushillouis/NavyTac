@@ -47,14 +47,14 @@ MonoBehaviour:
   entity: {fileID: 0}
   weapons:
   - cooldown: 120
-    behaviorType: 2
+    behaviorType: 4
     weaponEntityType: 11
     currentWeaponEntities: []
     launchLocation: {x: 100, y: 0, z: 0}
     launchDirection: {x: 0, y: 0, z: 0}
     ammoCount: 10
   - cooldown: 60
-    behaviorType: 1
+    behaviorType: 2
     weaponEntityType: 12
     currentWeaponEntities: []
     launchLocation: {x: -100, y: 0, z: 0}
@@ -721,6 +721,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2020023502598012820}
     m_Modifications:
+    - target: {fileID: 7302508167063552837, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7302508167063552837, guid: d8082e6d06ae6824bb7326e150bc83ad,
         type: 3}
       propertyPath: m_Materials.Array.data[0]

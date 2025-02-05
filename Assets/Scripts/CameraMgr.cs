@@ -10,7 +10,7 @@ public class CameraMgr : MonoBehaviour
     private Vector3 moveVector;
     private float yawValue;
     private float pitchValue;
-    
+
 
     private void Awake()
     {
@@ -19,7 +19,7 @@ public class CameraMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     public GameObject RTSCameraRig;
@@ -46,12 +46,16 @@ public class CameraMgr : MonoBehaviour
     void Update()
     {
         moveCoefficent = Mathf.Log(YawNode.transform.position.y * heightSensitivty);
-        moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);        
+        moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);
+
+
     }
+
     public bool isRTSMode = true;
 
     public void MoveCameraY(float yMoveValue)
     {
+        if (float.IsNaN(yMoveValue) || float.IsNaN(moveCoefficent) || float.IsNaN(cameraMoveSpeed)) return;
         Vector3 moveVector = Vector3.zero;
         moveVector.y = yMoveValue * moveCoefficent;
         YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
@@ -59,9 +63,10 @@ public class CameraMgr : MonoBehaviour
         YawNode.transform.position = new(YawNode.transform.position.x, newY, YawNode.transform.position.z);
     }
 
-    public void MoveCameraXZ(Vector2 moveValue) 
+    public void MoveCameraXZ(Vector2 moveValue)
     {
-        Vector3 moveVector = Vector3.zero; 
+        if (float.IsNaN(moveValue.x) || float.IsNaN(moveValue.y) || float.IsNaN(moveCoefficent) || float.IsNaN(cameraMoveSpeed)) return;
+        Vector3 moveVector = Vector3.zero;
         moveVector.x += moveValue.x * moveCoefficent;
         moveVector.z += moveValue.y * moveCoefficent;
         YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
@@ -74,7 +79,7 @@ public class CameraMgr : MonoBehaviour
         YawNode.transform.localEulerAngles = currentYawEulerAngles;
     }
 
-    public void PitchCamera(float pitchValue) 
+    public void PitchCamera(float pitchValue)
     {
         currentPitchEulerAngles = PitchNode.transform.localEulerAngles;
         currentPitchEulerAngles.x += pitchValue * cameraTurnRate * Time.deltaTime;
@@ -85,7 +90,7 @@ public class CameraMgr : MonoBehaviour
     {
         if (isRTSMode)
         {
-            if (SelectionMgr.inst.selectedEntity != null) 
+            if (SelectionMgr.inst.selectedEntity != null)
             {
                 YawNode.transform.SetParent(SelectionMgr.inst.selectedEntity.cameraRig.transform);
                 YawNode.transform.localPosition = Vector3.zero;

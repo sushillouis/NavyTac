@@ -143,7 +143,14 @@ public class AIMgr : NetworkBehaviour
             AddOrSet(m, uai, add);
         }
     }
-
+    public void HandleDumbMove(List<Entity> entities, Vector3 point, bool add)
+    {
+        foreach (Entity entity in entities) {
+            Move m = new DumbMove(entity, point);
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            AddOrSet(m, uai, add);
+        }
+    }
     void AddOrSet(Command c, UnitAI uai, bool add)
     {
         //if I can command ent, execute command
@@ -192,6 +199,19 @@ public class AIMgr : NetworkBehaviour
                 Intercept3d intercept3d = new Intercept3d(entity, ent);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
                 AddOrSet(intercept3d, uai, add);
+            }
+        }
+
+    }
+    public void HandleSmartIntercept(List<Entity> entities, Entity ent, bool add)
+    {
+        foreach(Entity entity in entities)
+        {
+            if(ent != entity)
+            {
+                SmartIntercept smartIntercept = new SmartIntercept(entity, ent);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(smartIntercept, uai, add);
             }
         }
 

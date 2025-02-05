@@ -64,6 +64,12 @@ public class UIMgr : MonoBehaviour
     private InputAction selectGroup1;
 
 
+    private InputAction attack1;
+    private InputAction attack2;
+    private InputAction attack3;
+    private InputAction attack4;
+    private InputAction modifiers;
+
     private void Awake()
     {
         inst = this;
@@ -154,6 +160,25 @@ public class UIMgr : MonoBehaviour
         //Ctrl key signifies group commands so when we do right mouse button we run only if ctrl is not pressed
         inputs.Entities.ControlKey.Enable();
 
+
+        attack1 = inputs.Attacks.Attack1;
+        attack1.Enable();
+        attack1.performed += Attack1;
+
+        attack2 = inputs.Attacks.Attack2;
+        attack2.Enable();
+        attack2.performed += Attack2;
+
+        attack3 = inputs.Attacks.Attack3;
+        attack3.Enable();
+        attack3.performed += Attack3;
+
+        attack4 = inputs.Attacks.Attack4;
+        attack4.Enable();
+        attack4.performed += Attack4;
+
+        modifiers = inputs.Attacks.Modifers;
+        modifiers.Enable();
     }
     private void OnDisable()
     {
@@ -182,6 +207,11 @@ public class UIMgr : MonoBehaviour
         selectAll.Disable();
         inputs.Entities.ControlKey.Disable();
 
+        attack1.Disable();
+        attack2.Disable();
+        attack3.Disable();
+        attack4.Disable();
+        modifiers.Disable();
     }
 
     // Start is called before the first frame update
@@ -199,6 +229,8 @@ public class UIMgr : MonoBehaviour
 
     }
     public TextMeshProUGUI entityName;
+    
+    public Slider healthSlider;
 
     public TextMeshProUGUI fuel;
     public TextMeshProUGUI range;
@@ -223,9 +255,12 @@ public class UIMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(SelectionMgr.inst.selectedEntity != null) {
+        if (SelectionMgr.inst.selectedEntity != null)
+        {
             Entity ent = SelectionMgr.inst.selectedEntity;
             entityName.text = ent.name;
+            // healthSlider.value = ent.health/100f;
+            
             speed.text = ent.speed.ToString("F2") + " m/s";
             desiredSpeed.text = ent.desiredSpeed.ToString("F2") + " m/s";
             heading.text = ent.heading.ToString("F1") + " deg";
@@ -250,13 +285,13 @@ public class UIMgr : MonoBehaviour
             isActive = ToggleMultiSelect.GetComponent<Toggle>().isOn;
         else
             isActive = false;
-
+        
         CameraMgr.inst.YawCamera(yawCamera.ReadValue<float>());
         CameraMgr.inst.PitchCamera(pitchCamera.ReadValue<float>());
         CameraMgr.inst.MoveCameraY(cameraYMove.ReadValue<Vector2>().y);
         CameraMgr.inst.MoveCameraXZ(cameraXZMove.ReadValue<Vector2>());
 
-        if(boxSelecting)
+        if (boxSelecting)
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
 
 
@@ -301,8 +336,11 @@ public class UIMgr : MonoBehaviour
             target.text = move.movePosition.ToString();
 
             Follow follow = uai.commands[0] as Follow;
+
             if(follow != null){
-                target.text = follow.targetEntity.name;
+                if(follow.targetEntity != null){
+                    target.text = follow.targetEntity.name;
+                }
             } 
 
         }
@@ -346,7 +384,7 @@ public class UIMgr : MonoBehaviour
             AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
     }
 
-    private void ChangeSpeed(InputAction.CallbackContext context) 
+    private void ChangeSpeed(InputAction.CallbackContext context)
     {
         ControlMgr.inst.ChangeSpeed(changeSpeed.ReadValue<float>());
     }
@@ -409,4 +447,29 @@ public class UIMgr : MonoBehaviour
             inputs.Entities.Disable();
     }
 
+
+    private void Attack1(InputAction.CallbackContext context)
+    {
+        Debug.Log("Dumb Weapon");
+        WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.Dumb);
+    }
+
+    private void Attack2(InputAction.CallbackContext context)
+    {
+        Debug.Log("Surface Weapon");
+        WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.SurfaceInterceptor);
+    }
+
+    private void Attack3(InputAction.CallbackContext context)
+    {
+        Debug.Log("Air Weapon");
+        WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.AirInterceptor);
+    }
+
+    private void Attack4(InputAction.CallbackContext context)
+    {
+        Debug.Log("Smart Weapon");
+        WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.Smart);
+
+    }
 }

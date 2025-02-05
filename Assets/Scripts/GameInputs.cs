@@ -917,6 +917,235 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Attacks"",
+            ""id"": ""00b10792-822a-4f20-9006-00a9737d4f02"",
+            ""actions"": [
+                {
+                    ""name"": ""Attack1"",
+                    ""type"": ""Button"",
+                    ""id"": ""5b7527e5-02de-4338-9c64-65f01533eff3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Attack2"",
+                    ""type"": ""Button"",
+                    ""id"": ""55f48028-ce74-439d-9bb1-7fdc3f98daaa"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Attack3"",
+                    ""type"": ""Button"",
+                    ""id"": ""b98f2984-504b-40b6-a008-961221b8d675"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Attack4"",
+                    ""type"": ""Button"",
+                    ""id"": ""f1a7b65a-b084-4b7d-962a-66562228b1db"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Modifers"",
+                    ""type"": ""Button"",
+                    ""id"": ""244d5b36-7106-4619-b7f4-9de2f009d649"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""6e353dc8-1d37-4fda-817a-2744952881ee"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack1"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""c771ccff-e45a-4846-8d7b-a6295e9f1df0"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""9cdb37ad-fbdc-4760-b7b3-8ca5051704e1"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""e3c20d64-9be6-48bd-bfd1-665117e7fdf4"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack2"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""b04d68d1-0fb3-43e2-a62b-c810e4494114"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""57de45f7-12fb-4a60-8509-f123f521f1b7"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""af6a4d63-d24a-4680-a5f1-f1c12b394389"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack3"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""f4f75b56-40b6-4991-b436-dcdfc8c69b72"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack3"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""ea3fc27f-677e-499f-9681-7cf6b74914f3"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack3"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""72de57ef-ee8f-46ba-8376-7f2de61f0d1b"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack4"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""57d17eb9-0cf6-4b74-a88b-48eb9c9d34b9"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack4"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""46b95728-d703-4ab6-aae1-307040694ed7"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack4"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""26c2c03a-1a86-4d93-a601-43fbaf5b1dd9"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Modifers"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e2daf471-5658-496f-bb86-e578fdbb275b"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Modifers"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""64e812ef-423d-4e62-bbab-b92ee3d13cda"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Modifers"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e0824412-6bd4-4f83-807b-160fa0f6c25a"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Modifers"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -948,6 +1177,13 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Entities_Create100 = m_Entities.FindAction("Create100", throwIfNotFound: true);
         m_Entities_AddCommand = m_Entities.FindAction("AddCommand", throwIfNotFound: true);
         m_Entities_ControlKey = m_Entities.FindAction("ControlKey", throwIfNotFound: true);
+        // Attacks
+        m_Attacks = asset.FindActionMap("Attacks", throwIfNotFound: true);
+        m_Attacks_Attack1 = m_Attacks.FindAction("Attack1", throwIfNotFound: true);
+        m_Attacks_Attack2 = m_Attacks.FindAction("Attack2", throwIfNotFound: true);
+        m_Attacks_Attack3 = m_Attacks.FindAction("Attack3", throwIfNotFound: true);
+        m_Attacks_Attack4 = m_Attacks.FindAction("Attack4", throwIfNotFound: true);
+        m_Attacks_Modifers = m_Attacks.FindAction("Modifers", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -1287,6 +1523,84 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         }
     }
     public EntitiesActions @Entities => new EntitiesActions(this);
+
+    // Attacks
+    private readonly InputActionMap m_Attacks;
+    private List<IAttacksActions> m_AttacksActionsCallbackInterfaces = new List<IAttacksActions>();
+    private readonly InputAction m_Attacks_Attack1;
+    private readonly InputAction m_Attacks_Attack2;
+    private readonly InputAction m_Attacks_Attack3;
+    private readonly InputAction m_Attacks_Attack4;
+    private readonly InputAction m_Attacks_Modifers;
+    public struct AttacksActions
+    {
+        private @GameInputs m_Wrapper;
+        public AttacksActions(@GameInputs wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Attack1 => m_Wrapper.m_Attacks_Attack1;
+        public InputAction @Attack2 => m_Wrapper.m_Attacks_Attack2;
+        public InputAction @Attack3 => m_Wrapper.m_Attacks_Attack3;
+        public InputAction @Attack4 => m_Wrapper.m_Attacks_Attack4;
+        public InputAction @Modifers => m_Wrapper.m_Attacks_Modifers;
+        public InputActionMap Get() { return m_Wrapper.m_Attacks; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(AttacksActions set) { return set.Get(); }
+        public void AddCallbacks(IAttacksActions instance)
+        {
+            if (instance == null || m_Wrapper.m_AttacksActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_AttacksActionsCallbackInterfaces.Add(instance);
+            @Attack1.started += instance.OnAttack1;
+            @Attack1.performed += instance.OnAttack1;
+            @Attack1.canceled += instance.OnAttack1;
+            @Attack2.started += instance.OnAttack2;
+            @Attack2.performed += instance.OnAttack2;
+            @Attack2.canceled += instance.OnAttack2;
+            @Attack3.started += instance.OnAttack3;
+            @Attack3.performed += instance.OnAttack3;
+            @Attack3.canceled += instance.OnAttack3;
+            @Attack4.started += instance.OnAttack4;
+            @Attack4.performed += instance.OnAttack4;
+            @Attack4.canceled += instance.OnAttack4;
+            @Modifers.started += instance.OnModifers;
+            @Modifers.performed += instance.OnModifers;
+            @Modifers.canceled += instance.OnModifers;
+        }
+
+        private void UnregisterCallbacks(IAttacksActions instance)
+        {
+            @Attack1.started -= instance.OnAttack1;
+            @Attack1.performed -= instance.OnAttack1;
+            @Attack1.canceled -= instance.OnAttack1;
+            @Attack2.started -= instance.OnAttack2;
+            @Attack2.performed -= instance.OnAttack2;
+            @Attack2.canceled -= instance.OnAttack2;
+            @Attack3.started -= instance.OnAttack3;
+            @Attack3.performed -= instance.OnAttack3;
+            @Attack3.canceled -= instance.OnAttack3;
+            @Attack4.started -= instance.OnAttack4;
+            @Attack4.performed -= instance.OnAttack4;
+            @Attack4.canceled -= instance.OnAttack4;
+            @Modifers.started -= instance.OnModifers;
+            @Modifers.performed -= instance.OnModifers;
+            @Modifers.canceled -= instance.OnModifers;
+        }
+
+        public void RemoveCallbacks(IAttacksActions instance)
+        {
+            if (m_Wrapper.m_AttacksActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IAttacksActions instance)
+        {
+            foreach (var item in m_Wrapper.m_AttacksActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_AttacksActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public AttacksActions @Attacks => new AttacksActions(this);
     public interface ICameraActions
     {
         void OnYaw(InputAction.CallbackContext context);
@@ -1316,5 +1630,13 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnCreate100(InputAction.CallbackContext context);
         void OnAddCommand(InputAction.CallbackContext context);
         void OnControlKey(InputAction.CallbackContext context);
+    }
+    public interface IAttacksActions
+    {
+        void OnAttack1(InputAction.CallbackContext context);
+        void OnAttack2(InputAction.CallbackContext context);
+        void OnAttack3(InputAction.CallbackContext context);
+        void OnAttack4(InputAction.CallbackContext context);
+        void OnModifers(InputAction.CallbackContext context);
     }
 }

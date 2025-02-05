@@ -133,7 +133,7 @@ public class Move : Command
     public override bool IsDone()
     {
 
-        return ((entity.position - movePosition).sqrMagnitude < doneDistanceSq);
+        return (entity.position - movePosition).sqrMagnitude < doneDistanceSq;
     }
 
     public override void Stop()

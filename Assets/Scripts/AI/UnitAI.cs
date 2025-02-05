@@ -26,9 +26,9 @@ public class UnitAI : MonoBehaviour
         commands = new List<Command>();
         intercepts = new List<Intercept>();
         intercept3ds = new List<Intercept3d>();
+        smartIntercepts = new List<SmartIntercept>();
         follows = new List<Follow>();
         moves = new List<Move>();
-
     }
 
     public List<Move> moves;
@@ -36,6 +36,7 @@ public class UnitAI : MonoBehaviour
     public List<Command> commands;
     public List<Intercept> intercepts;
     public List<Intercept3d> intercept3ds;
+    public List<SmartIntercept> smartIntercepts;
 
     [Header("PF nodes")]
     public List<Transform> pfList = new List<Transform>();
@@ -45,6 +46,7 @@ public class UnitAI : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        // Debug.Log(entity.name +""+commands.Count);
         if (commands.Count > 0) {
             if (commands[0].IsDone()) {
                 StopAndRemoveCommand(0);
@@ -77,8 +79,31 @@ public class UnitAI : MonoBehaviour
             Move move = (Move)cmd;
             move.Stop();
             moves.Remove(move);
-        } 
+        }
 
+        if(cmd is Intercept) {
+            Intercept intercept = (Intercept)cmd;
+            intercept.Stop();
+            intercepts.Remove(intercept);
+        }
+        
+        if(cmd is Intercept3d) {
+            Intercept3d intercept3d = (Intercept3d)cmd;
+            intercept3d.Stop();
+            intercept3ds.Remove(intercept3d);
+        }
+
+        if(cmd is SmartIntercept) {
+            SmartIntercept smartIntercept = (SmartIntercept)cmd;
+            smartIntercept.Stop();
+            smartIntercepts.Remove(smartIntercept);
+        }
+
+        if(cmd is Follow){
+            Follow follow = (Follow)cmd;
+            follow.Stop();
+            follows.Remove(follow);
+        }
     }
     
     public void StopAndRemoveAllCommands()
@@ -93,7 +118,9 @@ public class UnitAI : MonoBehaviour
         //print("Adding command; " + c.ToString());
         c.Init();
         commands.Add(c);
-        if(c is Intercept3d)
+        if(c is SmartIntercept)
+            smartIntercepts.Add(c as SmartIntercept);
+        else if(c is Intercept3d)
             intercept3ds.Add(c as Intercept3d);
         else if(c is Intercept)
             intercepts.Add(c as Intercept);
@@ -112,6 +139,7 @@ public class UnitAI : MonoBehaviour
         intercepts.Clear();
         follows.Clear();
         intercept3ds.Clear();
+        smartIntercepts.Clear();
         AddCommand(c);
 
     }
@@ -165,8 +193,5 @@ public class UnitAI : MonoBehaviour
             m.potentialLine.SetPosition(1, entity.position + newpos);
             m.potentialLine.gameObject.SetActive(entity.isSelected);
         }
-
-
     }
-
 }

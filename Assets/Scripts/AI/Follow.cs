@@ -48,6 +48,10 @@ public class Follow : Move
 
     public override bool IsDone()
     {
+        if (targetEntity == null)
+        {
+            base.IsDone();
+        }
         return done;
     }
 
@@ -63,23 +67,43 @@ public class Follow : Move
     public float predictedInterceptTime;
     public Vector3 predictedMovePosition;
     Vector3 predictedDiff;
+    public Vector3 diff;
     //------------------------------------------------------
     public float ComputePredictiveDH(Vector3 movePosition)
     {
         float dh;
-        //movePosition = targetEntity.position + targetEntity.transform.TransformVector(relativeOffset);
-        diffToMovePosition = movePosition - entity.position + randomizedOffset; 
+        movePosition = targetEntity.position + targetEntity.transform.TransformVector(relativeOffset);
+        diff = movePosition - entity.position;
         relativeVelocity = entity.velocity - targetEntity.velocity;
-        predictedInterceptTime = diffToMovePosition.magnitude / relativeVelocity.magnitude;
-        if (predictedInterceptTime >= 0) {
+        predictedInterceptTime = diff.magnitude / relativeVelocity.magnitude;
+        if (predictedInterceptTime >= 0)
+        {
             predictedMovePosition = movePosition + (targetEntity.velocity * predictedInterceptTime);
 
             predictedDiff = predictedMovePosition - entity.position;
             dh = Utils.Degrees360(Mathf.Atan2(predictedDiff.x, predictedDiff.z) * Mathf.Rad2Deg);
-        } else {
+        }
+        else
+        {
             dh = ComputeDHDS().dh;
         }
         return dh;
     }
+
+    //     public DHDS ComputePotentialPredictiveDHDS(Vector3 relativeOffset)
+    // {
+    //     movePosition = targetEntity.position + targetEntity.transform.TransformVector(relativeOffset);
+    //     diff = movePosition - entity.position;
+    //     relativeVelocity = entity.velocity - targetEntity.velocity;
+    //     predictedInterceptTime = relativeVelocity.magnitude > 0 ? diff.magnitude / relativeVelocity.magnitude : 0;
+
+    //     if (predictedInterceptTime >= 0)
+    //     {
+    //         predictedMovePosition = movePosition + (targetEntity.velocity * predictedInterceptTime);
+    //         movePosition = predictedMovePosition;
+    //     }
+
+    //     return ComputePotentialDHDS();
+    // }
 
 }

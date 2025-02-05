@@ -32,6 +32,7 @@ public class EntityMgr : MonoBehaviour
         GameObject entityPrefab = entityPrefabs.Find(x => (x.GetComponent<Entity>().entityType == et));
         if(entityPrefab != null) {
             GameObject entityGo = Instantiate(entityPrefab, position, Quaternion.Euler(eulerAngles), entitiesRoot.transform);
+            entityGo.SetActive(true);
             if(entityGo != null) {
                 entity = entityGo.GetComponent<Entity>();
                 entity.entityId = entityId;
@@ -47,7 +48,20 @@ public class EntityMgr : MonoBehaviour
         return entity;
     }
 
-
+    public void DestroyEntity(Entity entity)
+    {
+            entity.GetComponentInChildren<OrientedPhysics>().enabled = false;
+            entity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
+            Vector3 deadRot = transform.localEulerAngles;
+            deadRot.z = 90;
+            entity.speed = 0;
+            if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name)
+            {
+                CameraMgr.inst.ToggleRTSView();
+            }
+            entities.Remove(entity);
+            
+    }
 
 
 

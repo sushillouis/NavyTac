@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Data.Common;
 using UnityEngine;
 
 
@@ -46,8 +47,8 @@ public class Entity : MonoBehaviour
 
     public GameObject cameraRig;
     public GameObject selectionCircle;
-
     public TactPlayer owner;
+    public Entity creatorsEntity;
 
 
     [Header("Aspect references")]
@@ -57,7 +58,6 @@ public class Entity : MonoBehaviour
     public UIAspect ui = null;
     public WeaponsAspect weapons = null;
 
-    // Start is called before the first frame update
     void Start()
     {
         isSelected = false;
@@ -66,15 +66,16 @@ public class Entity : MonoBehaviour
         fuel = maxFuel;
 
     }
-
-    // Update is called once per frame
     void Update()
     {
-
+        if(health <= 0){
+            EntityMgr.inst.DestroyEntity(this);           
+        }
     }
 
     private void FixedUpdate() {
         ComputeFuelRange();
+        RaycastCollisonCheck();
     }
 
     void ComputeFuelRange() {
@@ -88,4 +89,46 @@ public class Entity : MonoBehaviour
         range = Mathf.Clamp(fuel * cruiseSpeed, 0, maxRange);
 
     }
+    // This function On Trigger Enter is just for testing purposes.
+    // START
+    void OnTriggerEnter(Collider other)
+    {
+
+        //this method checks if the weapon is collided by a ship and if yes then it damages the ship based on the damage matrix
+        Debug.Log("hit");
+        if (WeaponsMgr.inst.weapons.Contains(this))
+            {
+            Entity otherEntity = other.GetComponent<Entity>();
+            if (otherEntity != creatorsEntity)
+            {
+                float damage = WeaponsMgr.inst.GetDamage(this.entityType, otherEntity.entityType);
+                // Debug.Log(damage);
+                otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
+                health = 0;
+                if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
+            }
+        }
+    }
+    // This function  use raycast to check if the weapon is collided by a ship and if yes then it damages the ship based on the damage matrix
+    void RaycastCollisonCheck()
+    {
+        // RaycastHit hit;
+        // if (Physics.Raycast(transform.position, transform.forward, out hit, 20))
+        // {
+        //     if (WeaponsMgr.inst.weapons.Contains(this))
+        //     {
+        //         Entity otherEntity = hit.collider.GetComponent<Entity>();
+        //         if (otherEntity != creatorsEntity)
+        //         {
+        //             float damage = DamageMatrix.GetDamage(this.entityType, otherEntity.entityType);
+        //             // Debug.Log(damage);
+        //             otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
+        //             health = 0;
+        //             if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
+        //         }
+        //     }
+        // }
+    }
+
+    // END
 }
