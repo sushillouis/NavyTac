@@ -11,6 +11,7 @@ public class WeaponData
     public float cooldown;
     public WeaponBehaviors behaviorType;
     public EntityType weaponEntityType;
+    public float range = 200f;
     public List<Entity> currentWeaponEntities; //list of alive weapons
     public Vector3 launchLocation;
     public Vector3 launchDirection;

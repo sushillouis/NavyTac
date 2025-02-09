@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.UI;
 
 public class MinimapMgr : MonoBehaviour
@@ -72,6 +74,7 @@ public class MinimapMgr : MonoBehaviour
 
     //Creates the minimap icon for each ent in the scene, called in UIAspect
     public void CreateMinimapIcon(Entity ent, GameObject minimapIcon) {
+        
         var newIcon = Instantiate(minimapIcon);
         newIcon.name = ent.name + "Icon";
         newIcon.GetComponent<Image>().color = ent.owner.playerColor;
@@ -82,9 +85,17 @@ public class MinimapMgr : MonoBehaviour
     //Uses SetIconLocation to update the map position for all ents and the camera
     public void UpdateMinimap() {
         foreach(var icon in mapIcons) {
+            
             Entity ent = icon.Key;
             var mapIcon = icon.Value;
-            SetIconLocation(mapIcon, ent.position, ent.heading);
+            if (ent.transform.GetChild(0).gameObject.activeSelf == true){
+                SetIconLocation(mapIcon, ent.position, ent.heading);
+                mapIcon.SetActive(true);
+            }
+            else{
+                mapIcon.SetActive(false);
+            }
+            
         }
         SetIconLocation(cameraIcon, Camera.main.transform.position, 0);
 

@@ -261,7 +261,7 @@ public class FogWarMgr : MonoBehaviour
         for (int i = 0; i < nonRevelers.Count; i++)
         {
             bool isVisible = results[i] != 0;
-            nonRevelers[i].gameObject.SetActive(isVisible);
+            nonRevelers[i].transform.GetChild(0).gameObject.SetActive(isVisible);
         }
     }
 

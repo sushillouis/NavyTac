@@ -117,7 +117,7 @@ public class AIMgr : NetworkBehaviour
                 Vector3 pos = hit.point;
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
-                if(ent == null) {
+                if(ent == null || ent.transform.GetChild(0).gameObject.activeSelf == false) {
                     HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
                 } else {
                     if(intercept)
