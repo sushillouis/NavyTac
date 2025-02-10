@@ -18,7 +18,8 @@ public class FogWarMgr : MonoBehaviour
     [Min(0.1f)] public float gridCellSize = 10f;
     public List<Entity> revelers = new List<Entity>();
     public List<Entity> nonRevelers = new List<Entity>();
-    
+    [Range(0,500f)]
+    public float fogRevealRadius = 150f;
     [Header("Compute Shader")]
     public ComputeShader fogComputeShader;
     [SerializeField] private float updateInterval = 0.1f;
@@ -34,6 +35,7 @@ public class FogWarMgr : MonoBehaviour
     private int revealKernel;
     private int updateKernel;
     private int visibilityKernel;
+    
 
     private GameObject fogPlane;
     private Vector2 gridOrigin;
@@ -282,7 +284,7 @@ public class FogWarMgr : MonoBehaviour
             entityData[i] = new EntityComputeData
             {
                 position = pos,
-                radius = Mathf.Max(revelers[i].length, 150f)
+                radius = Mathf.Max(revelers[i].length, fogRevealRadius)
             };
         }
 
