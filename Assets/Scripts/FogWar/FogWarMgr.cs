@@ -130,7 +130,7 @@ public class FogWarMgr : MonoBehaviour
         float scaleX = fogPlaneSize.x / 10f;
         float scaleZ = fogPlaneSize.y / 10f;
         fogPlane.transform.localScale = new Vector3(scaleX, 1f, scaleZ);
-        fogPlane.transform.position = new Vector3(200f, heightAboveMap, -800f);
+        fogPlane.transform.position = new Vector3(0, heightAboveMap, 0);
         fogPlane.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
 
         if (fogMaterial != null)

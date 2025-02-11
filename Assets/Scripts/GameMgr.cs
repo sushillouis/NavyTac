@@ -236,7 +236,7 @@ public void SpawnEntitiesFromDictionary(Vector3 initPos, float initHeading, Tact
         Vector3 spawnPos = initPos;  
         Vector3 eulerAngles = new Vector3(0, initHeading, 0);
         EntityMgr.inst.CreateEntity(spawnQueue[index], spawnPos, eulerAngles, player);
-        Debug.Log($"Spawning {spawnQueue[index]} at {spawnPos} (ring {ring})");
+        // Debug.Log($"Spawning {spawnQueue[index]} at {spawnPos} (ring {ring})");
         index++;
     }
 
