@@ -139,7 +139,7 @@ public class GameMgr : MonoBehaviour
 
     public void OpenOcean1x1()
     {
-        Vector3 posPlayer1 = new Vector3(0, 0, 0);
+        Vector3 posPlayer1 = new Vector3(0100, 0, -7000);
         Vector3 posPlayer2 = new Vector3(0, 0, 1 * Utils.FromNauticalMiles);
         // MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1);
         // MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
