@@ -1,0 +1,293 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using TMPro;
+using UnityEditor.Rendering;
+using UnityEditor.SearchService;
+using UnityEngine;
+
+public class StreamingToCommand: MonoBehaviour 
+{
+    [SerializeField] Transform commandDisplay;
+    [SerializeField] Transform optionsDisplay;
+    [SerializeField] GameObject commandWordPrefab;
+    [SerializeField] GameObject optionWordPrefab;
+    [SerializeField] GameObject currentOptionsScroll;
+    [SerializeField] GameObject optionsScrollPrefab;
+    [SerializeField] List<GameObject> words = new();
+    [SerializeField] string priorword = "";
+    [SerializeField] string fullCommand = "";
+    [SerializeField] Vector3 rectPos = Vector3.zero;
+    public void ProcessResult(string result) {
+        result = WordCleanup.StripPunctuation(result);
+        string[] tokens = result.Split(' ');
+        bool executeCommand = false;
+        for (int i = 0;i<tokens.Length;i++) {
+            string word = tokens[i];
+            long temp = WordCleanup.ConvertToNumbers(word,out bool flag);
+            if(flag) {
+                word = temp.ToString();
+            }
+            if(WordCleanup.nearWords.TryGetValue(word, out string value)) {
+                word = value;
+            }
+            Debug.Log("Current Word-"+word+"-");
+            if ((WordCleanup.CommandLanguageDict.ContainsKey(word) 
+            && priorword == "" && WordCleanup.startWords.Contains(word))  
+            || (WordCleanup.CommandLanguageDict.ContainsKey(priorword) 
+            && WordCleanup.CommandLanguageDict[priorword].Any(option => word == option.Item2))) {
+                // Debug.Log(WordCleanup.CommandLanguageDict[word].ToArray());
+                GameObject tempWord = Instantiate(commandWordPrefab,commandDisplay);
+                words.Add(tempWord);
+                RectTransform tempRect = tempWord.GetComponent<RectTransform>();
+                tempRect.sizeDelta = new(40+(40*word.Length),85);
+                rectPos=tempRect.position;
+                TMP_Text tempText = tempWord.GetComponentInChildren<TMP_Text>();
+                tempText.text = word.ToUpper();
+                (int,string) pair = WordCleanup.CommandLanguageDict[priorword].Find(option => word == option.Item2);
+                Debug.Log(pair);
+                if(pair.Item1 >1 ) {
+                    fullCommand+=word+" ";
+                    word= WordCleanup.CommandLanguageDict[word][pair.Item1-2].Item2;
+                    tempWord = Instantiate(commandWordPrefab,commandDisplay);
+                    words.Add(tempWord);
+                    tempRect = tempWord.GetComponent<RectTransform>();
+                    tempRect.sizeDelta = new(40+(40*word.Length),85);
+                    rectPos=tempRect.position;
+                    tempText = tempWord.GetComponentInChildren<TMP_Text>();
+                    tempText.text = word.ToUpper();
+                }
+                priorword = word;
+                fullCommand+=word+" ";
+                if(!WordCleanup.CommandLanguageDict.ContainsKey(word) || pair.Item1 == 1) {
+                    executeCommand=true;
+                    break;
+                }
+            }
+        }
+        if(executeCommand) {
+            if(currentOptionsScroll!=null) {
+                Destroy(currentOptionsScroll);
+            }
+            Debug.Log(fullCommand);
+            ExecuteCommand(fullCommand);
+            Stop();
+            Init();
+        } else if(priorword!="" && WordCleanup.CommandLanguageDict.ContainsKey(priorword)) {
+            if(currentOptionsScroll!=null) {
+                Destroy(currentOptionsScroll);
+            }
+            currentOptionsScroll = Instantiate(optionsScrollPrefab,optionsDisplay);
+            FillOptions(WordCleanup.CommandLanguageDict[priorword]);
+        }
+    }
+
+    public void ExecuteCommand(string command) {
+        System.Collections.IEnumerator tokens = command.Split(' ').GetEnumerator();
+        if(!tokens.MoveNext()) return;
+        if((string)tokens.Current=="select") {
+            if(!tokens.MoveNext()) return;
+            if((string)tokens.Current=="clear") {
+                SelectionMgr.inst.ClearSelection();
+            }
+            if((string)tokens.Current=="all") {
+                if(!tokens.MoveNext()) return; // "on"
+                if(!tokens.MoveNext()) return;
+                if((string)tokens.Current=="screen") {
+                    SelectionMgr.inst.SelectEntitiesInBox(Vector3.zero,new(9999,9999,0));
+                }
+            }
+        }
+    }
+
+    public void Init() {
+        if(currentOptionsScroll!=null) {
+            Destroy(currentOptionsScroll);
+        }
+        foreach (GameObject word in words) {
+            Destroy(word);
+        }
+        words.Clear();
+        currentOptionsScroll = Instantiate(optionsScrollPrefab,optionsDisplay);
+        FillOptions(WordCleanup.startWords);
+    }
+
+    public void Stop() {
+        if(currentOptionsScroll!=null) {
+            Destroy(currentOptionsScroll);
+        }
+        fullCommand="";
+        priorword="";
+    }
+
+    public void FillOptions(List<(int,string)> options) {
+        List<string> temp = new();
+        options.ForEach(option => temp.Add(option.Item2));
+        FillOptions(temp);
+    }
+    
+    public void FillOptions(List<string> options) {
+        if(options.Count==0) {
+            return;
+        } 
+        int maxLength = -1;
+        OptionsScroll optionsScroll = currentOptionsScroll.GetComponent<OptionsScroll>();
+        foreach (string option in options) {
+            if(option.Length > maxLength) {
+                maxLength = option.Length;
+            }
+
+        }
+        float baseWidth = 40+(20*maxLength);
+        foreach (string option in options) {
+            GameObject tempWord = Instantiate(optionWordPrefab,optionsScroll.content);
+            RectTransform tempRect = tempWord.GetComponent<RectTransform>();
+            tempRect.sizeDelta = new(baseWidth,42.5f);
+            TMP_Text tempText = tempWord.GetComponentInChildren<TMP_Text>();
+            tempText.text = option.ToUpper();
+        }
+
+        RectTransform optionsRect = optionsScroll.content.GetComponent<RectTransform>();
+        optionsRect.sizeDelta = new(0,42.5f*options.Count);
+        optionsRect = optionsScroll.viewPort.GetComponent<RectTransform>();
+        int viewHeight = options.Count>2 ? 2 : options.Count; 
+        optionsRect.sizeDelta = new(baseWidth,42.5f*viewHeight);;
+        currentOptionsScroll.GetComponent<RectTransform>().sizeDelta=new(baseWidth+20,42.5f*viewHeight);;
+    }
+
+    // public GameObject MakeCommandWord(string command, Transform parent) {
+
+    // }
+    
+}
+
+static class WordCleanup  
+{  
+    public static Dictionary<string, List<(int, string)>> CommandLanguageDict = new Dictionary<string, List<(int,string)>>{{
+        "select",new(){
+            (1,"clear"),
+            (2,"1/2"),
+            (2,"all")
+        }}, {"attack", new(){
+            (0,"farthest"),
+            (0,"nearest"),
+        }}, {"move", new(){
+            (3,"all"),
+            (2,"selected"),
+        }}, {"selected", new(){
+            (0,"to"),
+            (0,"nearest"),
+        }}, {"to", new(){
+            (0,"farthest"),
+            (0,"nearest"),
+        }}, {"group", new(){
+            (1,"selected"),
+            (1,"unselected"),
+        }}, {"farthest", new(){
+            (0,"ally"),
+            (0,"enemy"),
+        }}, {"nearest", new(){
+            (0,"ally"),
+            (0,"enemy"),
+        }}, {"ally", new(){
+            (1,"group"),
+            (0,"single"),
+        }}, {"enemy", new(){
+            (1,"group"),
+            (2,"single"),
+        }}, {"single", new(){
+            (-1,"#"),
+        }}, {"all", new(){
+            (-1,"on"),
+            (-1,"to")
+        }}, {"1/2", new(){
+            (-1,"on"),
+        }}, {"on", new(){
+            (1,"left"),
+            (1,"right"),
+            (1,"screen"),
+        }}, {"execute", new(){
+            (2,"tactic"),
+        }}, {"tactic", new(){
+            (0,"formation"),
+        }}, {"", new(){
+        }}
+        // , {"formation", new(){
+        //      "attack",
+        //      "move"
+        // }}
+    };
+
+    public static List<string> startWords = new (){
+        "select",
+        "attack",
+        "move",
+        "group"
+    };
+    private static Dictionary<string, long> numberTable = new Dictionary<string, long>{  
+        {"zero",0},{"one",1},{"two",2},{"three",3},{"four",4},{"five",5},{"six",6},  
+        {"seven",7},{"eight",8},{"nine",9},{"ten",10},{"eleven",11},{"twelve",12},  
+        {"thirteen",13},{"fourteen",14},{"fifteen",15},{"sixteen",16},{"seventeen",17},  
+        {"eighteen",18},{"nineteen",19},{"twenty",20},{"thirty",30},{"forty",40},  
+        {"fifty",50},{"sixty",60},{"seventy",70},{"eighty",80},{"ninety",90},  
+        {"hundred",100},{"thousand",1000},{"lakh",100000},{"million",1000000},  
+        {"billion",1000000000},{"trillion",1000000000000},{"quadrillion",1000000000000000},  
+        {"quintillion",1000000000000000000}  
+    };  
+
+    public static Dictionary<string,string> nearWords = new() {
+        {"father","farthest"},
+        {"nami","enemy"},
+        {"number","#"},
+        {"pound","#"},
+        {"oh","all"},
+        {"half","1/2"},
+        {"bye","ally"},
+    };
+  
+    public static long ConvertToNumbers(string numberString, out bool flag)   {  
+        var numbers = Regex.Matches(numberString, @"\w+").Cast<Match>()  
+                .Select(m => m.Value.ToLowerInvariant())  
+                .Where(v => numberTable.ContainsKey(v))  
+                .Select(v => numberTable[v]);  
+        long acc = 0, total = 0L;  
+
+        if(numbers.Count<long>() > 0)
+            flag=true;
+        else
+            flag=false;
+
+        foreach (var n in numbers)  
+        {  
+            if (n >= 1000)  
+            {  
+                total += acc * n;  
+                acc = 0;  
+            }  
+            else if (n >= 100)  
+            {  
+                acc *= n;  
+            }  
+            else acc += n;  
+        }  
+        return (total + acc) * (numberString.StartsWith("minus",  
+                StringComparison.InvariantCultureIgnoreCase) ? -1 : 1);  
+    } 
+
+    public static string StripPunctuation(string strip) {
+        strip=strip.ToLower();
+        var sb = new StringBuilder();
+
+        foreach (char c in strip)
+        {
+        if (!char.IsPunctuation(c))
+            sb.Append(c);
+        }
+
+        strip = sb.ToString();
+        strip=strip.Trim();
+        return strip;
+    } 
+} 

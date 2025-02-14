@@ -11,7 +11,7 @@ using System;
 public class WhisperMic : MonoBehaviour
 {
     public WhisperManager whisper;
-    public MicrophoneRecord microphoneRecord;
+    public AltMicRecord microphoneRecord;
     public bool streamSegments = true;
     public bool printLanguage = false;
     // public TextToCommand textToCommand;
@@ -46,6 +46,7 @@ public class WhisperMic : MonoBehaviour
             translateToggle.onValueChanged.AddListener(OnTranslateChanged);
         }
         microphoneRecord.OnRecordStop += Transcribe;
+        microphoneRecord.OnRecordTick += Transcribe;
         
         if (streamSegments)
             whisper.OnNewSegment += WhisperOnOnNewSegment;
@@ -67,6 +68,20 @@ public class WhisperMic : MonoBehaviour
         if (buttonText)
             buttonText.text = microphoneRecord.IsRecording ? "Stop" : "Record";
     }
+
+    [SerializeField] float voiceChunkLength = 2;
+    float voiceTimer = 0;
+
+    void Update()
+    {
+        if(microphoneRecord.IsRecording) {
+            voiceTimer+=Time.deltaTime;
+            if(voiceTimer>=voiceChunkLength) {
+                microphoneRecord.RealTimeRecord();
+                voiceTimer=0;
+            }
+        }
+    }
     
     private void OnLanguageChanged(int ind)
     {
@@ -85,7 +100,6 @@ public class WhisperMic : MonoBehaviour
         
         var sw = new Stopwatch();
         sw.Start();
-        
         
         var res = await whisper.GetTextAsync(recordedAudio.Data, recordedAudio.Frequency, recordedAudio.Channels);
 
