@@ -1,10 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
+using System.Text;
+using System.Globalization;
+using System;
+using UnityEditor;
 
 public class EntityMgr : MonoBehaviour
 {
     public static EntityMgr inst;
+    
+    [Header("Export Settings")]
+    public string exportFileName = "entity_export.csv";
+    
     private void Awake()
     {
         inst = this;
@@ -20,12 +29,163 @@ public class EntityMgr : MonoBehaviour
     public GameObject entitiesRoot;
     public List<Entity> entities;
     public Dictionary<int, Entity> entitiesDict;
-
+    
     public int entityId = 0;
 
     public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles) {
         return CreateEntity(et, position, eulerAngles, PlayerMgr.inst.player1);
     }
+    [ContextMenu("Export Entities to CSV")]
+    public void ExportEntitiesToCSV()
+    {
+        if (entityPrefabs == null || entityPrefabs.Count == 0)
+        {
+            Debug.LogWarning("No entities to export!");
+            return;
+        }
+
+        string filePath = Path.Combine(Application.dataPath, exportFileName);
+        StringBuilder csvContent = new StringBuilder();
+
+        // CSV Header
+        csvContent.AppendLine(
+            "entityType,acceleration,turnRate,maxSpeed,minSpeed,cruiseSpeed," +
+            "mass,length,width,height,maxFuel,maxRange,entityClass"
+        );
+
+        int exportedCount = 0;
+        
+        foreach (GameObject entityGO in entityPrefabs)
+        {
+            Entity entity = entityGO.GetComponent<Entity>(); 
+            string ownerId = entity.owner != null ? entity.owner.playerId.ToString() : "null";
+            string creatorId = entity.creatorsEntity != null ? 
+                entity.creatorsEntity.entityId.ToString() : "null";
+
+            csvContent.AppendLine(
+                $"{entity.entityType}," +
+                $"{entity.acceleration:F2},{entity.turnRate:F2}," +
+                $"{entity.maxSpeed},{entity.minSpeed},{entity.cruiseSpeed}," +
+                $"{entity.mass:F1},{entity.length:F1},{entity.width:F1},{entity.height:F1}," +
+                $"{entity.maxFuel},{entity.maxRange}," +
+                $"{entity.entityClass}," 
+            );
+            exportedCount++;
+        }
+
+        try
+        {
+            File.WriteAllText(filePath, csvContent.ToString(), Encoding.UTF8);
+            Debug.Log($"Successfully exported {exportedCount} entities to:\n{filePath}");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Export failed: {e.Message}");
+        }
+    }
+   [ContextMenu("Import Entities from CSV")]
+    public void ImportEntitiesFromCSV()
+    {
+        string filePath = Path.Combine(Application.dataPath, exportFileName);
+        
+        if (!File.Exists(filePath))
+        {
+            Debug.LogWarning($"CSV file not found at: {filePath}");
+            return;
+        }
+
+        try
+        {
+            string[] lines = File.ReadAllLines(filePath);
+            if (lines.Length < 2)
+            {
+                Debug.LogWarning("CSV file is empty or contains only headers");
+                return;
+            }
+
+            int importedCount = 0;
+            
+            // Start from index 1 to skip header row
+            for (int i = 1; i < lines.Length; i++)
+            {
+                string line = lines[i];
+                string[] fields = line.Split(',');
+
+                // Handle potential trailing comma from export
+                List<string> cleanedFields = new List<string>();
+                foreach (string field in fields)
+                {
+                    string cleaned = field.Trim();
+                    if (!string.IsNullOrEmpty(cleaned))
+                    {
+                        cleanedFields.Add(cleaned);
+                    }
+                }
+
+                if (cleanedFields.Count < 13)
+                {
+                    Debug.LogWarning($"Skipping line {i + 1}: Not enough fields ({cleanedFields.Count} instead of 13)");
+                    continue;
+                }
+
+                string entityTypeString = cleanedFields[0];
+                // Fix for EntityType comparison error
+                GameObject entityPrefab = entityPrefabs.Find(go => 
+                    go.GetComponent<Entity>().entityType.ToString() == entityTypeString);
+
+                if (entityPrefab == null)
+                {
+                    Debug.LogWarning($"Skipping line {i + 1}: Entity type '{entityTypeString}' not found in prefabs");
+                    continue;
+                }
+
+                Entity entity = entityPrefab.GetComponent<Entity>();
+
+                try
+                {
+                    // Parse and assign values with culture fix
+                    entity.acceleration = float.Parse(cleanedFields[1], CultureInfo.InvariantCulture);
+                    entity.turnRate = float.Parse(cleanedFields[2], CultureInfo.InvariantCulture);
+                    entity.maxSpeed = float.Parse(cleanedFields[3], CultureInfo.InvariantCulture);
+                    entity.minSpeed = float.Parse(cleanedFields[4], CultureInfo.InvariantCulture);
+                    entity.cruiseSpeed = float.Parse(cleanedFields[5], CultureInfo.InvariantCulture);
+                    entity.mass = float.Parse(cleanedFields[6], CultureInfo.InvariantCulture);
+                    entity.length = float.Parse(cleanedFields[7], CultureInfo.InvariantCulture);
+                    entity.width = float.Parse(cleanedFields[8], CultureInfo.InvariantCulture);
+                    entity.height = float.Parse(cleanedFields[9], CultureInfo.InvariantCulture);
+                    entity.maxFuel = float.Parse(cleanedFields[10], CultureInfo.InvariantCulture);
+                    entity.maxRange = float.Parse(cleanedFields[11], CultureInfo.InvariantCulture);
+                    
+                    // Fix for EntityClass conversion
+                    entity.entityClass = (EntityClass)Enum.Parse(typeof(EntityClass), cleanedFields[12]);
+
+                    importedCount++;
+                    
+                    #if UNITY_EDITOR
+                    // Mark prefab as dirty to ensure changes are saved
+                    EditorUtility.SetDirty(entityPrefab);
+                    #endif
+                }
+                catch (FormatException e)
+                {
+                    Debug.LogError($"Failed to parse values in line {i + 1}: {e.Message}");
+                }
+            }
+
+            #if UNITY_EDITOR
+            // Save all changes to assets
+            AssetDatabase.SaveAssets();
+            #endif
+
+            Debug.Log($"Successfully imported {importedCount} entities from {filePath}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Import failed: {e.Message}");
+        }
+    }
+
+    
 
     public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles, TactPlayer player) {
         Entity entity = null;
@@ -61,20 +221,6 @@ public class EntityMgr : MonoBehaviour
             }
             entities.Remove(entity);
             
-    }
-
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
 

@@ -190,11 +190,7 @@ public class GameMgr : MonoBehaviour
         }
     }
 
-
-public void SpawnEntitiesFromDictionary(Vector3 initPos, float initHeading, TactPlayer player)
-{
-    BuildEntityDictionary();  
-    List<EntityType> prioritizedOrder = new List<EntityType>()
+public List<EntityType> priorityList = new List<EntityType>()
     {
         EntityType.CVN75,
         EntityType.Submarine,
@@ -214,11 +210,15 @@ public void SpawnEntitiesFromDictionary(Vector3 initPos, float initHeading, Tact
         EntityType.TugBoat,
         EntityType.SeaBaby
     };
+public void SpawnEntitiesFromDictionary(Vector3 initPos, float initHeading, TactPlayer player)
+{
+    BuildEntityDictionary();  
+    
 
     List<EntityType> spawnQueue = new List<EntityType>();
 
     // Use the prioritized order to fill the spawn queue.
-    foreach (EntityType type in prioritizedOrder)
+    foreach (EntityType type in priorityList)
     {
         if (entityDict.TryGetValue(type, out int count))
         {
