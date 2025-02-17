@@ -81,7 +81,7 @@ public class AIMgr : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        layerMask = 1 << 9;// LayerMask.GetMask("Water");
+        layerMask = LayerMask.GetMask("Ocean", "Terrain");
     }
 
     public bool isPotentialFieldsMovement = false;
@@ -111,9 +111,15 @@ public class AIMgr : NetworkBehaviour
     public void HandleCommand(Vector2 mousePos, bool intercept, bool add)
     {
        
+       
         if(SelectionMgr.inst.selectedEntities.Count > 0) {
             if(Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask)) {
-                //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
+                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Terrain"))
+                    {
+                        return; // Ignore this hit
+                    }
+                
+                Debug.DrawLine(Camera.main.transform.position, hit.point, UnityEngine.Color.yellow, 2); //for debugging
                 Vector3 pos = hit.point;
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);

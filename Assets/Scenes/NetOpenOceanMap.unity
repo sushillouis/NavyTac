@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.4453563, g: 0.48936236, b: 0.54362136, a: 1}
+  m_IndirectSpecularColor: {r: 0.4453519, g: 0.48935807, b: 0.54361916, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -405,13 +405,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 170076733}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.09229593, y: 0.7010574, z: -0.09229593, w: 0.7010574}
+  m_LocalRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 15, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
 --- !u!114 &170076736
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -865,7 +865,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65cfb1489ff408b4abaedfa9abb7f27d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FOW: 1
+  FOW: 0
   playerSide: 0
   fogMaterial: {fileID: 2100000, guid: 043fa474478025747b66fd0c85b9458c, type: 2}
   fogPlaneSize: {x: 18520, y: 18520}
@@ -875,7 +875,7 @@ MonoBehaviour:
   gridCellSize: 10
   revelers: []
   nonRevelers: []
-  fogRevealRadius: 150
+  fogRevealRadius: 500
   fogComputeShader: {fileID: 7200000, guid: c1791acc49869e640a6dead7d276576f, type: 3}
   updateInterval: 0.1
   visibilityCheckInterval: 0.2
@@ -1084,6 +1084,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 682c4f213fc65eb4d95e32f00d1f3654, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  exportFileName: entity_export.csv
   movableEntitiesRoot: {fileID: 382953079}
   entityPrefabs:
   - {fileID: 2020023502598012821, guid: 4eadb14a1eece2a44a7ae893943f3d9f, type: 3}
@@ -2038,7 +2039,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 10000, y: 1, z: 10000}
+  m_Size: {x: 18300, y: 1, z: 18300}
   m_Center: {x: 0, y: -10, z: 0}
 --- !u!114 &639876785
 MonoBehaviour:
@@ -3166,6 +3167,11 @@ MonoBehaviour:
     unitCount: 9
   players: 0
   sameEnityForAll: 0
+  posPlayer1: {x: 100, y: 0, z: -7000}
+  headingPlayer1: 0
+  posPlayer2: {x: 0, y: 0, z: 1852}
+  headingPlayer2: 180
+  priorityList: 0d0000000e000000000000000a000000090000000400000002000000050000000b000000010000000300000007000000080000000c000000
 --- !u!1 &1142393662
 GameObject:
   m_ObjectHideFlags: 0
@@ -6120,7 +6126,7 @@ PrefabInstance:
     - target: {fileID: 229904364588993521, guid: 154d111a92a0b5044a70610b2316490d,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0.000016499105
+      value: -0.000047623762
       objectReference: {fileID: 0}
     - target: {fileID: 623374846698746527, guid: 154d111a92a0b5044a70610b2316490d,
         type: 3}

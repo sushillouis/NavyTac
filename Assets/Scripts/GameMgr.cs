@@ -136,15 +136,17 @@ public class GameMgr : MonoBehaviour
             pos.x = 0;
         }
     }
-
+    public Vector3 posPlayer1 = new Vector3(0, 0, -7000);
+    public float headingPlayer1 = 0;
+    public Vector3 posPlayer2 = new Vector3(0, 0, 10000);
+    public float headingPlayer2 = 180;
     public void OpenOcean1x1()
     {
-        Vector3 posPlayer1 = new Vector3(0100, 0, -7000);
-        Vector3 posPlayer2 = new Vector3(0, 0, 1 * Utils.FromNauticalMiles);
+        
         // MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1);
         // MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
-        SpawnEntitiesFromDictionary(posPlayer1, 0, PlayerMgr.inst.player1);
-        SpawnEntitiesFromDictionary(posPlayer2, 180, PlayerMgr.inst.player2);
+        SpawnEntitiesFromDictionary(posPlayer1, headingPlayer1, PlayerMgr.inst.player1);
+        SpawnEntitiesFromDictionary(posPlayer2, headingPlayer2, PlayerMgr.inst.player2);
     }
 
 

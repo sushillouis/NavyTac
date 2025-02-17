@@ -19,9 +19,17 @@ public class CameraMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        RTSCameraRig.transform.position = CalculateNewPosition(RTSCameraRig.transform.position,GameMgr.inst.posPlayer1);
+        YawNode.transform.rotation = Quaternion.Euler(0, GameMgr.inst.headingPlayer1, 0);
     }
-
+    Vector3 CalculateNewPosition(Vector3 current, Vector3 offset)
+    {
+        return new Vector3(
+            (Mathf.Abs(current.x) + Mathf.Abs(offset.x)) * Mathf.Sign(offset.x),
+            current.y,
+            (Mathf.Abs(current.z) + Mathf.Abs(offset.z)) * Mathf.Sign(offset.z)
+        );
+    }
     public GameObject RTSCameraRig;
     public GameObject YawNode;   // Child of RTSCameraRig
     public GameObject PitchNode; // Child of YawNode
