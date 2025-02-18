@@ -20,7 +20,12 @@ public class StreamingToCommand: MonoBehaviour
     [SerializeField] string priorword = "";
     [SerializeField] string fullCommand = "";
     [SerializeField] Vector3 rectPos = Vector3.zero;
+    bool pause = false;
+    [SerializeField] float pauseTimer = 2f;
     public void ProcessResult(string result) {
+        if(pause) {
+            return;
+        }
         result = WordCleanup.StripPunctuation(result);
         string[] tokens = result.Split(' ');
         bool executeCommand = false;
@@ -73,8 +78,9 @@ public class StreamingToCommand: MonoBehaviour
             }
             Debug.Log(fullCommand);
             ExecuteCommand(fullCommand);
+            pause=true;
             Stop();
-            Init();
+            Invoke(nameof(Init), pauseTimer);
         } else if(priorword!="" && WordCleanup.CommandLanguageDict.ContainsKey(priorword)) {
             if(currentOptionsScroll!=null) {
                 Destroy(currentOptionsScroll);
@@ -99,7 +105,33 @@ public class StreamingToCommand: MonoBehaviour
                     SelectionMgr.inst.SelectEntitiesInBox(Vector3.zero,new(9999,9999,0));
                 }
             }
+        } else if((string)tokens.Current=="attack") {
+            if(!tokens.MoveNext()) return;
+            int dirFlag = 0;
+            bool allyFlag=false;
+            if((string)tokens.Current=="farthest") {
+                dirFlag = 1;
+                if(!tokens.MoveNext()) return;
+            } else if((string)tokens.Current=="nearest") {
+                dirFlag = -1;
+                if(!tokens.MoveNext()) return;
+            } else if((string)tokens.Current=="specific") {
+                if(!tokens.MoveNext()) return;
+            }
+            if(dirFlag!=0) {
+                if((string)tokens.Current=="ally") {
+                    allyFlag=true;
+                }
+                ExecuteDynamicAttack(dirFlag,allyFlag);
+            } else {
+
+            }
+
         }
+    }
+
+    public void ExecuteDynamicAttack(int dirFlag, bool allyFlag) {
+        
     }
 
     public void Init() {
@@ -112,6 +144,7 @@ public class StreamingToCommand: MonoBehaviour
         words.Clear();
         currentOptionsScroll = Instantiate(optionsScrollPrefab,optionsDisplay);
         FillOptions(WordCleanup.startWords);
+        pause=false;
     }
 
     public void Stop() {
@@ -173,27 +206,31 @@ static class WordCleanup
         }}, {"attack", new(){
             (0,"farthest"),
             (0,"nearest"),
+            (0, "specific")
         }}, {"move", new(){
             (3,"all"),
             (2,"selected"),
         }}, {"selected", new(){
-            (0,"to"),
-            (0,"nearest"),
+            (-1,"to"),
         }}, {"to", new(){
             (0,"farthest"),
             (0,"nearest"),
+            (0, "specific")
+        }}, {"specific", new(){
+            (0,"ally"),
+            (0,"enemy"),
         }}, {"group", new(){
             (1,"selected"),
             (1,"unselected"),
         }}, {"farthest", new(){
-            (0,"ally"),
-            (0,"enemy"),
+            (1,"ally"),
+            (1,"enemy"),
         }}, {"nearest", new(){
-            (0,"ally"),
-            (0,"enemy"),
+            (1,"ally"),
+            (1,"enemy"),
         }}, {"ally", new(){
             (1,"group"),
-            (0,"single"),
+            (2,"single"),
         }}, {"enemy", new(){
             (1,"group"),
             (2,"single"),
