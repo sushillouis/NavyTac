@@ -14,7 +14,7 @@ public class EntityMgr : MonoBehaviour
     [Header("Export Settings")]
     public string exportFileName = "entity_export.csv";
     
-    private void Awake()
+    void Awake()
     {
         inst = this;
         entities = new List<Entity>();
@@ -23,12 +23,15 @@ public class EntityMgr : MonoBehaviour
         //    entities.Add(ent);
         //}
     }
+   
 
     public GameObject movableEntitiesRoot;
     public List<GameObject> entityPrefabs;
     public GameObject entitiesRoot;
     public List<Entity> entities;
     public Dictionary<int, Entity> entitiesDict;
+    public event Action<Entity> OnEntityAdded;
+    public event Action<Entity> OnEntityRemoved;
     
     public int entityId = 0;
 
@@ -200,6 +203,7 @@ public class EntityMgr : MonoBehaviour
                 entity.owner = player;
                 entity.heading = entity.desiredHeading = eulerAngles.y;
                 entities.Add(entity);
+                OnEntityAdded?.Invoke(entity);
                 entitiesDict.Add(entity.entityId, entity);
             }
         }
@@ -220,6 +224,7 @@ public class EntityMgr : MonoBehaviour
                 CameraMgr.inst.ToggleRTSView();
             }
             entities.Remove(entity);
+            OnEntityRemoved?.Invoke(entity);
             
     }
 

@@ -392,7 +392,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.1430663e+27, y: NaN, z: 2.9965768e+32, w: 1.0505619e-38}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 7.1e-44, z: 1.82602e-40, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -1761,20 +1761,40 @@ PrefabInstance:
       propertyPath: m_Name
       value: TerrainContainer
       objectReference: {fileID: 0}
+    - target: {fileID: 4034866660640197166, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4683844675391422946, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.98450446
+      objectReference: {fileID: 0}
+    - target: {fileID: 4683844675391422946, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.98450446
+      objectReference: {fileID: 0}
+    - target: {fileID: 4683844675391422946, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.98450446
+      objectReference: {fileID: 0}
     - target: {fileID: 4683844675391422946, guid: d39e64df80d4eca4da864f574fdbcecc,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10000
+      value: -9876.1
       objectReference: {fileID: 0}
     - target: {fileID: 4683844675391422946, guid: d39e64df80d4eca4da864f574fdbcecc,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -298
+      value: -262.91
       objectReference: {fileID: 0}
     - target: {fileID: 4683844675391422946, guid: d39e64df80d4eca4da864f574fdbcecc,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -10000
+      value: -9876.1
       objectReference: {fileID: 0}
     - target: {fileID: 4683844675391422946, guid: d39e64df80d4eca4da864f574fdbcecc,
         type: 3}
@@ -1994,6 +2014,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1796549058}
   - {fileID: 684643217}
   - {fileID: 1540707792}
   m_Father: {fileID: 1708907977}
@@ -4252,7 +4273,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1517180312}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Ocean
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4907,6 +4928,57 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1783885011}
   m_CullTransparentMesh: 1
+--- !u!1 &1796549057
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1796549058}
+  - component: {fileID: 1796549059}
+  m_Layer: 0
+  m_Name: EnemyAIMgr
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1796549058
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1796549057}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 639876782}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1796549059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1796549057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc331097491174f41b1d50a6c2e61adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxScoutRadius: 4000
+  maxScouts: 4
+  targetSwitchDistance: 2000
+  minScoutSpeed: 10
+  fixedSeed: 12345
+  potentialScouts: []
+  scoutRegions: []
 --- !u!1 &1852731777
 GameObject:
   m_ObjectHideFlags: 0
