@@ -86,8 +86,8 @@ public class WeaponsMgr : MonoBehaviour
     void Test1()
     {
         Entity selectedEnt = SelectionMgr.inst.selectedEntity;
-        Entity ent = EntityMgr.inst.entities.Find(x => (x.entityType == EntityType.CVN75) &&
-                                                       (x.owner.playerSide != selectedEnt.owner.playerSide));
+        Entity ent = 
+            EntityMgr.inst.entities.Find(x => (x.entityType == EntityType.CVN75) && (x.owner.playerSide != selectedEnt.owner.playerSide));
         LaunchWeapon(selectedEnt, EntityType.AntiShipMissile, ent);
         Debug.Log("Launched: " + EntityType.AntiShipMissile + " @ " + ent.name);
 

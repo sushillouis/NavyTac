@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
@@ -6,6 +7,22 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.Windows;
+
+[Serializable]
+public class WorldPosEntity
+{
+    public Vector3 worldPosition;
+    public Entity entity;
+
+    public WorldPosEntity(Vector3 wp, Entity ent) {
+        worldPosition = wp; 
+        entity = ent;
+    }
+
+    public override string ToString() {
+        return "Pos: " + worldPosition.ToString() + ", E: " + entity?.ToString();
+    }
+}
 
 /// <summary>
 /// Key and mouse bindings are all in this document: _______________
@@ -24,6 +41,10 @@ public class UIMgr : MonoBehaviour
     private InputAction cameraXZMove;
     private InputAction toggleRTSCam;
 
+    private InputAction mouseDelta;
+    private InputAction mouseScroll;
+    private InputAction toggleMap;
+
     private InputAction selectionBox;
     private InputAction singleSelect;
     private InputAction selectionCursorPosition;
@@ -39,14 +60,19 @@ public class UIMgr : MonoBehaviour
 
     private InputAction create100;
 
+    private InputAction selectAll;
+    private InputAction selectGroup1;
+
+
     private void Awake()
     {
         inst = this;
         inputs = new GameInputs();
     }
 
-    private void OnEnable()
-    {
+    private void OnEnable() {
+        inputs.Enable();
+
         toggleRTSCam = inputs.Camera.RTSView;
         toggleRTSCam.Enable();
         toggleRTSCam.performed += ToggleRTSView;
@@ -62,6 +88,21 @@ public class UIMgr : MonoBehaviour
 
         cameraXZMove = inputs.Camera.XZMove;
         cameraXZMove.Enable();
+
+
+        //moves camera or minimap - bound to middle mouse + mouse move
+        mouseDelta = inputs.Camera.MiddleMouseMove;
+        mouseDelta.Enable();
+
+        //changes cam height and zooms in cam - bound to mouse scroll
+        mouseScroll = inputs.Camera.MouseScroll;
+        mouseScroll.Enable();
+
+        //toggles whether map is mini or big - bound to M
+        toggleMap = inputs.Camera.Map;
+        toggleMap.Enable();
+        toggleMap.performed += ToggleMap;
+
 
         selectionBox = inputs.Selection.BoxSelect;
         selectionBox.Enable();
@@ -103,8 +144,17 @@ public class UIMgr : MonoBehaviour
         create100 = inputs.Entities.Create100;
         create100.Enable();
         create100.performed += Create100;
-    }
 
+        //Groups
+
+        selectAll = inputs.Selection.SelectAll;
+        selectAll.Enable();
+        selectAll.performed += OnSelectAllPerformed;
+
+        //Ctrl key signifies group commands so when we do right mouse button we run only if ctrl is not pressed
+        inputs.Entities.ControlKey.Enable();
+
+    }
     private void OnDisable()
     {
         toggleRTSCam.Disable();
@@ -112,6 +162,11 @@ public class UIMgr : MonoBehaviour
         pitchCamera.Disable();
         cameraYMove.Disable();
         cameraXZMove.Disable();
+        //
+        mouseDelta.Disable();
+        mouseScroll.Disable();
+        toggleMap.Disable();
+        //
         selectionBox.Disable();
         singleSelect.Disable();
         selectionCursorPosition.Disable();
@@ -123,18 +178,25 @@ public class UIMgr : MonoBehaviour
         changeSpeed.Disable();
         changeHeading.Disable();
         create100.Disable();
+
+        selectAll.Disable();
+        inputs.Entities.ControlKey.Disable();
+
     }
 
     // Start is called before the first frame update
     void Start()
     {
         ToggleMultiSelect.SetActive(false);
-        #if UNITY_ANDROID
+#if UNITY_ANDROID
             ToggleMultiSelect.SetActive(true);
-        #endif
-        #if UNITY_ANDROID
+#endif
+#if UNITY_ANDROID
             ToggleMultiSelect.SetActive(true);
-        #endif
+#endif
+
+       
+
     }
     public TextMeshProUGUI entityName;
 
@@ -153,6 +215,10 @@ public class UIMgr : MonoBehaviour
     public TextMeshProUGUI timeOnTarget;
     public TextMeshProUGUI targetRange;
 
+    [SerializeField]
+    private Image healthImage;
+    [SerializeField]
+    private TextMeshProUGUI healthText;
 
     // Update is called once per frame
     void Update()
@@ -166,6 +232,7 @@ public class UIMgr : MonoBehaviour
             desiredHeading.text = ent.desiredHeading.ToString("F1") + " deg";
 
             DisplayAIInformation(ent);
+            UpdateHealth(ent);
 
             Oriented3dPhysics phx3d = ent.GetComponentInChildren<Oriented3dPhysics>();
             if(phx3d != null)  {
@@ -191,8 +258,40 @@ public class UIMgr : MonoBehaviour
 
         if(boxSelecting)
             SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
+
+
+        if(singleSelect.IsPressed())
+            MinimapMgr.inst.MoveCameraViaMinimap(selectionCursorPosition.ReadValue<Vector2>());
+
+        if(MinimapMgr.inst.CursorOverMap(selectionCursorPosition.ReadValue<Vector2>())) {
+            MinimapMgr.inst.ChangeZoom(mouseScroll.ReadValue<Vector2>().y);
+            MinimapMgr.inst.ChangeCenter(mouseDelta.ReadValue<Vector2>());
+        } else {
+            CameraMgr.inst.MoveCameraY(mouseScroll.ReadValue<Vector2>().y);
+            CameraMgr.inst.MoveCameraXZ(mouseDelta.ReadValue<Vector2>());
+        }
+
+
     }
-    
+
+    private float maxHealth = 100;
+    private float greenHealth = 67;
+    private float orangeHealth = 33;
+    private void UpdateHealth(Entity ent) {
+        float health = 100f * Mathf.Clamp(ent.health, 0, maxHealth) / maxHealth;
+        //text
+        healthText.text = health.ToString("000");
+        //fill
+        healthImage.fillAmount = health/100;
+        //Color
+        if(health >= greenHealth)
+            healthImage.color = Color.green;
+        else if (health > orangeHealth && health < greenHealth)
+            healthImage.color = ColorPalette.inst.colors[15];
+        else
+            healthImage.color = ColorPalette.inst.colors[17];
+    }
+
     private void DisplayAIInformation(Entity ent) {
         UnitAI uai = ent.GetComponentInChildren<UnitAI>();
         if(uai.commands.Count > 0) {
@@ -232,7 +331,8 @@ public class UIMgr : MonoBehaviour
 
     private void OnSingleSelectPerformed(InputAction.CallbackContext context)
     {
-        SelectionMgr.inst.SelectEntity(selectionCursorPosition.ReadValue<Vector2>(), !addSelection.IsPressed());
+        //SelectionMgr.inst.SelectEntity(selectionCursorPosition.ReadValue<Vector2>(), !addSelection.IsPressed());
+        SelectionMgr.inst.SelectEntity2(selectionCursorPosition.ReadValue<Vector2>(), addSelection.IsPressed());
     }
 
     private void SelectNextEntity(InputAction.CallbackContext context)
@@ -242,7 +342,8 @@ public class UIMgr : MonoBehaviour
 
     private void HandleCommand(InputAction.CallbackContext context)
     {
-        AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
+        if(!inputs.Entities.ControlKey.IsPressed()) 
+            AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
     }
 
     private void ChangeSpeed(InputAction.CallbackContext context) 
@@ -259,4 +360,53 @@ public class UIMgr : MonoBehaviour
     {
         GameMgr.inst.Create100();
     }
+
+
+    private void ToggleMap(InputAction.CallbackContext context) {
+        MinimapMgr.inst.ResizeMap();
+    }
+
+
+    private void OnSelectAllPerformed(InputAction.CallbackContext context) {
+        SelectionMgr.inst.SelectAll();
+    }
+
+
+    public WorldPosEntity MousePosToWorldPosEntity(Vector2 mousePos) {
+        RaycastHit hit = new RaycastHit();
+        int layerMask = 512; //Ocean layer = 9, 2^9 = 512
+        if(Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask)) {
+            //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
+            Vector3 pos = hit.point;
+            pos.y = 0;
+            Entity ent = FindClosestEntInRadius(pos);//, rClickRadiusSq);//
+            WorldPosEntity wpe = new WorldPosEntity(pos, ent);
+            return wpe;
+        }
+        return null;
+    }
+
+    public const float rClickRadiusSq = 10000;
+    public Entity FindClosestEntInRadius(Vector3 point, float rsq = rClickRadiusSq) {
+        Entity minEnt = null;
+        float min = float.MaxValue;
+        foreach(Entity ent in EntityMgr.inst.entities) {
+            float distanceSq = (ent.transform.position - point).sqrMagnitude;
+            if(distanceSq < rsq) {
+                if(distanceSq < min) {
+                    minEnt = ent;
+                    min = distanceSq;
+                }
+            }
+        }
+        return minEnt;
+    }
+
+    public void ActivateEntityCommands(bool shouldActivate) {
+        if(shouldActivate)
+            inputs.Entities.Enable();
+        else
+            inputs.Entities.Disable();
+    }
+
 }

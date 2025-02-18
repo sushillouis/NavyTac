@@ -1,19 +1,34 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+[Serializable]
+public class EntityPotential
+{
+    public Entity entity;
+    public Potential potential;
+}
 
 public class UnitAI : MonoBehaviour
 {
     public Entity entity; //public only for ease of debugging
+
+    private void Awake() {
+        entity = GetComponentInParent<Entity>();
+        entity.ai = this;
+        potentialsD = new Dictionary<Entity, Potential>();
+        potentialsL = new List<EntityPotential>();
+    }
     // Start is called before the first frame update
     void Start()
     {
-        entity = GetComponentInParent<Entity>();
         commands = new List<Command>();
         intercepts = new List<Intercept>();
         intercept3ds = new List<Intercept3d>();
         follows = new List<Follow>();
         moves = new List<Move>();
+
     }
 
     public List<Move> moves;
@@ -21,6 +36,11 @@ public class UnitAI : MonoBehaviour
     public List<Command> commands;
     public List<Intercept> intercepts;
     public List<Intercept3d> intercept3ds;
+
+    [Header("PF nodes")]
+    public List<Transform> pfList = new List<Transform>();
+    public Dictionary<Entity, Potential> potentialsD;
+    public List<EntityPotential> potentialsL;
 
     // Update is called once per frame
     void FixedUpdate()
@@ -39,32 +59,25 @@ public class UnitAI : MonoBehaviour
     void StopAndRemoveCommand(int index)
     {
         Command cmd = commands[index];
-        if(cmd is Move) {
+        commands.RemoveAt(index);
+
+        if(cmd is Intercept3d) {//reverse inheritance order...
+            Intercept3d intercept3d = (Intercept3d) cmd;
+            intercept3d.Stop();
+            intercept3ds.Remove(intercept3d);
+        } else if(cmd is Intercept) {
+            Intercept intercept = (Intercept) cmd;
+            intercept.Stop();
+            intercepts.Remove(intercept);
+        } else if(cmd is Follow) {
+            Follow follow = (Follow) cmd;
+            follow.Stop();
+            follows.Remove(follow);
+        } else if(cmd is Move) {
             Move move = (Move)cmd;
             move.Stop();
             moves.Remove(move);
-        }
-
-        if(cmd is Intercept) {
-            Intercept intercept = (Intercept)cmd;
-            intercept.Stop();
-            intercepts.Remove(intercept);
-        }
-        
-        if(cmd is Intercept3d) {
-            Intercept3d intercept3d = (Intercept3d)cmd;
-            intercept3d.Stop();
-            intercept3ds.Remove(intercept3d);
-        }
-
-        if(cmd is Follow){
-            Follow follow = (Follow)cmd;
-            follow.Stop();
-            follows.Remove(follow);
-        }
-            
-        commands.RemoveAt(index);
-
+        } 
 
     }
     
