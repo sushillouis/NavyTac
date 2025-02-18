@@ -23,13 +23,13 @@ public class StreamingToCommand: MonoBehaviour
     bool pause = false;
     [SerializeField] float pauseTimer = 2f;
     public void ProcessResult(string result) {
-        if(pause) {
+        if(pause || fullCommand.Length>50) {
             return;
         }
         result = WordCleanup.StripPunctuation(result);
         string[] tokens = result.Split(' ');
         bool executeCommand = false;
-        for (int i = 0;i<tokens.Length;i++) {
+        for (int i = 0;i<tokens.Length && fullCommand.Length<50;i++) {
             string word = tokens[i];
             long temp = WordCleanup.ConvertToNumbers(word,out bool flag);
             if(flag) {
@@ -119,9 +119,9 @@ public class StreamingToCommand: MonoBehaviour
                 if(!tokens.MoveNext()) return;
             }
             if(dirFlag!=0) {
-                if((string)tokens.Current=="ally") {
-                    allyFlag=true;
-                }
+                // if((string)tokens.Current=="ally") {
+                //     allyFlag=true;
+                // }
                 ExecuteDynamicAttack(dirFlag,allyFlag);
             } else {
 
@@ -131,7 +131,37 @@ public class StreamingToCommand: MonoBehaviour
     }
 
     public void ExecuteDynamicAttack(int dirFlag, bool allyFlag) {
-        
+        TactPlayer player = PlayerMgr.inst.localPlayer;
+        List<Entity> ents = SelectionMgr.inst.selectedEntities;
+        Vector3 center = Vector3.zero;
+
+        foreach(Entity ent in ents) {
+            center += ent.position;
+        }
+        center/=ents.Count;
+
+        if(allyFlag) {
+            Debug.LogWarning("Attacking Ally, currently not implemented");
+            return;
+        }
+
+        float disValue = dirFlag < 0 ? float.MaxValue : float.MinValue;
+        int closestIndex = 0;
+
+        for(int i =0; i<EntityMgr.inst.entities.Count;i++) {
+            if(EntityMgr.inst.entities[i].owner==player) {
+                continue;
+            }
+            float dist = Vector3.Distance(center,EntityMgr.inst.entities[i].position);
+            if((dirFlag<0 && dist<disValue) || dist>disValue) {
+                closestIndex = i;
+                disValue=dist;
+            }
+        }
+
+        foreach(Entity ent in ents) {
+            ent.ai.AddCommand(new Intercept(ent,EntityMgr.inst.entities[closestIndex]));
+        }
     }
 
     public void Init() {
@@ -282,6 +312,8 @@ static class WordCleanup
         {"oh","all"},
         {"half","1/2"},
         {"bye","ally"},
+        {"green","screen"},
+        {"clean","screen"},
     };
   
     public static long ConvertToNumbers(string numberString, out bool flag)   {  

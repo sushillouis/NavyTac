@@ -2421,6 +2421,7 @@ MonoBehaviour:
   - {fileID: 2027549853}
   entitiesRoot: {fileID: 1142393662}
   entities: []
+  entityId: 0
 --- !u!1 &415891501
 GameObject:
   m_ObjectHideFlags: 0
@@ -4053,12 +4054,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isPotentialFieldsMovement: 1
   potentialDistanceThreshold: 1000
+  potentialDistanceThresholdSq: 25000000
   attractionCoefficient: 20000
   attractiveExponent: -1
   repulsiveCoefficient: 1000
   repulsiveExponent: -2
+  repulsive2Coefficient: 1000
+  attraction2Coefficient: 10000
   layerMask: 0
-  rClickRadiusSq: 10000
 --- !u!65 &639876784
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4413,8 +4416,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isInitialized: 0
-  i: 0
-  j: 0
+  ii: 0
+  jj: 0
   selectedEntityPotentials: []
 --- !u!1 &684776199
 GameObject:
@@ -5395,6 +5398,8 @@ MonoBehaviour:
   target: {fileID: 1234014754}
   timeOnTarget: {fileID: 1880132468}
   targetRange: {fileID: 287079469}
+  healthImage: {fileID: 0}
+  healthText: {fileID: 0}
 --- !u!1001 &958908199
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6569,26 +6574,96 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be0daf4f7e26e5e4190581955416443a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  adminPlayer:
-    name: Admin
-    playerId: 10
-    playerSide: 10
-    playerColor: {r: 0, g: 0, b: 0, a: 1}
   player1:
     name: PlayerOne
     playerId: 1
     playerSide: 1
     playerColor: {r: 1, g: 1, b: 1, a: 1}
+    isObserver: 0
+    isAdmin: 0
   player2:
     name: PlayerTwo
     playerId: 2
     playerSide: 2
     playerColor: {r: 0, g: 1, b: 0.19607843, a: 1}
-  observer:
-    name: Observer
+    isObserver: 0
+    isAdmin: 0
+  localPlayer:
+    name: 
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+    isObserver: 0
+    isAdmin: 0
+  maxPlayers: 10
+  playerCount: 0
+  players:
+  - name: None
+    playerId: 0
+    playerSide: 0
+    playerColor: {r: 0, g: 0, b: 0, a: 0}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerOne
+    playerId: 1
+    playerSide: 1
+    playerColor: {r: 1, g: 1, b: 1, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerTwo
+    playerId: 2
+    playerSide: 2
+    playerColor: {r: 0, g: 1, b: 0.19607843, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerThree
+    playerId: 3
+    playerSide: 3
+    playerColor: {r: 0, g: 0.19607843, b: 1, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerFour
+    playerId: 4
+    playerSide: 4
+    playerColor: {r: 1, g: 0.19607843, b: 0.19607843, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerFive
+    playerId: 5
+    playerSide: 5
+    playerColor: {r: 0.9048767, g: 1, b: 0, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerSix
+    playerId: 6
+    playerSide: 6
+    playerColor: {r: 0.9472699, g: 0, b: 1, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerSeven
+    playerId: 7
+    playerSide: 7
+    playerColor: {r: 1, g: 0.47452188, b: 0, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: PlayerEight
+    playerId: 8
+    playerSide: 8
+    playerColor: {r: 0, g: 1, b: 0.9142871, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: Observer
     playerId: 9
     playerSide: 9
     playerColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
+    isObserver: 0
+    isAdmin: 0
+  - name: Admin
+    playerId: 10
+    playerSide: 10
+    playerColor: {r: 0, g: 0, b: 0, a: 1}
+    isObserver: 0
+    isAdmin: 0
   playerColors:
   - {r: 0, g: 0, b: 0, a: 0}
   - {r: 0, g: 0.19607843, b: 1, a: 1}
@@ -6601,51 +6676,7 @@ MonoBehaviour:
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
   - {r: 0, g: 0, b: 0, a: 1}
-  players:
-  - name: None
-    playerId: 0
-    playerSide: 0
-    playerColor: {r: 0, g: 0, b: 0, a: 0}
-  - name: PlayerOne
-    playerId: 1
-    playerSide: 1
-    playerColor: {r: 1, g: 1, b: 1, a: 1}
-  - name: PlayerTwo
-    playerId: 2
-    playerSide: 2
-    playerColor: {r: 0, g: 1, b: 0.19607843, a: 1}
-  - name: PlayerThree
-    playerId: 3
-    playerSide: 3
-    playerColor: {r: 0, g: 0.19607843, b: 1, a: 1}
-  - name: PlayerFour
-    playerId: 4
-    playerSide: 4
-    playerColor: {r: 1, g: 0.19607843, b: 0.19607843, a: 1}
-  - name: PlayerFive
-    playerId: 5
-    playerSide: 5
-    playerColor: {r: 0.9048767, g: 1, b: 0, a: 1}
-  - name: PlayerSix
-    playerId: 6
-    playerSide: 6
-    playerColor: {r: 0.9472699, g: 0, b: 1, a: 1}
-  - name: PlayerSeven
-    playerId: 7
-    playerSide: 7
-    playerColor: {r: 1, g: 0.47452188, b: 0, a: 1}
-  - name: PlayerEight
-    playerId: 8
-    playerSide: 8
-    playerColor: {r: 0, g: 1, b: 0.9142871, a: 1}
-  - name: Observer
-    playerId: 9
-    playerSide: 9
-    playerColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
-  - name: Admin
-    playerId: 10
-    playerSide: 10
-    playerColor: {r: 0, g: 0, b: 0, a: 1}
+  sides: 
 --- !u!1001 &1124869740
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6773,6 +6804,10 @@ MonoBehaviour:
   spread: 50
   colNum: 10
   initZ: 0
+  plusButton: {fileID: 0}
+  minusButton: {fileID: 0}
+  simSpeedButtonText: {fileID: 0}
+  timeScale: 1
 --- !u!1 &1142393662
 GameObject:
   m_ObjectHideFlags: 0
@@ -12455,6 +12490,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eaea28c609606d5418aa98acc45d2fe6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerName: PFTest
+  ipAddress: 127.0.0.1
+  IsDebugging: 0
+  IsNetDebugging: 0
+  isSinglePlayer: 1
+  port: 7777
+  loginPanel: {fileID: 0}
+  mapSelectPanel: {fileID: 0}
+  HostOrJoinPanel: {fileID: 0}
+  MainGamePanel: {fileID: 0}
+  SingleMultiplayerPanel: {fileID: 0}
+  NetDebugConsolePanel: {fileID: 0}
+  SinglePlayerButton: {fileID: 0}
+  MultiPlayerButton: {fileID: 0}
+  SingleMultiQuitButton: {fileID: 0}
+  ipAddressInputField: {fileID: 0}
+  hostButton: {fileID: 0}
+  clientButton: {fileID: 0}
+  HostJoinQuitButton: {fileID: 0}
+  loginNameInputField: {fileID: 0}
+  loginButton: {fileID: 0}
+  LoginQuitButton: {fileID: 0}
+  startButton: {fileID: 0}
+  _lobbyState: 0
+  NetworkManagerGo: {fileID: 0}
+  localNetSetup: {fileID: 0}
+  localNetSetupNetworkObject: {fileID: 0}
+  localTactNetMgr: {fileID: 0}
+  localTactNetMgrNetworkObject: {fileID: 0}
 --- !u!1 &1853669713
 GameObject:
   m_ObjectHideFlags: 0
