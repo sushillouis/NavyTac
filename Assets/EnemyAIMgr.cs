@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR;
 
 public enum AiState
 {
@@ -11,7 +12,8 @@ public enum AiState
     Scout,
     Patrol,
     Chase,
-    Dead
+    Dead,
+    Orbit
 }
 
 public class EnemyAIMgr : MonoBehaviour
@@ -22,7 +24,6 @@ public class EnemyAIMgr : MonoBehaviour
         public Entity entity;
         public AiState state;
         public Vector3 destination;
-        public float moveSpeed;
         
         // Scout parameters
         public Vector3 scoutCenter;
@@ -31,14 +32,25 @@ public class EnemyAIMgr : MonoBehaviour
         public Entity detectedTarget;
         public bool isSelectedScout;
         public int assignedQuadrant;
+
+        // Orbit parameters
+        public float orbitRadius = 400f;
+        public float safeDistance = 500f;
+        public float avoidanceRadius = 200f;
+        public Entity orbitTarget;
+        public float currentOrbitAngle;
+        public Vector3 orbitalVelocity;
     }
 
     // Configuration
-    public float maxScoutRadius = 4000f; // Patrol region radius (half size of total area)
+    public float maxScoutRadius = 4000f;
     public int maxScouts = 4;
     public float targetSwitchDistance = 2000f;
-    public float minScoutSpeed = 10f; // Minimum speed to qualify as a scout
-    public int fixedSeed = 12345;    // Fixed seed for consistent random pattern
+    public float minScoutSpeed = 10f;
+    public int fixedSeed = 12345;
+    public float orbitSmoothTime = 2f;
+    public float headingSmoothness = 2f;
+    public float avoidanceWeight = 3f;
 
     // Runtime data
     public List<AiData> potentialScouts = new List<AiData>();
@@ -46,12 +58,9 @@ public class EnemyAIMgr : MonoBehaviour
 
     IEnumerator Start()
     {
-        // Set the fixed random seed so that scout patterns are identical each run
         Random.InitState(fixedSeed);
-
         InitializeScoutRegions();
         
-        // Wait for the EntityMgr to be ready
         while (EntityMgr.inst == null)
         {
             yield return null;
@@ -72,22 +81,17 @@ public class EnemyAIMgr : MonoBehaviour
 
     void InitializeScoutRegions()
     {
-        // Divide map into 4 regions (North, West, South, East)
-        scoutRegions.Add(new Vector3(0, 0, maxScoutRadius));    // North
-        scoutRegions.Add(new Vector3(-maxScoutRadius, 0, 0));     // West
-        scoutRegions.Add(new Vector3(0, 0, -maxScoutRadius));     // South
-        scoutRegions.Add(new Vector3(maxScoutRadius, 0, 0));      // East
+        scoutRegions.Add(new Vector3(0, 0, maxScoutRadius));
+        scoutRegions.Add(new Vector3(-maxScoutRadius, 0, 0));
+        scoutRegions.Add(new Vector3(0, 0, -maxScoutRadius));
+        scoutRegions.Add(new Vector3(maxScoutRadius, 0, 0));
     }
 
     void UpdateScoutSelection()
     {
-        // Filter entities that meet the minimum speed requirement
-        var eligibleScouts = potentialScouts.FindAll(a => a.moveSpeed >= minScoutSpeed);
+        var eligibleScouts = potentialScouts.FindAll(a => a.entity.maxSpeed >= minScoutSpeed);
+        eligibleScouts.Sort((a, b) => b.entity.maxSpeed.CompareTo(a.entity.maxSpeed));
         
-        // Order by speed descending so that faster units are preferred
-        eligibleScouts.Sort((a, b) => b.moveSpeed.CompareTo(a.moveSpeed));
-        
-        // Assign scout status to the top candidates (up to maxScouts)
         for (int i = 0; i < potentialScouts.Count; i++)
         {
             bool isScout = i < eligibleScouts.Count && i < maxScouts;
@@ -108,10 +112,13 @@ public class EnemyAIMgr : MonoBehaviour
     {
         scout.state = AiState.Scout;
         scout.scoutCenter = regionCenter;
-        scout.scoutRadius = maxScoutRadius * 0.8f; // 80% of the region's radius
-        scout.detectionRadius = 1500f;
+        scout.scoutRadius = Mathf.Min(maxScoutRadius * 0.8f, 4000f);
+        scout.detectionRadius = 500f;
         scout.assignedQuadrant = quadrantIndex;
         scout.destination = GetValidWaterPoint(scout);
+        
+        // Initialize movement parameters
+        AIMgr.inst.HandleMove(new List<Entity>{scout.entity}, scout.destination, false, false, true);
     }
 
     void HandleEntityAdded(Entity entity)
@@ -122,9 +129,10 @@ public class EnemyAIMgr : MonoBehaviour
             {
                 entity = entity,
                 state = AiState.Idle,
-                moveSpeed = entity.maxSpeed,
                 isSelectedScout = false,
-                assignedQuadrant = -1
+                assignedQuadrant = -1,
+                orbitTarget = null,
+                orbitalVelocity = Vector3.zero
             };
 
             potentialScouts.Add(newAI);
@@ -142,97 +150,171 @@ public class EnemyAIMgr : MonoBehaviour
     {
         foreach (var aiData in potentialScouts)
         {
-            if (aiData.isSelectedScout && aiData.state == AiState.Scout)
+            switch (aiData.state)
             {
-                HandleLargeMapScouting(aiData);
+                case AiState.Scout:
+                    HandleScouting(aiData);
+                    break;
+                case AiState.Orbit:
+                    HandleOrbitState(aiData);
+                    break;
+                case AiState.Idle:
+                    break;
+                case AiState.Chase:
+                    HandleChase(aiData);
+                    break;
             }
         }
     }
 
-    void HandleLargeMapScouting(AiData aiData)
+    void HandleScouting(AiData aiData)
     {
-        // Try to detect a target using the current scout's logic
         aiData.detectedTarget = FindNearestEntity(aiData);
         
         if (aiData.detectedTarget != null)
         {
-            float distance = Vector3.Distance(aiData.entity.transform.position,
-                                              aiData.detectedTarget.transform.position);
-            
-            // If the detected target is close enough, command ALL scouts to move toward it.
+            float distance = Vector3.Distance(aiData.entity.position,aiData.detectedTarget.position);
             if (distance <= targetSwitchDistance)
             {
-                // Update each AI in the potentialScouts list
-                foreach (var scout in potentialScouts)
+                // Distribute scouts evenly around target
+                float angleStep = 360f / potentialScouts.Count;
+                for (int i = 0; i < potentialScouts.Count; i++)
                 {
-                    scout.state = AiState.Move;
-                    scout.destination = aiData.detectedTarget.transform.position;
+                    var scout = potentialScouts[i];
+                    if (scout.detectedTarget.speed != 0)
+                    {
+                        scout.state = AiState.Chase;
+                    }
+                    else
+                    {
+                        scout.state = AiState.Orbit;
+                    }
+                    
+                    scout.orbitTarget = aiData.detectedTarget;
+                    scout.currentOrbitAngle = i * angleStep;
                 }
-                
-                // Gather all entities from the potentialScouts list
-                List<Entity> allEntities = new List<Entity>();
-                foreach (var scout in potentialScouts)
-                {
-                    allEntities.Add(scout.entity);
-                }
-                
-                // Command all entities to move to the target location.
-                AIMgr.inst.HandleMove(
-                    allEntities, 
-                    aiData.detectedTarget.transform.position,
-                    false,  // Set to false for this example (no pathfinding)
-                    false
-                );
                 return;
             }
         }
-        
-        // If no valid target is detected, continue with normal patrol logic.
-        if (Vector3.Distance(aiData.entity.transform.position, aiData.destination) < 100f)
+
+        if (Vector3.Distance(aiData.entity.position, aiData.destination) < 100f)
         {
             aiData.destination = GetValidWaterPoint(aiData);
         }
-        
-        AIMgr.inst.HandleMove(
-            new List<Entity> { aiData.entity },
-            aiData.destination,
-            false,
-            false
-        );
+
+        AIMgr.inst.HandleMove(new List<Entity>{aiData.entity}, aiData.destination,false, false , true);
     }
 
-    /// <summary>
-    /// Generates a candidate point within the scout's region, then validates that it is on water.
-    /// </summary>
+    void HandleOrbitState(AiData aiData)
+    {
+        if (aiData.orbitTarget == null || 
+            Vector3.Distance(aiData.entity.position, aiData.orbitTarget.position) > aiData.detectionRadius)
+        {
+            ReturnToScouting(aiData);
+            return;
+        }
+
+        Vector3 toTarget = aiData.orbitTarget.position - aiData.entity.position;
+        float currentDistance = toTarget.magnitude;
+        
+        // Calculate angular velocity based on current speed and orbit radius
+        float angularVelocity = (aiData.entity.speed / Mathf.Max(aiData.orbitRadius, 1f)) * Mathf.Rad2Deg;
+        aiData.currentOrbitAngle += angularVelocity * Time.deltaTime;
+
+        // Calculate desired orbital position
+        Vector3 orbitalOffset = Quaternion.Euler(0, aiData.currentOrbitAngle, 0) * Vector3.forward * aiData.orbitRadius;
+        Vector3 desiredPosition = aiData.orbitTarget.position + orbitalOffset;
+        
+        // Calculate smooth heading
+        Vector3 toDesired = (desiredPosition - aiData.entity.position).normalized;
+        float targetHeading = Vector3.SignedAngle(Vector3.forward, toDesired, Vector3.up);
+        
+        aiData.entity.desiredHeading = Mathf.LerpAngle(
+            aiData.entity.desiredHeading,
+            targetHeading,
+            Time.deltaTime * headingSmoothness
+        );
+
+        // Dynamic speed control
+        float distanceError = currentDistance - aiData.safeDistance;
+        aiData.entity.desiredSpeed = Mathf.Clamp(
+            aiData.entity.maxSpeed * (1 + distanceError / aiData.safeDistance),
+            aiData.entity.minSpeed,
+            aiData.entity.maxSpeed
+        );
+
+        AvoidObstacles(aiData);
+
+        // Target switching logic
+        Entity newTarget = FindNearestEntity(aiData);
+        if (newTarget != null && newTarget != aiData.orbitTarget)
+        {
+            float newTargetDistance = Vector3.Distance(aiData.entity.position, newTarget.position);
+            if (newTargetDistance < currentDistance * 0.8f)
+            {
+                aiData.orbitTarget = newTarget;
+                aiData.currentOrbitAngle = 0f;
+            }
+        }
+    }
+
+    void AvoidObstacles(AiData aiData)
+    {
+        Collider[] hits = Physics.OverlapSphere(aiData.entity.position, aiData.avoidanceRadius);
+        Vector3 avoidanceDirection = Vector3.zero;
+        
+        foreach (Collider hit in hits)
+        {
+            if (hit.gameObject == aiData.entity.gameObject) continue;
+            
+            Vector3 toHit = aiData.entity.position - hit.transform.position;
+            float weight = 1 - Mathf.Clamp01(toHit.magnitude / aiData.avoidanceRadius);
+            avoidanceDirection += toHit.normalized * weight;
+        }
+        
+        if (avoidanceDirection.magnitude > 0)
+        {
+            Vector3 currentDirection = aiData.entity.transform.forward;
+            Vector3 blendedDirection = Vector3.Lerp(
+                currentDirection,
+                avoidanceDirection.normalized,
+                Time.deltaTime * avoidanceWeight
+            );
+            
+            aiData.entity.desiredHeading = Vector3.SignedAngle(
+                Vector3.forward, 
+                blendedDirection.normalized, 
+                Vector3.up
+            );
+        }
+    }
+
+    void ReturnToScouting(AiData aiData)
+    {
+        aiData.state = AiState.Scout;
+        aiData.destination = GetValidWaterPoint(aiData);
+        aiData.orbitTarget = null;
+    }
+
     Vector3 GetValidWaterPoint(AiData scout)
     {
         const int maxAttempts = 10;
         for (int i = 0; i < maxAttempts; i++)
         {
-            // Generate a candidate point relative to the scout's designated region.
             Vector3 candidate = GetStrategicScoutPoint(scout);
-            
-            // Offset from the candidate to ensure the ray starts above the water.
             Vector3 rayStart = candidate + Vector3.up * 100f;
             RaycastHit hit;
             
-            // Perform a raycast that only collides with objects on the "Water" layer.
             if (Physics.Raycast(rayStart, Vector3.down, out hit, 200f, LayerMask.GetMask("Ocean")))
             {
-                // Return the hit point on the water surface.
                 return hit.point;
             }
         }
-        // Fallback: If no water point is found, return the scout's center.
         return scout.scoutCenter;
     }
 
-    /// <summary>
-    /// Generates a random point within a circle (with an edge bias) around the scout's region center.
-    /// </summary>
     Vector3 GetStrategicScoutPoint(AiData scout)
     {
-        // Edge bias to nudge points toward the outer areas of the circle.
         float edgeBias = 0.8f;
         Vector2 randomCircle = Random.insideUnitCircle * scout.scoutRadius;
         
@@ -247,15 +329,13 @@ public class EnemyAIMgr : MonoBehaviour
     {
         Entity nearest = null;
         float closestDistance = Mathf.Infinity;
-        Vector3 aiPosition = aiData.entity.transform.position;
 
         foreach (Entity entity in EntityMgr.inst.entities)
         {
-            // Skip self and other AI entities
             if (entity == aiData.entity || entity.owner.name == "Ai") 
                 continue;
 
-            float distance = Vector3.Distance(aiPosition, entity.transform.position);
+            float distance = Vector3.Distance(aiData.entity.position, entity.position);
             if (distance < aiData.detectionRadius && distance < closestDistance)
             {
                 nearest = entity;
@@ -266,9 +346,20 @@ public class EnemyAIMgr : MonoBehaviour
         return nearest;
     }
 
+    void HandleChase(AiData aiData)
+    {
+        if (aiData.detectedTarget == null || aiData.detectedTarget.speed == 0)
+        {
+            aiData.state = AiState.Scout;
+            aiData.destination = GetValidWaterPoint(aiData);
+            return;
+        }
+
+        
+    }
+
     void OnDrawGizmosSelected()
     {
-        // Visualize scout regions in the editor for debugging.
         Gizmos.color = Color.cyan;
         foreach (var region in scoutRegions)
         {

@@ -6,10 +6,13 @@ using UnityEngine;
 public class Move : Command
 {
     public Vector3 movePosition;
+    public bool maxSpeedMovement;
     public float range;
     public float timeOnTarget;
-    public Move(Entity ent, Vector3 pos) : base(ent) {
+    public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false) : base(ent)
+    {
         movePosition = pos;
+        this.maxSpeedMovement = maxSpeedMovement;
     }
 
     public LineRenderer potentialLine;
@@ -23,8 +26,17 @@ public class Move : Command
 
     public override void Tick() {
         DHDS dhds;
-        if(AIMgr.inst.isPotentialFieldsMovement)
-            dhds = ComputePF2(movePosition);// ComputePotentialDHDS(movePosition);
+        if (AIMgr.inst.isPotentialFieldsMovement) {
+            if (maxSpeedMovement) {
+                dhds = ComputePotentialDHDS(movePosition);
+            }
+            else {
+                dhds = ComputePF2(movePosition);    
+            }
+        }
+            
+            
+    // ComputePotentialDHDS(movePosition);
         else
             dhds = ComputeDHDS();
 
@@ -122,7 +134,7 @@ public class Move : Command
         angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
         cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
         ds = entity.cruiseSpeed * cosValue;
-
+        Debug.Log("ds: " + ds);
         return new DHDS(dh, ds);
     }
 
@@ -132,13 +144,13 @@ public class Move : Command
     public float doneDistanceSq = 1000;
     public override bool IsDone()
     {
-
+        entity.desiredSpeed = 0;
         return (entity.position - movePosition).sqrMagnitude < doneDistanceSq;
     }
 
     public override void Stop()
     {
-        entity.desiredSpeed = 0;
+        
         LineMgr.inst.DestroyLR(line);
         LineMgr.inst.DestroyLR(potentialLine);
         line = null;

@@ -137,14 +137,14 @@ public class AIMgr : NetworkBehaviour
         }
     }
 
-    public void HandleMove(List<Entity> entities, Vector3 point, bool add, bool isLocalCommand = true)
+    public void HandleMove(List<Entity> entities, Vector3 point, bool add, bool isLocalCommand = true , bool maxSpeedMovement = false)
     {    //if this machine's client commanded, then tell everyone
         if(isLocalCommand ) {
             NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
         }
         //Then do the command
         foreach(Entity entity in entities) {
-            Move m = new Move(entity, point);
+            Move m = new Move(entity, point , maxSpeedMovement);
             UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             AddOrSet(m, uai, add);
         }
