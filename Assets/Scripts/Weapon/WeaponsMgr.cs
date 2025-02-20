@@ -9,11 +9,51 @@ public class WeaponsMgr : MonoBehaviour
     private void Awake()
     {
         inst = this;
+        DamageMatrix damageMatrix = new DamageMatrix();
+        damageMatrix.InitializeDamageMatrix();
     }
-
+    private void Update()
+    {
+        HandleWeaponSelectionInput();
+        HandleShootingInput();
+    }
+    private void HandleWeaponSelectionInput()
+    {
+        // Weapon selection with UIOP keys
+        if (Input.GetKeyDown(KeyCode.U)) SelectWeaponType(WeaponBehaviors.Dumb);
+        if (Input.GetKeyDown(KeyCode.I)) SelectWeaponType(WeaponBehaviors.Smart);
+        if (Input.GetKeyDown(KeyCode.O)) SelectWeaponType(WeaponBehaviors.SurfaceInterceptor);
+        if (Input.GetKeyDown(KeyCode.P)) SelectWeaponType(WeaponBehaviors.AirInterceptor);
+        
+        // Double-click detection for quick selection
+        
+    }
+    private WeaponBehaviors selectedBehaviorType;
+    private void HandleShootingInput()
+    {
+        if (Input.GetMouseButtonDown(0) )// Right mouse click
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            LayerMask layers = (1 << 6);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, 40000, layers))
+            {
+                Vector2 mousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+                handleWeapon(mousePos, selectedBehaviorType);
+            }
+        }
+    }
+    private void SelectWeaponType(WeaponBehaviors behavior)
+    {
+        selectedBehaviorType = behavior;
+        Debug.Log($"Selected weapon: {behavior}");
+        // You could add UI feedback here
+    }
     public List<WeaponDamage> weaponDamages;
     public List<GameObject> WeaponPrefabs = new List<GameObject>();
     public List<Entity> weapons = new List<Entity>();
+
+    
 
    public void handleWeapon(Vector2 mousePos, WeaponBehaviors behaviorType)
     {
@@ -58,15 +98,19 @@ public class WeaponsMgr : MonoBehaviour
         switch (wd.behaviorType)
         {
             case WeaponBehaviors.SurfaceInterceptor:
+                Debug.Log("Surface Interceptor");
                 AIMgr.inst.HandleIntercept(entities, targetEntity, false);
                 break;
             case WeaponBehaviors.AirInterceptor:
+                Debug.Log("Air Interceptor");
                 AIMgr.inst.Handle3dIntercept(entities, targetEntity, false);
                 break;
             case WeaponBehaviors.Dumb:
+                Debug.Log("Dumb");
                 AIMgr.inst.HandleDumbMove(entities, targetPosition, false);
                 break;
             case WeaponBehaviors.Smart:
+                Debug.Log("Smart");
                 AIMgr.inst.HandleSmartIntercept(entities, targetEntity, false);
                 break;
             default:
@@ -100,24 +144,7 @@ public class WeaponsMgr : MonoBehaviour
         }
     }
 
-    public float GetDamage(EntityType weaponType, EntityType targetType)
-    {
-        WeaponDamage weaponDamage = weaponDamages.Find(wd => wd.weaponType == weaponType);
-        if (weaponDamage == null)
-        {
-            Debug.LogWarning($"No damage entry found for weapon type: {weaponType}");
-            return 0f;
-        }
-
-        TargetDamage targetDamage = weaponDamage.targetDamages.Find(td => td.targetType == targetType);
-        if (targetDamage == null)
-        {
-            Debug.LogWarning($"No damage entry found for weapon type: {weaponType} against target type: {targetType}");
-            return 0f;
-        }
-
-        return targetDamage.damageValue;
-    }
+    
 
     public void DestroyEntity(Entity entity)
     {

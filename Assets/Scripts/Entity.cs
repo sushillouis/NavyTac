@@ -38,6 +38,8 @@ public class Entity : MonoBehaviour
     public float length;
     public float width;
     public float height;
+    public float maxHealth;
+    public float minHealth;
 
     public float maxFuel;
     public float maxRange;
@@ -101,7 +103,8 @@ public class Entity : MonoBehaviour
             Entity otherEntity = other.GetComponent<Entity>();
             if (otherEntity != creatorsEntity)
             {
-                float damage = WeaponsMgr.inst.GetDamage(this.entityType, otherEntity.entityType);
+                DamageMatrix dm = new DamageMatrix();
+                float damage = dm.GetDamage(this.entityType, otherEntity.entityType);
                 // Debug.Log(damage);
                 otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
                 health = 0;
