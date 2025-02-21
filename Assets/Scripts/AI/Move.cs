@@ -134,7 +134,6 @@ public class Move : Command
         angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
         cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
         ds = entity.cruiseSpeed * cosValue;
-        Debug.Log("ds: " + ds);
         return new DHDS(dh, ds);
     }
 

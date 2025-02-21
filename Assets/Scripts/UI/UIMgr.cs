@@ -380,10 +380,15 @@ public class UIMgr : MonoBehaviour
 
     private void HandleCommand(InputAction.CallbackContext context)
     {
-        if(!inputs.Entities.ControlKey.IsPressed()) 
+        if (!inputs.Entities.ControlKey.IsPressed() &&
+        !Keyboard.current.oKey.isPressed &&
+        !Keyboard.current.pKey.isPressed &&
+        !Keyboard.current.iKey.isPressed &&
+        !Keyboard.current.uKey.isPressed)
+        {
             AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
+        }
     }
-
     private void ChangeSpeed(InputAction.CallbackContext context)
     {
         ControlMgr.inst.ChangeSpeed(changeSpeed.ReadValue<float>());

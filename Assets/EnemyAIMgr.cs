@@ -181,15 +181,15 @@ public class EnemyAIMgr : MonoBehaviour
                 for (int i = 0; i < potentialScouts.Count; i++)
                 {
                     var scout = potentialScouts[i];
-                    if (scout.detectedTarget.speed != 0)
-                    {
-                        scout.state = AiState.Chase;
-                    }
-                    else
-                    {
-                        scout.state = AiState.Orbit;
-                    }
-                    
+                    // if (scout.detectedTarget.speed != 0)
+                    // {
+                    //     scout.state = AiState.Chase;
+                    // }
+                    // else
+                    // {
+                    //     scout.state = AiState.Orbit;
+                    // }
+                    scout.state = AiState.Chase;
                     scout.orbitTarget = aiData.detectedTarget;
                     scout.currentOrbitAngle = i * angleStep;
                 }
