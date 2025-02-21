@@ -118,7 +118,7 @@ public class Move : Command
                 }
                 pot.ReCompute();
                 foreach(SubPotential subPot in pot.subPotentials) {
-                    repulsivePotential += subPot.direction * otherEnt.mass
+                    repulsivePotential += subPot.direction * otherEnt.mass*.05f
                         * AIMgr.inst.repulsive2Coefficient * Mathf.Pow(subPot.distance, AIMgr.inst.repulsiveExponent);
                 }
             }
