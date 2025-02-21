@@ -16,8 +16,20 @@ public enum AiState
     Orbit
 }
 
+public enum AiAttackLevel
+{
+    Low,
+    Medium,
+    High
+}
+
 public class EnemyAIMgr : MonoBehaviour
 {
+    // Add level configuration
+    [Header("Game Levels")]
+    public int currentLevel = 1;
+    public float levelTransitionDistance = 5000f;
+
     [System.Serializable]
     public class AiData
     {
@@ -42,7 +54,8 @@ public class EnemyAIMgr : MonoBehaviour
         public Vector3 orbitalVelocity;
     }
 
-    // Configuration
+    // Configuration    
+    public AiAttackLevel attackLevel;
     public float maxScoutRadius = 4000f;
     public int maxScouts = 4;
     public float targetSwitchDistance = 2000f;
@@ -117,26 +130,34 @@ public class EnemyAIMgr : MonoBehaviour
         scout.assignedQuadrant = quadrantIndex;
         scout.destination = GetValidWaterPoint(scout);
         
-        // Initialize movement parameters
         AIMgr.inst.HandleMove(new List<Entity>{scout.entity}, scout.destination, false, false, true);
     }
 
     void HandleEntityAdded(Entity entity)
     {
-        if (entity.owner.name == "Ai")
+        if(entity.owner.name == "Ai")
         {
             var newAI = new AiData
             {
                 entity = entity,
-                state = AiState.Idle,
+                state = currentLevel == 1 ? AiState.Move : AiState.Idle, // Force Move state in Level 1
                 isSelectedScout = false,
                 assignedQuadrant = -1,
                 orbitTarget = null,
-                orbitalVelocity = Vector3.zero
+                orbitalVelocity = Vector3.zero,
+                detectionRadius = currentLevel == 1 ? 1500f : 1000f
             };
 
+            if(currentLevel == 1)
+            {
+                attackLevel = AiAttackLevel.Low;
+                newAI.destination = newAI.entity.position + newAI.entity.transform.forward * 10000f;
+                AIMgr.inst.HandleDumbMove(new List<Entity> { newAI.entity }, newAI.destination, false);
+                newAI.state = AiState.Move;
+            }
+
             potentialScouts.Add(newAI);
-            UpdateScoutSelection();
+            if(currentLevel > 1) UpdateScoutSelection();
         }
     }
 
@@ -146,25 +167,66 @@ public class EnemyAIMgr : MonoBehaviour
         UpdateScoutSelection();
     }
 
-    void Update()
+   void Update()
+{
+    foreach (var aiData in potentialScouts)
     {
-        foreach (var aiData in potentialScouts)
+        // Global detection check for all states
+        aiData.detectedTarget = FindNearestEntity(aiData);
+        if (aiData.detectedTarget != null && 
+            Vector3.Distance(aiData.entity.position, aiData.detectedTarget.position) <= aiData.detectionRadius)
         {
-            switch (aiData.state)
+            if (aiData.state != AiState.Attack && aiData.state != AiState.Dead)
             {
-                case AiState.Scout:
-                    HandleScouting(aiData);
-                    break;
-                case AiState.Orbit:
-                    HandleOrbitState(aiData);
-                    break;
-                case AiState.Idle:
-                    break;
-                case AiState.Chase:
-                    HandleChase(aiData);
-                    break;
+                Debug.Log("Enemy detected: " + aiData.detectedTarget.name);
+                aiData.state = AiState.Attack;
+                attackLevel = AiAttackLevel.Low;
+                aiData.entity.desiredSpeed = 0;
+                aiData.entity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
             }
         }
+
+        switch (aiData.state)
+        {
+            case AiState.Move:
+                HandleMoveState(aiData);
+                break;
+            case AiState.Scout:
+                HandleScouting(aiData);
+                break;
+            case AiState.Orbit:
+                HandleOrbitState(aiData);
+                break;
+            case AiState.Idle:
+                break;
+            case AiState.Chase:
+                HandleChase(aiData);
+                break;
+            case AiState.Attack:
+                HandleAttack(aiData);
+                break;
+            case AiState.Patrol:
+            case AiState.Flee:
+            case AiState.Dead:
+                break;
+        }
+    }
+}
+
+    void HandleMoveState(AiData aiData)
+    {
+        aiData.detectedTarget = FindNearestEntity(aiData);
+        
+        if (aiData.detectedTarget != null && 
+            Vector3.Distance(aiData.entity.position, aiData.detectedTarget.position) <= aiData.detectionRadius)
+        {
+            aiData.state = AiState.Attack;
+            attackLevel = AiAttackLevel.Low;
+            return;
+        }
+
+        // Continue moving straight if no targets
+        AIMgr.inst.HandleDumbMove(new List<Entity> { aiData.entity }, aiData.destination, false);
     }
 
     void HandleScouting(AiData aiData)
@@ -173,22 +235,13 @@ public class EnemyAIMgr : MonoBehaviour
         
         if (aiData.detectedTarget != null)
         {
-            float distance = Vector3.Distance(aiData.entity.position,aiData.detectedTarget.position);
+            float distance = Vector3.Distance(aiData.entity.position, aiData.detectedTarget.position);
             if (distance <= targetSwitchDistance)
             {
-                // Distribute scouts evenly around target
                 float angleStep = 360f / potentialScouts.Count;
                 for (int i = 0; i < potentialScouts.Count; i++)
                 {
                     var scout = potentialScouts[i];
-                    // if (scout.detectedTarget.speed != 0)
-                    // {
-                    //     scout.state = AiState.Chase;
-                    // }
-                    // else
-                    // {
-                    //     scout.state = AiState.Orbit;
-                    // }
                     scout.state = AiState.Chase;
                     scout.orbitTarget = aiData.detectedTarget;
                     scout.currentOrbitAngle = i * angleStep;
@@ -202,7 +255,7 @@ public class EnemyAIMgr : MonoBehaviour
             aiData.destination = GetValidWaterPoint(aiData);
         }
 
-        AIMgr.inst.HandleMove(new List<Entity>{aiData.entity}, aiData.destination,false, false , true);
+        AIMgr.inst.HandleMove(new List<Entity>{aiData.entity}, aiData.destination, false, false, true);
     }
 
     void HandleOrbitState(AiData aiData)
@@ -217,15 +270,12 @@ public class EnemyAIMgr : MonoBehaviour
         Vector3 toTarget = aiData.orbitTarget.position - aiData.entity.position;
         float currentDistance = toTarget.magnitude;
         
-        // Calculate angular velocity based on current speed and orbit radius
         float angularVelocity = (aiData.entity.speed / Mathf.Max(aiData.orbitRadius, 1f)) * Mathf.Rad2Deg;
         aiData.currentOrbitAngle += angularVelocity * Time.deltaTime;
 
-        // Calculate desired orbital position
         Vector3 orbitalOffset = Quaternion.Euler(0, aiData.currentOrbitAngle, 0) * Vector3.forward * aiData.orbitRadius;
         Vector3 desiredPosition = aiData.orbitTarget.position + orbitalOffset;
         
-        // Calculate smooth heading
         Vector3 toDesired = (desiredPosition - aiData.entity.position).normalized;
         float targetHeading = Vector3.SignedAngle(Vector3.forward, toDesired, Vector3.up);
         
@@ -235,7 +285,6 @@ public class EnemyAIMgr : MonoBehaviour
             Time.deltaTime * headingSmoothness
         );
 
-        // Dynamic speed control
         float distanceError = currentDistance - aiData.safeDistance;
         aiData.entity.desiredSpeed = Mathf.Clamp(
             aiData.entity.maxSpeed * (1 + distanceError / aiData.safeDistance),
@@ -245,7 +294,6 @@ public class EnemyAIMgr : MonoBehaviour
 
         AvoidObstacles(aiData);
 
-        // Target switching logic
         Entity newTarget = FindNearestEntity(aiData);
         if (newTarget != null && newTarget != aiData.orbitTarget)
         {
@@ -354,8 +402,39 @@ public class EnemyAIMgr : MonoBehaviour
             aiData.destination = GetValidWaterPoint(aiData);
             return;
         }
+    }
 
-        
+    void HandleAttack(AiData aiData)
+    {
+        switch(attackLevel)
+        {
+            case AiAttackLevel.Low:
+                AiLowAttack(aiData);
+                break;
+            case AiAttackLevel.Medium:
+                AiMediumAttack(aiData);
+                break;
+            case AiAttackLevel.High:
+                AiHighAttack(aiData);
+                break;
+        }
+    }
+    
+    void AiLowAttack(AiData aiData)
+    {
+        Debug.Log("Low attack");
+        WeaponsMgr.inst.handleWeapon(aiData.entity,FindNearestEntity(aiData), WeaponBehaviors.AirInterceptor);
+       
+    }
+
+    void AiMediumAttack(AiData aiData)
+    {
+        // Implement medium complexity attack patterns here
+    }
+
+    void AiHighAttack(AiData aiData)
+    {
+        // Implement advanced attack patterns here
     }
 
     void OnDrawGizmosSelected()

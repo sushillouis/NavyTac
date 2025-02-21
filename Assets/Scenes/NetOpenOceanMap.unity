@@ -1614,7 +1614,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 10000
+  far clip plane: 100000
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -1737,7 +1737,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponDamages: []
-  WeaponPrefabs: []
   weapons: []
   MovableEntitiesRoot: {fileID: 382953079}
   fileNameCSV: WeaponDamageMatrix.csv
@@ -1764,7 +1763,7 @@ PrefabInstance:
     - target: {fileID: 4034866660640197166, guid: d39e64df80d4eca4da864f574fdbcecc,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4683844675391422946, guid: d39e64df80d4eca4da864f574fdbcecc,
         type: 3}
@@ -1885,6 +1884,9 @@ MonoBehaviour:
   PitchNode: {fileID: 1576919499}
   RollNode: {fileID: 1664575454}
   myCamera: {fileID: 0}
+  currentXPosition: 0
+  currentYPosition: 0
+  currentZPosition: 0
   cameraMoveSpeed: 100
   heightSensitivty: 5
   maxCameraHeight: 9600
@@ -1892,6 +1894,12 @@ MonoBehaviour:
   cameraTurnRate: 30
   currentYawEulerAngles: {x: 0, y: 0, z: 0}
   currentPitchEulerAngles: {x: 0, y: 0, z: 0}
+  minX: -9000
+  maxX: 9000
+  minZ: -9000
+  maxZ: 9000
+  tiltStartHeight: 250
+  maxTiltAngle: 90
   isRTSMode: 1
 --- !u!1 &591780678
 GameObject:
@@ -2017,6 +2025,7 @@ Transform:
   - {fileID: 1796549058}
   - {fileID: 684643217}
   - {fileID: 1540707792}
+  - {fileID: 1653967429}
   m_Father: {fileID: 1708907977}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &639876783
@@ -4509,6 +4518,52 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 958908199}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1653967428
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1653967429}
+  - component: {fileID: 1653967430}
+  m_Layer: 0
+  m_Name: DistanceMgrGpu
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1653967429
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1653967428}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 639876782}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1653967430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1653967428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 805bd3fa680586f47a42878cd674ef4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  distanceComputeShader: {fileID: 7200000, guid: 23e05e21e3263db40ba7514cb83364b1,
+    type: 3}
 --- !u!1 &1664575454
 GameObject:
   m_ObjectHideFlags: 0
@@ -4972,11 +5027,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc331097491174f41b1d50a6c2e61adf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentLevel: 1
+  levelTransitionDistance: 5000
+  attackLevel: 1
   maxScoutRadius: 4000
   maxScouts: 4
   targetSwitchDistance: 2000
   minScoutSpeed: 10
   fixedSeed: 12345
+  orbitSmoothTime: 2
+  headingSmoothness: 2
+  avoidanceWeight: 3
   potentialScouts: []
   scoutRegions: []
 --- !u!1 &1852731777
@@ -5462,7 +5523,7 @@ Transform:
   m_GameObject: {fileID: 1991371576}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 200, y: 300, z: -800}
+  m_LocalPosition: {x: 0, y: 300, z: -800}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6503,6 +6564,46 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: DDG51
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].range
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].cooldown
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].ammoCount
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].behaviorType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].launchLocation.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].launchLocation.z
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapons.Array.data[3].weaponEntityType
+      value: 15
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

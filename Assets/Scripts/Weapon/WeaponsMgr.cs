@@ -89,6 +89,26 @@ public class WeaponsMgr : MonoBehaviour
         }
     }
 
+    public void handleWeapon(Entity entity, Entity targetEntity, WeaponBehaviors behaviorType)
+    {
+        Debug.Log("handleWeapon");
+
+        Camera mainCamera = Camera.main;
+        AIMgr aiManager = AIMgr.inst;
+
+        
+            WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+            if (weaponsAspect == null) return;
+            WeaponData wd = weaponsAspect.weapons.Find(x => x.behaviorType == behaviorType);
+            if (wd == null) return;
+
+            if (targetEntity != null && targetEntity.owner != entity.owner)
+            {
+                Debug.Log($"Smart selected: {entity.name} with weapon: {wd.weaponEntityType} at {targetEntity.name}");
+                LaunchWeapon(entity, wd, targetEntity, targetEntity.transform.position);
+            }
+        
+    }
     IEnumerator TargetEntity(Entity weapon, WeaponData wd, Entity targetEntity, Vector3 targetPosition)
     {
         yield return new WaitForFixedUpdate();

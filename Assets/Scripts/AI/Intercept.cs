@@ -39,7 +39,7 @@ public class Intercept : Follow
     public override void Stop() {
         //base.Stop();
 
-        FXMgr.inst.CreateExplosionAt(entity.position, 1);
+        // FXMgr.inst.CreateExplosionAt(entity.position, 1);
 
         entity.desiredSpeed = 0;
         entity.speed = 0;
