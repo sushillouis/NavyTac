@@ -44,11 +44,11 @@ public class Intercept : Follow
         entity.desiredSpeed = 0;
         entity.speed = 0;
 
-        targetEntity.desiredSpeed = 0;
-        Vector3 sunkenOffset = new Vector3(0, -5, 0);
-        targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
-        targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
-        targetEntity.transform.position += sunkenOffset;
+        // targetEntity.desiredSpeed = 0;
+        // Vector3 sunkenOffset = new Vector3(0, -5, 0);
+        // targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
+        // targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
+        // targetEntity.transform.position += sunkenOffset;
 
     }
 

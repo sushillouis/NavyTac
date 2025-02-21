@@ -1,0 +1,59 @@
+#pragma kernel CSMain
+
+struct GPUEntity {
+    float3 position;
+    float3 velocity;
+    float heading;
+};
+
+struct GPUPotential {
+    float3 diff;
+    float distance;
+    float3 direction;
+    float3 relativeVelocity;
+    float targetAngle;
+};
+
+RWStructuredBuffer<GPUEntity> _Entities;
+RWStructuredBuffer<GPUPotential> _Potentials;
+int _EntityCount;
+
+float Degrees360(float angle) {
+    angle = fmod(angle, 360.0);
+    return angle < 0 ? angle + 360.0 : angle;
+}
+
+[numthreads(64,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    uint idx = id.x;
+    if(idx >= _EntityCount * _EntityCount) return;
+    
+    uint i = idx / _EntityCount;
+    uint j = idx % _EntityCount;
+    
+    GPUEntity own = _Entities[i];
+    GPUEntity tgt = _Entities[j];
+    
+    // Calculate main potential values
+    GPUPotential pot;
+    pot.diff = tgt.position - own.position;
+    pot.distance = length(pot.diff);
+    pot.direction = pot.distance > 0 ? pot.diff / pot.distance : float3(0,0,0);
+    pot.relativeVelocity = tgt.velocity - own.velocity;
+    
+    // Calculate CPA-derived target angle
+    float3 velDiff = own.velocity - tgt.velocity;
+    float3 posDiff = own.position - tgt.position;
+    float relSpeedSq = dot(velDiff, velDiff);
+    float time = relSpeedSq < 0.0001 ? 0 : clamp(-dot(posDiff, velDiff) / relSpeedSq, 0, 1000);
+    
+    float3 ownPos = own.position + own.velocity * time;
+    float3 tgtPos = tgt.position + tgt.velocity * time;
+    float3 bearingVec = tgtPos - ownPos;
+    
+    float absBearing = Degrees360(atan2(bearingVec.x, bearingVec.z) * 57.29578);
+    pot.targetAngle = Degrees360(absBearing + 180.0 - tgt.heading);
+    
+    _Potentials[idx] = pot;
+}
