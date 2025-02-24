@@ -25,7 +25,13 @@ public enum AiAttackLevel
 
 public class EnemyAIMgr : MonoBehaviour
 {
-    // Add level configuration
+    // Constants
+    private const float MIN_DESTINATION_DISTANCE = 100f;
+    private const float DETECTION_RATIO_THRESHOLD = 0.8f;
+    private const int SCOUT_REGIONS_COUNT = 4;
+    private const float INITIAL_MOVE_DISTANCE = 10000f;
+    private const float RAYCAST_DISTANCE = 200f;
+
     [Header("Game Levels")]
     public int currentLevel = 1;
     public float levelTransitionDistance = 5000f;
@@ -37,24 +43,33 @@ public class EnemyAIMgr : MonoBehaviour
         public AiState state;
         public Vector3 destination;
         
-        // Scout parameters
-        public Vector3 scoutCenter;
-        public float scoutRadius = 4500f;
-        public float detectionRadius = 1000f;
-        public Entity detectedTarget;
-        public bool isSelectedScout;
-        public int assignedQuadrant;
+        [System.Serializable]
+        public class ScoutParameters
+        {
+            public Vector3 center;
+            public float radius = 4500f;
+            public float detectionRadius = 1000f;
+            public bool isSelected;
+            public int assignedQuadrant;
+        }
 
-        // Orbit parameters
-        public float orbitRadius = 400f;
-        public float safeDistance = 500f;
-        public float avoidanceRadius = 200f;
-        public Entity orbitTarget;
-        public float currentOrbitAngle;
-        public Vector3 orbitalVelocity;
+        [System.Serializable]
+        public class OrbitParameters
+        {
+            public float radius = 400f;
+            public float safeDistance = 500f;
+            public float avoidanceRadius = 200f;
+            public Entity target;
+            public float currentAngle;
+            public Vector3 velocity;
+        }
+
+        public ScoutParameters scoutParams = new ScoutParameters();
+        public OrbitParameters orbitParams = new OrbitParameters();
+        public Entity detectedTarget;
     }
 
-    // Configuration    
+    [Header("AI Configuration")]
     public AiAttackLevel attackLevel;
     public float maxScoutRadius = 4000f;
     public int maxScouts = 4;
@@ -65,19 +80,20 @@ public class EnemyAIMgr : MonoBehaviour
     public float headingSmoothness = 2f;
     public float avoidanceWeight = 3f;
 
-    // Runtime data
+    [Header("Runtime Data")]
     public List<AiData> potentialScouts = new List<AiData>();
     public List<Vector3> scoutRegions = new List<Vector3>();
 
+    private void Awake()
+    {
+        InitializeScoutRegions();
+        Random.InitState(fixedSeed);
+    }
+
     IEnumerator Start()
     {
-        Random.InitState(fixedSeed);
-        InitializeScoutRegions();
-        
         while (EntityMgr.inst == null)
-        {
             yield return null;
-        }
 
         EntityMgr.inst.OnEntityAdded += HandleEntityAdded;
         EntityMgr.inst.OnEntityRemoved += HandleEntityRemoved;
@@ -92,165 +108,138 @@ public class EnemyAIMgr : MonoBehaviour
         }
     }
 
-    void InitializeScoutRegions()
+    void Update()
     {
-        scoutRegions.Add(new Vector3(0, 0, maxScoutRadius));
-        scoutRegions.Add(new Vector3(-maxScoutRadius, 0, 0));
-        scoutRegions.Add(new Vector3(0, 0, -maxScoutRadius));
-        scoutRegions.Add(new Vector3(maxScoutRadius, 0, 0));
-    }
-
-    void UpdateScoutSelection()
-    {
-        var eligibleScouts = potentialScouts.FindAll(a => a.entity.maxSpeed >= minScoutSpeed);
-        eligibleScouts.Sort((a, b) => b.entity.maxSpeed.CompareTo(a.entity.maxSpeed));
-        
-        for (int i = 0; i < potentialScouts.Count; i++)
+        foreach (var aiData in potentialScouts)
         {
-            bool isScout = i < eligibleScouts.Count && i < maxScouts;
-            potentialScouts[i].isSelectedScout = isScout;
-            
-            if (isScout && potentialScouts[i].state != AiState.Scout)
-            {
-                InitializeScout(potentialScouts[i], scoutRegions[i % scoutRegions.Count], i % scoutRegions.Count);
-            }
-            else if (!isScout && potentialScouts[i].state == AiState.Scout)
-            {
-                potentialScouts[i].state = AiState.Idle;
-            }
+            UpdateDetection(aiData);
+            HandleAIState(aiData);
         }
     }
 
-    void InitializeScout(AiData scout, Vector3 regionCenter, int quadrantIndex)
+    private void InitializeScoutRegions()
+    {
+        scoutRegions.Clear();
+        for (int i = 0; i < SCOUT_REGIONS_COUNT; i++)
+        {
+            float angle = i * 90f;
+            scoutRegions.Add(new Vector3(
+                maxScoutRadius * Mathf.Cos(angle * Mathf.Deg2Rad),
+                0,
+                maxScoutRadius * Mathf.Sin(angle * Mathf.Deg2Rad)
+            ));
+        }
+    }
+
+    private void HandleEntityAdded(Entity entity)
+    {
+        if (entity.owner.name == "Ai" && entity.entityClass != EntityClass.Missile && entity.creatorsEntity == null) 
+        {
+            var newAI = CreateAiData(entity);
+            potentialScouts.Add(newAI);
+            
+            if (currentLevel > 1)
+                UpdateScoutSelection();
+        }
+    }
+
+    private AiData CreateAiData(Entity entity)
+    {
+        return new AiData
+        {
+            entity = entity,
+            state = currentLevel == 1 ? AiState.Move : AiState.Idle,
+            destination = currentLevel == 1 
+                ? entity.position + entity.transform.forward * INITIAL_MOVE_DISTANCE 
+                : Vector3.zero,
+            scoutParams = { detectionRadius = currentLevel == 1 ? 1500f : 1000f }
+        };
+    }
+
+    private void UpdateScoutSelection()
+    {
+        var eligibleScouts = GetEligibleScouts();
+        for (int i = 0; i < potentialScouts.Count; i++)
+        {
+            bool shouldBeScout = i < eligibleScouts.Count && i < maxScouts;
+            var scout = potentialScouts[i];
+
+            scout.scoutParams.isSelected = shouldBeScout;
+            
+            if (shouldBeScout && scout.state != AiState.Scout)
+                InitializeScout(scout, i % scoutRegions.Count);
+            else if (!shouldBeScout && scout.state == AiState.Scout)
+                scout.state = AiState.Idle;
+        }
+    }
+
+    private List<AiData> GetEligibleScouts()
+    {
+        var eligible = potentialScouts.FindAll(a => a.entity.maxSpeed >= minScoutSpeed);
+        eligible.Sort((a, b) => b.entity.maxSpeed.CompareTo(a.entity.maxSpeed));
+        return eligible;
+    }
+
+    private void InitializeScout(AiData scout, int quadrantIndex)
     {
         scout.state = AiState.Scout;
-        scout.scoutCenter = regionCenter;
-        scout.scoutRadius = Mathf.Min(maxScoutRadius * 0.8f, 4000f);
-        scout.detectionRadius = 500f;
-        scout.assignedQuadrant = quadrantIndex;
+        scout.scoutParams.center = scoutRegions[quadrantIndex];
+        scout.scoutParams.radius = Mathf.Min(maxScoutRadius * 0.8f, 4000f);
+        scout.scoutParams.assignedQuadrant = quadrantIndex;
         scout.destination = GetValidWaterPoint(scout);
         
         AIMgr.inst.HandleMove(new List<Entity>{scout.entity}, scout.destination, false, false, true);
     }
 
-    void HandleEntityAdded(Entity entity)
+    private void UpdateDetection(AiData aiData)
     {
-        if(entity.owner.name == "Ai")
-        {
-            var newAI = new AiData
-            {
-                entity = entity,
-                state = currentLevel == 1 ? AiState.Move : AiState.Idle, // Force Move state in Level 1
-                isSelectedScout = false,
-                assignedQuadrant = -1,
-                orbitTarget = null,
-                orbitalVelocity = Vector3.zero,
-                detectionRadius = currentLevel == 1 ? 1500f : 1000f
-            };
-
-            if(currentLevel == 1)
-            {
-                attackLevel = AiAttackLevel.Low;
-                newAI.destination = newAI.entity.position + newAI.entity.transform.forward * 10000f;
-                AIMgr.inst.HandleDumbMove(new List<Entity> { newAI.entity }, newAI.destination, false);
-                newAI.state = AiState.Move;
-            }
-
-            potentialScouts.Add(newAI);
-            if(currentLevel > 1) UpdateScoutSelection();
-        }
-    }
-
-    void HandleEntityRemoved(Entity entity)
-    {
-        potentialScouts.RemoveAll(aiData => aiData.entity == entity);
-        UpdateScoutSelection();
-    }
-
-   void Update()
-{
-    foreach (var aiData in potentialScouts)
-    {
-        // Global detection check for all states
         aiData.detectedTarget = FindNearestEntity(aiData);
+        // Debug.Log($"Detected target: {aiData.detectedTarget?.name}");
         if (aiData.detectedTarget != null && 
-            Vector3.Distance(aiData.entity.position, aiData.detectedTarget.position) <= aiData.detectionRadius)
+            Vector3.Distance(aiData.entity.position, aiData.detectedTarget.position) <= aiData.scoutParams.detectionRadius &&
+            aiData.state != AiState.Attack && 
+            aiData.state != AiState.Dead)
         {
-            if (aiData.state != AiState.Attack && aiData.state != AiState.Dead)
-            {
-                Debug.Log("Enemy detected: " + aiData.detectedTarget.name);
-                aiData.state = AiState.Attack;
-                attackLevel = AiAttackLevel.Low;
-                aiData.entity.desiredSpeed = 0;
-                aiData.entity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
-            }
+            TransitionToAttackState(aiData);
         }
+    }
 
+    private void TransitionToAttackState(AiData aiData)
+    {
+        Debug.Log($"Enemy detected: {aiData.detectedTarget.name}");
+        aiData.state = AiState.Attack;
+        attackLevel = AiAttackLevel.Low;
+        aiData.entity.desiredSpeed = 0;
+        aiData.entity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
+    }
+
+    private void HandleAIState(AiData aiData)
+    {
         switch (aiData.state)
         {
-            case AiState.Move:
-                HandleMoveState(aiData);
-                break;
-            case AiState.Scout:
-                HandleScouting(aiData);
-                break;
-            case AiState.Orbit:
-                HandleOrbitState(aiData);
-                break;
-            case AiState.Idle:
-                break;
-            case AiState.Chase:
-                HandleChase(aiData);
-                break;
-            case AiState.Attack:
-                HandleAttack(aiData);
-                break;
-            case AiState.Patrol:
-            case AiState.Flee:
-            case AiState.Dead:
-                break;
+            case AiState.Move:   HandleMoveState(aiData); break;
+            case AiState.Scout:  HandleScouting(aiData);  break;
+            case AiState.Orbit:  HandleOrbitState(aiData); break;
+            case AiState.Chase:  HandleChase(aiData);     break;
+            case AiState.Attack: HandleAttack(aiData);    break;
         }
     }
-}
 
-    void HandleMoveState(AiData aiData)
+    private void HandleMoveState(AiData aiData)
     {
-        aiData.detectedTarget = FindNearestEntity(aiData);
-        
-        if (aiData.detectedTarget != null && 
-            Vector3.Distance(aiData.entity.position, aiData.detectedTarget.position) <= aiData.detectionRadius)
+        if (aiData.detectedTarget != null) return;
+        AIMgr.inst.HandleMove(new List<Entity> { aiData.entity }, aiData.destination, false);
+    }
+
+    private void HandleScouting(AiData aiData)
+    {
+        if (ShouldSwitchToChase(aiData))
         {
-            aiData.state = AiState.Attack;
-            attackLevel = AiAttackLevel.Low;
+            TransitionAllScoutsToChase(aiData.detectedTarget);
             return;
         }
 
-        // Continue moving straight if no targets
-        AIMgr.inst.HandleDumbMove(new List<Entity> { aiData.entity }, aiData.destination, false);
-    }
-
-    void HandleScouting(AiData aiData)
-    {
-        aiData.detectedTarget = FindNearestEntity(aiData);
-        
-        if (aiData.detectedTarget != null)
-        {
-            float distance = Vector3.Distance(aiData.entity.position, aiData.detectedTarget.position);
-            if (distance <= targetSwitchDistance)
-            {
-                float angleStep = 360f / potentialScouts.Count;
-                for (int i = 0; i < potentialScouts.Count; i++)
-                {
-                    var scout = potentialScouts[i];
-                    scout.state = AiState.Chase;
-                    scout.orbitTarget = aiData.detectedTarget;
-                    scout.currentOrbitAngle = i * angleStep;
-                }
-                return;
-            }
-        }
-
-        if (Vector3.Distance(aiData.entity.position, aiData.destination) < 100f)
+        if (Vector3.Distance(aiData.entity.position, aiData.destination) < MIN_DESTINATION_DISTANCE)
         {
             aiData.destination = GetValidWaterPoint(aiData);
         }
@@ -258,25 +247,100 @@ public class EnemyAIMgr : MonoBehaviour
         AIMgr.inst.HandleMove(new List<Entity>{aiData.entity}, aiData.destination, false, false, true);
     }
 
-    void HandleOrbitState(AiData aiData)
+    private bool ShouldSwitchToChase(AiData aiData)
     {
-        if (aiData.orbitTarget == null || 
-            Vector3.Distance(aiData.entity.position, aiData.orbitTarget.position) > aiData.detectionRadius)
+        return aiData.detectedTarget != null && 
+               Vector3.Distance(aiData.entity.position, aiData.detectedTarget.position) <= targetSwitchDistance;
+    }
+
+    private void TransitionAllScoutsToChase(Entity target)
+    {
+        float angleStep = 360f / potentialScouts.Count;
+        for (int i = 0; i < potentialScouts.Count; i++)
+        {
+            var scout = potentialScouts[i];
+            scout.state = AiState.Chase;
+            scout.orbitParams.target = target;
+            scout.orbitParams.currentAngle = i * angleStep;
+        }
+    }
+
+    private Vector3 GetValidWaterPoint(AiData scout)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            var candidate = GetStrategicScoutPoint(scout);
+            if (IsValidWaterPosition(candidate)) 
+                return candidate;
+        }
+        return scout.scoutParams.center;
+    }
+
+    private bool IsValidWaterPosition(Vector3 position)
+    {
+        var rayStart = position + Vector3.up * 100f;
+        return Physics.Raycast(rayStart, Vector3.down, RAYCAST_DISTANCE, LayerMask.GetMask("Ocean"));
+    }
+
+    private Vector3 GetStrategicScoutPoint(AiData scout)
+    {
+        Vector2 randomCircle = Random.insideUnitCircle * scout.scoutParams.radius;
+        return scout.scoutParams.center + new Vector3(
+            randomCircle.x * 0.8f,
+            0,
+            randomCircle.y * 0.8f
+        );
+    }
+
+    private Entity FindNearestEntity(AiData aiData)
+    {
+        Entity nearest = null;
+        float closestDistance = Mathf.Infinity;
+
+        foreach (Entity entity in EntityMgr.inst.entities)
+        {
+            if (entity == aiData.entity || entity.owner.name == "Ai" || WeaponsMgr.inst.weapons.Contains(entity)||entity.creatorsEntity!=null) continue;
+
+            float distance = Vector3.Distance(aiData.entity.position, entity.position);
+            if (distance < aiData.scoutParams.detectionRadius && distance < closestDistance)
+            {
+                nearest = entity;
+                closestDistance = distance;
+            }
+        }
+        return nearest;
+    }
+
+    private void HandleOrbitState(AiData aiData)
+    {
+        if (aiData.orbitParams.target == null)
         {
             ReturnToScouting(aiData);
             return;
         }
 
-        Vector3 toTarget = aiData.orbitTarget.position - aiData.entity.position;
-        float currentDistance = toTarget.magnitude;
-        
-        float angularVelocity = (aiData.entity.speed / Mathf.Max(aiData.orbitRadius, 1f)) * Mathf.Rad2Deg;
-        aiData.currentOrbitAngle += angularVelocity * Time.deltaTime;
+        UpdateOrbitPosition(aiData);
+        UpdateOrbitHeading(aiData);
+        AdjustOrbitSpeed(aiData);
+        AvoidObstacles(aiData);
+        CheckForBetterTarget(aiData);
+    }
 
-        Vector3 orbitalOffset = Quaternion.Euler(0, aiData.currentOrbitAngle, 0) * Vector3.forward * aiData.orbitRadius;
-        Vector3 desiredPosition = aiData.orbitTarget.position + orbitalOffset;
+    private void UpdateOrbitPosition(AiData aiData)
+    {
+        float angularVelocity = (aiData.entity.speed / aiData.orbitParams.radius) * Mathf.Rad2Deg;
+        aiData.orbitParams.currentAngle += angularVelocity * Time.deltaTime;
+
+        Vector3 orbitalOffset = Quaternion.Euler(0, aiData.orbitParams.currentAngle, 0) 
+                              * Vector3.forward 
+                              * aiData.orbitParams.radius;
         
-        Vector3 toDesired = (desiredPosition - aiData.entity.position).normalized;
+        aiData.destination = aiData.orbitParams.target.position + orbitalOffset;
+    }
+
+    private void UpdateOrbitHeading(AiData aiData)
+    {
+        Vector3 toDesired = (aiData.destination - aiData.entity.position).normalized;
         float targetHeading = Vector3.SignedAngle(Vector3.forward, toDesired, Vector3.up);
         
         aiData.entity.desiredHeading = Mathf.LerpAngle(
@@ -284,42 +348,48 @@ public class EnemyAIMgr : MonoBehaviour
             targetHeading,
             Time.deltaTime * headingSmoothness
         );
+    }
 
-        float distanceError = currentDistance - aiData.safeDistance;
+    private void AdjustOrbitSpeed(AiData aiData)
+    {
+        float currentDistance = Vector3.Distance(aiData.entity.position, aiData.orbitParams.target.position);
+        float distanceError = currentDistance - aiData.orbitParams.safeDistance;
+        
         aiData.entity.desiredSpeed = Mathf.Clamp(
-            aiData.entity.maxSpeed * (1 + distanceError / aiData.safeDistance),
+            aiData.entity.maxSpeed * (1 + distanceError / aiData.orbitParams.safeDistance),
             aiData.entity.minSpeed,
             aiData.entity.maxSpeed
         );
+    }
 
-        AvoidObstacles(aiData);
-
+    private void CheckForBetterTarget(AiData aiData)
+    {
         Entity newTarget = FindNearestEntity(aiData);
-        if (newTarget != null && newTarget != aiData.orbitTarget)
+        if (newTarget != null && newTarget != aiData.orbitParams.target)
         {
-            float newTargetDistance = Vector3.Distance(aiData.entity.position, newTarget.position);
-            if (newTargetDistance < currentDistance * 0.8f)
+            float newDistance = Vector3.Distance(aiData.entity.position, newTarget.position);
+            if (newDistance < Vector3.Distance(aiData.entity.position, aiData.orbitParams.target.position) * DETECTION_RATIO_THRESHOLD)
             {
-                aiData.orbitTarget = newTarget;
-                aiData.currentOrbitAngle = 0f;
+                aiData.orbitParams.target = newTarget;
+                aiData.orbitParams.currentAngle = 0f;
             }
         }
     }
 
-    void AvoidObstacles(AiData aiData)
+    private void AvoidObstacles(AiData aiData)
     {
-        Collider[] hits = Physics.OverlapSphere(aiData.entity.position, aiData.avoidanceRadius);
+        Collider[] hits = Physics.OverlapSphere(aiData.entity.position, aiData.orbitParams.avoidanceRadius);
         Vector3 avoidanceDirection = Vector3.zero;
-        
+
         foreach (Collider hit in hits)
         {
             if (hit.gameObject == aiData.entity.gameObject) continue;
             
             Vector3 toHit = aiData.entity.position - hit.transform.position;
-            float weight = 1 - Mathf.Clamp01(toHit.magnitude / aiData.avoidanceRadius);
+            float weight = 1 - Mathf.Clamp01(toHit.magnitude / aiData.orbitParams.avoidanceRadius);
             avoidanceDirection += toHit.normalized * weight;
         }
-        
+
         if (avoidanceDirection.magnitude > 0)
         {
             Vector3 currentDirection = aiData.entity.transform.forward;
@@ -337,104 +407,33 @@ public class EnemyAIMgr : MonoBehaviour
         }
     }
 
-    void ReturnToScouting(AiData aiData)
+    private void HandleChase(AiData aiData)
+    {
+        if (aiData.detectedTarget == null || aiData.detectedTarget.speed == 0)
+            ReturnToScouting(aiData);
+    }
+
+    private void ReturnToScouting(AiData aiData)
     {
         aiData.state = AiState.Scout;
         aiData.destination = GetValidWaterPoint(aiData);
-        aiData.orbitTarget = null;
+        aiData.orbitParams.target = null;
     }
 
-    Vector3 GetValidWaterPoint(AiData scout)
+    private void HandleAttack(AiData aiData)
     {
-        const int maxAttempts = 10;
-        for (int i = 0; i < maxAttempts; i++)
-        {
-            Vector3 candidate = GetStrategicScoutPoint(scout);
-            Vector3 rayStart = candidate + Vector3.up * 100f;
-            RaycastHit hit;
-            
-            if (Physics.Raycast(rayStart, Vector3.down, out hit, 200f, LayerMask.GetMask("Ocean")))
-            {
-                return hit.point;
-            }
-        }
-        return scout.scoutCenter;
-    }
-
-    Vector3 GetStrategicScoutPoint(AiData scout)
-    {
-        float edgeBias = 0.8f;
-        Vector2 randomCircle = Random.insideUnitCircle * scout.scoutRadius;
-        
-        return scout.scoutCenter + new Vector3(
-            randomCircle.x * edgeBias,
-            0,
-            randomCircle.y * edgeBias
-        );
-    }
-
-    Entity FindNearestEntity(AiData aiData)
-    {
-        Entity nearest = null;
-        float closestDistance = Mathf.Infinity;
-
-        foreach (Entity entity in EntityMgr.inst.entities)
-        {
-            if (entity == aiData.entity || entity.owner.name == "Ai") 
-                continue;
-
-            float distance = Vector3.Distance(aiData.entity.position, entity.position);
-            if (distance < aiData.detectionRadius && distance < closestDistance)
-            {
-                nearest = entity;
-                closestDistance = distance;
-            }
-        }
-
-        return nearest;
-    }
-
-    void HandleChase(AiData aiData)
-    {
-        if (aiData.detectedTarget == null || aiData.detectedTarget.speed == 0)
-        {
-            aiData.state = AiState.Scout;
-            aiData.destination = GetValidWaterPoint(aiData);
-            return;
-        }
-    }
-
-    void HandleAttack(AiData aiData)
-    {
-        switch(attackLevel)
+        switch (attackLevel)
         {
             case AiAttackLevel.Low:
-                AiLowAttack(aiData);
+                WeaponsMgr.inst.handleWeapon(aiData.entity, aiData.detectedTarget, WeaponBehaviors.AirInterceptor);
                 break;
             case AiAttackLevel.Medium:
-                AiMediumAttack(aiData);
+                // Implement medium attack logic
                 break;
             case AiAttackLevel.High:
-                AiHighAttack(aiData);
+                // Implement advanced attack logic
                 break;
         }
-    }
-    
-    void AiLowAttack(AiData aiData)
-    {
-        Debug.Log("Low attack");
-        WeaponsMgr.inst.handleWeapon(aiData.entity,FindNearestEntity(aiData), WeaponBehaviors.AirInterceptor);
-       
-    }
-
-    void AiMediumAttack(AiData aiData)
-    {
-        // Implement medium complexity attack patterns here
-    }
-
-    void AiHighAttack(AiData aiData)
-    {
-        // Implement advanced attack patterns here
     }
 
     void OnDrawGizmosSelected()
@@ -445,4 +444,6 @@ public class EnemyAIMgr : MonoBehaviour
             Gizmos.DrawWireSphere(region, maxScoutRadius * 0.8f);
         }
     }
+
+    private void HandleEntityRemoved(Entity entity) => potentialScouts.RemoveAll(ai => ai.entity == entity);
 }

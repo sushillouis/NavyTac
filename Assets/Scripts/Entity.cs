@@ -114,25 +114,25 @@ public class Entity : MonoBehaviour
     // }
     // This function  use raycast to check if the weapon is collided by a ship and if yes then it damages the ship based on the damage matrix
     void RaycastCollisonCheck()
+{
+    RaycastHit hit;
+    if (Physics.Raycast(transform.position, transform.forward, out hit, 20))
     {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, 20))
+        if (WeaponsMgr.inst.weapons.Contains(this))
         {
-            if (WeaponsMgr.inst.weapons.Contains(this))
-            {
-                Entity otherEntity = hit.collider.GetComponent<Entity>();
-                if (otherEntity != creatorsEntity)
-                {   
-                    DamageMatrix dm = new DamageMatrix();
-                    float damage = dm.GetDamage(this.entityType, otherEntity.entityType);
-                    // Debug.Log(damage);
-                    otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
-                    health = 0;
-                    if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
-                }
+            Entity otherEntity = hit.collider.GetComponent<Entity>();
+            // Check if otherEntity is not null and not the creator, and has a different owner
+            if (otherEntity != null && otherEntity != creatorsEntity && otherEntity.owner != owner)
+            {   
+                float damage = WeaponsMgr.inst.damageMatrix.GetDamage(this.entityType, otherEntity.entityType);
+                FXMgr.inst.CreateExplosionAt(hit.point, 1);
+                otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
+                health = 0;
+                if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
             }
         }
     }
+}
 
     // END
 }

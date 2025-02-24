@@ -21,6 +21,19 @@ public class Intercept3d : Intercept
     }
 
     public override void Tick()    {
+        if(entity.transform.position.y < 0) {
+            FXMgr.inst.CreateExplosionAt(entity.position, 1);
+            WeaponsMgr.inst.DestroyEntity(entity);
+            return;
+        }
+        if(targetEntity == null) {
+            float currentSpeed = entity.speed;
+            base.Stop();
+            entity.speed = currentSpeed;
+            entity.desiredSpeed = currentSpeed; 
+            return;
+        }
+        
         base.Tick();
         diffToMovePosition = targetEntity.position - entity.position;
         if(diffToMovePosition.sqrMagnitude < terminalPhaseDistanceSq)

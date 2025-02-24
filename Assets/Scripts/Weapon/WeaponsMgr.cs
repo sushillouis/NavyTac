@@ -5,54 +5,20 @@ using UnityEngine;
 public class WeaponsMgr : MonoBehaviour
 {
     public static WeaponsMgr inst;
+    public DamageMatrix damageMatrix;
+    private Dictionary<EntityType, Queue<Entity>> weaponPools = new Dictionary<EntityType, Queue<Entity>>();
+
 
     private void Awake()
     {
         inst = this;
-        DamageMatrix damageMatrix = new DamageMatrix();
-        damageMatrix.InitializeDamageMatrix();
+        damageMatrix = new DamageMatrix();
+        damageMatrix.InitializeDamageMatrix(weaponDamages);
+        weaponPools = new Dictionary<EntityType, Queue<Entity>>();
     }
-    private void Update()
-    {
-        // HandleWeaponSelectionInput();
-        // HandleShootingInput();
-    }
-    // private void HandleWeaponSelectionInput()
-    // {
-    //     // Weapon selection with UIOP keys
-    //     if (Input.GetKeyDown(KeyCode.U)) SelectWeaponType(WeaponBehaviors.Dumb);
-    //     if (Input.GetKeyDown(KeyCode.I)) SelectWeaponType(WeaponBehaviors.Smart);
-    //     if (Input.GetKeyDown(KeyCode.O)) SelectWeaponType(WeaponBehaviors.SurfaceInterceptor);
-    //     if (Input.GetKeyDown(KeyCode.P)) SelectWeaponType(WeaponBehaviors.AirInterceptor);
-        
-    //     // Double-click detection for quick selection
-        
-    // }
-    // private WeaponBehaviors selectedBehaviorType;
-    // private void HandleShootingInput()
-    // {
-    //     if (Input.GetMouseButtonDown(0) )// Right mouse click
-    //     {
-    //         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-    //         LayerMask layers = (1 << 6);
-    //         RaycastHit hit;
-    //         if (Physics.Raycast(ray, out hit, 40000, layers))
-    //         {
-    //             Vector2 mousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-    //             handleWeapon(mousePos, selectedBehaviorType);
-    //         }
-    //     }
-    // }
-    // private void SelectWeaponType(WeaponBehaviors behavior)
-    // {
-    //     selectedBehaviorType = behavior;
-    //     Debug.Log($"Selected weapon: {behavior}");
-    //     // You could add UI feedback here
-    // }
+   
     public List<WeaponDamage> weaponDamages;
     public List<Entity> weapons = new List<Entity>();
-
-    
 
    public void handleWeapon(Vector2 mousePos, WeaponBehaviors behaviorType)
     {
@@ -83,7 +49,7 @@ public class WeaponsMgr : MonoBehaviour
 
             if (targetEntity != null && targetEntity.owner != selectedEnt.owner)
             {
-                Debug.Log($"Smart selected: {selectedEnt.name} with weapon: {wd.weaponEntityType} at {targetEntity.name}");
+                // Debug.Log($"Smart selected: {selectedEnt.name} with weapon: {wd.weaponEntityType} at {targetEntity.name}");
                 LaunchWeapon(selectedEnt, wd, targetEntity, hit.point);
             }
         }
@@ -91,7 +57,7 @@ public class WeaponsMgr : MonoBehaviour
 
     public void handleWeapon(Entity entity, Entity targetEntity, WeaponBehaviors behaviorType)
     {
-        Debug.Log("handleWeapon");
+        if (entity == null) return;
 
         Camera mainCamera = Camera.main;
         AIMgr aiManager = AIMgr.inst;
@@ -109,11 +75,31 @@ public class WeaponsMgr : MonoBehaviour
             }
         
     }
+    public void handleWeapon(List<Entity> entities, Entity targetEntity , WeaponBehaviors behaviorType)
+    {
+        if (entities == null || entities.Count == 0) return;
+
+        Camera mainCamera = Camera.main;
+        AIMgr aiManager = AIMgr.inst;
+
+        foreach (Entity selectedEnt in entities)
+        {
+            WeaponsAspect weaponsAspect = selectedEnt.GetComponentInChildren<WeaponsAspect>();
+            if (weaponsAspect == null) continue;
+            WeaponData wd = weaponsAspect.weapons.Find(x => x.behaviorType == behaviorType);
+            if (wd == null) continue;
+            if (targetEntity != null && targetEntity.owner != selectedEnt.owner)
+            {
+                Debug.Log($"Smart selected: {selectedEnt.name} with weapon: {wd.weaponEntityType} at {targetEntity.name}");
+                LaunchWeapon(selectedEnt, wd, targetEntity, targetEntity.transform.position);
+            }
+        }
+    }
+    
     IEnumerator TargetEntity(Entity weapon, WeaponData wd, Entity targetEntity, Vector3 targetPosition)
     {
         yield return new WaitForFixedUpdate();
-        List<Entity> entities = new List<Entity>();
-        entities.Add(weapon);
+        List<Entity> entities = new List<Entity> { weapon };
         switch (wd.behaviorType)
         {
             case WeaponBehaviors.SurfaceInterceptor:
@@ -140,10 +126,16 @@ public class WeaponsMgr : MonoBehaviour
 
     public void LaunchWeapon(Entity launchingEntity, WeaponData wd, Entity target, Vector3 targetPosition)
     {
-        if (wd == null) Debug.Log("Could not find weapon: " + wd.weaponEntityType);
-        Debug.Log("last sho time: " + wd.lastShotTime + " cooldown: " + wd.cooldown + " ammo count: " + wd.ammoCount + "current time: " + Time.time);
+        if (wd == null) 
+        {
+            Debug.Log("Could not find weapon: " + (wd != null ? wd.weaponEntityType : "NULL"));
+            return;
+        }
+
+        // Check cooldown
         if (Time.time - wd.lastShotTime >= wd.cooldown)
         {
+            // Check ammo
             if (wd.ammoCount <= 0)
             {
                 Debug.Log("Failure! Out of " + wd.weaponEntityType + " on " + launchingEntity.name);
@@ -151,9 +143,22 @@ public class WeaponsMgr : MonoBehaviour
             else
             {
                 wd.ammoCount -= 1;
-                Vector3 pos = launchingEntity.transform.TransformPoint(wd.launchLocation);
-                Vector3 rot = launchingEntity.transform.TransformDirection(wd.launchDirection);
-                Entity ent = EntityMgr.inst.CreateEntity(wd.weaponEntityType, pos, rot, launchingEntity.owner);
+                Vector3 toTarget = target != null ? 
+                (target.transform.position - launchingEntity.transform.position).normalized :
+                (targetPosition - launchingEntity.transform.position).normalized;
+                float dotProduct = Vector3.Dot(launchingEntity.transform.forward, toTarget);
+                bool isForwardFacing = dotProduct > 0;
+                Vector3 localDir = wd.launchDirection;
+                Vector3 localPos = wd.launchLocation;
+                if (!isForwardFacing )
+                {
+                    localPos.z *= -1;  // Mirror position along local Z-axis
+                    localDir *= -1;    // Reverse direction
+                }
+                
+                Vector3 pos = launchingEntity.transform.TransformPoint(localPos);
+                Vector3 dir = launchingEntity.transform.TransformDirection(localDir).normalized;
+                Entity ent = GetWeapon(wd.weaponEntityType, pos, dir, launchingEntity.owner);
                 weapons.Add(ent);
                 wd.currentWeaponEntities.Add(ent);
                 ent.creatorsEntity = launchingEntity;
@@ -162,15 +167,56 @@ public class WeaponsMgr : MonoBehaviour
             }
         }
     }
+    private Entity GetWeapon(EntityType weaponEntityType, Vector3 position, Vector3 direction, TactPlayer owner)
+    {
 
+        if (!weaponPools.ContainsKey(weaponEntityType))
+        {
+            weaponPools[weaponEntityType] = new Queue<Entity>();
+        }
+        Entity weaponEntity = null;
+        if (weaponPools[weaponEntityType].Count > 0)
+        {
+            weaponEntity = weaponPools[weaponEntityType].Dequeue();
+            weaponEntity.gameObject.SetActive(true); 
+            weaponEntity.owner = owner;
+        }
+        else
+        {
+            weaponEntity = EntityMgr.inst.CreateEntity(weaponEntityType, position, direction, owner);
+        }
+        weaponEntity.transform.position = position;
+ 
+        weaponEntity.entityType = weaponEntityType; 
+
+        return weaponEntity;
+    }
     
-
+    private void ReturnWeapon(Entity weaponEntity)
+        {
+            
+            if (!weaponPools.ContainsKey(weaponEntity.entityType))
+            {
+                weaponPools[weaponEntity.entityType] = new Queue<Entity>();
+            }
+            weaponEntity.gameObject.SetActive(false);
+            weaponPools[weaponEntity.entityType].Enqueue(weaponEntity);
+        }
     public void DestroyEntity(Entity entity)
     {
+        MinimapMgr.inst.RemoveMinimapIcon(entity);
         if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name)
         {
             CameraMgr.inst.ToggleRTSView();
         }
+        if (weapons.Contains(entity))
+        {
+            EntityMgr.inst.entities.Remove(entity);
+            ReturnWeapon(entity);
+            weapons.Remove(entity);
+            return;
+        }
+        
 
         UnitAI unitAI = entity.GetComponentInChildren<UnitAI>();
         if (unitAI != null)
@@ -181,7 +227,10 @@ public class WeaponsMgr : MonoBehaviour
         if (SelectionMgr.inst.selectedEntities.Contains(entity))
         {
             SelectionMgr.inst.selectedEntities.Remove(entity);
-            SelectionMgr.inst.selectedEntity = SelectionMgr.inst.selectedEntities.Count > 0 ? SelectionMgr.inst.selectedEntities[0] : null;
+            SelectionMgr.inst.selectedEntity = 
+                (SelectionMgr.inst.selectedEntities.Count > 0) 
+                ? SelectionMgr.inst.selectedEntities[0] 
+                : null;
         }
 
         EntityMgr.inst.entities.Remove(entity);
@@ -207,16 +256,13 @@ public class WeaponsMgr : MonoBehaviour
             }
         }
     }
-
     public string fileNameCSV = "WeaponDamageMatrix.csv";
     public TextAsset csvFile;
-
     [ContextMenu("Damage Matrix to CSV")]
     public void DamageMatrixToCSV()
     {
         WeaponCSVHandler.DamageMatrixToCSV(weaponDamages, fileNameCSV);
     }
-
     [ContextMenu("CSV To Damage Matrix")]
     public void CSVToDamageMatrix()
     {

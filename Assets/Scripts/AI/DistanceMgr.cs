@@ -2,12 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Runtime.InteropServices;
 
-// Keep all original serializable classes exactly the same
 [Serializable]
-public class SubPotential
-{
+public class SubPotential{
     public Vector3 diff;
     public float distance;
     public Vector3 direction;
@@ -17,16 +14,18 @@ public class SubPotential
 [Serializable]
 public class Potential
 {
-    // Original Potential class implementation
     public Entity ownship;
     public Entity target;
     public float distance;
     public Vector3 diff;
-    public Vector3 relativeVelocity;
-    public Vector3 direction;
+    public Vector3 relativeVelocity; //Your vel relative to me (yourVel - myVel)
+    public Vector3 direction; //normalized diff
+    //public float relativeBearingDegrees;
     public CPAInfo cpaInfo;
     public float targetAngle;
+
     public int framecount;
+
     public List<SubPotential> subPotentials;
 
     public Potential(Entity own, Entity tgt)
@@ -34,27 +33,40 @@ public class Potential
         ownship = own;
         target = tgt;
         cpaInfo = new CPAInfo(own, target);
-        subPotentials = new List<SubPotential>();
-        foreach(Transform t in own.ai.pfList)
-        {
-            SubPotential subPotential = new SubPotential
-            {
-                distance = 0,
-                diff = Vector3.zero,
-                direction = Vector3.zero,
-                pfTransform = t
-            };
+        //Debug.Log($"({own.name}, {tgt.name}): pfListCount: {own.ai.pfList.Count}");
+        subPotentials = new List<SubPotential> ();
+        foreach(Transform t in own.ai.pfList) {
+            SubPotential subPotential = new SubPotential();
+            subPotential.distance = 0;
+            subPotential.diff = Vector3.zero;
+            subPotential.direction = Vector3.zero;
+            subPotential.pfTransform = t;
+
             subPotentials.Add(subPotential);
         }
+
+    }
+    void InitDefaults()
+    {
+        distance = 0;
+        diff = Vector3.zero;
+        relativeVelocity = Vector3.zero;
+        direction = Vector3.zero;
+        //relativeBearingDegrees = 0;
+        cpaInfo = new CPAInfo(ownship, target);
+        targetAngle = 0;
     }
 
-    public void ReCompute()
-    {
-        // This will now be called after GPU updates
+    public void ReCompute() {
+
         framecount = Time.frameCount;
+
+        diff = target.position - ownship.position;
+        distance = diff.magnitude;
+        direction = diff.normalized;
         cpaInfo.ReCompute();
-        foreach(SubPotential sp in subPotentials)
-        {
+        //subpotentials
+        foreach(SubPotential sp in subPotentials) {
             sp.diff = target.position - sp.pfTransform.position;
             sp.direction = sp.diff.normalized;
             sp.distance = sp.diff.magnitude;
@@ -65,7 +77,6 @@ public class Potential
 [System.Serializable]
 public class CPAInfo
 {
-    // Original CPAInfo implementation
     public Entity ownship;
     public Entity target;
     public Vector3 ownShipPosition = Vector3.zero;
@@ -90,16 +101,15 @@ public class CPAInfo
 
     public void ReCompute()
     {
-        // Maintain original CPU implementation
         velDiff = ownship.velocity - target.velocity;
         posDiff = ownship.position - target.position;
         relativeVelocity = target.velocity - ownship.velocity;
         relSpeedSquared = Vector3.Dot(velDiff, velDiff);
-        if(relSpeedSquared < Utils.EPSILON * 10)
+        if (relSpeedSquared < Utils.EPSILON * 10)
             time = 0;
         else
             time = -Vector3.Dot(posDiff, velDiff) / relSpeedSquared;
-        if(time < 0) time = 0;
+        if (time < 0) time = 0;
         ownShipPosition = ownship.position + ownship.velocity * time;
         targetPosition = target.position + target.velocity * time;
         range = Vector3.Distance(ownShipPosition, targetPosition);
@@ -108,184 +118,162 @@ public class CPAInfo
         targetAbsBearing = Utils.Degrees360(Utils.VectorToHeadingDegrees(diff));
         targetRelativeBearing = Utils.Degrees360(Utils.AngleDiffPosNeg(targetAbsBearing, ownship.heading));
         targetAngle = Utils.Degrees360(targetAbsBearing + 180 - target.heading);
+
     }
-}
+};
 
 public class DistanceMgr : MonoBehaviour
 {
     public static DistanceMgr inst;
-    
-    // Original fields
-    public Potential[,] potentials2D;
-    public Dictionary<Entity, Dictionary<Entity, Potential>> potentialsDictionary;
-    public List<List<Potential>> potentialsList;
-    public List<Potential> selectedEntityPotentials;
-    public bool isInitialized = false;
-    public int ii = 0;
-    public int jj = 0;
-
-    // GPU additions
-    public ComputeShader computeShader;
-    private ComputeBuffer entityBuffer;
-    private ComputeBuffer potentialBuffer;
-    
-    private struct GPUEntity
-    {
-        public Vector3 position;
-        public Vector3 velocity;
-        public float heading;
-    }
-
-    private struct GPUPotential
-    {
-        public Vector3 diff;
-        public float distance;
-        public Vector3 direction;
-        public Vector3 relativeVelocity;
-        public float targetAngle;
-    }
-
-    void Awake()
+    private void Awake()
     {
         inst = this;
     }
 
+    public Potential[,] potentials2D;
+    public Dictionary<Entity, Dictionary<Entity, Potential>> potentialsDictionary;
+    public List<List<Potential>> potentialsList;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+
+    }
+
+    public bool isInitialized = false;
+    public int ii = 0;
+    public int jj = 0;
     public void Initialize()
     {
-        // Original initialization logic
         isInitialized = true;
         potentialsDictionary = new Dictionary<Entity, Dictionary<Entity, Potential>>();
         potentialsList = new List<List<Potential>>();
         int n = EntityMgr.inst.entities.Count;
         potentials2D = new Potential[n, n];
-        
-        // Original ii/jj tracking
         ii = 0;
-        foreach(Entity ent1 in EntityMgr.inst.entities)
-        {
+        foreach (Entity ent1 in EntityMgr.inst.entities) {
             Dictionary<Entity, Potential> ent1PotDictionary = new Dictionary<Entity, Potential>();
             List<Potential> ent1PotList = new List<Potential>();
             potentialsDictionary.Add(ent1, ent1PotDictionary);
             potentialsList.Add(ent1PotList);
-            
             jj = 0;
-            foreach(Entity ent2 in EntityMgr.inst.entities)
-            {
+            foreach (Entity ent2 in EntityMgr.inst.entities) {
                 Potential pot = new Potential(ent1, ent2);
                 ent1PotDictionary.Add(ent2, pot);
                 ent1PotList.Add(pot);
-                potentials2D[ii, jj] = pot;
+                potentials2D[ii,jj] = pot;
                 jj++;
             }
             ii++;
         }
-
-        // GPU initialization
-        InitializeGPU();
     }
 
-    void InitializeGPU()
+    void Stop()
     {
-        List<Entity> entities = EntityMgr.inst.entities;
-        GPUEntity[] gpuEntities = new GPUEntity[entities.Count];
-
-        for(int i = 0; i < entities.Count; i++)
-        {
-            Entity e = entities[i];
-            gpuEntities[i] = new GPUEntity
-            {
-                position = e.position,
-                velocity = e.velocity,
-                heading = e.heading
-            };
-        }
-
-        entityBuffer = new ComputeBuffer(entities.Count, Marshal.SizeOf(typeof(GPUEntity)));
-        entityBuffer.SetData(gpuEntities);
-
-        potentialBuffer = new ComputeBuffer(entities.Count * entities.Count, Marshal.SizeOf(typeof(GPUPotential)));
+        isInitialized = false;
     }
-
+    // Update is called once per frame
     void Update()
     {
-        if(isInitialized)
+        if (isInitialized)
             UpdatePotentials();
         else
             Initialize();
     }
 
+    public List<Potential> selectedEntityPotentials; // For debugging
     void UpdatePotentials()
     {
-        // GPU computation
-        ComputeShaderCalculation();
-
-        // Original selection logic
-        for(int i = 0; i < EntityMgr.inst.entities.Count - 1; i++)
-        {
-            Entity ent1 = EntityMgr.inst.entities[i];
-            if(ent1 == SelectionMgr.inst.selectedEntity)
+        Potential p1, p2;
+        Entity ent1, ent2;
+        for(int i = 0; i < EntityMgr.inst.entities.Count - 1; i++) {
+            ent1 = EntityMgr.inst.entities[i];
+            if (ent1 == SelectionMgr.inst.selectedEntity)
                 selectedEntityPotentials = potentialsList[i];
-        }
+            //don't do diagonal
+            for(int j = i+1; j < EntityMgr.inst.entities.Count; j++) {
+                ent2 = EntityMgr.inst.entities[j];
 
-        // CPU-side updates
-        UpdateCPAData();
-    }
+                ComputePotentials(ent1, i, ent2, j);
+                /*
+                p1 = potentials2D[i, j];
+                p2 = potentials2D[j, i];
 
-    void ComputeShaderCalculation()
-    {
-        int kernel = computeShader.FindKernel("CSMain");
-        computeShader.SetBuffer(kernel, "_Entities", entityBuffer);
-        computeShader.SetBuffer(kernel, "_Potentials", potentialBuffer);
-        computeShader.SetInt("_EntityCount", EntityMgr.inst.entities.Count);
-
-        int threadGroups = Mathf.CeilToInt((float)(EntityMgr.inst.entities.Count * EntityMgr.inst.entities.Count) / 64);
-        computeShader.Dispatch(kernel, threadGroups, 1, 1);
-
-        // Retrieve data
-        GPUPotential[] gpuResults = new GPUPotential[EntityMgr.inst.entities.Count * EntityMgr.inst.entities.Count];
-        potentialBuffer.GetData(gpuResults);
-
-        // Map back to original data structure
-        int index = 0;
-        for(int i = 0; i < EntityMgr.inst.entities.Count; i++)
-        {
-            for(int j = 0; j < EntityMgr.inst.entities.Count; j++)
-            {
-                Potential p = potentials2D[i, j];
-                GPUPotential gp = gpuResults[index++];
-
-                p.diff = gp.diff;
-                p.distance = gp.distance;
-                p.direction = gp.direction;
-                p.relativeVelocity = gp.relativeVelocity;
-                p.targetAngle = gp.targetAngle;
+                //p1
+                p1.diff = p1.target.position - p1.ownship.position;
+                p1.distance = p1.diff.magnitude;
+                p1.direction = p1.diff.normalized;
+                p1.cpaInfo.ReCompute();
+                p1.relativeVelocity = p1.cpaInfo.relativeVelocity;
+                p1.targetAngle = p1.cpaInfo.targetAngle;
+                //p1.relativeBearingDegrees = p1.cpaInfo.targetRelativeBearing;
+                //p2
+                p2.diff = -p1.diff;
+                p2.distance = p1.distance;
+                p2.direction = -p1.direction;
+                p2.cpaInfo.ReCompute();
+                p2.relativeVelocity = p2.cpaInfo.relativeVelocity;
+                p2.targetAngle = p2.cpaInfo.targetAngle;
+                //p2.relativeBearingDegrees = p2.cpaInfo.targetRelativeBearing;
+                */
             }
         }
     }
 
-    void UpdateCPAData()
-    {
-        // Original CPA and subpotential updates
-        foreach(var row in potentialsDictionary.Values)
-        {
-            foreach(var potential in row.Values)
-            {
-                potential.ReCompute();
-            }
+    public void ComputePotentials(Entity ent1, int ent1Index, Entity ent2, int ent2Index) {
+        Potential p1, p2;
+
+        p1 = potentials2D[ent1Index, ent2Index];
+        p2 = potentials2D[ent2Index, ent1Index];
+
+        //p1
+        p1.diff = p1.target.position - p1.ownship.position;
+        p1.distance = p1.diff.magnitude;
+        p1.direction = p1.diff.normalized;
+        p1.cpaInfo.ReCompute();
+        p1.relativeVelocity = p1.cpaInfo.relativeVelocity;
+        p1.targetAngle = p1.cpaInfo.targetAngle;
+        ComputeSubPotentials(p1, p2);
+        //p1.relativeBearingDegrees = p1.cpaInfo.targetRelativeBearing;
+
+
+        //p2
+        p2.diff = -p1.diff;
+        p2.distance = p1.distance;
+        p2.direction = -p1.direction;
+        p2.cpaInfo.ReCompute();
+        p2.relativeVelocity = p2.cpaInfo.relativeVelocity;
+        p2.targetAngle = p2.cpaInfo.targetAngle;
+        ComputeSubPotentials(p2, p1);
+    }
+
+    public Potential ComputeEntityPotential(Entity ownship, Entity target) {
+        Potential pot = new Potential(ownship, target);
+
+
+        return pot;
+
+    }
+
+
+    public void ComputeSubPotentials(Potential p1, Potential p2) {
+        foreach(SubPotential sp in p1.subPotentials) {
+            sp.diff = p1.target.position - sp.pfTransform.position;
+            sp.direction = sp.diff.normalized;
+            sp.distance = sp.diff.sqrMagnitude;
         }
+
     }
 
-    void OnDestroy()
-    {
-        entityBuffer?.Release();
-        potentialBuffer?.Release();
-    }
-
-    // Original helper methods remain unchanged
     public Potential GetPotential(Entity e1, Entity e2)
     {
-        return potentialsDictionary.ContainsKey(e1) && potentialsDictionary[e1].ContainsKey(e2) ? 
-            potentialsDictionary[e1][e2] : 
-            null;
+        Potential p = null;
+        if (isInitialized)
+            p = potentialsDictionary[e1][e2];
+        return p;
     }
+
+
+
+
 }

@@ -73,7 +73,71 @@ public class MinimapMgr : MonoBehaviour
     }
 
     //Creates the minimap icon for each ent in the scene, called in UIAspect
-    public void CreateMinimapIcon(Entity ent, GameObject minimapIcon) {
+    // public void CreateMinimapIcon(Entity ent, GameObject minimapIcon) {
+        
+    //     var newIcon = Instantiate(minimapIcon);
+    //     newIcon.name = ent.name + "Icon";
+    //     newIcon.GetComponent<Image>().color = ent.owner.playerColor;
+    //     newIcon.transform.SetParent(minimapImage.transform, false);
+    //     mapIcons.Add(ent, newIcon);
+    // }
+
+    //Uses SetIconLocation to update the map position for all ents and the camera
+    // Modified UpdateMinimap method
+    public void UpdateMinimap() 
+    {
+        
+        var keys = new List<Entity>(mapIcons.Keys);
+        
+        foreach(var ent in keys)
+        {
+            
+            if (ent == null || ent.gameObject == null)
+            {
+                mapIcons.Remove(ent);
+                continue;
+            }
+
+            if (mapIcons.TryGetValue(ent, out var mapIcon))
+            {
+                bool shouldShow = ent.transform.GetChild(0).gameObject.activeSelf && 
+                                ent.gameObject.activeInHierarchy &&
+                                EntityMgr.inst.entities.Contains(ent);
+
+                if (shouldShow)
+                {
+                    SetIconLocation(mapIcon, ent.position, ent.heading);
+                    mapIcon.SetActive(true);
+                }
+                else
+                {
+                    mapIcon.SetActive(false);
+                    // Optional: Remove and destroy if entity is gone
+                    if (!EntityMgr.inst.entities.Contains(ent))
+                    {
+                        Destroy(mapIcon);
+                        mapIcons.Remove(ent);
+                    }
+                }
+            }
+        }
+        SetIconLocation(cameraIcon, Camera.main.transform.position, 0);
+    }
+
+    // Add this cleanup method
+    public void RemoveMinimapIcon(Entity ent)
+    {
+        if (mapIcons.TryGetValue(ent, out var icon))
+        {
+            Destroy(icon);
+            mapIcons.Remove(ent);
+        }
+    }
+
+    // Modified CreateMinimapIcon
+    public void CreateMinimapIcon(Entity ent, GameObject minimapIcon) 
+    {
+        if (ent == null || mapIcons.ContainsKey(ent)) return;
         
         var newIcon = Instantiate(minimapIcon);
         newIcon.name = ent.name + "Icon";
@@ -82,45 +146,26 @@ public class MinimapMgr : MonoBehaviour
         mapIcons.Add(ent, newIcon);
     }
 
-    //Uses SetIconLocation to update the map position for all ents and the camera
-    public void UpdateMinimap() {
-        foreach(var icon in mapIcons) {
-            
-            Entity ent = icon.Key;
-            var mapIcon = icon.Value;
-            if (ent.transform.GetChild(0).gameObject.activeSelf == true){
-                SetIconLocation(mapIcon, ent.position, ent.heading);
-                mapIcon.SetActive(true);
-            }
-            else{
-                mapIcon.SetActive(false);
-            }
-            
-        }
-        SetIconLocation(cameraIcon, Camera.main.transform.position, 0);
-
-    }
-
-    //Sets the postion of a map icon given a world position and heading
-    public void SetIconLocation(GameObject mapIcon, Vector3 worldPosition, float heading) {
-        //Sets the scale of the icon proportional to the minimap
-        float iconScale = 1 / minimapImage.transform.localScale.x;
-
-        //Converts world position to map position
-        Vector2 mapPosition = worldToMapTransformationMatrix.MultiplyPoint3x4(new Vector2(worldPosition.x, worldPosition.z));
-
-        //Sets icon position, rotation, and scale
+    // Modified SetIconLocation with null checks
+    public void SetIconLocation(GameObject mapIcon, Vector3 worldPosition, float heading) 
+    {
+        if (mapIcon == null) return;
+        
         RectTransform rt = mapIcon.GetComponent<RectTransform>();
+        if (rt == null) return;
+
+        // Rest of the method remains the same...
+        float iconScale = 1 / minimapImage.transform.localScale.x;
+        Vector2 mapPosition = worldToMapTransformationMatrix.MultiplyPoint3x4(new Vector2(worldPosition.x, worldPosition.z));
+        
         rt.anchoredPosition = mapPosition;
         rt.localRotation = Quaternion.Euler(new Vector3(0, 0, -heading));
         rt.localScale = Vector3.one * iconScale;
 
-        //hides icon if it's off the map
-        if(Mathf.Abs(rt.localPosition.x) > minimapImage.rect.width / 2 ||
-            Mathf.Abs(rt.localPosition.y) > minimapImage.rect.height / 2)
-            mapIcon.SetActive(false);
-        else
-            mapIcon.SetActive(true);
+        bool offMap = Mathf.Abs(rt.localPosition.x) > minimapImage.rect.width / 2 ||
+                    Mathf.Abs(rt.localPosition.y) > minimapImage.rect.height / 2;
+        
+        mapIcon.SetActive(!offMap);
     }
 
     /*

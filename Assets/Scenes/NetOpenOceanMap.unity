@@ -1736,11 +1736,555 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 980a1adbe3326324eb53f669285364e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weaponDamages: []
+  weaponDamages:
+  - weaponType: 0
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 1
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 2
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 3
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 4
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 5
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 6
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 7
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 8
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 9
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 10
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 11
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 12
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 13
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 14
+    targetDamages:
+    - targetType: 0
+      damageValue: 0
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
+  - weaponType: 15
+    targetDamages:
+    - targetType: 0
+      damageValue: 25
+    - targetType: 1
+      damageValue: 0
+    - targetType: 2
+      damageValue: 0
+    - targetType: 3
+      damageValue: 0
+    - targetType: 4
+      damageValue: 0
+    - targetType: 5
+      damageValue: 0
+    - targetType: 6
+      damageValue: 0
+    - targetType: 7
+      damageValue: 0
+    - targetType: 8
+      damageValue: 0
+    - targetType: 9
+      damageValue: 0
+    - targetType: 10
+      damageValue: 0
+    - targetType: 11
+      damageValue: 0
+    - targetType: 12
+      damageValue: 0
+    - targetType: 13
+      damageValue: 0
+    - targetType: 14
+      damageValue: 0
+    - targetType: 15
+      damageValue: 0
   weapons: []
   MovableEntitiesRoot: {fileID: 382953079}
   fileNameCSV: WeaponDamageMatrix.csv
-  csvFile: {fileID: 0}
+  csvFile: {fileID: 4900000, guid: d7629e40b51135844a487fac5c1e1d32, type: 3}
 --- !u!1 &544093354 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6093058090645874861, guid: 3769d37cb4868da47b56c4040c02c3a9,
@@ -2218,10 +2762,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e971d22161d637242b1584fd6a8f2bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selectedEntityPotentials: []
   isInitialized: 0
   ii: 0
   jj: 0
-  selectedEntityPotentials: []
+  computeShader: {fileID: 7200000, guid: 23e05e21e3263db40ba7514cb83364b1, type: 3}
 --- !u!1 &690747839
 GameObject:
   m_ObjectHideFlags: 0
@@ -4564,6 +5109,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   distanceComputeShader: {fileID: 7200000, guid: 23e05e21e3263db40ba7514cb83364b1,
     type: 3}
+  kernelMainPotentials: 0
+  kernelSubPotentials: 0
+  allPfPositions: []
+  initialized: 0
 --- !u!1 &1664575454
 GameObject:
   m_ObjectHideFlags: 0
@@ -6564,46 +7113,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: DDG51
-      objectReference: {fileID: 0}
-    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: weapons.Array.size
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: weapons.Array.data[3].range
-      value: 200
-      objectReference: {fileID: 0}
-    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: weapons.Array.data[3].cooldown
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: weapons.Array.data[3].ammoCount
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: weapons.Array.data[3].behaviorType
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: weapons.Array.data[3].launchLocation.y
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: weapons.Array.data[3].launchLocation.z
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: weapons.Array.data[3].weaponEntityType
-      value: 15
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -24,6 +24,9 @@ public class EntityMgr : MonoBehaviour
         //}
     }
    
+   void Update(){
+        entities.RemoveAll(item => item == null);
+   }
 
     public GameObject movableEntitiesRoot;
     public List<GameObject> entityPrefabs;
@@ -223,6 +226,7 @@ public class EntityMgr : MonoBehaviour
             {
                 CameraMgr.inst.ToggleRTSView();
             }
+            WeaponsMgr.inst.DestroyEntity(entity);
             entities.Remove(entity);
             OnEntityRemoved?.Invoke(entity);
             

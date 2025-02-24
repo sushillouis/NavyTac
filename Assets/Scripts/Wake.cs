@@ -51,7 +51,10 @@ public class Wake : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-
+        if(!entity.transform.GetChild(0).gameObject.activeSelf){
+            wakeParticleSystem.Stop();
+            return;
+        }
         if (entity.speed <= wakeThresholdSpeed) {
             wakeParticleSystem.Stop();
         } else if (!wakeParticleSystem.isPlaying) {
