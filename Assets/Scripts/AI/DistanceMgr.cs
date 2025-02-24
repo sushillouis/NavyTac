@@ -173,49 +173,37 @@ public class DistanceMgr : MonoBehaviour
         isInitialized = false;
     }
     // Update is called once per frame
+    private int frameCounter = 0; 
     void Update()
     {
         if (isInitialized)
             UpdatePotentials();
         else
             Initialize();
+        frameCounter++;
     }
 
-    public List<Potential> selectedEntityPotentials; // For debugging
+    public List<Potential> selectedEntityPotentials; 
     void UpdatePotentials()
     {
-        Potential p1, p2;
+        // Potential p1, p2;
         Entity ent1, ent2;
-        for(int i = 0; i < EntityMgr.inst.entities.Count - 1; i++) {
+        int currentFrameMod = frameCounter % 5; 
+
+        for (int i = 0; i < EntityMgr.inst.entities.Count - 1; i++)
+        {
+            
+            if (i % 5 != currentFrameMod)
+                continue;
+
             ent1 = EntityMgr.inst.entities[i];
             if (ent1 == SelectionMgr.inst.selectedEntity)
                 selectedEntityPotentials = potentialsList[i];
-            //don't do diagonal
-            for(int j = i+1; j < EntityMgr.inst.entities.Count; j++) {
+
+            for (int j = i + 1; j < EntityMgr.inst.entities.Count; j++)
+            {
                 ent2 = EntityMgr.inst.entities[j];
-
                 ComputePotentials(ent1, i, ent2, j);
-                /*
-                p1 = potentials2D[i, j];
-                p2 = potentials2D[j, i];
-
-                //p1
-                p1.diff = p1.target.position - p1.ownship.position;
-                p1.distance = p1.diff.magnitude;
-                p1.direction = p1.diff.normalized;
-                p1.cpaInfo.ReCompute();
-                p1.relativeVelocity = p1.cpaInfo.relativeVelocity;
-                p1.targetAngle = p1.cpaInfo.targetAngle;
-                //p1.relativeBearingDegrees = p1.cpaInfo.targetRelativeBearing;
-                //p2
-                p2.diff = -p1.diff;
-                p2.distance = p1.distance;
-                p2.direction = -p1.direction;
-                p2.cpaInfo.ReCompute();
-                p2.relativeVelocity = p2.cpaInfo.relativeVelocity;
-                p2.targetAngle = p2.cpaInfo.targetAngle;
-                //p2.relativeBearingDegrees = p2.cpaInfo.targetRelativeBearing;
-                */
             }
         }
     }

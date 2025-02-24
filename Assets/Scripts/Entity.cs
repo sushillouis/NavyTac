@@ -59,6 +59,7 @@ public class Entity : MonoBehaviour
     public UnitAI ai = null;
     public UIAspect ui = null;
     public WeaponsAspect weapons = null;
+    
 
     void Start()
     {
@@ -66,13 +67,26 @@ public class Entity : MonoBehaviour
         //cameraRig = transform.Find("CameraRig").gameObject;
         //selectionCircle = transform.Find("Decorations").Find("SelectionCylinder").gameObject;
         fuel = maxFuel;
-
+        Renderer mainRenderer = GetComponent<Renderer>();
+   
+    
+    // Optionally, update all child renderers if necessary
+        Renderer[] childRenderers = GetComponentsInChildren<Renderer>();
+        
+        for (int i = 0; i < childRenderers.Length; i++)
+        {
+            if(childRenderers[i].tag =="Color"){
+                childRenderers[i].material.color = owner.playerColor;
+            }
+            
+        }
     }
     void Update()
     {
         if(health <= 0){
             EntityMgr.inst.DestroyEntity(this);           
         }
+        
     }
 
     private void FixedUpdate() {
@@ -121,6 +135,7 @@ public class Entity : MonoBehaviour
         if (WeaponsMgr.inst.weapons.Contains(this))
         {
             Entity otherEntity = hit.collider.GetComponent<Entity>();
+            // Debug.Log(otherEntity.gameObject.layer);
             // Check if otherEntity is not null and not the creator, and has a different owner
             if (otherEntity != null && otherEntity != creatorsEntity && otherEntity.owner != owner)
             {   
@@ -133,6 +148,15 @@ public class Entity : MonoBehaviour
         }
     }
 }
+void OnCollisionEnter(Collision collision)
+{
+    // Check if the collider belongs to a TerrainCollider
+    if (collision.collider is TerrainCollider)
+    {
+        Debug.Log("Hitting Terrain");
+    }
+}
+
 
     // END
 }

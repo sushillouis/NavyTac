@@ -28,7 +28,7 @@ public class FogWarMgr : MonoBehaviour
     private ComputeBuffer gridBuffer;
     private ComputeBuffer entitiesBuffer;
     private ComputeBuffer visitedGridBuffer;
-    private ComputeBuffer nonRevealersBuffer;
+    private ComputeBuffer nonRevelersBuffer;
     private ComputeBuffer visibilityResultsBuffer;
     private RenderTexture fogRenderTexture;
     private int clearKernel;
@@ -51,7 +51,10 @@ public class FogWarMgr : MonoBehaviour
         public Vector3 position;
         public float radius;
     }
-
+    public static FogWarMgr inst;
+    private void Awake() {
+        inst = this;
+    }
     void Start() {
         if (!FOW) return;
         InitializeFogPlane();
@@ -154,7 +157,7 @@ public class FogWarMgr : MonoBehaviour
     {
         gridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(float));
         visitedGridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(float));
-        nonRevealersBuffer = new ComputeBuffer(1, Marshal.SizeOf<EntityComputeData>());
+        nonRevelersBuffer = new ComputeBuffer(1, Marshal.SizeOf<EntityComputeData>());
         visibilityResultsBuffer = new ComputeBuffer(1, sizeof(uint));
 
         float[] gridData = new float[gridWidth * gridHeight];
@@ -181,7 +184,7 @@ public class FogWarMgr : MonoBehaviour
         fogComputeShader.SetBuffer(revealKernel, "VisitedGrid", visitedGridBuffer);
         fogComputeShader.SetBuffer(updateKernel, "VisitedGrid", visitedGridBuffer);
         fogComputeShader.SetBuffer(visibilityKernel, "Grid", gridBuffer);
-        fogComputeShader.SetBuffer(visibilityKernel, "NonRevealers", nonRevealersBuffer);
+        fogComputeShader.SetBuffer(visibilityKernel, "NonRevelers", nonRevelersBuffer);
         fogComputeShader.SetBuffer(visibilityKernel, "VisibilityResults", visibilityResultsBuffer);
 
         fogComputeShader.SetVector("FogColor", new Color(0.05f, 0.05f, 0.05f, 0.5f));
@@ -235,15 +238,15 @@ public class FogWarMgr : MonoBehaviour
         }
 
         // Release old buffers and create new ones with correct size
-        nonRevealersBuffer?.Release();
-        nonRevealersBuffer = new ComputeBuffer(nonRevelers.Count, Marshal.SizeOf<EntityComputeData>());
-        nonRevealersBuffer.SetData(nonRevealerData);
+        nonRevelersBuffer?.Release();
+        nonRevelersBuffer = new ComputeBuffer(nonRevelers.Count, Marshal.SizeOf<EntityComputeData>());
+        nonRevelersBuffer.SetData(nonRevealerData);
 
         visibilityResultsBuffer?.Release();
         visibilityResultsBuffer = new ComputeBuffer(nonRevelers.Count, sizeof(uint));
 
         // Re-bind buffers to compute shader kernel
-        fogComputeShader.SetBuffer(visibilityKernel, "NonRevealers", nonRevealersBuffer);
+        fogComputeShader.SetBuffer(visibilityKernel, "NonRevelers", nonRevelersBuffer);
         fogComputeShader.SetBuffer(visibilityKernel, "VisibilityResults", visibilityResultsBuffer);
 
         // Update shader parameters
@@ -298,7 +301,7 @@ public class FogWarMgr : MonoBehaviour
         gridBuffer?.Release();
         entitiesBuffer?.Release();
         visitedGridBuffer?.Release();
-        nonRevealersBuffer?.Release();
+        nonRevelersBuffer?.Release();
         visibilityResultsBuffer?.Release();
         if (fogRenderTexture != null && fogRenderTexture.IsCreated())
             fogRenderTexture.Release();

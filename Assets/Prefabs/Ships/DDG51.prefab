@@ -62,14 +62,14 @@ MonoBehaviour:
     launchLocation: {x: -100, y: 0, z: 0}
     launchDirection: {x: 0, y: 0, z: 1}
     ammoCount: 5
-  - cooldown: 30
+  - cooldown: 3
     behaviorType: 3
     weaponEntityType: 15
     range: 200
     currentWeaponEntities: []
     launchLocation: {x: 0, y: 10, z: 100}
     launchDirection: {x: 0, y: 0, z: 0}
-    ammoCount: 2
+    ammoCount: 200
   - cooldown: 30
     behaviorType: 1
     weaponEntityType: 15

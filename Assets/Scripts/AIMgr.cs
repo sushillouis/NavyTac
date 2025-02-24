@@ -90,6 +90,7 @@ public class AIMgr : NetworkBehaviour
     public float attractionCoefficient = 500;
     public float attractiveExponent = -1;
     public float repulsiveCoefficient = 60000;
+    public float groupRepulsiveCoefficient = 6000;
     public float repulsiveExponent = -2.0f;
     [Header("Experimatal PF")]
     public float repulsive2Coefficient = 1000;
@@ -137,18 +138,44 @@ public class AIMgr : NetworkBehaviour
         }
     }
 
-    public void HandleMove(List<Entity> entities, Vector3 point, bool add, bool isLocalCommand = true , bool maxSpeedMovement = false)
-    {    //if this machine's client commanded, then tell everyone
-        if(isLocalCommand ) {
-            NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
+    // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
+    //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
+    public void HandleMove(List<Entity> entities, Vector3 point, 
+                      bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false,
+                      FormationType formationType = FormationType.Wedge, float formationRadius = 200f)
+{
+    if(isLocalCommand)
+    {
+        NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
+    }
+
+    // Use GroupMove for multiple entities, regular Move for single
+    if(entities.Count > 1)
+    {
+        // Create shared group command for all entities
+        foreach(Entity entity in entities)
+        {
+            GroupMove gm = new GroupMove(entity, point, entities) 
+            {
+                maxSpeedMovement = maxSpeedMovement,
+                formationType = FormationType.Circle // Default formation
+            };
+            
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            AddOrSet(gm, uai, add);
         }
-        //Then do the command
-        foreach(Entity entity in entities) {
-            Move m = new Move(entity, point , maxSpeedMovement);
+    }
+    else
+    {
+        // Original single-entity behavior
+        foreach(Entity entity in entities)
+        {
+            Move m = new Move(entity, point, maxSpeedMovement);
             UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             AddOrSet(m, uai, add);
         }
     }
+}
     public void HandleDumbMove(List<Entity> entities, Vector3 point, bool add)
     {
         foreach (Entity entity in entities) {

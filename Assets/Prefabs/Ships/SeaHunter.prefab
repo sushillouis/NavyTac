@@ -71,6 +71,8 @@ MonoBehaviour:
   length: 38
   width: 13.5
   height: 15
+  maxHealth: 0
+  minHealth: 0
   maxFuel: 0
   maxRange: 0
   entityType: 10
@@ -84,6 +86,7 @@ MonoBehaviour:
     playerColor: {r: 0, g: 0, b: 0, a: 0}
     isObserver: 0
     isAdmin: 0
+  creatorsEntity: {fileID: 0}
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}
@@ -344,6 +347,7 @@ MonoBehaviour:
   commands: []
   intercepts: []
   intercept3ds: []
+  smartIntercepts: []
   pfList:
   - {fileID: 3097157526907216505}
   - {fileID: 3271547364156496257}
@@ -537,6 +541,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Sea Hunter
+      objectReference: {fileID: 0}
+    - target: {fileID: 3762086697576020160, guid: 2bcf17f13989d014a8b7fa89e2b73ce0,
+        type: 3}
+      propertyPath: m_TagString
+      value: Color
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:

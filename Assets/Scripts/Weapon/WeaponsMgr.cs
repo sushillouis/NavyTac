@@ -8,19 +8,17 @@ public class WeaponsMgr : MonoBehaviour
     public DamageMatrix damageMatrix;
     private Dictionary<EntityType, Queue<Entity>> weaponPools = new Dictionary<EntityType, Queue<Entity>>();
 
-
     private void Awake()
     {
         inst = this;
         damageMatrix = new DamageMatrix();
         damageMatrix.InitializeDamageMatrix(weaponDamages);
-        weaponPools = new Dictionary<EntityType, Queue<Entity>>();
     }
-   
+
     public List<WeaponDamage> weaponDamages;
     public List<Entity> weapons = new List<Entity>();
 
-   public void handleWeapon(Vector2 mousePos, WeaponBehaviors behaviorType)
+     public void handleWeapon(Vector2 mousePos, WeaponBehaviors behaviorType)
     {
         List<Entity> selectedEntities = SelectionMgr.inst.selectedEntities;
         if (selectedEntities == null || selectedEntities.Count == 0) return;
@@ -95,27 +93,94 @@ public class WeaponsMgr : MonoBehaviour
             }
         }
     }
-    
+
+    private Entity GetWeapon(EntityType weaponEntityType, Vector3 position, Vector3 direction, TactPlayer owner)
+    {
+        if (!weaponPools.ContainsKey(weaponEntityType))
+            weaponPools[weaponEntityType] = new Queue<Entity>();
+
+        Entity weaponEntity;
+        if (weaponPools[weaponEntityType].Count > 0)
+        {
+            weaponEntity = weaponPools[weaponEntityType].Dequeue();
+            weaponEntity.gameObject.SetActive(true);
+            
+            // Reset physics state
+            Rigidbody rb = weaponEntity.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.velocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            // Reset AI state
+            UnitAI unitAI = weaponEntity.GetComponent<UnitAI>();
+            if (unitAI != null) unitAI.StopAndRemoveAllCommands();
+        }
+        else
+        {
+            weaponEntity = EntityMgr.inst.CreateEntity(weaponEntityType, position, direction, owner);
+        }
+
+        // Set fresh transform values
+        weaponEntity.transform.position = position;
+        weaponEntity.transform.rotation = Quaternion.LookRotation(direction);
+        weaponEntity.owner = owner;
+        weaponEntity.entityType = weaponEntityType;
+
+        // Ensure tracking in entity manager
+        if (!EntityMgr.inst.entities.Contains(weaponEntity))
+            EntityMgr.inst.entities.Add(weaponEntity);
+
+        return weaponEntity;
+    }
+
+    private void ReturnWeapon(Entity weaponEntity)
+    {
+        // Stop all active behaviors
+        weaponEntity.StopAllCoroutines();
+        UnitAI unitAI = weaponEntity.GetComponent<UnitAI>();
+        if (unitAI != null) unitAI.StopAndRemoveAllCommands();
+
+        // Clean up component references
+        weaponEntity.creatorsEntity = null;
+
+        // Remove from active tracking
+        // foreach (WeaponDamage wd in weaponDamages)
+        //     wd.currentWeaponEntities.Remove(weaponEntity);
+
+        weapons.Remove(weaponEntity);
+        EntityMgr.inst.entities.Remove(weaponEntity);
+
+        // Pooling
+        weaponEntity.gameObject.SetActive(false);
+        if (!weaponPools.ContainsKey(weaponEntity.entityType))
+            weaponPools[weaponEntity.entityType] = new Queue<Entity>();
+        
+        weaponPools[weaponEntity.entityType].Enqueue(weaponEntity);
+    }
+
     IEnumerator TargetEntity(Entity weapon, WeaponData wd, Entity targetEntity, Vector3 targetPosition)
     {
         yield return new WaitForFixedUpdate();
+        
+        // Validate weapon state
+        if (weapon == null || !weapon.gameObject.activeSelf)
+            yield break;
+
         List<Entity> entities = new List<Entity> { weapon };
         switch (wd.behaviorType)
         {
             case WeaponBehaviors.SurfaceInterceptor:
-                Debug.Log("Surface Interceptor");
                 AIMgr.inst.HandleIntercept(entities, targetEntity, false);
                 break;
             case WeaponBehaviors.AirInterceptor:
-                Debug.Log("Air Interceptor");
                 AIMgr.inst.Handle3dIntercept(entities, targetEntity, false);
                 break;
             case WeaponBehaviors.Dumb:
-                Debug.Log("Dumb");
                 AIMgr.inst.HandleDumbMove(entities, targetPosition, false);
                 break;
             case WeaponBehaviors.Smart:
-                Debug.Log("Smart");
                 AIMgr.inst.HandleSmartIntercept(entities, targetEntity, false);
                 break;
             default:
@@ -126,82 +191,41 @@ public class WeaponsMgr : MonoBehaviour
 
     public void LaunchWeapon(Entity launchingEntity, WeaponData wd, Entity target, Vector3 targetPosition)
     {
-        if (wd == null) 
-        {
-            Debug.Log("Could not find weapon: " + (wd != null ? wd.weaponEntityType : "NULL"));
-            return;
-        }
+        if (wd == null) return;
 
-        // Check cooldown
-        if (Time.time - wd.lastShotTime >= wd.cooldown)
-        {
-            // Check ammo
-            if (wd.ammoCount <= 0)
-            {
-                Debug.Log("Failure! Out of " + wd.weaponEntityType + " on " + launchingEntity.name);
-            }
-            else
-            {
-                wd.ammoCount -= 1;
-                Vector3 toTarget = target != null ? 
-                (target.transform.position - launchingEntity.transform.position).normalized :
-                (targetPosition - launchingEntity.transform.position).normalized;
-                float dotProduct = Vector3.Dot(launchingEntity.transform.forward, toTarget);
-                bool isForwardFacing = dotProduct > 0;
-                Vector3 localDir = wd.launchDirection;
-                Vector3 localPos = wd.launchLocation;
-                if (!isForwardFacing )
-                {
-                    localPos.z *= -1;  // Mirror position along local Z-axis
-                    localDir *= -1;    // Reverse direction
-                }
-                
-                Vector3 pos = launchingEntity.transform.TransformPoint(localPos);
-                Vector3 dir = launchingEntity.transform.TransformDirection(localDir).normalized;
-                Entity ent = GetWeapon(wd.weaponEntityType, pos, dir, launchingEntity.owner);
-                weapons.Add(ent);
-                wd.currentWeaponEntities.Add(ent);
-                ent.creatorsEntity = launchingEntity;
-                StartCoroutine(TargetEntity(ent, wd, target, targetPosition));
-                wd.lastShotTime = Time.time;
-            }
-        }
+        // Cooldown check
+        if (Time.time - wd.lastShotTime < wd.cooldown) return;
+
+        // Ammo check (handle infinite ammo case)
+        if (wd.ammoCount == 0) return;
+        if (wd.ammoCount > 0) wd.ammoCount--;
+
+        // Calculate launch parameters
+        Vector3 toTarget = target != null ? 
+            (target.transform.position - launchingEntity.transform.position).normalized :
+            (targetPosition - launchingEntity.transform.position).normalized;
+
+        bool isForwardFacing = Vector3.Dot(launchingEntity.transform.forward, toTarget) > 0;
+        Vector3 localPos = isForwardFacing ? wd.launchLocation : new Vector3(
+            wd.launchLocation.x,
+            wd.launchLocation.y,
+            -wd.launchLocation.z
+        );
+        Vector3 localDir = isForwardFacing ? wd.launchDirection : -wd.launchDirection;
+
+        Vector3 pos = launchingEntity.transform.TransformPoint(localPos);
+        Vector3 dir = launchingEntity.transform.TransformDirection(localDir).normalized;
+
+        // Get weapon from pool
+        Entity ent = GetWeapon(wd.weaponEntityType, pos, dir, launchingEntity.owner);
+        weapons.Add(ent);
+        wd.currentWeaponEntities.Add(ent);
+        ent.creatorsEntity = launchingEntity;
+
+        // Start fresh movement routine
+        StartCoroutine(TargetEntity(ent, wd, target, targetPosition));
+        wd.lastShotTime = Time.time;
     }
-    private Entity GetWeapon(EntityType weaponEntityType, Vector3 position, Vector3 direction, TactPlayer owner)
-    {
-
-        if (!weaponPools.ContainsKey(weaponEntityType))
-        {
-            weaponPools[weaponEntityType] = new Queue<Entity>();
-        }
-        Entity weaponEntity = null;
-        if (weaponPools[weaponEntityType].Count > 0)
-        {
-            weaponEntity = weaponPools[weaponEntityType].Dequeue();
-            weaponEntity.gameObject.SetActive(true); 
-            weaponEntity.owner = owner;
-        }
-        else
-        {
-            weaponEntity = EntityMgr.inst.CreateEntity(weaponEntityType, position, direction, owner);
-        }
-        weaponEntity.transform.position = position;
- 
-        weaponEntity.entityType = weaponEntityType; 
-
-        return weaponEntity;
-    }
-    
-    private void ReturnWeapon(Entity weaponEntity)
-        {
-            
-            if (!weaponPools.ContainsKey(weaponEntity.entityType))
-            {
-                weaponPools[weaponEntity.entityType] = new Queue<Entity>();
-            }
-            weaponEntity.gameObject.SetActive(false);
-            weaponPools[weaponEntity.entityType].Enqueue(weaponEntity);
-        }
     public void DestroyEntity(Entity entity)
     {
         MinimapMgr.inst.RemoveMinimapIcon(entity);

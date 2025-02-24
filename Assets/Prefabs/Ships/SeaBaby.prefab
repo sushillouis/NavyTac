@@ -3887,6 +3887,7 @@ MonoBehaviour:
   commands: []
   intercepts: []
   intercept3ds: []
+  smartIntercepts: []
   pfList:
   - {fileID: 8631492768521240559}
   - {fileID: 3946977944105540215}
@@ -3904,7 +3905,7 @@ GameObject:
   - component: {fileID: 7853304006728007689}
   m_Layer: 0
   m_Name: site_tank
-  m_TagString: Untagged
+  m_TagString: Color
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4070,7 +4071,7 @@ GameObject:
   - component: {fileID: 2356176461121101176}
   m_Layer: 0
   m_Name: mai_hull
-  m_TagString: Untagged
+  m_TagString: Color
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4153,7 +4154,7 @@ GameObject:
   - component: {fileID: 6899093281568232213}
   m_Layer: 0
   m_Name: site_tank001
-  m_TagString: Untagged
+  m_TagString: Color
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5040,7 +5041,7 @@ GameObject:
   - component: {fileID: 8984414980938125146}
   m_Layer: 0
   m_Name: top_body_structure
-  m_TagString: Untagged
+  m_TagString: Color
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5762,6 +5763,8 @@ MonoBehaviour:
   length: 7
   width: 2
   height: 1
+  maxHealth: 0
+  minHealth: 0
   maxFuel: 0
   maxRange: 0
   entityType: 12
@@ -5775,6 +5778,7 @@ MonoBehaviour:
     playerColor: {r: 0, g: 0, b: 0, a: 0}
     isObserver: 0
     isAdmin: 0
+  creatorsEntity: {fileID: 0}
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}

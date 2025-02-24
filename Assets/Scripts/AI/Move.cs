@@ -52,7 +52,7 @@ public class Move : Command
     public Vector3 diffToMovePosition = Vector3.positiveInfinity;
     public float dhRadians;
     public float dhDegrees;
-    public DHDS ComputeDHDS()
+    public virtual DHDS ComputeDHDS()
     {
         diffToMovePosition = movePosition - entity.position;
         dhRadians = Mathf.Atan2(diffToMovePosition.x, diffToMovePosition.z);
@@ -61,7 +61,7 @@ public class Move : Command
 
     }
 
-    public DHDS ComputePotentialDHDS(Vector3 movePosition)
+    public virtual DHDS ComputePotentialDHDS(Vector3 movePosition)
     {
         diffToMovePosition = movePosition - entity.position;
         Potential p;

@@ -194,6 +194,8 @@ MonoBehaviour:
   length: 15
   width: 5
   height: 7
+  maxHealth: 0
+  minHealth: 0
   maxFuel: 0
   maxRange: 0
   entityType: 9
@@ -207,6 +209,7 @@ MonoBehaviour:
     playerColor: {r: 0, g: 0, b: 0, a: 0}
     isObserver: 0
     isAdmin: 0
+  creatorsEntity: {fileID: 0}
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}
@@ -379,6 +382,7 @@ MonoBehaviour:
   commands: []
   intercepts: []
   intercept3ds: []
+  smartIntercepts: []
   pfList:
   - {fileID: 2355611783138327884}
   - {fileID: 7917665086149703647}
@@ -728,10 +732,30 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -4237356136633922190, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: -3040590390375829612, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1532909518589795153, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 10c2591deefc2fe4e8959f2797e065d7,
         type: 3}
       propertyPath: m_Name
       value: JARI-USV
+      objectReference: {fileID: 0}
+    - target: {fileID: 8042275409720694268, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_TagString
+      value: Color
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

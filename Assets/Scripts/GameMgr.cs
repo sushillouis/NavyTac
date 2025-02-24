@@ -52,6 +52,7 @@ public class GameMgr : MonoBehaviour
             minusButton.onClick.RemoveAllListeners();
             minusButton.onClick.AddListener(() => DeltaScale(-1));
         }
+        
     }
 
     void Update()
