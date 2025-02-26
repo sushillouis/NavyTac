@@ -1,13 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum FormationType { Line, Wedge, Circle }
-
 public class GroupMove : Move
 {
     public List<Entity> groupMembers;
     public FormationType formationType;
-    public float formationSpacing = 400f;
+    public float formationSpacing = 300f;
     
     private Vector3 _destination;
     private Vector3 _formationRight;
@@ -83,6 +81,45 @@ public class GroupMove : Move
                 float radius = formationSpacing * groupMembers.Count / (2 * Mathf.PI);
                 Vector3 offset = Quaternion.Euler(0, angle, 0) * _formationForward * radius;
                 movePosition = _destination + offset;
+                break;
+
+            case FormationType.Vee:
+                if (_entityIndex == 0)
+                {
+                    // Leader stays at destination (back of formation)
+                    movePosition = _destination;
+                }
+                else
+                {
+                    int adjustedIndex = _entityIndex - 1; // Start counting from 0 after leader
+                    int row_Vee = (adjustedIndex / 2) + 1;    // Each row contains 2 entities
+                    bool isLeftSide = (adjustedIndex % 2) == 0;
+
+                    // Calculate offsets
+                    float xOffset_Vee = (isLeftSide ? -1 : 1) * row_Vee * formationSpacing/4;
+                    float zOffset_Vee = row_Vee * formationSpacing/4; // Negative for positions BEHIND leader
+
+                    movePosition = _destination + 
+                        (_formationForward * zOffset_Vee) + 
+                        (_formationRight * xOffset_Vee);
+                }
+                break;
+            case FormationType.InvertedVee:
+                if (_entityIndex == 0)
+                {
+                    movePosition = _destination;
+                }
+                else
+                {
+                    int sideIndex = _entityIndex - 1;
+                    int row_Ivee = (sideIndex / 2) + 1;
+                    bool isLeft = (sideIndex % 2) == 0;
+                    float xOffset_Ivee = (isLeft ? -1 : 1) * row_Ivee * formationSpacing;
+                    float zOffset_Ivee = -row_Ivee * formationSpacing; // Negative for positions BEHIND leader
+                    movePosition = _destination + 
+                        (_formationForward * zOffset_Ivee) + 
+                        (_formationRight * xOffset_Ivee);
+                }
                 break;
 
             default: // Line formation

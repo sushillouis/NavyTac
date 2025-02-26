@@ -142,7 +142,7 @@ public class AIMgr : NetworkBehaviour
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
     public void HandleMove(List<Entity> entities, Vector3 point, 
                       bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false,
-                      FormationType formationType = FormationType.Wedge, float formationRadius = 200f)
+                      FormationType formationType = FormationType.Circle, float formationRadius = 200f)
 {
     if(isLocalCommand)
     {

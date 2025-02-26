@@ -116,3 +116,29 @@ public enum TactCommandTypes
     Intercept,
     Intercept3d,
 }
+
+[Serializable]
+public enum AIState
+{
+    None = 0,
+    Move,
+    Attack,
+    Flee,
+    Scout,
+    Patrol,
+    Chase,
+    Dead,
+    Orbit,
+    GroupMove,
+}
+
+[Serializable]
+
+public enum FormationType
+{
+    Line = 0,
+    Wedge,
+    Circle,
+    Vee,
+    InvertedVee
+}

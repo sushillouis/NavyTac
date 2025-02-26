@@ -875,7 +875,7 @@ MonoBehaviour:
   gridCellSize: 10
   revelers: []
   nonRevelers: []
-  fogRevealRadius: 500
+  fogRevealRadius: 1000
   fogComputeShader: {fileID: 7200000, guid: c1791acc49869e640a6dead7d276576f, type: 3}
   updateInterval: 0.1
   visibilityCheckInterval: 0.2
@@ -2569,7 +2569,6 @@ Transform:
   - {fileID: 1796549058}
   - {fileID: 684643217}
   - {fileID: 1540707792}
-  - {fileID: 1653967429}
   m_Father: {fileID: 1708907977}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &639876783
@@ -2589,11 +2588,11 @@ MonoBehaviour:
   potentialDistanceThresholdSq: 10000000
   attractionCoefficient: 20000
   attractiveExponent: -1
-  repulsiveCoefficient: 500
-  groupRepulsiveCoefficient: 250
+  repulsiveCoefficient: 5000
+  groupRepulsiveCoefficient: 2500
   repulsiveExponent: -2
-  repulsive2Coefficient: 1000
-  attraction2Coefficient: 200
+  repulsive2Coefficient: 5000
+  attraction2Coefficient: 10000
   layerMask: 0
 --- !u!65 &639876784
 BoxCollider:
@@ -3601,8 +3600,8 @@ MonoBehaviour:
   playerColors:
   - {r: 0, g: 1, b: 0.19607843, a: 1}
   - {r: 1, g: 0.19607843, b: 0.19607843, a: 1}
-  - {r: 0, g: 1, b: 0.9142871, a: 1}
   - {r: 0, g: 0.19607843, b: 1, a: 1}
+  - {r: 0, g: 1, b: 0.9142871, a: 1}
   - {r: 0.9048767, g: 1, b: 0, a: 1}
   - {r: 0.9472699, g: 0, b: 1, a: 1}
   - {r: 1, g: 0.47452188, b: 0, a: 1}
@@ -3739,13 +3738,7 @@ MonoBehaviour:
   initZ: 0
   entityQuantities:
   - entityType: 0
-    unitCount: 2
-  - entityType: 12
-    unitCount: 5
-  - entityType: 10
-    unitCount: 5
-  - entityType: 9
-    unitCount: 10
+    unitCount: 9
   players: 0
   sameEnityForAll: 1
   posPlayer1: {x: 100, y: 0, z: -7000}
@@ -5069,56 +5062,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 958908199}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1653967428
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1653967429}
-  - component: {fileID: 1653967430}
-  m_Layer: 0
-  m_Name: DistanceMgrGpu
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1653967429
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1653967428}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 639876782}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1653967430
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1653967428}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 805bd3fa680586f47a42878cd674ef4b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  distanceComputeShader: {fileID: 7200000, guid: 23e05e21e3263db40ba7514cb83364b1,
-    type: 3}
-  kernelMainPotentials: 0
-  kernelSubPotentials: 0
-  allPfPositions: []
-  initialized: 0
 --- !u!1 &1664575454
 GameObject:
   m_ObjectHideFlags: 0
@@ -5577,26 +5520,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1796549057}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc331097491174f41b1d50a6c2e61adf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  clusterThreshold: 3000
+  formationRadius: 300
   currentLevel: 1
-  levelTransitionDistance: 5000
-  attackLevel: 1
-  maxScoutRadius: 4000
-  maxScouts: 4
-  targetSwitchDistance: 2000
-  minScoutSpeed: 10
-  fixedSeed: 12345
-  orbitSmoothTime: 2
-  headingSmoothness: 2
-  avoidanceWeight: 3
-  attackFormationRadius: 400
-  attackFormationType: 2
-  potentialScouts: []
-  scoutRegions: []
+  drawDebugVisuals: 1
 --- !u!1 &1852731777
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,7 +16,7 @@ int NonRevealerCount;
 RWStructuredBuffer<float> Grid;
 RWStructuredBuffer<float> VisitedGrid;
 StructuredBuffer<float4> Entities;
-StructuredBuffer<float4> NonRevealers;
+StructuredBuffer<float4> NonRevelers;
 RWStructuredBuffer<uint> VisibilityResults;
 RWTexture2D<float4> FogTexture;
 
@@ -83,7 +83,7 @@ void CalculateVisibility(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= NonRevealerCount) return;
 
-    float4 entity = NonRevealers[id.x];
+    float4 entity = NonRevelers[id.x];
     float2 entityPos = entity.xz;
     float visionRadius = entity.w;
     
