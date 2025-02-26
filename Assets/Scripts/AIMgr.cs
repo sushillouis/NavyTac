@@ -158,7 +158,7 @@ public class AIMgr : NetworkBehaviour
             GroupMove gm = new GroupMove(entity, point, entities) 
             {
                 maxSpeedMovement = maxSpeedMovement,
-                formationType = FormationType.Circle // Default formation
+                formationType = formationType // Default formation
             };
             
             UnitAI uai = entity.GetComponentInChildren<UnitAI>();

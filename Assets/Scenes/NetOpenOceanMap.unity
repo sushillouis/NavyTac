@@ -865,7 +865,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65cfb1489ff408b4abaedfa9abb7f27d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FOW: 1
+  FOW: 0
   playerSide: 0
   fogMaterial: {fileID: 2100000, guid: 043fa474478025747b66fd0c85b9458c, type: 2}
   fogPlaneSize: {x: 18520, y: 18520}
@@ -3738,7 +3738,7 @@ MonoBehaviour:
   initZ: 0
   entityQuantities:
   - entityType: 0
-    unitCount: 9
+    unitCount: 20
   players: 0
   sameEnityForAll: 1
   posPlayer1: {x: 100, y: 0, z: -7000}
@@ -5525,7 +5525,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc331097491174f41b1d50a6c2e61adf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clusterThreshold: 3000
+  clusterThreshold: 400
   formationRadius: 300
   currentLevel: 1
   drawDebugVisuals: 1

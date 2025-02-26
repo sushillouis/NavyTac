@@ -163,7 +163,7 @@ public class EnemyAIMgr : MonoBehaviour
             false,
             false,
             true,
-            FormationType.Circle,
+            FormationType.Vee,
             formationRadius
         );
 

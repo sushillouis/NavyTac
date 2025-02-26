@@ -84,20 +84,22 @@ public class GroupMove : Move
                 break;
 
             case FormationType.Vee:
+    // Leader is at the front of the Vee formation
                 if (_entityIndex == 0)
                 {
-                    // Leader stays at destination (back of formation)
-                    movePosition = _destination;
+                    int totalRows = Mathf.CeilToInt((groupMembers.Count - 1) / 3f);
+                    float zLeaderOffset = -totalRows * (formationSpacing /2f);
+                    movePosition = _destination + _formationForward * zLeaderOffset;
                 }
                 else
                 {
-                    int adjustedIndex = _entityIndex - 1; // Start counting from 0 after leader
-                    int row_Vee = (adjustedIndex / 2) + 1;    // Each row contains 2 entities
+                    int adjustedIndex = _entityIndex - 1;
+                    int row_Vee = adjustedIndex / 2; // 0-based row
                     bool isLeftSide = (adjustedIndex % 2) == 0;
 
-                    // Calculate offsets
-                    float xOffset_Vee = (isLeftSide ? -1 : 1) * row_Vee * formationSpacing/4;
-                    float zOffset_Vee = row_Vee * formationSpacing/4; // Negative for positions BEHIND leader
+                    int totalRows = Mathf.CeilToInt((groupMembers.Count - 1) / 2f);
+                    float zOffset_Vee = -(totalRows - row_Vee - 1) * (formationSpacing /3f);
+                    float xOffset_Vee = (isLeftSide ? -1 : 1) * (row_Vee + 1) * (formationSpacing /3f);
 
                     movePosition = _destination + 
                         (_formationForward * zOffset_Vee) + 
