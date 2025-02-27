@@ -2498,9 +2498,6 @@ MonoBehaviour:
   PitchNode: {fileID: 1576919499}
   RollNode: {fileID: 1664575454}
   myCamera: {fileID: 0}
-  currentXPosition: 0
-  currentYPosition: 0
-  currentZPosition: 0
   cameraMoveSpeed: 100
   heightSensitivty: 5
   maxCameraHeight: 9600
@@ -2508,12 +2505,6 @@ MonoBehaviour:
   cameraTurnRate: 30
   currentYawEulerAngles: {x: 0, y: 0, z: 0}
   currentPitchEulerAngles: {x: 0, y: 0, z: 0}
-  minX: -9000
-  maxX: 9000
-  minZ: -9000
-  maxZ: 9000
-  tiltStartHeight: 250
-  maxTiltAngle: 90
   isRTSMode: 1
 --- !u!1 &591780678
 GameObject:
@@ -3856,13 +3847,11 @@ MonoBehaviour:
   - entityType: 16
     unitCount: 1
   - entityType: 0
-    unitCount: 2
-  - entityType: 12
-    unitCount: 5
+    unitCount: 8
   - entityType: 10
-    unitCount: 5
+    unitCount: 8
   - entityType: 9
-    unitCount: 5
+    unitCount: 8
   players: 0
   sameEnityForAll: 1
   posPlayer1: {x: 0, y: 0, z: -7000}
@@ -5649,7 +5638,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc331097491174f41b1d50a6c2e61adf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseAttackRadius: 1000
+  baseAttackRadius: 800
   currentLevel: 1
   drawDebugVisuals: 1
   aiEntities: []
@@ -6024,7 +6013,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1984131664
 Transform:
   m_ObjectHideFlags: 0
@@ -6136,7 +6125,7 @@ Transform:
   m_GameObject: {fileID: 1991371576}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 300, z: -800}
+  m_LocalPosition: {x: 0, y: 300, z: -1000}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
