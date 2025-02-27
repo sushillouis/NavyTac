@@ -24,6 +24,7 @@ public enum EntityType
     CVN75,
     Submarine,
     AntiShipMissile,
+    Rig_Balder,
 }
 
 [Serializable]
@@ -75,6 +76,7 @@ public enum EntityRole
     Bomber,
     CAP,
     SEAD,
+    Base
 }
 
 [Serializable]

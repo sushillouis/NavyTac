@@ -6,11 +6,11 @@ using UnityEngine;
 public class FogWarMgr : MonoBehaviour
 {
     public bool FOW;
-    public PlayerSide playerSide;
+    public List<PlayerSide> playerSide;
     
     [Header("Fog Plane Settings")]
     public Material fogMaterial;
-    public Vector2 fogPlaneSize = new Vector2(18250f, 18250f);
+    public Vector2 fogPlaneSize = new Vector3(18250f, 18250f,18250f);
     public float heightAboveMap = 50f;
     public Color previouslyRevealedColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
     public Color fogColor = new Color(0.05f, 0.05f, 0.05f, 0f);
@@ -60,7 +60,7 @@ public class FogWarMgr : MonoBehaviour
         InitializeFogPlane();
         InitializeGrid();
         InitializeComputeResources();
-        lastPlayerSide = playerSide;
+        // lastPlayerSide = playerSide;
     }
 
     // void OnValidate()
@@ -193,16 +193,18 @@ public class FogWarMgr : MonoBehaviour
 
     void UpdateFog()
     {
+        
+        
         revelers = EntityMgr.inst.entities.FindAll(entity => 
             entity != null && 
             entity.owner != null && 
-            entity.owner.isObserver != true &&
-            entity.owner.playerSide == playerSide);
-        
+            playerSide.Contains(entity.owner.playerSide));
+
         nonRevelers = EntityMgr.inst.entities.FindAll(entity => 
             entity != null && 
             entity.owner != null && 
-            entity.owner.playerSide != playerSide);
+            !playerSide.Contains(entity.owner.playerSide));
+        
 
         if (revelers.Count == 0) return;
         
@@ -267,6 +269,9 @@ public class FogWarMgr : MonoBehaviour
         {
             bool isVisible = results[i] != 0;
             nonRevelers[i].transform.GetChild(0).gameObject.SetActive(isVisible);
+            if(nonRevelers[i].entityType == EntityType.Rig_Balder) {
+                nonRevelers[i].transform.gameObject.SetActive(isVisible);
+            }
         }
     }
 

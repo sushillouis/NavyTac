@@ -142,7 +142,7 @@ public class AIMgr : NetworkBehaviour
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
     public void HandleMove(List<Entity> entities, Vector3 point, 
                       bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false,
-                      FormationType formationType = FormationType.Circle, float formationRadius = 200f)
+                      FormationType formationType = FormationType.Circle, float formationRadius = 200f, bool groupMove = false)
 {
     if(isLocalCommand)
     {
@@ -150,7 +150,7 @@ public class AIMgr : NetworkBehaviour
     }
 
     // Use GroupMove for multiple entities, regular Move for single
-    if(entities.Count > 1)
+    if(entities.Count > 1 && groupMove)
     {
         // Create shared group command for all entities
         foreach(Entity entity in entities)
@@ -320,6 +320,8 @@ public class AIMgr : NetworkBehaviour
         }
         
     }
+
+   
     //Networking -----------------------------------------------------------------
 }
 

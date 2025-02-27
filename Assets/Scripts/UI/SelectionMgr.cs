@@ -29,7 +29,9 @@ public class SelectionMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(selectedEntities.Count > 1) {
+            DeselectEntity(selectedEntities.Find(x => x.entityType == EntityType.Rig_Balder));
+        }
     }
     public void StartBoxSelecting()
     {

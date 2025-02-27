@@ -29,6 +29,7 @@ public class EntityMgr : MonoBehaviour
    }
 
     public GameObject movableEntitiesRoot;
+    public GameObject nonMoveableEntitiesRoot;
     public List<GameObject> entityPrefabs;
     public GameObject entitiesRoot;
     public List<Entity> entities;
@@ -216,7 +217,10 @@ public class EntityMgr : MonoBehaviour
     }
 
     public void DestroyEntity(Entity entity)
-    {
+    {       
+        if (entity.entityType == EntityType.Rig_Balder){
+                return;
+            }
             entity.GetComponentInChildren<OrientedPhysics>().enabled = false;
             entity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
             Vector3 deadRot = transform.localEulerAngles;

@@ -32,6 +32,7 @@ public class LineMgr : MonoBehaviour
     public List<LineRenderer> lines = new List<LineRenderer>();
     public LineRenderer CreateMoveLine(Vector3 p1, Vector3 p2)
     {
+        
         LineRenderer lr = Instantiate<LineRenderer>(MovePrefab, transform);
         lr.SetPosition(0, p1);
         lr.SetPosition(1, p2);

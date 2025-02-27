@@ -46,6 +46,9 @@ public class UnitAI : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (EntityType.Rig_Balder == entity.entityType) {
+            return;
+        }
         // Debug.Log(entity.name +""+commands.Count);
         if (commands.Count > 0) {
             if (commands[0].IsDone()) {
@@ -157,6 +160,7 @@ public class UnitAI : MonoBehaviour
     //decoration logic (UI logic) in general is always convoluted. Ugh
     public void Decorate(Command prior, Command current)
     {
+        if(FogWarMgr.inst.nonRevelers.Contains(entity)) return;
         if (current.line != null) {
             current.line.gameObject.SetActive(entity.isSelected);
             if (prior == null)
@@ -184,12 +188,13 @@ public class UnitAI : MonoBehaviour
         //potential fields lines
         if(!(current is Follow) && !(current is Intercept) && AIMgr.inst.isPotentialFieldsMovement){ 
             Move m = current as Move;
-            m.potentialLine.SetPosition(0, entity.position);
+            if(!FogWarMgr.inst.nonRevelers.Contains(entity)) m.potentialLine.SetPosition(0, entity.position);
             Vector3 newpos = Vector3.zero;
             newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
             newpos.z = Mathf.Cos(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;
             newpos *= 20;
             newpos.y = 1;
+            
             m.potentialLine.SetPosition(1, entity.position + newpos);
             m.potentialLine.gameObject.SetActive(entity.isSelected);
         }

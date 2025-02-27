@@ -18,10 +18,13 @@ public class Move : Command
     public LineRenderer potentialLine;
     public override void Init() {
         //Debug.Log("MoveInit:\tMoving to: " + movePosition);
-        line = LineMgr.inst.CreateMoveLine(entity.position, movePosition);
-        line.gameObject.SetActive(false);
-        potentialLine = LineMgr.inst.CreatePotentialLine(entity.position);
-        potentialLine.gameObject.SetActive(false);
+        if(!FogWarMgr.inst.nonRevelers.Contains(entity)) {
+            line = LineMgr.inst.CreateMoveLine(entity.position, movePosition);
+            line.gameObject.SetActive(false);
+            potentialLine = LineMgr.inst.CreatePotentialLine(entity.position);
+            potentialLine.gameObject.SetActive(false);
+        }
+        
     }
 
     public override void Tick() {
@@ -42,7 +45,7 @@ public class Move : Command
 
         entity.desiredHeading = dhds.dh;
         entity.desiredSpeed = dhds.ds;
-        line.SetPosition(1, movePosition);
+        if(!FogWarMgr.inst.nonRevelers.Contains(entity))  line.SetPosition(1, movePosition);
 
         range = diffToMovePosition.magnitude;
         timeOnTarget = range / entity.speed;

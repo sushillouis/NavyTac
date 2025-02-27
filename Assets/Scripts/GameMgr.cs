@@ -44,6 +44,7 @@ public class GameMgr : MonoBehaviour
     {
         // Disable movable entities container if applicable.
         EntityMgr.inst.movableEntitiesRoot.SetActive(false);
+        EntityMgr.inst.nonMoveableEntitiesRoot.SetActive(false);
 
         if (plusButton != null && minusButton != null)
         {
@@ -195,6 +196,7 @@ public class GameMgr : MonoBehaviour
 
 public List<EntityType> priorityList = new List<EntityType>()
     {
+        EntityType.Rig_Balder,
         EntityType.CVN75,
         EntityType.Submarine,
         EntityType.DDG51,
