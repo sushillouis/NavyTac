@@ -2268,7 +2268,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   logLevel: 1
-  modelPath: Whisper/ggml-large-v2.bin
+  modelPath: Whisper/ggml-large-v3-turbo.bin
   isModelPathInStreamingAssets: 1
   initOnAwake: 1
   language: en
@@ -4270,7 +4270,7 @@ MonoBehaviour:
   minusButton: {fileID: 6012287531714796468}
   simSpeedButtonText: {fileID: 6012287531714796467}
   timeScale: 1
-  chaos: 0
+  chaos: 1
 --- !u!1 &1142393662
 GameObject:
   m_ObjectHideFlags: 0
