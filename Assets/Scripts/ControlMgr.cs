@@ -51,7 +51,7 @@ public class ControlMgr : NetworkBehaviour
         Debug.Log("Angle set to: " + angle);
         if(IsOwner && SelectionMgr.inst.selectedEntity != null)
             SelectionMgr.inst.selectedEntity.desiredHeading = Utils.Degrees360(angle);
-        if(!IsOwner)
+        if(!IsOwner && NetDebugConsole.inst)
             NetDebugConsole.inst.Log("Cannot control me: " + SelectionMgr.inst.selectedEntity.name);
     }
 

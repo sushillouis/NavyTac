@@ -2252,6 +2252,7 @@ Transform:
   - {fileID: 152115333}
   - {fileID: 1941202374}
   - {fileID: 746089595}
+  - {fileID: 1997607674}
   m_Father: {fileID: 1708907977}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &574295965
@@ -2267,7 +2268,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   logLevel: 1
-  modelPath: Whisper/ggml-base.bin
+  modelPath: Whisper/ggml-large-v2.bin
   isModelPathInStreamingAssets: 1
   initOnAwake: 1
   language: en
@@ -2589,7 +2590,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4015930002
+  GlobalObjectIdHash: 2854017834
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -2894,6 +2895,7 @@ MonoBehaviour:
   fullCommand: 
   rectPos: {x: 0, y: 0, z: 0}
   pauseTimer: 2
+  tester: {fileID: 1997607675}
 --- !u!114 &772865853 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5230200808471013758, guid: 3769d37cb4868da47b56c4040c02c3a9,
@@ -4268,6 +4270,7 @@ MonoBehaviour:
   minusButton: {fileID: 6012287531714796468}
   simSpeedButtonText: {fileID: 6012287531714796467}
   timeScale: 1
+  chaos: 0
 --- !u!1 &1142393662
 GameObject:
   m_ObjectHideFlags: 0
@@ -7262,6 +7265,73 @@ Transform:
   - {fileID: 358051249}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1997607673
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1997607674}
+  - component: {fileID: 1997607675}
+  m_Layer: 0
+  m_Name: Tester
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1997607674
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1997607673}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 574295964}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1997607675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1997607673}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69884ba4a82e7a24c87aee2aa756970a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  testAudios:
+  - {fileID: 8300000, guid: 1012af267d6cabc41b809379c05e0841, type: 3}
+  - {fileID: 8300000, guid: fd808b7f51117994282e0c7a0342c972, type: 3}
+  - {fileID: 8300000, guid: 05e42398eae804e4d9b1abac3337a31f, type: 3}
+  - {fileID: 8300000, guid: b923b0321ac02bf4888060148dfe5983, type: 3}
+  - {fileID: 8300000, guid: 776cba420313813429cc1ca793735da2, type: 3}
+  - {fileID: 8300000, guid: 828c12ad1915ee04187f7e17e1a9e327, type: 3}
+  - {fileID: 8300000, guid: ecbadc8d5ce17804c839e3e16ba27556, type: 3}
+  - {fileID: 8300000, guid: 0ae4f7b757f04ba47a401ee4b4d709f6, type: 3}
+  - {fileID: 8300000, guid: dad7ecda927374548b056ed73d67d1cf, type: 3}
+  testAnswers:
+  - attack furthest ally
+  - attack nearest enemy
+  - group selected
+  - group unselected
+  - move all to specfifc ally group
+  - move all to specfifc enemy single
+  - select all on left
+  - select all on right
+  - select all on screen
+  testInfo: []
+  mic: {fileID: 1941202375}
+  streamingToCommand: {fileID: 746089596}
 --- !u!1 &2013597644
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,7 +11,8 @@ using System;
 public class WhisperMic : MonoBehaviour
 {
     public WhisperManager whisper;
-    public AltMicRecord microphoneRecord;
+    public MicrophoneRecord microphoneRecord;
+    public StreamingToCommand streamingToCommand;
     public bool streamSegments = true;
     public bool printLanguage = false;
     // public TextToCommand textToCommand;
@@ -19,6 +20,7 @@ public class WhisperMic : MonoBehaviour
     [Header("UI Mandatory")] 
     public Button button;
     [Header("UI Optional")] 
+    public Button clearButton;
     public TMP_Text buttonText;
     public Text outputText;
     public Text timeText;
@@ -33,6 +35,14 @@ public class WhisperMic : MonoBehaviour
     {
         button.image.color=Color.red;
         button.onClick.AddListener(OnButtonPressed);
+        streamingToCommand.Init();
+        if(clearButton) {
+            clearButton.onClick.AddListener(ResetCommand);
+            clearButton.gameObject.SetActive(true);
+        }
+        if (buttonText)
+            buttonText.text = microphoneRecord.IsRecording ? "Stop" : "Record";
+
 
         if(languageDropdown)
         {
@@ -46,11 +56,15 @@ public class WhisperMic : MonoBehaviour
             translateToggle.onValueChanged.AddListener(OnTranslateChanged);
         }
         microphoneRecord.OnRecordStop += Transcribe;
-        microphoneRecord.OnRecordTick += Transcribe;
         
         if (streamSegments)
             whisper.OnNewSegment += WhisperOnOnNewSegment;
         whisper.OnProgress += OnProgressHandler;
+    }
+
+    private void ResetCommand() {
+        streamingToCommand.Stop();
+        streamingToCommand.Init();
     }
 
     private void OnButtonPressed()
@@ -59,28 +73,17 @@ public class WhisperMic : MonoBehaviour
         {
             button.image.color=Color.green;
             microphoneRecord.StartRecord();
+            clearButton.gameObject.SetActive(false);
         }
         else
         {
             button.image.color=Color.red;
             microphoneRecord.StopRecord();
+            clearButton.gameObject.SetActive(true);
+            // streamingToCommand.Stop();
         }
         if (buttonText)
             buttonText.text = microphoneRecord.IsRecording ? "Stop" : "Record";
-    }
-
-    [SerializeField] float voiceChunkLength = 2;
-    float voiceTimer = 0;
-
-    void Update()
-    {
-        if(microphoneRecord.IsRecording) {
-            voiceTimer+=Time.deltaTime;
-            if(voiceTimer>=voiceChunkLength) {
-                microphoneRecord.RealTimeRecord();
-                voiceTimer=0;
-            }
-        }
     }
     
     private void OnLanguageChanged(int ind)
@@ -94,7 +97,11 @@ public class WhisperMic : MonoBehaviour
         whisper.translateToEnglish = translate;
     }
 
-    private async void Transcribe(AudioChunk recordedAudio)
+    public async void Transcribe(AudioChunk recordedAudio) {
+        Transcribe(recordedAudio,-1);
+    }
+
+    public async void Transcribe(AudioChunk recordedAudio, int testID=-1)
     {
         _buffer = "";
         
@@ -118,8 +125,10 @@ public class WhisperMic : MonoBehaviour
             text += $"\n\nLanguage: {res.Language}";
         if(outputText)
             outputText.text = text;
-        // if(textToCommand)
-        //     textToCommand.TTC(text);
+        if(streamingToCommand) {
+            streamingToCommand.ProcessResult(text,testID,time);
+            streamingToCommand.ProcessResult(text,testID,time);
+        }
     }
     
     private void WhisperOnOnNewSegment(WhisperSegment segment)

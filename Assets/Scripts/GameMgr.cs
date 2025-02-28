@@ -39,6 +39,8 @@ public class GameMgr : MonoBehaviour
     private TextMeshProUGUI simSpeedButtonText;
 
     public float timeScale = 1;
+    [Header("Debug")]
+    public bool chaos = false;
 
     // Update is called once per frame
     void Update()
@@ -126,12 +128,12 @@ public class GameMgr : MonoBehaviour
     public void OpenOcean1x1() {
         Vector3 posPlayer1 = new Vector3(0, 0, 0);
         Vector3 posPlayer2 = new Vector3(0, 0, 1 * Utils.FromNauticalMiles);
-        MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1);
-        MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
+        MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1,chaos);
+        MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2,chaos);
 
     }
 
-    public void MakeEntsForPlayer(Vector3 initPos, float initHeading, TactPlayer player) {
+    public void MakeEntsForPlayer(Vector3 initPos, float initHeading, TactPlayer player, bool chaos = false) {
         Vector3 eulerAngles = new Vector3(0, initHeading, 0);
         Entity initEnt = EntityMgr.inst.CreateEntity(EntityType.CVN75, initPos, eulerAngles, player);
         Entity tmpEnt;
@@ -156,24 +158,35 @@ public class GameMgr : MonoBehaviour
         //Escort on left
         offset = -initEnt.transform.right * 1000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
-        /*
+        
         //USV on left
         offset = -initEnt.transform.right * 500;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
 
         offset = initEnt.transform.forward * 500;
         offset.x -= 250;
-        for(int i = 0; i < 5; i++) {
+        for(int i = 0; i < 9; i++) {
             tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);
             offset.x += 100;
         }
         offset = -initEnt.transform.forward * 500;
         offset.x -= 200;
-        for(int i = 0; i < 5; i++) {
+        for(int i = 0; i < 9; i++) {
             tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);
             offset.x += 100;
         }
-        */
+        
+        if(chaos) {
+            Invoke(nameof(ChaosMove),.5f);
+        }
+        
+    }
+
+    public void ChaosMove() {
+        foreach (Entity ent in EntityMgr.inst.entities) {
+                ent.ai.StopAndRemoveAllCommands();
+                ent.ai.AddCommand(new Move(ent, new(Random.value*100000f,0,Random.value*100000f)));
+            }
     }
 
 }

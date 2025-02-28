@@ -22,14 +22,15 @@ public class StreamingToCommand: MonoBehaviour
     [SerializeField] Vector3 rectPos = Vector3.zero;
     bool pause = false;
     [SerializeField] float pauseTimer = 2f;
-    public void ProcessResult(string result) {
-        if(pause || fullCommand.Length>50) {
+    [SerializeField] WhisperTester tester;
+    public void ProcessResult(string result,int testID=-1,float time = 0f) {
+        if(pause || fullCommand.Length>250) {
             return;
         }
         result = WordCleanup.StripPunctuation(result);
         string[] tokens = result.Split(' ');
         bool executeCommand = false;
-        for (int i = 0;i<tokens.Length && fullCommand.Length<50;i++) {
+        for (int i = 0;i<tokens.Length && fullCommand.Length<250;i++) {
             string word = tokens[i];
             long temp = WordCleanup.ConvertToNumbers(word,out bool flag);
             if(flag) {
@@ -72,12 +73,16 @@ public class StreamingToCommand: MonoBehaviour
                 }
             }
         }
-        if(executeCommand) {
+        if(executeCommand || testID>=0) {
             if(currentOptionsScroll!=null) {
                 Destroy(currentOptionsScroll);
             }
             Debug.Log(fullCommand);
-            ExecuteCommand(fullCommand);
+            tester.ValidateResult(fullCommand,testID);
+            tester.LogTime(time,1f/Time.deltaTime,testID);
+            if(testID<0) {
+                ExecuteCommand(fullCommand);
+            }
             pause=true;
             Stop();
             Invoke(nameof(Init), pauseTimer);
@@ -92,6 +97,7 @@ public class StreamingToCommand: MonoBehaviour
 
     public void ExecuteCommand(string command) {
         System.Collections.IEnumerator tokens = command.Split(' ').GetEnumerator();
+        List<Entity> importantEnts = new();
         if(!tokens.MoveNext()) return;
         if((string)tokens.Current=="select") {
             if(!tokens.MoveNext()) return;
@@ -109,7 +115,8 @@ public class StreamingToCommand: MonoBehaviour
             if(!tokens.MoveNext()) return;
             int dirFlag = 0;
             bool allyFlag=false;
-            if((string)tokens.Current=="farthest") {
+            importantEnts = EntityMgr.inst.entities.FindAll((Entity ent) => ent.owner == PlayerMgr.inst.localPlayer);
+            if((string)tokens.Current=="furthest") {
                 dirFlag = 1;
                 if(!tokens.MoveNext()) return;
             } else if((string)tokens.Current=="nearest") {
@@ -118,49 +125,75 @@ public class StreamingToCommand: MonoBehaviour
             } else if((string)tokens.Current=="specific") {
                 if(!tokens.MoveNext()) return;
             }
-            if(dirFlag!=0) {
-                // if((string)tokens.Current=="ally") {
-                //     allyFlag=true;
-                // }
-                ExecuteDynamicAttack(dirFlag,allyFlag);
-            } else {
 
+            ExecuteDynamicAction(importantEnts,dirFlag,allyFlag,true);
+            
+
+        } else if((string)tokens.Current=="move") {
+            if(!tokens.MoveNext()) return;
+            if((string)tokens.Current=="all") {
+                if(!tokens.MoveNext()) return;
+                importantEnts = EntityMgr.inst.entities.FindAll((Entity ent) => ent.owner == PlayerMgr.inst.localPlayer);
+            } else if((string)tokens.Current=="selected") {
+                if(!tokens.MoveNext()) return;
+                importantEnts = SelectionMgr.inst.selectedEntities;
             }
+
+            if(!tokens.MoveNext()) return; // "to"
+            int dirFlag = 0;
+            bool allyFlag=false;
+            if((string)tokens.Current=="furthest") {
+                dirFlag = 1;
+                if(!tokens.MoveNext()) return;
+            } else if((string)tokens.Current=="nearest") {
+                dirFlag = -1;
+                if(!tokens.MoveNext()) return;
+            } else if((string)tokens.Current=="specific") {
+                if(!tokens.MoveNext()) return;
+            }
+
+            ExecuteDynamicAction(importantEnts,dirFlag,allyFlag,false);
 
         }
     }
 
-    public void ExecuteDynamicAttack(int dirFlag, bool allyFlag) {
+    public void ExecuteDynamicAction(List<Entity> importantEnts, int dirFlag, bool allyFlag, bool attackFlag) {
         TactPlayer player = PlayerMgr.inst.localPlayer;
-        List<Entity> ents = SelectionMgr.inst.selectedEntities;
         Vector3 center = Vector3.zero;
 
-        foreach(Entity ent in ents) {
+        foreach(Entity ent in importantEnts) {
             center += ent.position;
         }
-        center/=ents.Count;
+        center/=importantEnts.Count;
 
-        if(allyFlag) {
+        if(allyFlag && attackFlag) {
             Debug.LogWarning("Attacking Ally, currently not implemented");
             return;
         }
 
         float disValue = dirFlag < 0 ? float.MaxValue : float.MinValue;
-        int closestIndex = 0;
+        int foundIndex = 0;
 
         for(int i =0; i<EntityMgr.inst.entities.Count;i++) {
-            if(EntityMgr.inst.entities[i].owner==player) {
+            if((EntityMgr.inst.entities[i].owner==player && !allyFlag) || (EntityMgr.inst.entities[i].owner!=player && allyFlag)) {
                 continue;
             }
             float dist = Vector3.Distance(center,EntityMgr.inst.entities[i].position);
             if((dirFlag<0 && dist<disValue) || dist>disValue) {
-                closestIndex = i;
+                foundIndex = i;
                 disValue=dist;
             }
         }
-
-        foreach(Entity ent in ents) {
-            ent.ai.AddCommand(new Intercept(ent,EntityMgr.inst.entities[closestIndex]));
+        if(attackFlag) {
+            foreach(Entity ent in importantEnts) {
+                ent.ai.StopAndRemoveAllCommands();
+                ent.ai.AddCommand(new Intercept(ent,EntityMgr.inst.entities[foundIndex]));
+            }
+        } else {
+            foreach(Entity ent in importantEnts) {
+                ent.ai.StopAndRemoveAllCommands();
+                ent.ai.AddCommand(new Move(ent,EntityMgr.inst.entities[foundIndex].position));
+            }
         }
     }
 
@@ -234,7 +267,7 @@ static class WordCleanup
             (2,"1/2"),
             (2,"all")
         }}, {"attack", new(){
-            (0,"farthest"),
+            (0,"furthest"),
             (0,"nearest"),
             (0, "specific")
         }}, {"move", new(){
@@ -243,7 +276,7 @@ static class WordCleanup
         }}, {"selected", new(){
             (-1,"to"),
         }}, {"to", new(){
-            (0,"farthest"),
+            (0,"furthest"),
             (0,"nearest"),
             (0, "specific")
         }}, {"specific", new(){
@@ -252,7 +285,7 @@ static class WordCleanup
         }}, {"group", new(){
             (1,"selected"),
             (1,"unselected"),
-        }}, {"farthest", new(){
+        }}, {"furthest", new(){
             (1,"ally"),
             (1,"enemy"),
         }}, {"nearest", new(){
@@ -305,7 +338,7 @@ static class WordCleanup
     };  
 
     public static Dictionary<string,string> nearWords = new() {
-        {"father","farthest"},
+        {"father","furthest"},
         {"nami","enemy"},
         {"number","#"},
         {"pound","#"},
@@ -314,6 +347,7 @@ static class WordCleanup
         {"bye","ally"},
         {"green","screen"},
         {"clean","screen"},
+        {"unsolveable","unselected"},
     };
   
     public static long ConvertToNumbers(string numberString, out bool flag)   {  
