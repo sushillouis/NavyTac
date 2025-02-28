@@ -37,6 +37,7 @@ public class EntityMgr : MonoBehaviour
                 entity.entityId = entityId;
                 entityGo.name = et.ToString() + entityId++;
                 entity.owner = player;
+                entity.heading = entity.desiredHeading = eulerAngles.y;
                 entities.Add(entity);
                 entitiesDict.Add(entity.entityId, entity);
             }

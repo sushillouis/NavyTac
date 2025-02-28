@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 [System.Serializable]
 public class Intercept : Follow
@@ -21,31 +22,33 @@ public class Intercept : Follow
     public override void Tick()
     {
         //movePosition = targetEntity.transform.position;
-        float dh = ComputePredictiveDH(Vector3.zero);
+        float dh = ComputePredictiveDH(targetEntity.transform.position);
         entity.desiredHeading = dh;
         entity.desiredSpeed = entity.maxSpeed;
 
-        range = diff.magnitude;
+        range = diffToMovePosition.magnitude;
         timeOnTarget = range / entity.speed;
 
     }
 
     public override bool IsDone()
     {
-        return diff.sqrMagnitude < doneDistanceSq;
+        return diffToMovePosition.sqrMagnitude < doneDistanceSq;
     }
 
-    public override void Stop()
-    {
-        base.Stop();
+    public override void Stop() {
+        //base.Stop();
+
+        FXMgr.inst.CreateExplosionAt(entity.position, 1);
+
         entity.desiredSpeed = 0;
         entity.speed = 0;
+
         targetEntity.desiredSpeed = 0;
+        Vector3 sunkenOffset = new Vector3(0, -5, 0);
         targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
         targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
-        Vector3 deadRot = targetEntity.transform.localEulerAngles;
-        deadRot.z = 90;
-        targetEntity.transform.localEulerAngles = deadRot;
+        targetEntity.transform.position += sunkenOffset;
 
     }
 

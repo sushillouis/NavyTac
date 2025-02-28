@@ -50,6 +50,7 @@ public class PlayerMgr : MonoBehaviour
     //For testing;
     public TactPlayer player1;
     public TactPlayer player2;
+    public TactPlayer localPlayer;
 
 
     //Not for testing
@@ -101,7 +102,7 @@ public class PlayerMgr : MonoBehaviour
     }
 
     public TactPlayer CreateNetClientPlayer(ulong clientID) {
-        if(playerCount < 7) {
+        if(playerCount < maxPlayers) {
             TactPlayer player = CreatePlayer(OpenOceanMain.inst.playerName, clientID, sides[playerCount], playerColors[playerCount]);
             AddTestPlayer1And2(player, playerCount); //For testing
             playerCount++;
@@ -110,6 +111,18 @@ public class PlayerMgr : MonoBehaviour
         }
         return null;
     }
+
+    public TactPlayer CreateSinglePlayer(string name) {
+        if(playerCount < maxPlayers) {
+            TactPlayer player = CreatePlayer(name, (ulong) playerCount, sides[playerCount], playerColors[playerCount]);
+            AddTestPlayer1And2(player, playerCount);
+            playerCount++;
+            Debug.Log("Added player: " + player.ToString());
+            return player;
+        }
+        return null;
+    }
+
 
     public TactPlayer GetPlayer(ulong clientID) {
         if(players.Exists(x => x.playerId == clientID)) {

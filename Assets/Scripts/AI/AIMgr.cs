@@ -86,10 +86,14 @@ public class AIMgr : NetworkBehaviour
 
     public bool isPotentialFieldsMovement = false;
     public float potentialDistanceThreshold = 1000;
+    public float potentialDistanceThresholdSq = 25000000;
     public float attractionCoefficient = 500;
     public float attractiveExponent = -1;
     public float repulsiveCoefficient = 60000;
     public float repulsiveExponent = -2.0f;
+    [Header("Experimatal PF")]
+    public float repulsive2Coefficient = 1000;
+    public float attraction2Coefficient = 10000;
 
 
     public RaycastHit hit;
@@ -106,25 +110,20 @@ public class AIMgr : NetworkBehaviour
     // Does not yet handle AI players
     public void HandleCommand(Vector2 mousePos, bool intercept, bool add)
     {
-        List<Entity> commandedEntities = new List<Entity>();
-        foreach(Entity ent in SelectionMgr.inst.selectedEntities) {
-            if(ent.owner.playerId == NetworkManager.Singleton.LocalClientId)
-                commandedEntities.Add(ent);
-        }
-
-        if(commandedEntities.Count > 0) {
+       
+        if(SelectionMgr.inst.selectedEntities.Count > 0) {
             if(Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask)) {
                 //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
                 Vector3 pos = hit.point;
                 pos.y = 0;
-                Entity ent = FindClosestEntInRadius(pos, rClickRadiusSq);
+                Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
                 if(ent == null) {
-                    HandleMove(commandedEntities, pos, add);
+                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
                 } else {
                     if(intercept)
-                        HandleIntercept(commandedEntities, ent, add);
+                        HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
                     else
-                        HandleFollow(commandedEntities, ent, new Vector3(100, 0, 0), add);
+                        HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
                 }
             } else {
                 //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
@@ -134,7 +133,7 @@ public class AIMgr : NetworkBehaviour
 
     public void HandleMove(List<Entity> entities, Vector3 point, bool add, bool isLocalCommand = true)
     {    //if this machine's client commanded, then tell everyone
-        if(isLocalCommand) {
+        if(isLocalCommand ) {
             NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
         }
         //Then do the command
@@ -198,27 +197,12 @@ public class AIMgr : NetworkBehaviour
 
     }
 
-    public float rClickRadiusSq = 10000;
-    public Entity FindClosestEntInRadius(Vector3 point, float rsq)
-    {
-        Entity minEnt = null;
-        float min = float.MaxValue;
-        foreach (Entity ent in EntityMgr.inst.entities) {
-            float distanceSq = (ent.transform.position - point).sqrMagnitude;
-            if (distanceSq < rsq) {
-                if (distanceSq < min) {
-                    minEnt = ent;
-                    min = distanceSq;
-                }
-            }    
-        }
-        return minEnt;
-    }
-
     //Networking -----------------------------------------------------------------
     void NetTellAllClients(TactCommandTypes cmdType, List<Entity> entities, Vector3 pos, Entity target, bool add) {
-        TactCommandStruct netCommand = MakeNetCommandStruct(cmdType, entities, pos, target, add);
-        OpenOceanMain.inst.localTactNetMgr.CommandUpdateServerRpc(netCommand);
+        if(!OpenOceanMain.inst.isSinglePlayer) {
+            TactCommandStruct netCommand = MakeNetCommandStruct(cmdType, entities, pos, target, add);
+            OpenOceanMain.inst.localTactNetMgr.CommandUpdateServerRpc(netCommand);
+        }
     }
 
     TactCommandStruct MakeNetCommandStruct(TactCommandTypes cmdType, List<Entity> entities, Vector3 pos, Entity target, bool add) {
@@ -285,3 +269,24 @@ public class AIMgr : NetworkBehaviour
     }
     //Networking -----------------------------------------------------------------
 }
+
+
+/*
+ * 
+    public float rClickRadiusSq = 10000;
+    public Entity FindClosestEntInRadius(Vector3 point, float rsq)
+    {
+        Entity minEnt = null;
+        float min = float.MaxValue;
+        foreach (Entity ent in EntityMgr.inst.entities) {
+            float distanceSq = (ent.transform.position - point).sqrMagnitude;
+            if (distanceSq < rsq) {
+                if (distanceSq < min) {
+                    minEnt = ent;
+                    min = distanceSq;
+                }
+            }    
+        }
+        return minEnt;
+    }
+*/
