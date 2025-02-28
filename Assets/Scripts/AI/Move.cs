@@ -64,39 +64,81 @@ public class Move : Command
 
     }
 
-    public virtual DHDS ComputePotentialDHDS(Vector3 movePosition)
+   public virtual DHDS ComputePotentialDHDS(Vector3 movePosition)
+{
+    Debug.Log("ComputePotentialDHDS:\tMoving to: " + movePosition);
+    diffToMovePosition = movePosition - entity.position;
+    
+    // Initialize potentials
+    repulsivePotential = Vector3.zero;
+    attractivePotential = Vector3.zero;
+    potentialSum = Vector3.zero;
+
+    // 1. Calculate repulsion from other entities
+    foreach (Entity ent in EntityMgr.inst.entities)
     {
-        diffToMovePosition = movePosition - entity.position;
-        Potential p;
-        repulsivePotential = Vector3.one; 
-        repulsivePotential.y = 0;
-        foreach (Entity ent in EntityMgr.inst.entities) {
-            if (ent == entity) continue;
+        if (ent == entity) continue;
 
-
-            p = DistanceMgr.inst.GetPotential(entity, ent);
-            if (p.distance < AIMgr.inst.potentialDistanceThreshold) {
-                //repulsivePotential += p.direction * entity.mass *
-                repulsivePotential += p.direction * ent.mass *
-                    AIMgr.inst.repulsiveCoefficient * Mathf.Pow(p.diff.magnitude, AIMgr.inst.repulsiveExponent);
-
-            }
+        Potential p = DistanceMgr.inst.GetPotential(entity, ent);
+        if (p.distance < AIMgr.inst.potentialDistanceThreshold)
+        {
+            repulsivePotential += p.direction * ent.mass *
+                AIMgr.inst.repulsiveCoefficient * 
+                Mathf.Pow(p.diff.magnitude, AIMgr.inst.repulsiveExponent);
         }
-        //repulsivePotential *= repulsiveCoefficient * Mathf.Pow(repulsivePotential.magnitude, repulsiveExponent);
-        attractivePotential = movePosition - entity.position;
-        Vector3 tmp = attractivePotential.normalized;
-        attractivePotential = tmp * 
-            AIMgr.inst.attractionCoefficient * Mathf.Pow(attractivePotential.magnitude, AIMgr.inst.attractiveExponent);
-        potentialSum = attractivePotential - repulsivePotential;
-
-        dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
-
-        angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
-        cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f; // makes it between 0 and 1
-        ds = entity.maxSpeed * cosValue;
-
-        return new DHDS(dh, ds);
     }
+
+    // 2. Calculate repulsion from bounding boxes
+    foreach (NoGoZoneBounds zone in NoGoZoneManager.Zones)
+    {
+        Vector3 closestPoint = zone.GetClosestPoint(entity.position);
+        Vector3 diff = closestPoint - entity.position;
+        float distance = diff.magnitude;
+
+        if (zone.Contains(entity.position))
+        {
+            // Push outward from box center when inside
+            Vector3 dirFromCenter = (entity.position - zone.transform.position).normalized;
+            repulsivePotential += dirFromCenter * zone.repulsionStrength;
+        }
+        else if (distance <= zone.repulsionRadius)
+        {
+            // Apply distance-based repulsion when near
+            Vector3 dir = diff.normalized;
+            float force = zone.repulsionStrength * 
+                         (1 - (distance / zone.repulsionRadius));
+            repulsivePotential += dir * force;
+        }
+    }
+
+    // 3. Calculate attraction to target
+    Vector3 rawAttraction = movePosition - entity.position;
+    attractivePotential = rawAttraction.normalized *
+        AIMgr.inst.attractionCoefficient *
+        Mathf.Pow(rawAttraction.magnitude, AIMgr.inst.attractiveExponent);
+
+    // 4. Combine potentials
+    potentialSum = attractivePotential - repulsivePotential;
+
+    // 5. Calculate desired heading
+    dh = Utils.Degrees360(
+        Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z)
+    );
+
+    // 6. Calculate speed based on heading alignment
+    angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
+    cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
+    ds = entity.maxSpeed * cosValue;
+
+    // 7. Update debug visualization
+    if (potentialLine != null)
+    {
+        potentialLine.SetPosition(0, entity.position);
+        potentialLine.SetPosition(1, entity.position + potentialSum);
+    }
+
+    return new DHDS(dh, ds);
+}
     public Vector3 attractivePotential = Vector3.zero;
     public Vector3 potentialSum = Vector3.zero;
     public Vector3 repulsivePotential = Vector3.zero;
@@ -126,6 +168,27 @@ public class Move : Command
                 }
             }
         }
+        foreach (NoGoZoneBounds zone in NoGoZoneManager.Zones)
+    {
+        Vector3 closestPoint = zone.GetClosestPoint(entity.position);
+        Vector3 diff = closestPoint - entity.position;
+        float distance = diff.magnitude;
+
+        if (zone.Contains(entity.position))
+        {
+            // Push outward from box center when inside
+            Vector3 dirFromCenter = (entity.position - zone.transform.position).normalized;
+            repulsivePotential += dirFromCenter * zone.repulsionStrength;
+        }
+        else if (distance <= zone.repulsionRadius)
+        {
+            // Apply distance-based repulsion when near
+            Vector3 dir = diff.normalized;
+            float force = zone.repulsionStrength * 
+                         (1 - (distance / zone.repulsionRadius));
+            repulsivePotential += dir * force;
+        }
+    }
         Vector3 tmp = (movePosition - entity.position).normalized;
         attractivePotential = tmp 
             * AIMgr.inst.attraction2Coefficient * entity.mass * Mathf.Pow(diffToMovePosition.magnitude, AIMgr.inst.attractiveExponent);

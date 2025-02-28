@@ -140,45 +140,79 @@ public class AIMgr : NetworkBehaviour
 
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
-    public void HandleMove(List<Entity> entities, Vector3 point, 
+    public void HandleMove(List<Entity> entities, Vector3 point,
                       bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false,
                       FormationType formationType = FormationType.Circle, float formationRadius = 200f, bool groupMove = false)
-{
-    if(isLocalCommand)
     {
-        NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
-    }
+        if (isLocalCommand)
+        {
+            NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
+        }
 
-    // Use GroupMove for multiple entities, regular Move for single
-    if(entities.Count > 1 && groupMove)
-    {
-        // Create shared group command for all entities
-        foreach(Entity entity in entities)
+        // Use GroupMove for multiple entities, regular Move for single
+        if (entities.Count > 1 && groupMove)
         {
-            GroupMove gm = new GroupMove(entity, point, entities) 
+            // Create shared group command for all entities
+            foreach (Entity entity in entities)
             {
-                maxSpeedMovement = maxSpeedMovement,
-                formationType = formationType // Default formation
-            };
-            
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-            AddOrSet(gm, uai, add);
+                GroupMove gm = new GroupMove(entity, point, entities)
+                {
+                    maxSpeedMovement = maxSpeedMovement,
+                    formationType = formationType // Default formation
+                };
+
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(gm, uai, add);
+            }
         }
-    }
-    else
-    {
-        // Original single-entity behavior
-        foreach(Entity entity in entities)
+        else
         {
-            Move m = new Move(entity, point, maxSpeedMovement);
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-            AddOrSet(m, uai, add);
+            // Original single-entity behavior
+            foreach (Entity entity in entities)
+            {
+                QuadrantBounds startQuadrant = GetQuadrant(entity.position);
+                QuadrantBounds targetQuadrant = GetQuadrant(point);
+
+                if (startQuadrant != targetQuadrant)
+                {
+                    // Split into two commands: first to (0,0,0), then to target
+                    Move intermediateMove = new Move(entity, Vector3.zero, maxSpeedMovement);
+                    UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+
+                    // Replace current command with intermediate move
+                    AddOrSet(intermediateMove, uai, add: false);
+
+                    // Queue final move after intermediate
+                    Move finalMove = new Move(entity, point, maxSpeedMovement);
+                    AddOrSet(finalMove, uai, add: true);
+                }
+                else
+                {
+                    // Original single-entity behavior
+                    Move m = new Move(entity, point, maxSpeedMovement);
+                    UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                    AddOrSet(m, uai, add);
+                }
+            }
         }
     }
+    // Helper to get the quadrant of a position
+    private QuadrantBounds GetQuadrant(Vector3 position)
+{
+    foreach (QuadrantBounds zone in QuadrantManager.Zones)
+    {
+        if (zone.Contains(position))
+        {
+                Debug.Log(zone);
+            return zone;
+        }
+    }
+    return null;
 }
     public void HandleDumbMove(List<Entity> entities, Vector3 point, bool add)
     {
-        foreach (Entity entity in entities) {
+        foreach (Entity entity in entities)
+        {
             Move m = new DumbMove(entity, point);
             UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             AddOrSet(m, uai, add);
