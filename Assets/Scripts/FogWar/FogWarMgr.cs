@@ -207,7 +207,7 @@ public class FogWarMgr : MonoBehaviour
         
 
         if (revelers.Count == 0) return;
-        
+        fogComputeShader.SetInt("EntitiesCount", revelers.Count);
         fogComputeShader.SetInt("GridWidth", gridWidth);
         fogComputeShader.SetInt("GridHeight", gridHeight);
         fogComputeShader.SetFloat("GridCellSize", gridCellSize);

@@ -4,10 +4,6 @@ public class QuadrantBounds : MonoBehaviour
 {
     [Header("Local Bounds")]
     public Vector3 localSize = new Vector3(10, 5, 10); // Size relative to the GameObject
-
-    [Header("Repulsion Settings")]
-    public float repulsionStrength = 1000f;
-    public float repulsionRadius = 5f;
     void OnEnable() =>QuadrantManager.Register(this);
     void OnDisable() => QuadrantManager.Unregister(this);
 

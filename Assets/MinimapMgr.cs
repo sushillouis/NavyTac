@@ -85,7 +85,6 @@ public class MinimapMgr : MonoBehaviour
     //Uses SetIconLocation to update the map position for all ents and the camera
     // Modified UpdateMinimap method
 
-    List<Entity> revelers = FogWarMgr.inst.revelers;
     public void UpdateMinimap() 
     {
         

@@ -11,6 +11,7 @@ float2 GridOrigin;
 float4 FogColor ;
 float4 PreviouslyRevealedColor ; 
 int NonRevealerCount;
+int EntitiesCount;
 
 // Buffers & Textures
 RWStructuredBuffer<float> Grid;
@@ -38,7 +39,7 @@ void RevealAreas(uint3 id : SV_DispatchThreadID)
 
     float maxVisibility = 0.0f;
 
-    for (uint i = 0; i < Entities.Length; i++)
+    for (uint i = 0; i <EntitiesCount; i++)
     {
         float4 entity = Entities[i];
         float2 entityPos = entity.xz;

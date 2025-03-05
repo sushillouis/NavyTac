@@ -233,7 +233,7 @@ public class EntityMgr : MonoBehaviour
             WeaponsMgr.inst.DestroyEntity(entity);
             entities.Remove(entity);
             OnEntityRemoved?.Invoke(entity);
-            
+            DistanceMgr.inst.Initialize();
     }
 
 

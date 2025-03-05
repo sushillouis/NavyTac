@@ -235,9 +235,11 @@ public class WeaponsMgr : MonoBehaviour
         }
         if (weapons.Contains(entity))
         {
+            
             EntityMgr.inst.entities.Remove(entity);
             ReturnWeapon(entity);
             weapons.Remove(entity);
+            DistanceMgr.inst.Initialize();
             return;
         }
         
