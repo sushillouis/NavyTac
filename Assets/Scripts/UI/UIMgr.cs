@@ -252,32 +252,68 @@ public class UIMgr : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI healthText;
 
+    private string lastEntityName = "";
+    private float lastSpeed = -1;
+    private float lastDesiredSpeed = -1;
+    private float lastHeading = -1;
+    private float lastDesiredHeading = -1;
+    private float lastHealth = -1;
+    private float lastFuel = -1;
+    private float lastRange = -1;
+    private float lastAltitude = -1;
+    private float lastDesiredAltitude = -1;
+
+
     // Update is called once per frame
     void Update()
     {
         if (SelectionMgr.inst.selectedEntity != null)
         {
             Entity ent = SelectionMgr.inst.selectedEntity;
-            entityName.text = ent.name;
-            // healthSlider.value = ent.health/100f;
-            
-            speed.text = ent.speed.ToString("F2") + " m/s";
-            desiredSpeed.text = ent.desiredSpeed.ToString("F2") + " m/s";
-            heading.text = ent.heading.ToString("F1") + " deg";
-            desiredHeading.text = ent.desiredHeading.ToString("F1") + " deg";
+            if (ent.name != lastEntityName)
+            {
+                lastEntityName = ent.name;
+                entityName.text = ent.name;
+            }
+            if (ent.speed != lastSpeed)
+            {
+                lastSpeed = ent.speed;
+                speed.text = ent.speed.ToString("F2") + " m/s";
+            }
+            if (ent.desiredSpeed != lastDesiredSpeed)
+            {
+                lastDesiredSpeed = ent.desiredSpeed;
+                desiredSpeed.text = ent.desiredSpeed.ToString("F2") + " m/s";
+            }
+            if (ent.heading != lastHeading)
+            {
+                lastHeading = ent.heading;
+                heading.text = ent.heading.ToString("F1") + " deg";
+            }
+            if (ent.desiredHeading != lastDesiredHeading)
+            {
+                lastDesiredHeading = ent.desiredHeading;
+                desiredHeading.text = ent.desiredHeading.ToString("F1") + " deg";
+            }
 
             DisplayAIInformation(ent);
             UpdateHealth(ent);
 
             Oriented3dPhysics phx3d = ent.GetComponentInChildren<Oriented3dPhysics>();
             if(phx3d != null)  {
-                altitude.text = phx3d.altitude.ToString("F2") + "m";
-                desiredAltitude.text = phx3d.desiredAltitude.ToString("F2") + "m";
+                if(phx3d.altitude != lastAltitude) {
+                    lastAltitude = phx3d.altitude;
+                    altitude.text = phx3d.altitude.ToString("F2") + "m";
+                }
             }
-
-            fuel.text = ent.fuel.ToString("F0");
-            range.text = (ent.range * Utils.ToNautialMiles).ToString("F1") + " nm";
-
+            if(lastFuel != ent.fuel) {
+                lastFuel = ent.fuel;
+                fuel.text = ent.fuel.ToString("F0");
+            }
+            if(lastRange != ent.range) {
+                lastRange = ent.range;
+                range.text = (ent.range * Utils.ToNautialMiles).ToString("F1") + " nm";
+            }
 
         }
 
@@ -313,6 +349,9 @@ public class UIMgr : MonoBehaviour
     private float greenHealth = 67;
     private float orangeHealth = 33;
     private void UpdateHealth(Entity ent) {
+        if(ent.health == lastHealth)
+            return;
+        lastHealth = ent.health;
         float health = 100f * Mathf.Clamp(ent.health, 0, maxHealth) / maxHealth;
         //text
         healthText.text = health.ToString("000");
@@ -327,19 +366,34 @@ public class UIMgr : MonoBehaviour
             healthImage.color = ColorPalette.inst.colors[17];
     }
 
+    private float lastTimeOnTarget = -1;
+    private float lastTargetRange = -1;
+    private Vector3 lastTarget = Vector3.positiveInfinity;
+    private string lastTargetName = "";
+
     private void DisplayAIInformation(Entity ent) {
         UnitAI uai = ent.GetComponentInChildren<UnitAI>();
         if(uai.commands.Count > 0) {
-            Move move = uai.commands[0] as Move;
+            Move move = uai.commands.Peek() as Move;
+            if(lastTimeOnTarget == move.timeOnTarget && lastTargetRange == move.range && lastTarget == move.movePosition)
+                return;
+            lastTimeOnTarget = move.timeOnTarget;
+            lastTargetRange = move.range;
+            lastTarget = move.movePosition;
             timeOnTarget.text = move.timeOnTarget.ToString("F2") + "sec";
             targetRange.text = move.range.ToString("F2") + "m";
             target.text = move.movePosition.ToString();
 
-            Follow follow = uai.commands[0] as Follow;
+            Follow follow = uai.commands.Peek() as Follow;
 
             if(follow != null){
+
+
                 if(follow.targetEntity != null){
-                    target.text = follow.targetEntity.name;
+                    if(follow.targetEntity.name != lastTargetName){
+                        lastTargetName = follow.targetEntity.name;
+                        target.text = follow.targetEntity.name;
+                    }
                 }
             } 
 

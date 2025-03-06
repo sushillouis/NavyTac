@@ -64,13 +64,8 @@ public class Entity : MonoBehaviour
     void Start()
     {
         isSelected = false;
-        //cameraRig = transform.Find("CameraRig").gameObject;
-        //selectionCircle = transform.Find("Decorations").Find("SelectionCylinder").gameObject;
         fuel = maxFuel;
         Renderer mainRenderer = GetComponent<Renderer>();
-   
-    
-    // Optionally, update all child renderers if necessary
         Renderer[] childRenderers = GetComponentsInChildren<Renderer>();
         
         for (int i = 0; i < childRenderers.Length; i++)
@@ -105,58 +100,29 @@ public class Entity : MonoBehaviour
         range = Mathf.Clamp(fuel * cruiseSpeed, 0, maxRange);
 
     }
-    // This function On Trigger Enter is just for testing purposes.
-    // START
-    // void OnTriggerEnter(Collider other)
-    // {
-
-    //     //this method checks if the weapon is collided by a ship and if yes then it damages the ship based on the damage matrix
-    //     Debug.Log("hit");
-    //     if (WeaponsMgr.inst.weapons.Contains(this))
-    //         {
-    //         Entity otherEntity = other.GetComponent<Entity>();
-    //         if (otherEntity != creatorsEntity)
-    //         {
-    //             DamageMatrix dm = new DamageMatrix();
-    //             float damage = dm.GetDamage(this.entityType, otherEntity.entityType);
-    //             // Debug.Log(damage);
-    //             otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
-    //             health = 0;
-    //             if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
-    //         }
-    //     }
-    // }
-    // This function  use raycast to check if the weapon is collided by a ship and if yes then it damages the ship based on the damage matrix
     void RaycastCollisonCheck()
-{
-    RaycastHit hit;
-    if (Physics.Raycast(transform.position, transform.forward, out hit, 20))
     {
-        if (WeaponsMgr.inst.weapons.Contains(this))
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.forward, out hit, 20))
         {
-            Entity otherEntity = hit.collider.GetComponent<Entity>();
-            // Debug.Log(otherEntity.gameObject.layer);
-            // Check if otherEntity is not null and not the creator, and has a different owner
-            if (otherEntity != null && otherEntity != creatorsEntity && otherEntity.owner != owner)
-            {   
-                float damage = WeaponsMgr.inst.damageMatrix.GetDamage(this.entityType, otherEntity.entityType);
-                FXMgr.inst.CreateExplosionAt(hit.point, 1);
-                otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
-                health = 0;
-                if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
+            if (WeaponsMgr.inst.weapons.Contains(this))
+            {
+                if(hit.collider is TerrainCollider){
+                    FXMgr.inst.CreateExplosionAt(hit.point, 1);
+                    health = 0;
+                    if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
+                }
+                Entity otherEntity = hit.collider.GetComponent<Entity>();
+
+                if (otherEntity != null && otherEntity != creatorsEntity && otherEntity.owner != owner)
+                {   
+                    float damage = WeaponsMgr.inst.damageMatrix.GetDamage(this.entityType, otherEntity.entityType);
+                    FXMgr.inst.CreateExplosionAt(hit.point, 1);
+                    otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
+                    health = 0;
+                    if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
+                }
             }
         }
     }
-}
-void OnCollisionEnter(Collision collision)
-{
-    // Check if the collider belongs to a TerrainCollider
-    if (collision.collider is TerrainCollider)
-    {
-        Debug.Log("Hitting Terrain");
-    }
-}
-
-
-    // END
 }

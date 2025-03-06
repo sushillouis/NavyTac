@@ -188,12 +188,12 @@ public class DistanceMgr : MonoBehaviour
     {
         // Potential p1, p2;
         Entity ent1, ent2;
-        int currentFrameMod = frameCounter % 5; 
+        int currentFrameMod = frameCounter % 10; 
 
         for (int i = 0; i < EntityMgr.inst.entities.Count - 1; i++)
         {
             
-            if (i % 5 != currentFrameMod)
+            if (i % 10 != currentFrameMod)
                 continue;
 
             ent1 = EntityMgr.inst.entities[i];

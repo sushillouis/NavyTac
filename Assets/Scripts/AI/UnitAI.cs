@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,144 +10,125 @@ public class EntityPotential
 }
 
 public class UnitAI : MonoBehaviour
-{
+{   
     public Entity entity; //public only for ease of debugging
+
+    public  Queue<Command> commands = new();
+    public List<Move> moves = new();
+    public List<Follow> follows = new();
+    public List<Intercept> intercepts = new();
+    public List<Intercept3d> intercept3ds = new();
+    public List<SmartIntercept> smartIntercepts = new();
+
+    [Header("PF nodes")]
+    public List<Transform> pfList = new();
+    public Dictionary<Entity, Potential> potentialsD = new();
+    public List<EntityPotential> potentialsL = new();
+
+
 
     private void Awake() {
         entity = GetComponentInParent<Entity>();
         entity.ai = this;
-        potentialsD = new Dictionary<Entity, Potential>();
-        potentialsL = new List<EntityPotential>();
     }
-    // Start is called before the first frame update
-    void Start()
-    {
-        commands = new List<Command>();
-        intercepts = new List<Intercept>();
-        intercept3ds = new List<Intercept3d>();
-        smartIntercepts = new List<SmartIntercept>();
-        follows = new List<Follow>();
-        moves = new List<Move>();
-    }
-
-    public List<Move> moves;
-    public List<Follow> follows;
-    public List<Command> commands;
-    public List<Intercept> intercepts;
-    public List<Intercept3d> intercept3ds;
-    public List<SmartIntercept> smartIntercepts;
-
-    [Header("PF nodes")]
-    public List<Transform> pfList = new List<Transform>();
-    public Dictionary<Entity, Potential> potentialsD;
-    public List<EntityPotential> potentialsL;
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (EntityType.Rig_Balder == entity.entityType) {
-            return;
+        if (entity.entityType == EntityType.Rig_Balder) return;
+        if (commands.Count == 0) return;
+        Command currentCommand = commands.Peek();
+        if (currentCommand.IsDone())
+        {
+            commands.Dequeue();
+            StopAndRemoveCommand(currentCommand);
         }
-        // Debug.Log(entity.name +""+commands.Count);
-        if (commands.Count > 0) {
-            if (commands[0].IsDone()) {
-                StopAndRemoveCommand(0);
-            } else {
-                commands[0].Tick();
-                commands[0].isRunning = true;
-                DecorateAll();
-            }
+        else
+        {
+            currentCommand.Tick();
+            currentCommand.isRunning = true;
         }
-    }
-
-    void StopAndRemoveCommand(int index)
-    {
-        Command cmd = commands[index];
-        commands.RemoveAt(index);
-
-        if(cmd is Intercept3d) {//reverse inheritance order...
-            Intercept3d intercept3d = (Intercept3d) cmd;
-            intercept3d.Stop();
-            intercept3ds.Remove(intercept3d);
-        } else if(cmd is Intercept) {
-            Intercept intercept = (Intercept) cmd;
-            intercept.Stop();
-            intercepts.Remove(intercept);
-        } else if(cmd is Follow) {
-            Follow follow = (Follow) cmd;
-            follow.Stop();
-            follows.Remove(follow);
-        } else if(cmd is Move) {
-            Move move = (Move)cmd;
-            move.Stop();
-            moves.Remove(move);
-        }
-
-        if(cmd is Intercept) {
-            Intercept intercept = (Intercept)cmd;
-            intercept.Stop();
-            intercepts.Remove(intercept);
-        }
-        
-        if(cmd is Intercept3d) {
-            Intercept3d intercept3d = (Intercept3d)cmd;
-            intercept3d.Stop();
-            intercept3ds.Remove(intercept3d);
-        }
-
-        if(cmd is SmartIntercept) {
-            SmartIntercept smartIntercept = (SmartIntercept)cmd;
-            smartIntercept.Stop();
-            smartIntercepts.Remove(smartIntercept);
-        }
-
-        if(cmd is Follow){
-            Follow follow = (Follow)cmd;
-            follow.Stop();
-            follows.Remove(follow);
-        }
-    }
     
+    }
+
+    private void Update()
+    {
+        DecorateAll();
+    }
+    private void StopAndRemoveCommand(Command cmd)
+    {
+        switch (cmd)
+        {
+            case Intercept3d intercept3d:
+                intercept3d.Stop();
+                intercept3ds.Remove(intercept3d);
+                break;
+            case SmartIntercept smartIntercept:
+                smartIntercept.Stop();
+                smartIntercepts.Remove(smartIntercept);
+                break;
+            case Intercept intercept:
+                intercept.Stop();
+                intercepts.Remove(intercept);
+                break;
+            case Follow follow:
+                follow.Stop();
+                follows.Remove(follow);
+                break;
+            case Move move:
+                move.Stop();
+                moves.Remove(move);
+                break;
+            default:
+                Debug.LogWarning($"Unknown command type: {cmd.GetType()}");
+                break;
+        }
+    }
+
     public void StopAndRemoveAllCommands()
     {
-        for(int i = commands.Count - 1; i >= 0; i--) {
-            StopAndRemoveCommand(i);
+        while (commands.Count > 0)
+        {
+            Command cmd =  commands.Dequeue();
+            StopAndRemoveCommand(cmd);
         }
     }
+
 
     public void AddCommand(Command c)
     {
-        //print("Adding command; " + c.ToString());
         c.Init();
-        commands.Add(c);
-        if(c is SmartIntercept)
-            smartIntercepts.Add(c as SmartIntercept);
-        else if(c is Intercept3d)
-            intercept3ds.Add(c as Intercept3d);
-        else if(c is Intercept)
-            intercepts.Add(c as Intercept);
-        else if (c is Follow)
-            follows.Add(c as Follow);
-        else
-            moves.Add(c as Move);
+        commands.Enqueue(c);
+
+        switch (c)
+        {
+            case SmartIntercept smartIntercept:
+                smartIntercepts.Add(smartIntercept);
+                break;
+            case Intercept3d intercept3d:
+                intercept3ds.Add(intercept3d);
+                break;
+            case Intercept intercept:
+                intercepts.Add(intercept);
+                break;
+            case Follow follow:
+                follows.Add(follow);
+                break;
+            case Move move:
+                moves.Add(move);
+                break;
+            default:
+                Debug.LogWarning($"Unknown command type: {c.GetType()}");
+                break;
+        }
     }
 
     public void SetCommand(Command c)
     {
-        //print("Setting command: " + c.ToString());
         StopAndRemoveAllCommands();
-        commands.Clear();
-        moves.Clear();
-        intercepts.Clear();
-        follows.Clear();
-        intercept3ds.Clear();
-        smartIntercepts.Clear();
         AddCommand(c);
-
     }
-    //---------------------------------
-
-    public void DecorateAll()
+       public void DecorateAll()
     {
         Command prior = null;
         foreach(Command c in commands) {

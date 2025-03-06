@@ -14,6 +14,18 @@ public class WeaponsMgr : MonoBehaviour
         damageMatrix = new DamageMatrix();
         damageMatrix.InitializeDamageMatrix(weaponDamages);
     }
+    
+    private void Update()
+    {
+        foreach( Entity weapon in weapons)
+        {
+            if (weapon.transform.position.y<=0)
+            {   
+                FXMgr.inst.CreateExplosionAt(weapon.transform.position, 1);
+                ReturnWeapon(weapon);
+            }
+        }
+    }
 
     public List<WeaponDamage> weaponDamages;
     public List<Entity> weapons = new List<Entity>();
