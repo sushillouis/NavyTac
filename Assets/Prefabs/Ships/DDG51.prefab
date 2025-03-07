@@ -29,7 +29,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 3659593537989464314}
   m_Father: {fileID: 3638915916810416351}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6425765912287157090
@@ -44,40 +45,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8484a39e824370c4a9db2cc1178bdffb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  entity: {fileID: 0}
-  weapons:
-  - cooldown: 120
-    behaviorType: 4
-    weaponEntityType: 11
-    range: 200
-    currentWeaponEntities: []
-    launchLocation: {x: 100, y: 0, z: 0}
-    launchDirection: {x: 0, y: 0, z: 0}
-    ammoCount: 10
-  - cooldown: 60
-    behaviorType: 2
-    weaponEntityType: 12
-    range: 200
-    currentWeaponEntities: []
-    launchLocation: {x: -100, y: 0, z: 0}
-    launchDirection: {x: 0, y: 0, z: 1}
-    ammoCount: 5
-  - cooldown: 3
+  entity: {fileID: 2020023502598012843}
+  weapon:
+    launchPoint: {fileID: 3659593537989464314}
+    cooldown: 1
     behaviorType: 3
     weaponEntityType: 15
-    range: 200
+    range: 18250
     currentWeaponEntities: []
-    launchLocation: {x: 0, y: 10, z: 100}
-    launchDirection: {x: 0, y: 0, z: 0}
-    ammoCount: 200
-  - cooldown: 30
-    behaviorType: 1
-    weaponEntityType: 15
-    range: 200
-    currentWeaponEntities: []
-    launchLocation: {x: 0, y: 10, z: 100}
-    launchDirection: {x: 0, y: 0, z: 0}
-    ammoCount: 20
+    ammoCount: -1
 --- !u!1 &273685230956845566
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,14 +233,14 @@ MonoBehaviour:
   entityRole: 4
   acceleration: 5
   turnRate: 7
-  maxSpeed: 16
+  maxSpeed: 20.62
   minSpeed: 0
   cruiseSpeed: 10.3
   mass: 1000
   length: 155
   width: 20
   height: 50
-  maxHealth: 0
+  maxHealth: 400
   minHealth: 0
   maxFuel: 786408
   maxRange: 8100000
@@ -440,6 +416,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   eulerRotation: {x: 0, y: 0, z: 0}
+--- !u!1 &5981526810069762082
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3659593537989464314}
+  m_Layer: 0
+  m_Name: LaunchLocation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3659593537989464314
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5981526810069762082}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 7.7, z: 38.8}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4585058377425760361}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &6670378100400957455
 GameObject:
   m_ObjectHideFlags: 0

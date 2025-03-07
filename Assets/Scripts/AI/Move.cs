@@ -180,7 +180,7 @@ public class Move : Command
         dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z)); 
         angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
         cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
-        ds = entity.cruiseSpeed * cosValue;
+        ds = entity.maxSpeed * cosValue;
         return new DHDS(dh, ds);
     }
 

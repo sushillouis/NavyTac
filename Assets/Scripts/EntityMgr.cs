@@ -57,7 +57,7 @@ public class EntityMgr : MonoBehaviour
         // CSV Header
         csvContent.AppendLine(
             "entityType,acceleration,turnRate,maxSpeed,minSpeed,cruiseSpeed," +
-            "mass,length,width,height,maxFuel,maxRange,entityClass"
+            "mass,length,width,height,maxFuel,maxRange,entityClass,maxHealth"
         );
 
         int exportedCount = 0;
@@ -75,7 +75,8 @@ public class EntityMgr : MonoBehaviour
                 $"{entity.maxSpeed},{entity.minSpeed},{entity.cruiseSpeed}," +
                 $"{entity.mass:F1},{entity.length:F1},{entity.width:F1},{entity.height:F1}," +
                 $"{entity.maxFuel},{entity.maxRange}," +
-                $"{entity.entityClass}," 
+                $"{entity.entityClass}," +
+                $"{entity.maxHealth}," 
             );
             exportedCount++;
         }
@@ -129,7 +130,7 @@ public class EntityMgr : MonoBehaviour
                     }
                 }
 
-                if (cleanedFields.Count < 13)
+                if (cleanedFields.Count < 14)
                 {
                     Debug.LogWarning($"Skipping line {i + 1}: Not enough fields ({cleanedFields.Count} instead of 13)");
                     continue;
@@ -162,6 +163,7 @@ public class EntityMgr : MonoBehaviour
                     entity.height = float.Parse(cleanedFields[9], CultureInfo.InvariantCulture);
                     entity.maxFuel = float.Parse(cleanedFields[10], CultureInfo.InvariantCulture);
                     entity.maxRange = float.Parse(cleanedFields[11], CultureInfo.InvariantCulture);
+                    entity.maxHealth = float.Parse(cleanedFields[13], CultureInfo.InvariantCulture);
                     
                     // Fix for EntityClass conversion
                     entity.entityClass = (EntityClass)Enum.Parse(typeof(EntityClass), cleanedFields[12]);

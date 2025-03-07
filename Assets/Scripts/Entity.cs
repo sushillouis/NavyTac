@@ -63,6 +63,7 @@ public class Entity : MonoBehaviour
 
     void Start()
     {
+        health = maxHealth;
         isSelected = false;
         fuel = maxFuel;
         Renderer mainRenderer = GetComponent<Renderer>();
@@ -78,7 +79,7 @@ public class Entity : MonoBehaviour
     }
     void Update()
     {
-        if(health <= 0){
+        if(health <= 0 ){
             EntityMgr.inst.DestroyEntity(this);           
         }
         

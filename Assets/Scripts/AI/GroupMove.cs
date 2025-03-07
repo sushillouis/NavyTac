@@ -19,10 +19,7 @@ public class GroupMove : Move
         _destination = pos;
         groupMembers = new List<Entity>(group);
         formationType = formation;
-        
-        // Calculate initial formation orientation based on the closest entity to the destination
         _initialGroupCenter = CalculateInitialGroupCenter();
-        // Sort group members by their distance to the initial group center
         SortGroupMembersByProximity();
         _formationForward = (_destination - _initialGroupCenter).normalized;
         _formationRight = Vector3.Cross(Vector3.up, _formationForward).normalized;
@@ -49,7 +46,6 @@ public class GroupMove : Move
 
     private void SortGroupMembersByProximity()
     {
-        // Sort group members by their distance to the initial group center (closest entity)
         groupMembers.Sort((a, b) => 
             Vector3.Distance(a.position, _initialGroupCenter).CompareTo(
             Vector3.Distance(b.position, _initialGroupCenter)));
@@ -64,48 +60,57 @@ public class GroupMove : Move
 
     private void CalculateFormationPosition()
     {
+        Entity leader = groupMembers[0];
+        Vector3 leaderPosition = leader.position;
+        _formationForward = (_destination - leaderPosition).normalized;
+        _formationRight = Vector3.Cross(Vector3.up, _formationForward).normalized;
+
         switch(formationType)
         {
             case FormationType.Wedge:
-                int row = Mathf.FloorToInt((Mathf.Sqrt(1 + 8 * _entityIndex) - 1) / 2);
-                int indexInRow = _entityIndex - (row * (row + 1)) / 2;
-                float xOffset = (indexInRow - row * 0.5f) * formationSpacing;
-                float zOffset = row * formationSpacing;
-                movePosition = _destination + 
-                    (_formationForward * zOffset) + 
-                    (_formationRight * xOffset);
+                if (_entityIndex == 0)
+                {
+                    movePosition = _destination;
+                }
+                else
+                {
+                    int row = Mathf.FloorToInt((Mathf.Sqrt(1 + 8 * _entityIndex) - 1) / 2);
+                    int indexInRow = _entityIndex - (row * (row + 1)) / 2;
+                    float xOffset = (indexInRow - row * 0.5f) * formationSpacing;
+                    float zOffset = row * formationSpacing;
+                    movePosition = leaderPosition + 
+                        (_formationForward * zOffset) + 
+                        (_formationRight * xOffset);
+                }
                 break;
 
             case FormationType.Circle:
                 float angle = 360f / groupMembers.Count * _entityIndex;
                 float radius = formationSpacing * groupMembers.Count / (2 * Mathf.PI);
                 Vector3 offset = Quaternion.Euler(0, angle, 0) * _formationForward * radius;
-                movePosition = _destination + offset;
+                movePosition = leaderPosition + offset;
                 break;
 
             case FormationType.Vee:
-    // Leader is at the front of the Vee formation
                 if (_entityIndex == 0)
                 {
-                    int totalRows = Mathf.CeilToInt((groupMembers.Count - 1) / 3f);
-                    float zLeaderOffset = -totalRows * (formationSpacing /2f);
-                    movePosition = _destination + _formationForward * zLeaderOffset;
+                    movePosition = _destination;
                 }
                 else
                 {
                     int adjustedIndex = _entityIndex - 1;
-                    int row_Vee = adjustedIndex / 2; // 0-based row
+                    int row_Vee = adjustedIndex / 2;
                     bool isLeftSide = (adjustedIndex % 2) == 0;
 
-                    int totalRows = Mathf.CeilToInt((groupMembers.Count - 1) / 2f);
-                    float zOffset_Vee = -(totalRows - row_Vee - 1) * (formationSpacing /3f);
-                    float xOffset_Vee = (isLeftSide ? -1 : 1) * (row_Vee + 1) * (formationSpacing /3f);
+                    float zOffset_Vee = row_Vee * formationSpacing;
+                    float xOffset_Vee = (isLeftSide ? -1 : 1) * (row_Vee + 1) * formationSpacing;
 
-                    movePosition = _destination + 
+                    movePosition = leaderPosition + 
                         (_formationForward * zOffset_Vee) + 
                         (_formationRight * xOffset_Vee);
                 }
                 break;
+
             case FormationType.InvertedVee:
                 if (_entityIndex == 0)
                 {
@@ -117,8 +122,8 @@ public class GroupMove : Move
                     int row_Ivee = (sideIndex / 2) + 1;
                     bool isLeft = (sideIndex % 2) == 0;
                     float xOffset_Ivee = (isLeft ? -1 : 1) * row_Ivee * formationSpacing;
-                    float zOffset_Ivee = -row_Ivee * formationSpacing; // Negative for positions BEHIND leader
-                    movePosition = _destination + 
+                    float zOffset_Ivee = -row_Ivee * formationSpacing;
+                    movePosition = leaderPosition + 
                         (_formationForward * zOffset_Ivee) + 
                         (_formationRight * xOffset_Ivee);
                 }
@@ -126,13 +131,27 @@ public class GroupMove : Move
 
             default: // Line formation
                 float lineOffset = (_entityIndex - (groupMembers.Count - 1) / 2f) * formationSpacing;
-                movePosition = _destination + _formationRight * lineOffset;
+                movePosition = leaderPosition + _formationRight * lineOffset;
                 break;
         }
     }
 
-    public override DHDS ComputePotentialDHDS(Vector3 movePosition)
+    public override DHDS ComputePotentialDHDS(Vector3 movePositionParam)
     {
+        // Check if any group member is within 500 units of the destination
+        foreach (Entity member in groupMembers)
+        {
+            if (member != null && Vector3.Distance(member.position, _destination) <= 500f)
+            {
+                // Immediately stop all group members
+                return new DHDS(entity.heading, 0f);
+            }
+        }
+
+        // Recalculate formation position based on current leader's position
+        CalculateFormationPosition();
+
+        // Calculate potentials
         repulsivePotential = Vector3.zero;
         foreach(Entity ent in EntityMgr.inst.entities)
         {
@@ -151,7 +170,8 @@ public class GroupMove : Move
             }
         }
 
-        diffToMovePosition = movePosition - entity.position;
+        // Use the updated movePosition field instead of the parameter
+        diffToMovePosition = this.movePosition - entity.position;
         attractivePotential = diffToMovePosition.normalized * 
                             AIMgr.inst.attractionCoefficient *
                             Mathf.Pow(diffToMovePosition.magnitude, 

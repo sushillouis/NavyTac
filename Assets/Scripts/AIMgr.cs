@@ -173,7 +173,7 @@ public class AIMgr : NetworkBehaviour
                 QuadrantBounds startQuadrant = GetQuadrant(entity.position);
                 QuadrantBounds targetQuadrant = GetQuadrant(point);
 
-                if (startQuadrant != targetQuadrant)
+                if (targetQuadrant != null && startQuadrant != targetQuadrant )
                 {
                     // Split into two commands: first to (0,0,0), then to target
                     Move intermediateMove = new Move(entity, Vector3.zero, maxSpeedMovement);
@@ -203,7 +203,6 @@ public class AIMgr : NetworkBehaviour
     {
         if (zone.Contains(position))
         {
-                Debug.Log(zone);
             return zone;
         }
     }

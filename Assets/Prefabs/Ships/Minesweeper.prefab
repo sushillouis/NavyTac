@@ -188,6 +188,7 @@ MonoBehaviour:
   commands: []
   intercepts: []
   intercept3ds: []
+  smartIntercepts: []
   pfList:
   - {fileID: 7278528946844513886}
   - {fileID: 3410663786304957782}
@@ -406,6 +407,8 @@ MonoBehaviour:
   length: 120
   width: 22.5
   height: 52.5
+  maxHealth: 100
+  minHealth: 0
   maxFuel: 0
   maxRange: 0
   entityType: 2
@@ -419,6 +422,7 @@ MonoBehaviour:
     playerColor: {r: 0, g: 0, b: 0, a: 0}
     isObserver: 0
     isAdmin: 0
+  creatorsEntity: {fileID: 0}
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}
