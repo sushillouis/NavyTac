@@ -35,7 +35,7 @@ public class WeaponsAspect : MonoBehaviour
         weapon.currentWeaponEntities = new List<Entity>();
         weapon.lastShotTime = -weapon.cooldown;
         if (weapon.launchPoint == null)
-            Debug.LogError("[WeaponsAspect] LaunchPoint transform not assigned!");
+            // Debug.LogError("[WeaponsAspect] LaunchPoint transform not assigned!");
         
         // Remove all references to launchPrefab.transform
         weapon.lastShotTime = -weapon.cooldown;

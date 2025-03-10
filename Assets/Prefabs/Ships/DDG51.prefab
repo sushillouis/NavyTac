@@ -31,6 +31,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3659593537989464314}
+  - {fileID: 2298628844856446474}
   m_Father: {fileID: 3638915916810416351}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6425765912287157090
@@ -362,7 +363,6 @@ MonoBehaviour:
   entity: {fileID: 0}
   moves: []
   follows: []
-  commands: []
   intercepts: []
   intercept3ds: []
   smartIntercepts: []
@@ -370,6 +370,37 @@ MonoBehaviour:
   - {fileID: 2892916998246155033}
   - {fileID: 177044028188121543}
   potentialsL: []
+--- !u!1 &4760775833736482462
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2298628844856446474}
+  m_Layer: 0
+  m_Name: LaunchLocation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2298628844856446474
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4760775833736482462}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.93, y: 5.99, z: 42.43}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4585058377425760361}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5044917885655642635
 GameObject:
   m_ObjectHideFlags: 0

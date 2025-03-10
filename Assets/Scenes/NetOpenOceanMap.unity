@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.38653484, g: 0.47797692, b: 0.5743225, a: 1}
+  m_IndirectSpecularColor: {r: 0.3865354, g: 0.4779775, b: 0.5743237, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -405,6 +405,12 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1361735525}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &145806865 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2298628844856446474, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+    type: 3}
+  m_PrefabInstance: {fileID: 2020023503048458507}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &163206661 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4953438425785274624, guid: 7c067cc3ad7ca9349a62391a8bda4404,
@@ -649,8 +655,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   localSize: {x: 9000, y: 5, z: 10000}
-  repulsionStrength: 1000
-  repulsionRadius: 5
 --- !u!1 &224765858
 GameObject:
   m_ObjectHideFlags: 0
@@ -1080,6 +1084,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: SeaHunter
       objectReference: {fileID: 0}
+    - target: {fileID: 1101535870444392007, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7187487557739430685, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1271,8 +1280,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   localSize: {x: 10, y: 5, z: 10}
-  repulsionStrength: 1000
-  repulsionRadius: 5
 --- !u!1 &350680935
 GameObject:
   m_ObjectHideFlags: 0
@@ -1318,8 +1325,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   localSize: {x: 10, y: 5, z: 10}
-  repulsionStrength: 1000
-  repulsionRadius: 5
 --- !u!4 &353901600 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4660187489248458, guid: 94335bd1e64edd54585a0f3f4b3bf7cf,
@@ -2034,6 +2039,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SeaBaby
+      objectReference: {fileID: 0}
+    - target: {fileID: 9157969438270272206, guid: 5cdca71a3e9808947aa977bd6b71dcfc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2841,7 +2851,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3831137984381009792, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1679200916}
   m_SourcePrefab: {fileID: 100100000, guid: d39e64df80d4eca4da864f574fdbcecc, type: 3}
 --- !u!1 &553332878
 GameObject:
@@ -3421,8 +3435,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   localSize: {x: 9000, y: 5, z: 10000}
-  repulsionStrength: 1000
-  repulsionRadius: 5
 --- !u!114 &772865853 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5230200808471013758, guid: 3769d37cb4868da47b56c4040c02c3a9,
@@ -3755,8 +3767,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   localSize: {x: 9000, y: 5, z: 10000}
-  repulsionStrength: 1000
-  repulsionRadius: 5
 --- !u!1 &948085070
 GameObject:
   m_ObjectHideFlags: 0
@@ -3943,6 +3953,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: CVN75
       objectReference: {fileID: 0}
+    - target: {fileID: 7105417278651847255, guid: 6f05e3291ed3b374e83bc5165bcb3f8d,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3996,6 +4011,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Submarine
+      objectReference: {fileID: 0}
+    - target: {fileID: 3996255613083470600, guid: 2d7b4cfe0a50513458c23079b1b83510,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4854295066386647728, guid: 2d7b4cfe0a50513458c23079b1b83510,
         type: 3}
@@ -4212,6 +4232,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tanker
       objectReference: {fileID: 0}
+    - target: {fileID: 1321054300686026328, guid: c7061d8cebd1b584880025216a586789,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1321054300686026329, guid: c7061d8cebd1b584880025216a586789,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -4335,6 +4360,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Pilot vessel
+      objectReference: {fileID: 0}
+    - target: {fileID: 857272126595392923, guid: 2c4513be36911cf43af492fcdb5d3351,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4585,6 +4615,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: OrientExplorer
+      objectReference: {fileID: 0}
+    - target: {fileID: 4205535018835155151, guid: 70aafd5fa95ebb743a2cf93ed1442278,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4990,7 +5025,7 @@ Transform:
   - {fileID: 1697653317}
   - {fileID: 1630728965}
   - {fileID: 1118335726}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2011532837}
   m_LocalEulerAnglesHint: {x: 0, y: 120, z: 0}
 --- !u!1 &1212399374
 GameObject:
@@ -5138,6 +5173,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: OilServiceVessel
       objectReference: {fileID: 0}
+    - target: {fileID: 8516214366006661342, guid: 8b6d19bb645cb934fa859c6b2ba600ff,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8516214366006661343, guid: 8b6d19bb645cb934fa859c6b2ba600ff,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -5211,6 +5251,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SmitHouston
+      objectReference: {fileID: 0}
+    - target: {fileID: 138629261546720789, guid: 56b421d73a8488646b28c822866b075c,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5250705106703308689, guid: 56b421d73a8488646b28c822866b075c,
         type: 3}
@@ -5540,6 +5585,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Mykola
+      objectReference: {fileID: 0}
+    - target: {fileID: 3556541186096080935, guid: 8c32edeab3e41cf41b00eb272c64dad8,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7528760655783591509, guid: 8c32edeab3e41cf41b00eb272c64dad8,
         type: 3}
@@ -5956,8 +6006,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   localSize: {x: 9000, y: 5, z: 10000}
-  repulsionStrength: 1000
-  repulsionRadius: 5
 --- !u!1 &1491763685
 GameObject:
   m_ObjectHideFlags: 0
@@ -6259,8 +6307,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   localSize: {x: 10, y: 5, z: 10}
-  repulsionStrength: 1000
-  repulsionRadius: 5
 --- !u!1 &1558012415
 GameObject:
   m_ObjectHideFlags: 0
@@ -6933,6 +6979,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Container
       objectReference: {fileID: 0}
+    - target: {fileID: 4175921536809093428, guid: 195ecb91b20a27e4c837b4a6d3c601f4,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4175921536809093429, guid: 195ecb91b20a27e4c837b4a6d3c601f4,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -7114,6 +7165,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseAttackRadius: 800
+  minEngagementDistance: 5
   currentLevel: 1
   drawDebugVisuals: 1
   aiEntities: []
@@ -7599,6 +7651,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Minesweeper
+      objectReference: {fileID: 0}
+    - target: {fileID: 8269003061167357734, guid: f946d7fa0cf80f741b8c5a0cce39d24f,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8090,6 +8147,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: JARIUSV
       objectReference: {fileID: 0}
+    - target: {fileID: 3381456826221025453, guid: d51d8d0dda5552c478afc7674abdd037,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7540985511424937849, guid: d51d8d0dda5552c478afc7674abdd037,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -8576,7 +8638,7 @@ PrefabInstance:
     - target: {fileID: 229904364588993521, guid: 154d111a92a0b5044a70610b2316490d,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.000047623762
+      value: -0.00013517537
       objectReference: {fileID: 0}
     - target: {fileID: 623374846698746527, guid: 154d111a92a0b5044a70610b2316490d,
         type: 3}
@@ -8882,8 +8944,19 @@ PrefabInstance:
       propertyPath: m_Name
       value: DDG51
       objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapon.range
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: weapon.launchPoint
+      value: 
+      objectReference: {fileID: 145806865}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 5981526810069762082, guid: 4eadb14a1eece2a44a7ae893943f3d9f, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4eadb14a1eece2a44a7ae893943f3d9f, type: 3}
@@ -9101,7 +9174,8 @@ PrefabInstance:
       value: AntiShipMissile
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 4789153581006156428, guid: 8e5a241efd26c114ca69ba5949ed5da0, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8e5a241efd26c114ca69ba5949ed5da0, type: 3}
@@ -11235,6 +11309,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: TugBoat
+      objectReference: {fileID: 0}
+    - target: {fileID: 8941482605437012095, guid: 5d3b351739a98e34da31ae8acedeb828,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
