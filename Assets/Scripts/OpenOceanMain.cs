@@ -26,45 +26,45 @@ public class OpenOceanMain : MonoBehaviour
 
     [Header("Panels")]
     [SerializeField]
-    private PanelPlus loginPanel;
+    public PanelPlus loginPanel;
     [SerializeField]
-    private PanelPlus mapSelectPanel;
+    public PanelPlus mapSelectPanel;
     [SerializeField]
-    private PanelPlus HostOrJoinPanel;
+    public PanelPlus HostOrJoinPanel;
     [SerializeField]
-    private PanelPlus MainGamePanel;
+    public PanelPlus MainGamePanel;
     [SerializeField]
-    private PanelPlus SingleMultiplayerPanel;
+    public PanelPlus SingleMultiplayerPanel;
     [SerializeField]
-    private RectTransform NetDebugConsolePanel;
+    public RectTransform NetDebugConsolePanel;
 
     [Header("Single / Multi player Screen")]
     [SerializeField]
-    private Button SinglePlayerButton;
+    public Button SinglePlayerButton;
     [SerializeField]
-    private Button MultiPlayerButton;
+    public Button MultiPlayerButton;
     [SerializeField]
-    private Button SingleMultiQuitButton;
+    public Button SingleMultiQuitButton;
 
     [Header("Host / Join Screen")]
     public TMP_InputField ipAddressInputField;
     [SerializeField]
-    private Button hostButton;
+    public Button hostButton;
     [SerializeField]
-    private Button clientButton;
+    public Button clientButton;
     [SerializeField]
-    private Button HostJoinQuitButton;
+    public Button HostJoinQuitButton;
 
     [Header("Login Screen")]
     public TMP_InputField loginNameInputField;
     [SerializeField]
-    private Button loginButton;
+    public Button loginButton;
     [SerializeField]
-    private Button LoginQuitButton;
+    public Button LoginQuitButton;
 
     [Header("Map Select Screen")]
     [SerializeField]
-    private Button startButton;
+    public Button startButton;
 
     public enum LobbyState
     {

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.4453563, g: 0.48936236, b: 0.54362136, a: 1}
+  m_IndirectSpecularColor: {r: 0.44535607, g: 0.48936188, b: 0.5436204, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -6524,15 +6524,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 676175137338ed3458b85c9c2629e9df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  chosenPanel: {fileID: 0}
   basic: 0
-  frameImageBasic: {fileID: 0}
-  buttonBasicBackground: {fileID: 0}
-  solidButtonMetalBackground: {fileID: 0}
-  InputMetalBackground: {fileID: 0}
-  strechedButtonMetalBackground: {fileID: 0}
-  frameImageMetal: {fileID: 0}
-  basicFont: {fileID: 0}
-  metalFont: {fileID: 0}
+  basicLoginPanel: {fileID: 0}
+  basicMapSelectPanel: {fileID: 0}
+  basicHostOrJoinPanel: {fileID: 0}
+  basicMainGamePanel: {fileID: 0}
+  basicSingleMultiplayerPanel: {fileID: 0}
+  basicNetDebugConsolePanel: {fileID: 0}
+  basicSinglePlayerButton: {fileID: 0}
+  basicMultiPlayerButton: {fileID: 0}
+  basicSingleMultiQuitButton: {fileID: 0}
+  basicipAddressInputField: {fileID: 0}
+  basicHostButton: {fileID: 0}
+  basicClientButton: {fileID: 0}
+  basicHostJoinQuitButton: {fileID: 0}
+  basicLoginNameInputField: {fileID: 0}
+  basicLoginButton: {fileID: 0}
+  basicLoginQuitButton: {fileID: 0}
+  basicStartButton: {fileID: 0}
+  metalLoginPanel: {fileID: 0}
+  metalMapSelectPanel: {fileID: 0}
+  metalHostOrJoinPanel: {fileID: 0}
+  metalMainGamePanel: {fileID: 0}
+  metalSingleMultiplayerPanel: {fileID: 0}
+  metalNetDebugConsolePanel: {fileID: 0}
+  metalSinglePlayerButton: {fileID: 0}
+  metalMultiPlayerButton: {fileID: 0}
+  metalSingleMultiQuitButton: {fileID: 0}
+  metalipAddressInputField: {fileID: 0}
+  metalHostButton: {fileID: 0}
+  metalClientButton: {fileID: 0}
+  metalHostJoinQuitButton: {fileID: 0}
+  metalLoginNameInputField: {fileID: 0}
+  metalLoginButton: {fileID: 0}
+  metalLoginQuitButton: {fileID: 0}
+  metalStartButton: {fileID: 0}
 --- !u!1 &540363612
 GameObject:
   m_ObjectHideFlags: 0
@@ -14922,6 +14949,7 @@ Transform:
   - {fileID: 2013597645}
   - {fileID: 2117915464}
   - {fileID: 224765859}
+  - {fileID: 2077881716}
   m_Father: {fileID: 1708907977}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1244649830
@@ -23866,6 +23894,86 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2069967587}
   m_CullTransparentMesh: 1
+--- !u!1 &2077881715
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2077881716}
+  - component: {fileID: 2077881717}
+  m_Layer: 0
+  m_Name: ThemeMgr
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2077881716
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2077881715}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1229635576}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2077881717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2077881715}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 676175137338ed3458b85c9c2629e9df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chosenPanel: {fileID: 0}
+  basic: 0
+  basicLoginPanel: {fileID: 0}
+  basicMapSelectPanel: {fileID: 0}
+  basicHostOrJoinPanel: {fileID: 0}
+  basicMainGamePanel: {fileID: 0}
+  basicSingleMultiplayerPanel: {fileID: 0}
+  basicNetDebugConsolePanel: {fileID: 0}
+  basicSinglePlayerButton: {fileID: 0}
+  basicMultiPlayerButton: {fileID: 0}
+  basicSingleMultiQuitButton: {fileID: 0}
+  basicipAddressInputField: {fileID: 0}
+  basicHostButton: {fileID: 0}
+  basicClientButton: {fileID: 0}
+  basicHostJoinQuitButton: {fileID: 0}
+  basicLoginNameInputField: {fileID: 0}
+  basicLoginButton: {fileID: 0}
+  basicLoginQuitButton: {fileID: 0}
+  basicStartButton: {fileID: 0}
+  metalLoginPanel: {fileID: 0}
+  metalMapSelectPanel: {fileID: 0}
+  metalHostOrJoinPanel: {fileID: 0}
+  metalMainGamePanel: {fileID: 0}
+  metalSingleMultiplayerPanel: {fileID: 0}
+  metalNetDebugConsolePanel: {fileID: 0}
+  metalSinglePlayerButton: {fileID: 0}
+  metalMultiPlayerButton: {fileID: 0}
+  metalSingleMultiQuitButton: {fileID: 0}
+  metalipAddressInputField: {fileID: 0}
+  metalHostButton: {fileID: 0}
+  metalClientButton: {fileID: 0}
+  metalHostJoinQuitButton: {fileID: 0}
+  metalLoginNameInputField: {fileID: 0}
+  metalLoginButton: {fileID: 0}
+  metalLoginQuitButton: {fileID: 0}
+  metalStartButton: {fileID: 0}
 --- !u!1 &2107005951
 GameObject:
   m_ObjectHideFlags: 0
@@ -25275,7 +25383,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.00030227008, y: 0.0005852432}
+  m_AnchoredPosition: {x: 0.00030227008, y: -0.000018345732}
   m_SizeDelta: {x: 0, y: 437.0062}
   m_Pivot: {x: 0, y: 1}
 --- !u!224 &263638674602309147
