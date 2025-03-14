@@ -39,7 +39,7 @@ public class StreamingToCommand: MonoBehaviour
             if(WordCleanup.nearWords.TryGetValue(word, out string value)) {
                 word = value;
             }
-            Debug.Log("Current Word-"+word+"-");
+            // Debug.Log("Current Word-"+word+"-");
             if ((WordCleanup.CommandLanguageDict.ContainsKey(word) 
             && priorword == "" && WordCleanup.startWords.Contains(word))  
             || (WordCleanup.CommandLanguageDict.ContainsKey(priorword) 
@@ -53,7 +53,7 @@ public class StreamingToCommand: MonoBehaviour
                 TMP_Text tempText = tempWord.GetComponentInChildren<TMP_Text>();
                 tempText.text = word.ToUpper();
                 (int,string) pair = WordCleanup.CommandLanguageDict[priorword].Find(option => word == option.Item2);
-                Debug.Log(pair);
+                // Debug.Log(pair);
                 if(pair.Item1 >1 ) {
                     fullCommand+=word+" ";
                     word= WordCleanup.CommandLanguageDict[word][pair.Item1-2].Item2;
@@ -78,14 +78,18 @@ public class StreamingToCommand: MonoBehaviour
                 Destroy(currentOptionsScroll);
             }
             Debug.Log(fullCommand);
-            tester.ValidateResult(fullCommand,testID);
-            tester.LogTime(time,1f/Time.deltaTime,testID);
-            if(testID<0) {
+            if(tester) {
+            tester.ValidateResult(fullCommand,time,1f/Time.deltaTime,testID);
+            } if(testID<0) {
                 ExecuteCommand(fullCommand);
             }
             pause=true;
             Stop();
-            Invoke(nameof(Init), pauseTimer);
+            if(testID<0) {
+                Invoke(nameof(Init), pauseTimer);
+            } else {
+                Init();
+            }
         } else if(priorword!="" && WordCleanup.CommandLanguageDict.ContainsKey(priorword)) {
             if(currentOptionsScroll!=null) {
                 Destroy(currentOptionsScroll);

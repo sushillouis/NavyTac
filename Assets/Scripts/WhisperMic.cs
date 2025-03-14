@@ -127,7 +127,7 @@ public class WhisperMic : MonoBehaviour
             outputText.text = text;
         if(streamingToCommand) {
             streamingToCommand.ProcessResult(text,testID,time);
-            streamingToCommand.ProcessResult(text,testID,time);
+            // streamingToCommand.ProcessResult(text,testID,time);
         }
     }
     

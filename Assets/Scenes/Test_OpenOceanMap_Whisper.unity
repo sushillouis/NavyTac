@@ -2267,8 +2267,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9370225a2ca94276b870d5f87b0db55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  logLevel: 1
-  modelPath: Whisper/ggml-large-v3-turbo.bin
+  logLevel: 2
+  modelPath: Whisper/ggml-base.bin
   isModelPathInStreamingAssets: 1
   initOnAwake: 1
   language: en
@@ -4270,7 +4270,7 @@ MonoBehaviour:
   minusButton: {fileID: 6012287531714796468}
   simSpeedButtonText: {fileID: 6012287531714796467}
   timeScale: 1
-  chaos: 1
+  chaos: 0
 --- !u!1 &1142393662
 GameObject:
   m_ObjectHideFlags: 0
@@ -7319,6 +7319,24 @@ MonoBehaviour:
   - {fileID: 8300000, guid: ecbadc8d5ce17804c839e3e16ba27556, type: 3}
   - {fileID: 8300000, guid: 0ae4f7b757f04ba47a401ee4b4d709f6, type: 3}
   - {fileID: 8300000, guid: dad7ecda927374548b056ed73d67d1cf, type: 3}
+  - {fileID: 8300000, guid: d94901860c055264bbb5f25e030b25ea, type: 3}
+  - {fileID: 8300000, guid: 48b73ef884186234b8e2e999bd2cb77d, type: 3}
+  - {fileID: 8300000, guid: 4f86915b41ecf6d45afb2181a2a1643b, type: 3}
+  - {fileID: 8300000, guid: df9666a402b8c7e4f834a51df43e7ef9, type: 3}
+  - {fileID: 8300000, guid: 8ed4d2ec24baceb43bc2db20916deff5, type: 3}
+  - {fileID: 8300000, guid: d1c7f2b325549cd46832587d9466d5ab, type: 3}
+  - {fileID: 8300000, guid: 7729300fca866154ba4a3e1f15b34ee9, type: 3}
+  - {fileID: 8300000, guid: 76723e12d81295f4580f52d761c479eb, type: 3}
+  - {fileID: 8300000, guid: 21a117e1ee764b7479b8995494c4d7e2, type: 3}
+  - {fileID: 8300000, guid: d0cc3a70d985f764eb450ee874ea391e, type: 3}
+  - {fileID: 8300000, guid: 174d0b1a4cef411499670851b55e8a86, type: 3}
+  - {fileID: 8300000, guid: c932347a7d17eae4fa5ee602caef4f60, type: 3}
+  - {fileID: 8300000, guid: d191e1bda8b3daf4fa88d444fc1a5d31, type: 3}
+  - {fileID: 8300000, guid: 38a59ee1bb2ebb74d9284c14ac235b0b, type: 3}
+  - {fileID: 8300000, guid: 7b9573f29ab5a7d43887459b315e413d, type: 3}
+  - {fileID: 8300000, guid: 5909247eca7024940acde534d7ebbe0b, type: 3}
+  - {fileID: 8300000, guid: 978666dbacf60fa43830a344455cf0a7, type: 3}
+  - {fileID: 8300000, guid: 2e15881f4f2f7db448431dfd69a510df, type: 3}
   testAnswers:
   - attack furthest ally
   - attack nearest enemy
@@ -7332,6 +7350,9 @@ MonoBehaviour:
   testInfo: []
   mic: {fileID: 1941202375}
   streamingToCommand: {fileID: 746089596}
+  finalOutput: 
+  testRange: {x: 18, y: 27}
+  repeats: 10
 --- !u!1 &2013597644
 GameObject:
   m_ObjectHideFlags: 0
