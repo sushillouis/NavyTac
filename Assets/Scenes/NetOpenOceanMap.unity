@@ -2793,6 +2793,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1973298654090249106, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_GroupingID
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2757650701443023354, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_GroupingID
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3495065583129894035, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_GroupingID
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3724267880135175314, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_GroupingID
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4034866660640197166, guid: d39e64df80d4eca4da864f574fdbcecc,
         type: 3}
       propertyPath: m_Name
@@ -2848,14 +2868,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6047598657664220447, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_GroupingID
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7621493322811227212, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_GroupingID
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7819749477550107385, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_GroupingID
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8679314134520865932, guid: d39e64df80d4eca4da864f574fdbcecc,
+        type: 3}
+      propertyPath: m_GroupingID
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3831137984381009792, guid: d39e64df80d4eca4da864f574fdbcecc,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1679200916}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d39e64df80d4eca4da864f574fdbcecc, type: 3}
 --- !u!1 &553332878
 GameObject:
@@ -6675,67 +6711,6 @@ MonoBehaviour:
     type: 3}
   lines: []
   tmp: {fileID: 0}
---- !u!1 &1679200912 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3831137984381009792, guid: d39e64df80d4eca4da864f574fdbcecc,
-    type: 3}
-  m_PrefabInstance: {fileID: 551206834}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1679200916
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679200912}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f2fd9069db7d894d8e8458779069765, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  entityId: 0
-  isSelected: 0
-  position: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
-  speed: 0
-  desiredSpeed: 0
-  heading: 0
-  desiredHeading: 0
-  health: 0
-  fuel: 0
-  range: 0
-  fuelBurnRate: 0
-  entityRole: 0
-  acceleration: 0
-  turnRate: 0
-  maxSpeed: 0
-  minSpeed: 0
-  cruiseSpeed: 0
-  mass: 10000000
-  length: 0
-  width: 0
-  height: 0
-  maxHealth: 0
-  minHealth: 0
-  maxFuel: 0
-  maxRange: 0
-  entityType: 16
-  entityClass: 0
-  cameraRig: {fileID: 0}
-  selectionCircle: {fileID: 0}
-  owner:
-    name: 
-    playerId: 0
-    playerSide: 0
-    playerColor: {r: 0, g: 0, b: 0, a: 0}
-    isObserver: 0
-    isAdmin: 0
-  creatorsEntity: {fileID: 0}
-  net: {fileID: 0}
-  phx: {fileID: 0}
-  ai: {fileID: 0}
-  ui: {fileID: 0}
-  weapons: {fileID: 0}
 --- !u!1 &1697653316
 GameObject:
   m_ObjectHideFlags: 0
