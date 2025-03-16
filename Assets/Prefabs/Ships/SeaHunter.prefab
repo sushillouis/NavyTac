@@ -73,7 +73,7 @@ MonoBehaviour:
   height: 15
   maxHealth: 120
   minHealth: 0
-  maxFuel: 0
+  maxFuel: 10000
   maxRange: 0
   entityType: 10
   entityClass: 5
@@ -344,7 +344,6 @@ MonoBehaviour:
   entity: {fileID: 0}
   moves: []
   follows: []
-  commands: []
   intercepts: []
   intercept3ds: []
   smartIntercepts: []

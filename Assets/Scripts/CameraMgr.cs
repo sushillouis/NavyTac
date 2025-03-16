@@ -101,6 +101,9 @@ public class CameraMgr : MonoBehaviour
                 YawNode.transform.localPosition = Vector3.zero;
                 YawNode.transform.localEulerAngles = Vector3.zero;
             }
+            else{
+                isRTSMode = !isRTSMode;
+            }
         }
         else
         {

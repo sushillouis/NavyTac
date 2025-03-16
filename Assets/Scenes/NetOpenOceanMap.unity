@@ -1696,6 +1696,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5418398164204633760, guid: 94335bd1e64edd54585a0f3f4b3bf7cf,
+        type: 3}
+      propertyPath: fuel
+      value: 100000
+      objectReference: {fileID: 0}
+    - target: {fileID: 5418398164204633760, guid: 94335bd1e64edd54585a0f3f4b3bf7cf,
+        type: 3}
+      propertyPath: minHealth
+      value: 1000000
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8559,16 +8569,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 382953080}
     m_Modifications:
-    - target: {fileID: 1672142530523341080, guid: 8e5a241efd26c114ca69ba5949ed5da0,
-        type: 3}
-      propertyPath: initialDesiredAltitude
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
-        type: 3}
-      propertyPath: maxHealth
-      value: 100
-      objectReference: {fileID: 0}
     - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
         type: 3}
       propertyPath: terrainMask.m_Bits

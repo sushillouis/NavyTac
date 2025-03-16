@@ -328,6 +328,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   eulerRotation: {x: 0, y: 0, z: 0}
+  initialDesiredAltitude: 50
   desiredAltitude: 50
   altitude: 0
   climbRate: 15
@@ -977,7 +978,7 @@ MonoBehaviour:
   heading: 0
   desiredHeading: 0
   health: 100
-  fuel: 0
+  fuel: 50
   range: 0
   fuelBurnRate: 0
   entityRole: 2
@@ -990,10 +991,10 @@ MonoBehaviour:
   length: 5
   width: 1
   height: 1
-  maxHealth: 0
+  maxHealth: 100
   minHealth: 0
-  maxFuel: 520
-  maxRange: 124000
+  maxFuel: 50
+  maxRange: 1000
   entityType: 15
   entityClass: 13
   cameraRig: {fileID: 9145676869908812067}

@@ -193,7 +193,7 @@ MonoBehaviour:
   heading: 0
   desiredHeading: 0
   health: 100
-  fuel: 0
+  fuel: 100000
   range: 0
   fuelBurnRate: 0
   entityRole: 13
@@ -208,7 +208,7 @@ MonoBehaviour:
   height: 0
   maxHealth: 1000
   minHealth: 0
-  maxFuel: 0
+  maxFuel: 10000
   maxRange: 0
   entityType: 16
   entityClass: 0
@@ -453,39 +453,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
-  weapons:
-  - cooldown: 120
-    behaviorType: 4
-    weaponEntityType: 11
+  weapon:
+    launchPoint: {fileID: 0}
+    cooldown: 0
+    behaviorType: 0
+    weaponEntityType: 0
     range: 200
     currentWeaponEntities: []
-    launchLocation: {x: 100, y: 0, z: 0}
-    launchDirection: {x: 0, y: 0, z: 0}
-    ammoCount: 10
-  - cooldown: 60
-    behaviorType: 2
-    weaponEntityType: 12
-    range: 200
-    currentWeaponEntities: []
-    launchLocation: {x: -100, y: 0, z: 0}
-    launchDirection: {x: 0, y: 0, z: 1}
-    ammoCount: 5
-  - cooldown: 3
-    behaviorType: 3
-    weaponEntityType: 15
-    range: 200
-    currentWeaponEntities: []
-    launchLocation: {x: 0, y: 10, z: 100}
-    launchDirection: {x: 0, y: 0, z: 0}
-    ammoCount: 200
-  - cooldown: 30
-    behaviorType: 1
-    weaponEntityType: 15
-    range: 200
-    currentWeaponEntities: []
-    launchLocation: {x: 0, y: 10, z: 100}
-    launchDirection: {x: 0, y: 0, z: 0}
-    ammoCount: 20
+    defaultDamage: 0
+    ammoCount: 0
 --- !u!1 &6159039234625432259
 GameObject:
   m_ObjectHideFlags: 0
@@ -738,7 +714,6 @@ MonoBehaviour:
   entity: {fileID: 0}
   moves: []
   follows: []
-  commands: []
   intercepts: []
   intercept3ds: []
   smartIntercepts: []

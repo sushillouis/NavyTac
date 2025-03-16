@@ -195,6 +195,11 @@ public class WeaponsMgr : MonoBehaviour
         {
             wd.ammoCount--;
         }
+        if(wd.range< Vector3.Distance(launchingEntity.transform.position, target.transform.position))
+        {
+            Debug.Log("Target out of range");
+            return;
+        }
 
         Vector3 pos = wd.launchPoint.position;
         Debug.Log(wd.launchPoint.position);
@@ -223,37 +228,46 @@ public class WeaponsMgr : MonoBehaviour
     public void DestroyEntity(Entity entity)
     {
         
-        
-        if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name)
-        {
-           CameraMgr.inst.ToggleRTSView();
-        }
+        try{
+            
+            if(CameraMgr.inst!= null)
+            {
+                if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name)
+                {
+                CameraMgr.inst.ToggleRTSView();
+                }
+            }
+            if (weapons.Contains(entity))
+            {
+                EntityMgr.inst.entities.Remove(entity);
+                ReturnWeapon(entity);
+                weapons.Remove(entity);
+                DistanceMgr.inst.Initialize();
+                return;
+            }
+            MinimapMgr.inst.RemoveMinimapIcon(entity);
+            if (entity.TryGetComponent<UnitAI>(out var unitAI))
+            {
+                unitAI.StopAndRemoveAllCommands();
+            }
 
-        if (weapons.Contains(entity))
-        {
+            if (SelectionMgr.inst.selectedEntities.Contains(entity))
+            {
+                SelectionMgr.inst.selectedEntities.Remove(entity);
+                SelectionMgr.inst.selectedEntity = SelectionMgr.inst.selectedEntities.Count > 0 
+                    ? SelectionMgr.inst.selectedEntities[0] 
+                    : null;
+            }
+
             EntityMgr.inst.entities.Remove(entity);
-            ReturnWeapon(entity);
-            weapons.Remove(entity);
             DistanceMgr.inst.Initialize();
-            return;
+            Destroy(entity.gameObject);
         }
-        MinimapMgr.inst.RemoveMinimapIcon(entity);
-        if (entity.TryGetComponent<UnitAI>(out var unitAI))
-        {
-            unitAI.StopAndRemoveAllCommands();
+        catch (System.Exception e){
+            string entityName = entity != null ? entity.name : "null";
+            Debug.LogError($"Error in DestroyEntity for entity: {entityName}. Exception: {e.Message}");
+        
         }
-
-        if (SelectionMgr.inst.selectedEntities.Contains(entity))
-        {
-            SelectionMgr.inst.selectedEntities.Remove(entity);
-            SelectionMgr.inst.selectedEntity = SelectionMgr.inst.selectedEntities.Count > 0 
-                ? SelectionMgr.inst.selectedEntities[0] 
-                : null;
-        }
-
-        EntityMgr.inst.entities.Remove(entity);
-        DistanceMgr.inst.Initialize();
-        Destroy(entity.gameObject);
         
     }
     public class EntityTypes{

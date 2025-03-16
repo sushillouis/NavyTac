@@ -48,7 +48,7 @@ public class Intercept3d : Intercept
         base.Tick();
         diffToMovePosition = targetEntity.position - entity.position;
         if(diffToMovePosition.sqrMagnitude < terminalPhaseDistanceSq)
-            phx3d.desiredAltitude = 10;
+            phx3d.desiredAltitude = 0;
     }
     public override bool IsDone()
     {

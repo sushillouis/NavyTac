@@ -20,7 +20,7 @@ public class Entity : MonoBehaviour
     public float heading; //degrees
     public float desiredHeading; //degrees
     public float health;
-    public float fuel;
+    public float fuel = 1;
     public float range;
     public float fuelBurnRate;
     public EntityRole entityRole;
@@ -63,9 +63,10 @@ public class Entity : MonoBehaviour
 
     void Start()
     {
+        fuel = maxFuel;
         health = maxHealth;
         isSelected = false;
-        fuel = maxFuel;
+        
         Renderer mainRenderer = GetComponent<Renderer>();
         Renderer[] childRenderers = GetComponentsInChildren<Renderer>();
         
@@ -81,6 +82,13 @@ public class Entity : MonoBehaviour
         ComputeFuelRange();
         if(health <= 0 ){
             WeaponsMgr.inst.DestroyEntity(this);          
+        }
+        if(fuel <= 0){
+            if(WeaponsMgr.inst.weapons.Contains(this))
+            {
+                FXMgr.inst.CreateExplosionAt(transform.position, 1);
+                WeaponsMgr.inst.DestroyEntity(this);
+            }
         }
     }
 
