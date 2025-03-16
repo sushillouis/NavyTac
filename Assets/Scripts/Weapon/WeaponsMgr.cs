@@ -301,45 +301,35 @@ public class WeaponsMgr : MonoBehaviour
 
     public void DestroyEntity(Entity entity)
     {
-        Debug.Log($"[WeaponsMgr] DestroyEntity called for {entity.name}");
-
         MinimapMgr.inst.RemoveMinimapIcon(entity);
         if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name)
         {
-            Debug.Log($"[WeaponsMgr] Switching to RTS view for destroyed entity");
-            CameraMgr.inst.ToggleRTSView();
+           CameraMgr.inst.ToggleRTSView();
         }
-
         if (weapons.Contains(entity))
         {
-            Debug.Log($"[WeaponsMgr] Processing weapon entity destruction");
             EntityMgr.inst.entities.Remove(entity);
             ReturnWeapon(entity);
             weapons.Remove(entity);
-            Debug.Log($"[WeaponsMgr] Weapon {entity.name} cleaned up");
             return;
         }
 
         UnitAI unitAI = entity.GetComponentInChildren<UnitAI>();
         if (unitAI != null)
         {
-            Debug.Log($"[WeaponsMgr] Cleaning AI for {entity.name}");
             unitAI.StopAndRemoveAllCommands();
         }
 
         if (SelectionMgr.inst.selectedEntities.Contains(entity))
         {
-            Debug.Log($"[WeaponsMgr] Removing from selection");
             SelectionMgr.inst.selectedEntities.Remove(entity);
             SelectionMgr.inst.selectedEntity = 
                 (SelectionMgr.inst.selectedEntities.Count > 0) 
                 ? SelectionMgr.inst.selectedEntities[0] 
                 : null;
         }
-
         EntityMgr.inst.entities.Remove(entity);
         DistanceMgr.inst.Initialize();
-        Debug.Log($"[WeaponsMgr] Destroying game object: {entity.name}");
         Destroy(entity.gameObject);
     }
 

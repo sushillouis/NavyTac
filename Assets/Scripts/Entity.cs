@@ -77,17 +77,11 @@ public class Entity : MonoBehaviour
             
         }
     }
-    void Update()
-    {
-        if(health <= 0 ){
-            EntityMgr.inst.DestroyEntity(this);           
-        }
-        
-    }
-
     private void FixedUpdate() {
         ComputeFuelRange();
-        RaycastCollisonCheck();
+        if(health <= 0 ){
+            WeaponsMgr.inst.DestroyEntity(this);          
+        }
     }
 
     void ComputeFuelRange() {
@@ -101,29 +95,5 @@ public class Entity : MonoBehaviour
         range = Mathf.Clamp(fuel * cruiseSpeed, 0, maxRange);
 
     }
-    void RaycastCollisonCheck()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, 20))
-        {
-            if (WeaponsMgr.inst.weapons.Contains(this))
-            {
-                if(hit.collider is TerrainCollider){
-                    FXMgr.inst.CreateExplosionAt(hit.point, 1);
-                    health = 0;
-                    if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
-                }
-                Entity otherEntity = hit.collider.GetComponent<Entity>();
-
-                if (otherEntity != null && otherEntity != creatorsEntity && otherEntity.owner != owner)
-                {   
-                    float damage = WeaponsMgr.inst.damageMatrix.GetDamage(this.entityType, otherEntity.entityType);
-                    FXMgr.inst.CreateExplosionAt(hit.point, 1);
-                    otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
-                    health = 0;
-                    if (health <= 0) WeaponsMgr.inst.DestroyEntity(this);
-                }
-            }
-        }
-    }
+    
 }
