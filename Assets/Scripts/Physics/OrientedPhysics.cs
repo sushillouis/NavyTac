@@ -6,7 +6,7 @@ public class OrientedPhysics : MonoBehaviour
 {
     public Entity entity;
     
-    private void Awake() {
+    public virtual void Awake() {
         entity = GetComponentInParent<Entity>();
         entity.phx = this;
         entity.position = entity.transform.localPosition;

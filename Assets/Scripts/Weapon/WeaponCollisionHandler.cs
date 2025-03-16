@@ -2,12 +2,15 @@ using UnityEngine;
 public class WeaponCollisionHandler : MonoBehaviour
 {
     public Entity entity;
+    private WeaponData weaponData;
     void Start()
     {
         entity = GetComponent<Entity>();
+        weaponData = entity.creatorsEntity.GetComponentInChildren<WeaponsAspect>().weapon;
     }
 
     void OnCollisionEnter(Collision collision) {
+        
         if (WeaponsMgr.inst.weapons.Contains(entity)) {
             if (collision.collider is TerrainCollider) {
                 Debug.Log(collision.collider.name);
@@ -17,8 +20,17 @@ public class WeaponCollisionHandler : MonoBehaviour
             }
 
             Entity otherEntity = collision.collider.GetComponent<Entity>();
+            if (otherEntity.owner == entity.owner)
+            {
+                return;
+            }
             if (otherEntity != null && otherEntity != entity.creatorsEntity && otherEntity.owner != entity.owner && otherEntity.entityType != entity.entityType) {
                 float damage = WeaponsMgr.inst.damageMatrix.GetDamage(entity.entityType, otherEntity.entityType);
+                if (damage < 0)
+                {
+                    damage = weaponData.defaultDamage;
+                }
+                Debug.Log(otherEntity.name+" "+ otherEntity.entityType+" "+ otherEntity.owner );
                 FXMgr.inst.CreateExplosionAt(collision.contacts[0].point, 1);
                 otherEntity.health = Mathf.Max(otherEntity.health - damage, 0);
                 WeaponsMgr.inst.DestroyEntity(entity);

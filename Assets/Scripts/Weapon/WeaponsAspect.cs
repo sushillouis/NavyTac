@@ -15,6 +15,7 @@ public class WeaponData
     public EntityType weaponEntityType;
     public float range = 200f;
     public List<Entity> currentWeaponEntities; //list of alive weapons
+    public float defaultDamage;
     // public Vector3 launchLocation;
     // public Vector3 launchDirection;
     public float ammoCount;
@@ -34,17 +35,5 @@ public class WeaponsAspect : MonoBehaviour
         entity.weapons = this;
         weapon.currentWeaponEntities = new List<Entity>();
         weapon.lastShotTime = -weapon.cooldown;
-        if (weapon.launchPoint == null)
-            // Debug.LogError("[WeaponsAspect] LaunchPoint transform not assigned!");
-        
-        // Remove all references to launchPrefab.transform
-        weapon.lastShotTime = -weapon.cooldown;
-
-
-        // foreach(WeaponData wd in weapons) {
-        //     wd.currentWeaponEntities = new List<Entity>();
-        //     wd.lastShotTime = -wd.cooldown;
-        // }
-
     }
 }

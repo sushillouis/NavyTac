@@ -11,6 +11,11 @@ public class Oriented3dPhysics : OrientedPhysics
     public float climbRate;
     public float ceiling = 1000;//meters
     // Update is called once per frame
+    public override void Awake()
+    {
+        base.Awake();
+        altitude = entity.position.y;
+    }
     public override void FixedUpdate()
     {
         base.FixedUpdate();
@@ -25,5 +30,7 @@ public class Oriented3dPhysics : OrientedPhysics
         Vector3 pos = entity.transform.localPosition;
         pos.y = altitude;
         entity.transform.localPosition = pos;
+        entity.position = entity.transform.localPosition;
+
     }
 }

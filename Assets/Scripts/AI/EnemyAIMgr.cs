@@ -378,6 +378,7 @@ public class EnemyAIMgr : MonoBehaviour
         Entity opponentBase = FindOpponentBase();
         
         if (opponentBase == null) return;
+        HandleCombatBehavior(opponentBase);
         if (OldBase != null && OldBase == opponentBase) return;
         
         OldBase = opponentBase;
@@ -392,7 +393,7 @@ public class EnemyAIMgr : MonoBehaviour
         FormWedgeFormation(basePos);
 
         // Find and attack nearest enemy
-        HandleCombatBehavior(opponentBase);
+        
 
         if (drawDebugVisuals) {
             DrawBaseRadius(basePos, baseAttackRadius);
