@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.3865354, g: 0.4779775, b: 0.5743237, a: 1}
+  m_IndirectSpecularColor: {r: 0.38653484, g: 0.47797692, b: 0.5743225, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -404,12 +404,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7528760655783591509, guid: 8c32edeab3e41cf41b00eb272c64dad8,
     type: 3}
   m_PrefabInstance: {fileID: 1361735525}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &145806865 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2298628844856446474, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-    type: 3}
-  m_PrefabInstance: {fileID: 2020023503048458507}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &163206661 stripped
 Transform:
@@ -8919,16 +8913,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: DDG51
       objectReference: {fileID: 0}
-    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: weapon.range
-      value: 1000
-      objectReference: {fileID: 0}
-    - target: {fileID: 6425765912287157090, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: weapon.launchPoint
-      value: 
-      objectReference: {fileID: 145806865}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 5981526810069762082, guid: 4eadb14a1eece2a44a7ae893943f3d9f, type: 3}
