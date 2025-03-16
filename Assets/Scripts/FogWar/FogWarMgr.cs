@@ -198,11 +198,13 @@ public class FogWarMgr : MonoBehaviour
         revelers = EntityMgr.inst.entities.FindAll(entity => 
             entity != null && 
             entity.owner != null && 
+            entity.gameObject.activeInHierarchy &&
             playerSide.Contains(entity.owner.playerSide));
 
         nonRevelers = EntityMgr.inst.entities.FindAll(entity => 
             entity != null && 
             entity.owner != null && 
+            entity.gameObject.activeInHierarchy &&
             !playerSide.Contains(entity.owner.playerSide));
         
 
@@ -312,8 +314,16 @@ public class FogWarMgr : MonoBehaviour
             fogRenderTexture.Release();
     }
 
+    void OnDisable()
+    {
+        revelers.Clear();
+        nonRevelers.Clear();
+    }
+
     void OnDestroy()
     {
         CleanupComputeResources();
+        revelers.Clear();
+        nonRevelers.Clear();
     }
 }

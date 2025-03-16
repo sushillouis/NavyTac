@@ -6,15 +6,17 @@ public class Oriented3dPhysics : OrientedPhysics
 {
     // Start is called before the first frame update
     
+    public float initialDesiredAltitude;
     public float desiredAltitude;
     public float altitude;
     public float climbRate;
     public float ceiling = 1000;//meters
     // Update is called once per frame
+    
     public override void Awake()
     {
         base.Awake();
-        altitude = entity.position.y;
+        desiredAltitude = initialDesiredAltitude;
     }
     public override void FixedUpdate()
     {
@@ -30,7 +32,12 @@ public class Oriented3dPhysics : OrientedPhysics
         Vector3 pos = entity.transform.localPosition;
         pos.y = altitude;
         entity.transform.localPosition = pos;
-        entity.position = entity.transform.localPosition;
+        entity.position.y = pos.y;
 
+
+    }
+    public void ResetAltitude() {
+        desiredAltitude = initialDesiredAltitude;
+        altitude = entity.position.y;
     }
 }

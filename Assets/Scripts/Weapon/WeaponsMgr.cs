@@ -10,6 +10,7 @@ public class WeaponsMgr : MonoBehaviour
     private Dictionary<TactPlayer, Dictionary<EntityType, Queue<Entity>>> weaponPools = new Dictionary<TactPlayer, Dictionary<EntityType, Queue<Entity>>>();
     public List<WeaponDamage> weaponDamages;
     public HashSet<Entity> weapons = new HashSet<Entity>();
+   
 
     private void Awake()
     {
@@ -70,18 +71,34 @@ public class WeaponsMgr : MonoBehaviour
         return weapon;
     }
 
-    private Entity ReactivatePooledWeapon(Queue<Entity> pool, Vector3 position, Vector3 direction , Entity creatorEntity)
+    private Entity ReactivatePooledWeapon(Queue<Entity> pool, Vector3 position, Vector3 direction, Entity creatorEntity)
+{
+    var weapon = pool.Dequeue();
+    ResetWeaponPhysics(weapon);
+    weapon.GetComponentInChildren<Oriented3dPhysics>().ResetAltitude();
+    UpdateWeaponTransform(weapon, position, direction);
+    
+    // Add these lines to set altitude correctly
+    var phx3d = weapon.GetComponentInChildren<Oriented3dPhysics>();
+    if (phx3d != null)
     {
-        var weapon = pool.Dequeue();
-        
-        UpdateWeaponTransform(weapon, position, direction);
-        weapon.creatorsEntity = creatorEntity;
-        weapon.gameObject.SetActive(true);
-        return weapon;
+        phx3d.altitude = position.y;         // Match current altitude to launch position
+    }
+    weapon.creatorsEntity = creatorEntity;
+    weapon.gameObject.SetActive(true);
+    UIAspect uiAspect = weapon.GetComponentInChildren<UIAspect>();
+    if (uiAspect != null && uiAspect.minimapIcon != null)
+    {
+        MinimapMgr.inst.CreateMinimapIcon(weapon, uiAspect.minimapIcon);
+    }
+    DistanceMgr.inst.Initialize();
+    return weapon;
     }
 
     private void ResetWeaponPhysics(Entity weapon)
     {
+        
+        
         weapon.health = 100;
         weapon.fuel = weapon.maxFuel;
         weapon.range = weapon.maxRange;
@@ -93,6 +110,8 @@ public class WeaponsMgr : MonoBehaviour
         weapon.position = new Vector3(0,1,0);
         weapon.transform.position = new Vector3(0,1,0);
         weapon.transform.localEulerAngles = Vector3.zero;
+        weapon.GetComponentInChildren<Oriented3dPhysics>().ResetAltitude();
+        
     }
 
     private void ResetWeaponAI(Entity weapon)
@@ -203,7 +222,7 @@ public class WeaponsMgr : MonoBehaviour
 
     public void DestroyEntity(Entity entity)
     {
-        MinimapMgr.inst.RemoveMinimapIcon(entity);
+        
         
         if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name)
         {
@@ -215,9 +234,10 @@ public class WeaponsMgr : MonoBehaviour
             EntityMgr.inst.entities.Remove(entity);
             ReturnWeapon(entity);
             weapons.Remove(entity);
+            DistanceMgr.inst.Initialize();
             return;
         }
-
+        MinimapMgr.inst.RemoveMinimapIcon(entity);
         if (entity.TryGetComponent<UnitAI>(out var unitAI))
         {
             unitAI.StopAndRemoveAllCommands();
@@ -234,9 +254,16 @@ public class WeaponsMgr : MonoBehaviour
         EntityMgr.inst.entities.Remove(entity);
         DistanceMgr.inst.Initialize();
         Destroy(entity.gameObject);
+        
+    }
+    public class EntityTypes{
+        public EntityType entityType;
+        public float defaultDamage;
     }
 
     [Header("Context Menu")]
+    
+    public List<EntityTypes> weaponTypes = new List<EntityTypes>();
     public GameObject MovableEntitiesRoot;
     public string fileNameCSV = "WeaponDamageMatrix.csv";
     public TextAsset csvFile;

@@ -30,6 +30,7 @@ public static class WeaponCSVHandler
 
         foreach (EntityType weaponType in entityTypes)
         {
+            
             csvContent.Append(weaponType.ToString());
             WeaponDamage weaponDamage;
             if (weaponDamageDict.ContainsKey(weaponType))

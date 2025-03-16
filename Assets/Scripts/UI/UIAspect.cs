@@ -8,7 +8,7 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
 
     [Header("Minimap Icon")]
     [SerializeField]
-    private GameObject minimapIcon;
+    public GameObject minimapIcon;
 
     private void Awake() {
         entity = GetComponentInParent<Entity>();

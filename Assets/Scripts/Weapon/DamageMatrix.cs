@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class DamageMatrix
 {
-    public float defaultDamage = 1f;
+    public float defaultDamage = 0f;
     private Dictionary<EntityType, Dictionary<EntityType, float>> damageMatrix;
 
     public void InitializeDamageMatrix(List<WeaponDamage> weaponDamages)
