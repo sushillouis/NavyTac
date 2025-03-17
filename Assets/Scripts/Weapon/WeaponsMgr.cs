@@ -185,45 +185,46 @@ public class WeaponsMgr : MonoBehaviour
     }
 
     public void LaunchWeapon(Entity launchingEntity, WeaponData wd, Entity target, Vector3 targetPosition)
+{
+    if (wd == null) return;
+
+    float timeSinceLastShot = Time.time - wd.lastShotTime;
+    if (timeSinceLastShot < wd.cooldown || wd.ammoCount == 0) return;
+
+    if (wd.ammoCount > 0)
     {
-        if (wd == null) return;
-
-        float timeSinceLastShot = Time.time - wd.lastShotTime;
-        if (timeSinceLastShot < wd.cooldown || wd.ammoCount == 0) return;
-
-        if (wd.ammoCount > 0)
-        {
-            wd.ammoCount--;
-        }
-        if(wd.range< Vector3.Distance(launchingEntity.transform.position, target.transform.position))
-        {
-            Debug.Log("Target out of range");
-            return;
-        }
-
-        Vector3 pos = wd.launchPoint.position;
-        Debug.Log(wd.launchPoint.position);
-        Vector3 dir = launchingEntity.transform.localEulerAngles;
-
-        Entity ent = GetWeapon(wd.weaponEntityType, pos, dir, launchingEntity.owner, launchingEntity);
-        if (ent == null)
-        {
-            Debug.Log("No Weapon entity found");
-            return;
-        }
-
-        if (ent.gameObject.activeSelf == false)
-        {
-            Debug.Log("entity not active");
-        }
-
-        weapons.Add(ent);
-        wd.currentWeaponEntities.Add(ent);
-        
-
-        StartCoroutine(TargetEntity(ent, wd, target, targetPosition));
-        wd.lastShotTime = Time.time;
+        wd.ammoCount--;
     }
+    if(wd.range < Vector3.Distance(launchingEntity.transform.position, target.transform.position))
+    {
+        Debug.Log("Target out of range");
+        return;
+    }
+
+    Vector3 pos = wd.launchPoint.position;
+    // Calculate direction to face the target
+    Vector3 directionToTarget = (targetPosition - pos).normalized;
+    Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
+    Vector3 dir = targetRotation.eulerAngles; // Use rotation angles from target direction
+
+    Entity ent = GetWeapon(wd.weaponEntityType, pos, dir, launchingEntity.owner, launchingEntity);
+    if (ent == null)
+    {
+        Debug.Log("No Weapon entity found");
+        return;
+    }
+
+    if (ent.gameObject.activeSelf == false)
+    {
+        Debug.Log("entity not active");
+    }
+
+    weapons.Add(ent);
+    wd.currentWeaponEntities.Add(ent);
+
+    StartCoroutine(TargetEntity(ent, wd, target, targetPosition));
+    wd.lastShotTime = Time.time;
+}
 
     public void DestroyEntity(Entity entity)
     {
