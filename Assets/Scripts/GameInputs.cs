@@ -983,7 +983,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""modifier"",
                     ""id"": ""c771ccff-e45a-4846-8d7b-a6295e9f1df0"",
-                    ""path"": ""<Keyboard>/p"",
+                    ""path"": ""<Keyboard>/space"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

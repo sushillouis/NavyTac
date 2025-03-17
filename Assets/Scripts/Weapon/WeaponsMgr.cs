@@ -19,7 +19,7 @@ public class WeaponsMgr : MonoBehaviour
         damageMatrix.InitializeDamageMatrix(weaponDamages);
     }
 
-    public void handleWeapon(Vector2 mousePos, WeaponBehaviors behaviorType)
+    public void handleWeapon(Vector2 mousePos)
     {
         List<Entity> selectedEntities = SelectionMgr.inst.selectedEntities;
         if (selectedEntities == null || selectedEntities.Count == 0) return;
