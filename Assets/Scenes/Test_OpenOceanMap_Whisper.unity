@@ -2077,7 +2077,7 @@ MonoBehaviour:
   m_StopNaN: 0
   m_Dithering: 0
   m_ClearDepth: 1
-  m_AllowXRRendering: 1
+  m_AllowXRRendering: 0
   m_AllowHDROutput: 1
   m_UseScreenCoordOverride: 0
   m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
@@ -2107,7 +2107,7 @@ MonoBehaviour:
   m_EventMask:
     serializedVersion: 2
     m_Bits: 32
-  m_MaxRayIntersections: 2
+  m_MaxRayIntersections: 999
 --- !u!1 &538399507
 GameObject:
   m_ObjectHideFlags: 0
@@ -2218,6 +2218,9 @@ MonoBehaviour:
   cameraTurnRate: 30
   currentYawEulerAngles: {x: 0, y: 0, z: 0}
   currentPitchEulerAngles: {x: 0, y: 0, z: 0}
+  onCameraMove:
+    m_PersistentCalls:
+      m_Calls: []
   isRTSMode: 1
 --- !u!1 &574295963
 GameObject:
@@ -2887,13 +2890,18 @@ MonoBehaviour:
     type: 3}
   optionWordPrefab: {fileID: 1233319698706714059, guid: 5e276065354dc7242b2272813d707ee0,
     type: 3}
+  billboardPrefab: {fileID: 2297068463492934727, guid: 4cff82b9c0b059b409f4f7eeb5e6b9e7,
+    type: 3}
   currentOptionsScroll: {fileID: 0}
   optionsScrollPrefab: {fileID: 8408936066296214721, guid: 3f8104b552c8d3f419dc534a9560670d,
     type: 3}
   words: []
+  billboards: []
   priorword: 
   fullCommand: 
   rectPos: {x: 0, y: 0, z: 0}
+  billboardScale: 0.1
+  billboardHeightScale: 0.075
   pauseTimer: 2
   tester: {fileID: 1997607675}
 --- !u!114 &772865853 stripped
@@ -4342,7 +4350,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -12.3118, y: 0}
+  m_AnchoredPosition: {x: -12.311798, y: 0}
   m_SizeDelta: {x: 65.3763, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1182770964
@@ -5391,6 +5399,7 @@ GameObject:
   - component: {fileID: 1491763688}
   - component: {fileID: 1491763687}
   - component: {fileID: 1491763686}
+  - component: {fileID: 1491763690}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -5410,11 +5419,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
+  m_IgnoreReversedGraphics: 0
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 791
 --- !u!114 &1491763687
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5448,8 +5457,8 @@ Canvas:
   m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 0
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
+  m_Camera: {fileID: 534669904}
+  m_PlaneDistance: 1
   m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
@@ -5459,7 +5468,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -1
   m_TargetDisplay: 0
 --- !u!224 &1491763689
 RectTransform:
@@ -5490,6 +5499,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!210 &1491763690
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1491763685}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
 --- !u!1 &1510043362
 GameObject:
   m_ObjectHideFlags: 0
@@ -7281,7 +7302,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1997607674
 Transform:
   m_ObjectHideFlags: 0
@@ -8105,6 +8126,16 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 229904364588993521, guid: 154d111a92a0b5044a70610b2316490d,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.00058632874
+      objectReference: {fileID: 0}
+    - target: {fileID: 229904364588993521, guid: 154d111a92a0b5044a70610b2316490d,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0.020707965
+      objectReference: {fileID: 0}
     - target: {fileID: 386599908019381799, guid: 154d111a92a0b5044a70610b2316490d,
         type: 3}
       propertyPath: m_Layer
@@ -8254,6 +8285,11 @@ PrefabInstance:
     - target: {fileID: 3136481221599544331, guid: 154d111a92a0b5044a70610b2316490d,
         type: 3}
       propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3136481221599544331, guid: 154d111a92a0b5044a70610b2316490d,
+        type: 3}
+      propertyPath: m_AnchorMin.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3138951204232065618, guid: 154d111a92a0b5044a70610b2316490d,
@@ -10241,6 +10277,16 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 1920995817372575040, guid: 3769d37cb4868da47b56c4040c02c3a9,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.00007764152
+      objectReference: {fileID: 0}
+    - target: {fileID: 1920995817372575040, guid: 3769d37cb4868da47b56c4040c02c3a9,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0.014782274
+      objectReference: {fileID: 0}
     - target: {fileID: 1946243594658649940, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}
       propertyPath: m_Layer
@@ -10814,6 +10860,11 @@ PrefabInstance:
     - target: {fileID: 4832035844764693324, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}
       propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4832035844764693324, guid: 3769d37cb4868da47b56c4040c02c3a9,
+        type: 3}
+      propertyPath: m_AnchorMin.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4874207586131339475, guid: 3769d37cb4868da47b56c4040c02c3a9,

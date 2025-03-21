@@ -145,6 +145,7 @@ public class MinimapMgr : MonoBehaviour
             RectTransformUtility.ScreenPointToLocalPointInRectangle(minimapImage, mousePos, null, out localPoint);
             Vector2 worldPos2D = mapToWorldTransformationMatrix.MultiplyPoint3x4(localPoint);
             CameraMgr.inst.YawNode.transform.position = new Vector3(worldPos2D.x, CameraMgr.inst.YawNode.transform.position.y, worldPos2D.y);
+            CameraMgr.inst.onCameraMove.Invoke();
         }
     }
 

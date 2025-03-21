@@ -7,6 +7,7 @@ using TMPro;
 using UnityEditor.Rendering;
 using UnityEditor.SearchService;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class StreamingToCommand: MonoBehaviour 
 {
@@ -14,27 +15,32 @@ public class StreamingToCommand: MonoBehaviour
     [SerializeField] Transform optionsDisplay;
     [SerializeField] GameObject commandWordPrefab;
     [SerializeField] GameObject optionWordPrefab;
+    [SerializeField] GameObject billboardPrefab;
     [SerializeField] GameObject currentOptionsScroll;
     [SerializeField] GameObject optionsScrollPrefab;
     [SerializeField] List<GameObject> words = new();
+    [SerializeField] List<GameObject> billboards = new();
     [SerializeField] string priorword = "";
     [SerializeField] string fullCommand = "";
     [SerializeField] Vector3 rectPos = Vector3.zero;
     bool pause = false;
+    public float billboardScale = .0033f;
+    public float billboardHeightScale = .25f;
     [SerializeField] float pauseTimer = 2f;
     [SerializeField] WhisperTester tester;
     public void ProcessResult(string result,int testID=-1,float time = 0f) {
         if(pause || fullCommand.Length>250) {
             return;
         }
+        Debug.Log(result);
         result = WordCleanup.StripPunctuation(result);
         string[] tokens = result.Split(' ');
         bool executeCommand = false;
         for (int i = 0;i<tokens.Length && fullCommand.Length<250;i++) {
             string word = tokens[i];
-            long temp = WordCleanup.ConvertToNumbers(word,out bool flag);
-            if(flag) {
-                word = temp.ToString();
+            long tempNumb = WordCleanup.ConvertToNumbers(word,out bool numberFlag);
+            if(numberFlag) {
+                word = tempNumb.ToString();
             }
             if(WordCleanup.nearWords.TryGetValue(word, out string value)) {
                 word = value;
@@ -43,7 +49,13 @@ public class StreamingToCommand: MonoBehaviour
             if ((WordCleanup.CommandLanguageDict.ContainsKey(word) 
             && priorword == "" && WordCleanup.startWords.Contains(word))  
             || (WordCleanup.CommandLanguageDict.ContainsKey(priorword) 
-            && WordCleanup.CommandLanguageDict[priorword].Any(option => word == option.Item2))) {
+            && (WordCleanup.CommandLanguageDict[priorword].Any(option => word == option.Item2)
+            || WordCleanup.CommandLanguageDict[priorword].Any(option => option.Item2 == "NUMBER")))
+            ) {
+                if(priorword != "" && WordCleanup.CommandLanguageDict[priorword][0].Item2 == "NUMBER" && numberFlag) {
+                    executeCommand = true;
+                    fullCommand+=tempNumb;
+                }
                 // Debug.Log(WordCleanup.CommandLanguageDict[word].ToArray());
                 GameObject tempWord = Instantiate(commandWordPrefab,commandDisplay);
                 words.Add(tempWord);
@@ -56,7 +68,8 @@ public class StreamingToCommand: MonoBehaviour
                 // Debug.Log(pair);
                 if(pair.Item1 >1 ) {
                     fullCommand+=word+" ";
-                    word= WordCleanup.CommandLanguageDict[word][pair.Item1-2].Item2;
+                    pair= WordCleanup.CommandLanguageDict[word][pair.Item1-2];
+                    word = pair.Item2;
                     tempWord = Instantiate(commandWordPrefab,commandDisplay);
                     words.Add(tempWord);
                     tempRect = tempWord.GetComponent<RectTransform>();
@@ -64,6 +77,8 @@ public class StreamingToCommand: MonoBehaviour
                     rectPos=tempRect.position;
                     tempText = tempWord.GetComponentInChildren<TMP_Text>();
                     tempText.text = word.ToUpper();
+                } if(pair.Item1== -10) {
+                    DisplayBillboards(pair.Item2,EntityMgr.inst.entities);
                 }
                 priorword = word;
                 fullCommand+=word+" ";
@@ -77,9 +92,9 @@ public class StreamingToCommand: MonoBehaviour
             if(currentOptionsScroll!=null) {
                 Destroy(currentOptionsScroll);
             }
-            Debug.Log(fullCommand);
-            if(tester) {
-            tester.ValidateResult(fullCommand,time,1f/Time.deltaTime,testID);
+            // Debug.Log(fullCommand);
+            if(tester && tester.isActiveAndEnabled) {
+                tester.ValidateResult(fullCommand,time,1f/Time.deltaTime,testID);
             } if(testID<0) {
                 ExecuteCommand(fullCommand);
             }
@@ -96,6 +111,53 @@ public class StreamingToCommand: MonoBehaviour
             }
             currentOptionsScroll = Instantiate(optionsScrollPrefab,optionsDisplay);
             FillOptions(WordCleanup.CommandLanguageDict[priorword]);
+        }
+    }
+
+    public void DisplayBillboards(string command, List<Entity> entities) {
+        if(billboards.Count > 0) {
+            CameraMgr.inst.onCameraMove.RemoveListener(UpdateBillboardSzie);
+        }
+        foreach (GameObject billboard in billboards)
+        {
+            Destroy(billboard);
+        }
+        billboards.Clear();
+        switch (command)
+        {
+            case "#":
+                int i = 0;
+                foreach (Entity ent in entities) {
+                    GameObject billboard = Instantiate(billboardPrefab,ent.transform);
+                    billboard.GetComponent<Canvas>().worldCamera = CameraMgr.inst.myCamera;
+                    RectTransform tempRect = billboard.GetComponentInChildren<RectTransform>();
+                    Button tempButton = billboard.GetComponentInChildren<Button>();
+                    int j = i;
+                    tempButton.onClick.AddListener(() => this.ProcessResult(j.ToString()));
+                    tempRect.sizeDelta = new(40+(20*i),42.5f);
+                    TMP_Text tempText = billboard.GetComponentInChildren<TMP_Text>();
+                    tempText.text = i.ToString();
+                    billboards.Add(billboard);
+                    i++;
+                }
+                break;
+            default:
+            break;
+        }
+
+        if(billboards.Count > 0) {
+            CameraMgr.inst.onCameraMove.AddListener(UpdateBillboardSzie);
+            UpdateBillboardSzie();
+        }
+    }
+
+    public void UpdateBillboardSzie() {
+        foreach (GameObject billboard in billboards)
+        {
+            float distance = Vector3.Distance(CameraMgr.inst.YawNode.transform.position,billboard.transform.position);
+            distance = Mathf.Clamp(distance,1f,99999f);
+            billboard.transform.localScale =  billboardScale * Mathf.Sqrt(distance) * Vector3.one;
+            billboard.transform.position = new(billboard.transform.position.x,60+distance*billboardHeightScale,billboard.transform.position.z);
         }
     }
 
@@ -215,6 +277,7 @@ public class StreamingToCommand: MonoBehaviour
     }
 
     public void Stop() {
+        DisplayBillboards("",null);
         if(currentOptionsScroll!=null) {
             Destroy(currentOptionsScroll);
         }
@@ -244,6 +307,8 @@ public class StreamingToCommand: MonoBehaviour
         foreach (string option in options) {
             GameObject tempWord = Instantiate(optionWordPrefab,optionsScroll.content);
             RectTransform tempRect = tempWord.GetComponent<RectTransform>();
+            Button tempButton = tempWord.GetComponent<Button>();
+            tempButton.onClick.AddListener(() => this.ProcessResult(option));
             tempRect.sizeDelta = new(baseWidth,42.5f);
             TMP_Text tempText = tempWord.GetComponentInChildren<TMP_Text>();
             tempText.text = option.ToUpper();
@@ -265,30 +330,48 @@ public class StreamingToCommand: MonoBehaviour
 
 static class WordCleanup  
 {  
+    // What the numbers mean
+    // 0 means normal word
+    // 1 means ending word
+    // >1 means the word has an auto word after, like "to"
+    //      if >1 select option [n-2] "move -> all (3) = ally[1] == "to"
+    // if =-1 word is auto
+    // if =-10 word is billboarded ships
+    // if =-9 word is billboarded space
+    // if =-5 word is waiting for click
+    // if =-20 word is unit
+
+    // NO CAPS
     public static Dictionary<string, List<(int, string)>> CommandLanguageDict = new Dictionary<string, List<(int,string)>>{{
         "select",new(){
             (1,"clear"),
-            (2,"1/2"),
-            (2,"all")
+            (0,"add"),
+            (0,"set")
+        }}, {"group", new(){
+            (1,"clear"),
+            (0,"add"),
+            (0,"set")
+        }}, {"add", new(){
+            (0,"all"),
         }}, {"attack", new(){
             (0,"furthest"),
             (0,"nearest"),
-            (0, "specific")
+            (0, "specific"),
+            (-5, "click")
         }}, {"move", new(){
-            (3,"all"),
-            (2,"selected"),
-        }}, {"selected", new(){
-            (-1,"to"),
+            (2,"all"),
+            (2,"half"),
         }}, {"to", new(){
             (0,"furthest"),
             (0,"nearest"),
-            (0, "specific")
+            (0, "specific"),
+            (-5, "click")
         }}, {"specific", new(){
             (0,"ally"),
             (0,"enemy"),
-        }}, {"group", new(){
-            (1,"selected"),
-            (1,"unselected"),
+            (2,"location"),
+        }}, {"location", new(){
+            (-9,"#"),
         }}, {"furthest", new(){
             (1,"ally"),
             (1,"enemy"),
@@ -302,20 +385,31 @@ static class WordCleanup
             (1,"group"),
             (2,"single"),
         }}, {"single", new(){
-            (-1,"#"),
+            (-10,"#"),
         }}, {"all", new(){
-            (-1,"on"),
-            (-1,"to")
-        }}, {"1/2", new(){
-            (-1,"on"),
+            (-1,"to"),
+            (0,"on"),
+            (0,"of")
+        }}, {"half", new(){
+            (-1,"to"),
+            (0,"on"),
+            (-20,"of")
         }}, {"on", new(){
             (1,"left"),
             (1,"right"),
             (1,"screen"),
+            (1,"map"),
+        }}, {"of", new(){
+            (0,"you shouldn't be seeing this :P"),
         }}, {"execute", new(){
             (2,"tactic"),
         }}, {"tactic", new(){
             (0,"formation"),
+        }}, {"formation", new(){
+            (2,"at"),
+        }}, {"#", new(){
+            (1,"NUMBER"),
+            (1,"LOCATION"),
         }}, {"", new(){
         }}
         // , {"formation", new(){

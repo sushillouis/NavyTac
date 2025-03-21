@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
@@ -41,6 +42,7 @@ public class CameraMgr : MonoBehaviour
     float moveCoefficent;
     public Vector3 currentYawEulerAngles = Vector3.zero;
     public Vector3 currentPitchEulerAngles = Vector3.zero;
+    public UnityEvent onCameraMove;
 
     // Update is called once per frame
     void Update()
@@ -57,6 +59,7 @@ public class CameraMgr : MonoBehaviour
         YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
         float newY = Mathf.Clamp(YawNode.transform.position.y, minCameraHeight, maxCameraHeight);
         YawNode.transform.position = new(YawNode.transform.position.x, newY, YawNode.transform.position.z);
+        onCameraMove.Invoke();
     }
 
     public void MoveCameraXZ(Vector2 moveValue) 
@@ -65,6 +68,7 @@ public class CameraMgr : MonoBehaviour
         moveVector.x += moveValue.x * moveCoefficent;
         moveVector.z += moveValue.y * moveCoefficent;
         YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
+        onCameraMove.Invoke();
     }
 
     public void YawCamera(float yawValue)
@@ -72,6 +76,7 @@ public class CameraMgr : MonoBehaviour
         currentYawEulerAngles = YawNode.transform.localEulerAngles;
         currentYawEulerAngles.y += yawValue * cameraTurnRate * Time.deltaTime;
         YawNode.transform.localEulerAngles = currentYawEulerAngles;
+        
     }
 
     public void PitchCamera(float pitchValue) 
@@ -99,5 +104,6 @@ public class CameraMgr : MonoBehaviour
             YawNode.transform.localEulerAngles = Vector3.zero;
         }
         isRTSMode = !isRTSMode;
+        onCameraMove.Invoke();
     }
 }
