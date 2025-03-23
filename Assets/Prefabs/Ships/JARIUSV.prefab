@@ -151,7 +151,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -81.3, y: 0, z: 33.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8049594636270627206}
@@ -731,6 +731,21 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -6439699145017906072, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: aef171f6f6df5a042b8e454bd0163ee9, type: 2}
+    - target: {fileID: -5424976157768826252, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: aef171f6f6df5a042b8e454bd0163ee9, type: 2}
+    - target: {fileID: -5422304849296772287, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: aef171f6f6df5a042b8e454bd0163ee9, type: 2}
     - target: {fileID: -4237356136633922190, guid: 10c2591deefc2fe4e8959f2797e065d7,
         type: 3}
       propertyPath: m_TagString
@@ -751,6 +766,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: JARI-USV
       objectReference: {fileID: 0}
+    - target: {fileID: 4307399880359590932, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: aef171f6f6df5a042b8e454bd0163ee9, type: 2}
+    - target: {fileID: 7768227557956780012, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: aef171f6f6df5a042b8e454bd0163ee9, type: 2}
     - target: {fileID: 8042275409720694268, guid: 10c2591deefc2fe4e8959f2797e065d7,
         type: 3}
       propertyPath: m_TagString
