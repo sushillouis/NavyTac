@@ -1,26 +1,38 @@
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 
 public class EnemyAIMgr : MonoBehaviour
 {
     public int currentLevel = 1;
     public static EnemyAIMgr inst;
 
-    private Entity oldBase = null;
-    // Removed lastMoveTargets to fix move command re-issuing
+    private Entity opponentBase; // Cached opponent base
+    private Dictionary<Entity, float> entityCooldowns = new Dictionary<Entity, float>();
+    private float updateInterval = 0.5f;
+    private float lastUpdateTime;
 
-    void Awake() => inst = this;
+    void Awake() 
+    {
+        inst = this;
+        opponentBase = FindOpponentBase(); // Initial search
+    }
 
     private void Update()
     {
+        if (Time.time - lastUpdateTime < updateInterval) return;
+        lastUpdateTime = Time.time;
+
         if (currentLevel == 1)
             HandleLevel1Behavior();
     }
 
     private void HandleLevel1Behavior()
     {
-        Entity opponentBase = FindOpponentBase();
+        // Check if cached base is still valid
+        if (opponentBase == null || !EntityMgr.inst.entities.Contains(opponentBase))
+        {
+            opponentBase = FindOpponentBase();
+        }
 
         if (opponentBase == null)
         {
@@ -31,19 +43,21 @@ public class EnemyAIMgr : MonoBehaviour
         List<Entity> aiEntities = GetAIEntities();
         if (aiEntities.Count == 0) return;
 
-        if (oldBase != opponentBase)
-            oldBase = opponentBase;
-
-        HandleCombatBehavior(opponentBase, aiEntities);
+        HandleCombatBehavior(aiEntities);
     }
 
-    private void HandleCombatBehavior(Entity opponentBase, List<Entity> aiEntities)
+    private void HandleCombatBehavior(List<Entity> aiEntities)
     {
-        // Null-check opponentBase to prevent destroyed reference errors
-        if (opponentBase == null) return;
+        Vector3 opponentPos = opponentBase.position;
 
-        foreach (Entity aiEntity in aiEntities)
+        for (int i = aiEntities.Count - 1; i >= 0; i--)
         {
+            Entity aiEntity = aiEntities[i];
+            if (aiEntity == null) continue;
+
+            if (entityCooldowns.TryGetValue(aiEntity, out float cooldown) && cooldown > Time.time)
+                continue;
+
             float range = aiEntity.GetComponentInChildren<WeaponsAspect>()?.weapon.range ?? 600f;
             Entity nearestEnemy = FindNearestEnemy(aiEntity, range);
 
@@ -52,11 +66,12 @@ public class EnemyAIMgr : MonoBehaviour
                 UnitAI unitAI = aiEntity.GetComponentInChildren<UnitAI>();
                 unitAI?.StopAndRemoveAllCommands();
                 WeaponsMgr.inst.handleWeapon(aiEntity, nearestEnemy);
+                entityCooldowns[aiEntity] = Time.time + 0.2f;
             }
             else
             {
-                // Always issue move command when no enemies are in range
-                AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false);
+                AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentPos, false);
+                entityCooldowns[aiEntity] = Time.time + 0.5f;
             }
         }
     }
@@ -65,33 +80,46 @@ public class EnemyAIMgr : MonoBehaviour
     {
         Vector3 aiPos = aiEntity.position;
         float sqrRange = range * range;
+        Entity nearest = null;
+        float nearestDist = float.MaxValue;
 
-        return EntityMgr.inst.entities
-            .Where(e => e != null && 
-                        e.owner != null && 
-                        !e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase) && // Case-insensitive check
-                        e.entityClass != EntityClass.Missile)
-            .Where(e => (e.position - aiPos).sqrMagnitude < sqrRange)
-            .OrderBy(e => (e.position - aiPos).sqrMagnitude)
-            .FirstOrDefault();
+        foreach (Entity e in EntityMgr.inst.entities)
+        {
+            if (e == null || e.owner == null || e.entityClass == EntityClass.Missile) continue;
+            if (e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase)) continue;
+
+            float dist = (e.position - aiPos).sqrMagnitude;
+            if (dist < sqrRange && dist < nearestDist)
+            {
+                nearest = e;
+                nearestDist = dist;
+            }
+        }
+        return nearest;
     }
 
     private Entity FindOpponentBase()
     {
-        return EntityMgr.inst.entities
-            .FirstOrDefault(e => e != null && 
-                                  e.owner != null && 
-                                  !e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase) && 
-                                  e.entityRole == EntityRole.Base);
+        foreach (Entity e in EntityMgr.inst.entities)
+        {
+            if (e != null && e.owner != null && 
+                !e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase) && 
+                e.entityRole == EntityRole.Base)
+                return e;
+        }
+        return null;
     }
 
     private List<Entity> GetAIEntities()
     {
-        return EntityMgr.inst.entities
-            .Where(e => e != null && 
-                        e.owner != null && 
-                        e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase) && 
-                        e.entityClass != EntityClass.Missile)
-            .ToList();
+        List<Entity> result = new List<Entity>(EntityMgr.inst.entities.Count / 2);
+        foreach (Entity e in EntityMgr.inst.entities)
+        {
+            if (e != null && e.owner != null && 
+                e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase) && 
+                e.entityClass != EntityClass.Missile)
+                result.Add(e);
+        }
+        return result;
     }
 }

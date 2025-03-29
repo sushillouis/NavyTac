@@ -110,7 +110,7 @@ public class AIMgr : NetworkBehaviour
     //I need to be entity owner to command entities.
     //If I select a number of entities, I will only command the entities I own
     // Does not yet handle AI players
-    public void HandleCommand(Vector2 mousePos, bool intercept, bool add)
+    public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, bool add)
     {
        
        
@@ -125,11 +125,15 @@ public class AIMgr : NetworkBehaviour
                 Vector3 pos = hit.point;
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
-                if(ent == null || ent.transform.GetChild(0).gameObject.activeSelf == false || ent.entityType != EntityType.Rig_Balder) {
+                if(attackMove)
+                        HandleAttackMove();
+                else if(ent == null || ent.transform.GetChild(0).gameObject.activeSelf == false || ent.entityType != EntityType.Rig_Balder) {
                     HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
                 } else {
                     if(intercept)
                         HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
+                    else if(attackMove)
+                        HandleAttackMove();
                     else
                         HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
                 }
@@ -141,6 +145,9 @@ public class AIMgr : NetworkBehaviour
 
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
+    public void HandleAttackMove(){
+        Debug.Log("HandleAttackMove");
+    }
     public void HandleMove(List<Entity> entities, Vector3 point,
                       bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false,
                       FormationType formationType = FormationType.Circle, float formationRadius = 200f, bool groupMove = false)

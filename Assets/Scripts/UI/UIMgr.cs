@@ -53,6 +53,7 @@ public class UIMgr : MonoBehaviour
 
     private InputAction command;
     private InputAction intercept;
+    private InputAction attackMove;
     private InputAction addCommand;
 
     private InputAction changeSpeed;
@@ -64,7 +65,7 @@ public class UIMgr : MonoBehaviour
     private InputAction selectGroup1;
 
 
-    private InputAction attack1;
+    // private InputAction attack1;
     private InputAction attack2;
     private InputAction attack3;
     private InputAction attack4;
@@ -136,6 +137,10 @@ public class UIMgr : MonoBehaviour
         intercept = inputs.Entities.Intercept;
         intercept.Enable();
 
+        attackMove = inputs.Attacks.Attack1;
+        attackMove.Enable();
+        
+
         addCommand = inputs.Entities.AddCommand;
         addCommand.Enable();
 
@@ -161,9 +166,7 @@ public class UIMgr : MonoBehaviour
         inputs.Entities.ControlKey.Enable();
 
 
-        attack1 = inputs.Attacks.Attack1;
-        attack1.Enable();
-        attack1.performed += Attack1;
+        
 
         attack2 = inputs.Attacks.Attack2;
         attack2.Enable();
@@ -199,6 +202,7 @@ public class UIMgr : MonoBehaviour
         addSelection.Disable();
         command.Disable();
         intercept.Disable();
+        attackMove.Disable();
         addCommand.Disable();
         changeSpeed.Disable();
         changeHeading.Disable();
@@ -207,7 +211,7 @@ public class UIMgr : MonoBehaviour
         selectAll.Disable();
         inputs.Entities.ControlKey.Disable();
 
-        attack1.Disable();
+        // attack1.Disable();
         attack2.Disable();
         attack3.Disable();
         attack4.Disable();
@@ -435,13 +439,14 @@ public class UIMgr : MonoBehaviour
 
     private void HandleCommand(InputAction.CallbackContext context)
     {
+        
         if (!inputs.Entities.ControlKey.IsPressed() &&
         !Keyboard.current.oKey.isPressed &&
         !Keyboard.current.pKey.isPressed &&
         !Keyboard.current.iKey.isPressed &&
         !Keyboard.current.uKey.isPressed)
         {
-            AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(), addCommand.IsPressed());
+            AIMgr.inst.HandleCommand(selectionCursorPosition.ReadValue<Vector2>(), intercept.IsPressed(),attackMove.IsPressed(), addCommand.IsPressed());
         }
     }
     private void ChangeSpeed(InputAction.CallbackContext context)
