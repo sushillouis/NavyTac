@@ -8,6 +8,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 
+
 /// <summary>
 /// Struct used to package and sent list of entities and the one command being applied to them
 /// </summary>
@@ -124,7 +125,7 @@ public class AIMgr : NetworkBehaviour
                 Vector3 pos = hit.point;
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
-                if(ent == null || ent.transform.GetChild(0).gameObject.activeSelf == false) {
+                if(ent == null || ent.transform.GetChild(0).gameObject.activeSelf == false || ent.entityType != EntityType.Rig_Balder) {
                     HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
                 } else {
                     if(intercept)
@@ -173,10 +174,16 @@ public class AIMgr : NetworkBehaviour
                 QuadrantBounds startQuadrant = GetQuadrant(entity.position);
                 QuadrantBounds targetQuadrant = GetQuadrant(point);
 
-                if (targetQuadrant != null && startQuadrant != targetQuadrant )
+                if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
                 {
                     // Split into two commands: first to (0,0,0), then to target
-                    Move intermediateMove = new Move(entity, Vector3.zero, maxSpeedMovement);
+                    Vector3 intermediatePoint = new Vector3(
+                    UnityEngine.Random.Range(-500f, 500f), // X: -500 to 500
+                    0f,                                     // Y: Fixed at 0
+                    UnityEngine.Random.Range(-500f, 500f)  // Z: -500 to 500
+                 );
+
+                    Move intermediateMove = new Move(entity, intermediatePoint , maxSpeedMovement);
                     UnitAI uai = entity.GetComponentInChildren<UnitAI>();
 
                     // Replace current command with intermediate move

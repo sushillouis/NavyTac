@@ -249,6 +249,7 @@ public class WeaponsMgr : MonoBehaviour
             MinimapMgr.inst.RemoveMinimapIcon(entity);
             if (entity.TryGetComponent<UnitAI>(out var unitAI))
             {
+                Debug.Log("unitAI found");
                 unitAI.StopAndRemoveAllCommands();
             }
 

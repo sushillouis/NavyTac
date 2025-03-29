@@ -351,8 +351,9 @@ public class UIMgr : MonoBehaviour
     private void UpdateHealth(Entity ent) {
         if(ent.health == lastHealth)
             return;
+        
         lastHealth = ent.health;
-        float health = 100f * Mathf.Clamp(ent.health, 0, maxHealth) / maxHealth;
+        float health = 100f * ent.health / ent.maxHealth;
         //text
         healthText.text = health.ToString("000");
         //fill

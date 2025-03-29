@@ -23,7 +23,7 @@ public class Move : Command
     public float angleDiff;
     public float cosValue;
     public float ds;
-    public float doneDistanceSq = 10000;
+    public float doneDistanceSq = 100000f;
 
     public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false) : base(ent)
     {
@@ -47,7 +47,7 @@ public class Move : Command
         DHDS dhds;
         if (AIMgr.inst.isPotentialFieldsMovement) 
         {
-            dhds = maxSpeedMovement ? ComputePotentialDHDS(movePosition) : ComputePF2();
+            dhds = ComputePotentialDHDS(movePosition);
         }
         else
         {
@@ -197,12 +197,21 @@ public class Move : Command
 
     public override bool IsDone()
     {
-        entity.desiredSpeed = 0;
-        return (entity.position - movePosition).sqrMagnitude < doneDistanceSq;
+        if (entity.GetComponentInChildren<WeaponsAspect>() != null)
+        {
+            return (entity.position - movePosition).sqrMagnitude < entity.GetComponentInChildren<WeaponsAspect>().weapon.range * entity.GetComponentInChildren<WeaponsAspect>().weapon.range;
+        }
+        else 
+        {
+            return (entity.position - movePosition).sqrMagnitude < doneDistanceSq;
+        }
+        
     }
 
     public override void Stop()
     {
+        entity.desiredSpeed = 0;
+        entity.desiredHeading = entity.heading;
         LineMgr.inst.DestroyLR(line);
         LineMgr.inst.DestroyLR(potentialLine);
         line = null;
