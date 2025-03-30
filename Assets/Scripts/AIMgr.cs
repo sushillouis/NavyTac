@@ -6,12 +6,6 @@ using System.Drawing;
 using System.Text;
 using Unity.Netcode;
 using UnityEngine;
-
-
-
-/// <summary>
-/// Struct used to package and sent list of entities and the one command being applied to them
-/// </summary>
 [Serializable]
 public struct TactCommandStruct: INetworkSerializable, IEquatable<TactCommandStruct>
 {
@@ -126,14 +120,14 @@ public class AIMgr : NetworkBehaviour
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
                 if(attackMove)
-                        HandleAttackMove();
-                else if(ent == null || ent.transform.GetChild(0).gameObject.activeSelf == false || ent.entityType != EntityType.Rig_Balder) {
+                        HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, add);
+                else if(ent == null || ent.transform.GetChild(0).gameObject.activeSelf == false || ent.entityType == EntityType.Rig_Balder) {
                     HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
-                } else {
-                    if(intercept)
+                }
+                else
+                {
+                    if (intercept)
                         HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
-                    else if(attackMove)
-                        HandleAttackMove();
                     else
                         HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
                 }
@@ -145,8 +139,47 @@ public class AIMgr : NetworkBehaviour
 
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
-    public void HandleAttackMove(){
-        Debug.Log("HandleAttackMove");
+    public void HandleAttackMove(List<Entity> entities, Vector3 point,
+        bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false,
+        FormationType formationType = FormationType.Circle, float formationRadius = 200f, bool groupMove = false)
+    {
+        Debug.Log("Attack Move");
+        if (isLocalCommand)
+        {
+            NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
+        }
+        foreach (Entity entity in entities)
+        {
+            QuadrantBounds startQuadrant = GetQuadrant(entity.position);
+            QuadrantBounds targetQuadrant = GetQuadrant(point);
+
+            if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
+            {
+                // Split into two commands: first to (0,0,0), then to target
+                Vector3 intermediatePoint = new Vector3(
+                    UnityEngine.Random.Range(-500f, 500f), // X: -500 to 500
+                    0f, // Y: Fixed at 0
+                    UnityEngine.Random.Range(-500f, 500f) // Z: -500 to 500
+                );
+
+                AttackMove intermediateMove = new AttackMove(entity, intermediatePoint, maxSpeedMovement);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+
+                // Replace current command with intermediate move
+                AddOrSet(intermediateMove, uai, add: false);
+
+                // Queue final move after intermediate
+                AttackMove finalMove = new AttackMove(entity, point, maxSpeedMovement);
+                AddOrSet(finalMove, uai, add: true);
+            }
+            else
+            {
+                // Original single-entity behavior
+                AttackMove am = new AttackMove(entity, point, maxSpeedMovement);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(am, uai, add);
+            }
+        }
     }
     public void HandleMove(List<Entity> entities, Vector3 point,
                       bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false,
@@ -156,57 +189,36 @@ public class AIMgr : NetworkBehaviour
         {
             NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
         }
-
-        // Use GroupMove for multiple entities, regular Move for single
-        if (entities.Count > 1 && groupMove)
+        foreach (Entity entity in entities)
         {
-            // Create shared group command for all entities
-            foreach (Entity entity in entities)
-            {
-                GroupMove gm = new GroupMove(entity, point, entities)
-                {
-                    maxSpeedMovement = maxSpeedMovement,
-                    formationType = formationType // Default formation
-                };
+            QuadrantBounds startQuadrant = GetQuadrant(entity.position);
+            QuadrantBounds targetQuadrant = GetQuadrant(point);
 
-                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-                AddOrSet(gm, uai, add);
-            }
-        }
-        else
-        {
-            // Original single-entity behavior
-            foreach (Entity entity in entities)
+            if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
             {
-                QuadrantBounds startQuadrant = GetQuadrant(entity.position);
-                QuadrantBounds targetQuadrant = GetQuadrant(point);
-
-                if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
-                {
-                    // Split into two commands: first to (0,0,0), then to target
-                    Vector3 intermediatePoint = new Vector3(
+                // Split into two commands: first to (0,0,0), then to target
+                Vector3 intermediatePoint = new Vector3(
                     UnityEngine.Random.Range(-500f, 500f), // X: -500 to 500
-                    0f,                                     // Y: Fixed at 0
-                    UnityEngine.Random.Range(-500f, 500f)  // Z: -500 to 500
-                 );
+                    0f, // Y: Fixed at 0
+                    UnityEngine.Random.Range(-500f, 500f) // Z: -500 to 500
+                );
 
-                    Move intermediateMove = new Move(entity, intermediatePoint , maxSpeedMovement);
-                    UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                Move intermediateMove = new Move(entity, intermediatePoint, maxSpeedMovement);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
 
-                    // Replace current command with intermediate move
-                    AddOrSet(intermediateMove, uai, add: false);
+                // Replace current command with intermediate move
+                AddOrSet(intermediateMove, uai, add: false);
 
-                    // Queue final move after intermediate
-                    Move finalMove = new Move(entity, point, maxSpeedMovement);
-                    AddOrSet(finalMove, uai, add: true);
-                }
-                else
-                {
-                    // Original single-entity behavior
-                    Move m = new Move(entity, point, maxSpeedMovement);
-                    UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-                    AddOrSet(m, uai, add);
-                }
+                // Queue final move after intermediate
+                Move finalMove = new Move(entity, point, maxSpeedMovement);
+                AddOrSet(finalMove, uai, add: true);
+            }
+            else
+            {
+                // Original single-entity behavior
+                Move m = new Move(entity, point, maxSpeedMovement);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(m, uai, add);
             }
         }
     }

@@ -15,6 +15,7 @@ public class UnitAI : MonoBehaviour
 
     public  Queue<Command> commands = new();
     public List<Move> moves = new();
+    public List<AttackMove> attackMoves = new();
     public List<Follow> follows = new();
     public List<Intercept> intercepts = new();
     public List<Intercept3d> intercept3ds = new();
@@ -67,6 +68,10 @@ public class UnitAI : MonoBehaviour
                 smartIntercept.Stop();
                 smartIntercepts.Remove(smartIntercept);
                 break;
+            case AttackMove attackMove:
+                attackMove.Stop();
+                attackMoves.Remove(attackMove);
+                break;
             case Intercept intercept:
                 intercept.Stop();
                 intercepts.Remove(intercept);
@@ -103,6 +108,9 @@ public class UnitAI : MonoBehaviour
 
         switch (c)
         {
+            case AttackMove attackMove:
+                attackMoves.Add(attackMove);
+                break;
             case SmartIntercept smartIntercept:
                 smartIntercepts.Add(smartIntercept);
                 break;
