@@ -61,7 +61,7 @@ public class WeaponsAspect : MonoBehaviour
 
     private Entity FindTargetInRange()
     {
-        Debug.Log("Finding target in range...");
+        // Debug.Log("Finding target in range...");
         if (EntityMgr.inst == null || EntityMgr.inst.entities == null)
             return null;
 

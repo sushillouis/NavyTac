@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 [System.Serializable]
@@ -11,23 +12,31 @@ public class EntityQuantity
     public int unitCount;
 }
 
+[System.Serializable]
+public struct StartingPosition
+{
+    public Vector3 position;
+    public float heading;
+}
+public enum Difficulty { Easy, Medium, Hard }
+
 public class GameMgr : MonoBehaviour
 {
+    private static int reloadCount = 0;
     public static GameMgr inst;
 
     private void Awake()
     {
         inst = this;
+        LoadPersistentData(); // Load saved seed and difficulty
         BuildEntityDictionary();
     }
 
-    // UI elements for time scaling and simulation speed.
     [SerializeField] private Button plusButton;
     [SerializeField] private Button minusButton;
     [SerializeField] private TextMeshProUGUI simSpeedButtonText;
     public float timeScale = 1;
 
-    // These fields are used for the Create100 method (spawning a grid of PilotVessels).
     public Vector3 position;
     public float spread = 20;
     public float colNum = 10;
@@ -38,11 +47,12 @@ public class GameMgr : MonoBehaviour
     [Range(1, 4)]
     [SerializeField] public int players;
     [SerializeField] public bool sameEnityForAll;
-    
-   
+
+    // Seed for deterministic random position selection
+    [SerializeField] public int seed = 10;
+
     void Start()
     {
-        // Disable movable entities container if applicable.
         EntityMgr.inst.movableEntitiesRoot.SetActive(false);
         EntityMgr.inst.nonMoveableEntitiesRoot.SetActive(false);
 
@@ -53,7 +63,6 @@ public class GameMgr : MonoBehaviour
             minusButton.onClick.RemoveAllListeners();
             minusButton.onClick.AddListener(() => DeltaScale(-1));
         }
-        
     }
 
     void Update()
@@ -74,6 +83,7 @@ public class GameMgr : MonoBehaviour
                 simSpeedButtonText.text = Time.timeScale.ToString("0");
         }
     }
+
     public void Create100()
     {
         initZ = position.z;
@@ -117,10 +127,8 @@ public class GameMgr : MonoBehaviour
         foreach (Entity ent in allEntities)
         {
             ent.heading = (heading == -1 ? ent.heading : heading);
-            // ent.isSelected = true;
         }
         AIMgr.inst.HandleMove(allEntities, movePos, shouldAdd);
-        // AIMgr.inst.HandleMove(allEntities, new Vector3(3000, 0, 0), true);
     }
 
     public void MakeMapEntities()
@@ -138,55 +146,131 @@ public class GameMgr : MonoBehaviour
             pos.x = 0;
         }
     }
+
     public Vector3 posPlayer1 = new Vector3(0, 0, -7000);
     public float headingPlayer1 = 0;
     public Vector3 posPlayer2 = new Vector3(0, 0, 10000);
     public float headingPlayer2 = 180;
+
+    [Range(0f, 1f)]
+    public float difficultyLevel = 0.2f;
+    public Dictionary<string, float> difficultyRanges = new Dictionary<string, float>()
+    {
+
+    {"easy", 0.33f},
+
+    {"medium", 0.667f},
+
+    {"hard", 1f}
+
+    };
+    private Difficulty currentDifficulty;
+    private int[,] positionRelations = new int[4, 3] {
+        {1, 3, 2}, // North: opposite=1, right=3, left=2
+        {0, 2, 3}, // South: opposite=0, right=2, left=3
+        {3, 0, 1}, // West: opposite=3, right=0, left=1
+        {2, 1, 0}  // East: opposite=2, right=1, left=0
+    };
+    void DetermineDifficulty()
+    {
+        if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
+        else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
+        else currentDifficulty = Difficulty.Hard;
+    }
+
     public void OpenOcean1x1()
     {
-        
-        // MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1);
-        // MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
-        SpawnEntitiesFromDictionary(posPlayer1, headingPlayer1, PlayerMgr.inst.player1);
-        SpawnEntitiesFromDictionary(posPlayer2, headingPlayer2, PlayerMgr.inst.player2);
+        InitializeScenario();
+        SpawnEntities();
+        CameraMgr.inst.SetCameraPosition();
     }
 
-
-    public void MakeEntsForPlayer(Vector3 initPos, float initHeading, TactPlayer player)
+  void InitializeScenario()
     {
-        Vector3 eulerAngles = new Vector3(0, initHeading, 0);
-        Entity initEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos, eulerAngles, player);
-        Entity tmpEnt;
+        // Combine the original seed with reload count to create a unique seed for this reload
+        int combinedSeed = seed + reloadCount;
+        Random.InitState(combinedSeed); // Deterministic randomness for THIS reload
 
-        // Example for additional spawns (escort, USVs, etc.). Uncomment and modify as needed.
-        
-        // Escort on right
-        Vector3 offset = initEnt.transform.right * 1000;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
-
-        // USV on right
-        offset = tmpEnt.transform.right * 500;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
-
-        // USV in front
-        offset = initEnt.transform.forward * 1000;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
-
-        // USV behind
-        offset = -initEnt.transform.forward * 1000;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
-
-        // Escort on left
-        offset = -initEnt.transform.right * 1000;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
-        
+        DetermineDifficulty();
+        AdjustUnitCounts(); // Uses difficulty but varies with combinedSeed
     }
 
-    private void BuildEntityDictionary()
+
+
+    void AdjustUnitCounts()
+    {
+
+        foreach (EntityQuantity eq in entityQuantities)
+        {
+            if (eq.entityType == EntityType.Rig_Balder)
+            {
+                eq.unitCount = 1; // Always set to 1 regardless of difficulty
+                continue;
+            }
+            eq.unitCount = currentDifficulty switch
+            {
+                Difficulty.Easy => Random.Range(3, 6),
+                Difficulty.Medium => Random.Range(6, 11),
+                Difficulty.Hard => Random.Range(11, 21),
+                _ => eq.unitCount
+            };
+        }
+        BuildEntityDictionary();
+    }
+
+    void SpawnEntities()
+    {
+        StartingPosition[] allPositions = new StartingPosition[]
+        {
+            new() { position = new(0, 0, -7000), heading = 0 },  // North
+            new() { position = new(0, 0, 7000), heading = 180 },   // South
+            new() { position = new(-7000, 0, 0), heading = 90 },    // West
+            new() { position = new(7000, 0, 0), heading = 270 }     // East
+        };
+
+        int player1Index = Random.Range(0, allPositions.Length);
+        var player2Indices = GetValidPlayer2Positions(player1Index);
+
+        StartingPosition p1 = allPositions[player1Index];
+        posPlayer1 = p1.position;
+        headingPlayer1 = p1.heading;
+        StartingPosition p2 = allPositions[player2Indices[Random.Range(0, player2Indices.Count)]];
+        posPlayer2 = p2.position;
+        headingPlayer2 = p2.heading;
+        SpawnEntitiesFromDictionary(p1.position, p1.heading, PlayerMgr.inst.player1);
+        SpawnEntitiesFromDictionary(p2.position, p2.heading, PlayerMgr.inst.player2);
+    }
+
+    List<int> GetValidPlayer2Positions(int player1Index)
+    {
+        List<int> validPositions = new();
+        switch (currentDifficulty)
+        {
+            case Difficulty.Easy:
+                validPositions.Add(positionRelations[player1Index, 0]); // Opposite only
+                break;
+            case Difficulty.Medium:
+                validPositions.Add(positionRelations[player1Index, 0]); // Opposite
+                validPositions.Add(positionRelations[player1Index, 1]); // Right
+                break;
+            case Difficulty.Hard:
+                for (int i = 0; i < 4; i++)
+                    if (i != player1Index) validPositions.Add(i);
+                break;
+        }
+        return validPositions;
+    }
+
+    void BuildEntityDictionary()
     {
         entityDict = new Dictionary<EntityType, int>();
         foreach (EntityQuantity eq in entityQuantities)
         {
+            if (eq.entityType == EntityType.Rig_Balder)
+            {
+                entityDict[eq.entityType] = Mathf.Min(eq.unitCount, 1);
+                continue;
+            }
             if (entityDict.ContainsKey(eq.entityType))
                 entityDict[eq.entityType] += eq.unitCount;
             else
@@ -194,7 +278,51 @@ public class GameMgr : MonoBehaviour
         }
     }
 
-public List<EntityType> priorityList = new List<EntityType>()
+    public void SpawnEntitiesFromDictionary(Vector3 initPos, float initHeading, TactPlayer player)
+    {
+        List<EntityType> spawnQueue = new();
+        foreach (EntityType type in priorityList)
+            if (entityDict.TryGetValue(type, out int count))
+                for (int j = 0; j < count; j++)
+                    spawnQueue.Add(type);
+
+        SpawnInFormation(spawnQueue, initPos, initHeading, player);
+    }
+
+    void SpawnInFormation(List<EntityType> queue, Vector3 center, float heading, TactPlayer player)
+    {
+        int index = 0;
+        int ring = 1;
+
+        if (queue.Count > 0)
+        {
+            EntityMgr.inst.CreateEntity(queue[index], center, new(0, heading, 0), player);
+            index++;
+        }
+
+        while (index < queue.Count)
+        {
+            int positionsInRing = 8 * (ring - 1);
+            float angleStep = 360f / positionsInRing;
+
+            for (int pos = 0; pos < positionsInRing && index < queue.Count; pos++)
+            {
+                Vector3 offset = new Vector3(
+                    Mathf.Cos(pos * angleStep * Mathf.Deg2Rad),
+                    0,
+                    Mathf.Sin(pos * angleStep * Mathf.Deg2Rad)
+                ) * (250f * (ring - 1));
+
+                EntityMgr.inst.CreateEntity(queue[index], center + offset,
+                    new(0, heading, 0), player);
+                index++;
+            }
+            ring++;
+        }
+    }
+
+
+    public List<EntityType> priorityList = new List<EntityType>()
     {
         EntityType.Rig_Balder,
         EntityType.CVN75,
@@ -202,72 +330,39 @@ public List<EntityType> priorityList = new List<EntityType>()
         EntityType.DDG51,
         EntityType.SeaHunter,
         EntityType.JARIUSV,
-        
-
         EntityType.OrientExplorer,
         EntityType.MineSweeper,
         EntityType.PilotVessel,
         EntityType.Mykola,
-
         EntityType.Container,
         EntityType.OilServiceVessel,
         EntityType.Tanker,
         EntityType.TugBoat,
         EntityType.SeaBaby
     };
-public void SpawnEntitiesFromDictionary(Vector3 initPos, float initHeading, TactPlayer player)
-{
-    BuildEntityDictionary();  
+    [ContextMenu("Reload Scene")] // Creates an inspector context menu entry
+    public void ReloadScene()
+    {
+        SavePersistentData(); // Save current seed and difficulty
+        reloadCount++; // Increment reload count for the next load
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void SavePersistentData()
+    {
+        PlayerPrefs.SetInt("GameSeed", seed);
+        PlayerPrefs.SetFloat("DifficultyLevel", difficultyLevel);
+        PlayerPrefs.Save();
+    }
+
+    private void LoadPersistentData()
+    {
+        if (PlayerPrefs.HasKey("GameSeed"))
+            seed = PlayerPrefs.GetInt("GameSeed");
+        if (PlayerPrefs.HasKey("DifficultyLevel"))
+            difficultyLevel = PlayerPrefs.GetFloat("DifficultyLevel");
+    }
     
 
-    List<EntityType> spawnQueue = new List<EntityType>();
 
-    // Use the prioritized order to fill the spawn queue.
-    foreach (EntityType type in priorityList)
-    {
-        if (entityDict.TryGetValue(type, out int count))
-        {
-            for (int j = 0; j < count; j++)
-            {
-                spawnQueue.Add(type);
-            }
-        }
-    }
-
-    int index = 0;
-    int ring = 1;
-    if (spawnQueue.Count > 0)
-    {
-        Vector3 spawnPos = initPos;  
-        Vector3 eulerAngles = new Vector3(0, initHeading, 0);
-        EntityMgr.inst.CreateEntity(spawnQueue[index], spawnPos, eulerAngles, player);
-        // Debug.Log($"Spawning {spawnQueue[index]} at {spawnPos} (ring {ring})");
-        index++;
-    }
-
-    ring = 2;  
-    while (index < spawnQueue.Count)
-    {
-      
-        int entitiesThisRing = 8 * (ring - 1);
-
-        float angleStep = 360f / entitiesThisRing;
-
-        for (int pos = 0; pos < entitiesThisRing && index < spawnQueue.Count; pos++)
-        {
-            float angle = pos * angleStep;
-            float rad = angle * Mathf.Deg2Rad;
-            Vector3 direction = new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad));
-
-            Vector3 offset = direction * 250f * (ring - 1);
-            Vector3 spawnPos = initPos + offset;
-            Vector3 eulerAngles = new Vector3(0, initHeading, 0);
-            
-            EntityMgr.inst.CreateEntity(spawnQueue[index], spawnPos, eulerAngles, player);
-            // Debug.Log($"Spawning {spawnQueue[index]} at {spawnPos} (ring {ring}, angle {angle})");
-            index++;
-        }
-        ring++;
-    }
-}
 }

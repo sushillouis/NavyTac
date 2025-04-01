@@ -19,9 +19,22 @@ public class CameraMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        RTSCameraRig.transform.position = CalculateNewPosition(RTSCameraRig.transform.position, GameMgr.inst.posPlayer1);
-        YawNode.transform.rotation = Quaternion.Euler(0, GameMgr.inst.headingPlayer1, 0);
+        
     }
+    public void SetCameraPosition()
+{
+    // Position camera 1500 units above and 2000 units behind Player 1
+    Vector3 baseOffset = new Vector3(0, 1500, -2000);
+    Quaternion headingRotation = Quaternion.Euler(0, GameMgr.inst.headingPlayer1, 0);
+    Vector3 cameraPosition = GameMgr.inst.posPlayer1 + headingRotation * baseOffset;
+    
+    // Set camera position and orientation
+    RTSCameraRig.transform.position = cameraPosition;
+    YawNode.transform.rotation = headingRotation;
+    
+    // Look directly at Player 1's spawn point
+    PitchNode.transform.LookAt(GameMgr.inst.posPlayer1);
+}
 
     Vector3 CalculateNewPosition(Vector3 current, Vector3 offset)
     {
