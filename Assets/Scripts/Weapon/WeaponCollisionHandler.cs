@@ -10,7 +10,8 @@ public class WeaponCollisionHandler : MonoBehaviour
 
     void OnCollisionEnter(Collision collision) {
        
-        
+        Entity otherEntity = collision.collider.GetComponent<Entity>();
+      
         if (WeaponsMgr.inst.weapons.Contains(entity)) {
             if (collision.collider is TerrainCollider) {
                 Debug.Log(collision.collider.name);
@@ -19,7 +20,7 @@ public class WeaponCollisionHandler : MonoBehaviour
                 return;
             }
 
-            Entity otherEntity = collision.collider.GetComponent<Entity>();
+            
             if (otherEntity != null && otherEntity != entity.creatorsEntity && otherEntity.owner != entity.owner && otherEntity.entityType != entity.entityType) {
                 float damage = WeaponsMgr.inst.damageMatrix.GetDamage(entity.entityType, otherEntity.entityType);
                 Debug.Log(otherEntity.name+" "+ otherEntity.entityType+" "+ otherEntity.owner );

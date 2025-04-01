@@ -48,12 +48,12 @@ MonoBehaviour:
   entity: {fileID: 2020023502598012843}
   weapon:
     launchPoint: {fileID: 2298628844856446474}
-    cooldown: 40
+    cooldown: 2.14
     behaviorType: 3
     weaponEntityType: 15
     range: 600
     currentWeaponEntities: []
-    defaultDamage: 25
+    defaultDamage: 30
     ammoCount: -1
 --- !u!1 &273685230956845566
 GameObject:
@@ -362,6 +362,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  attackMoves: []
   follows: []
   intercepts: []
   intercept3ds: []

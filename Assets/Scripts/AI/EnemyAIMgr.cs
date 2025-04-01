@@ -10,6 +10,8 @@ public class EnemyAIMgr : MonoBehaviour
     private Dictionary<Entity, float> entityCooldowns = new Dictionary<Entity, float>();
     private float updateInterval = 0.5f;
     private float lastUpdateTime;
+    private float initialStopDistance = 2000f; // Initial stopping distance
+    private float minDistanceReduction = 200f; // Reduce distance by this amount each step
 
     void Awake() 
     {
@@ -24,6 +26,8 @@ public class EnemyAIMgr : MonoBehaviour
 
         if (currentLevel == 1)
             HandleLevel1Behavior();
+        if (currentLevel == 2)
+            HandleLevel2Behavior();
     }
 
     private void HandleLevel1Behavior()
@@ -47,33 +51,78 @@ public class EnemyAIMgr : MonoBehaviour
     }
 
     private void HandleCombatBehavior(List<Entity> aiEntities)
+{
+    Vector3 opponentPos = opponentBase.position;
+
+    for (int i = aiEntities.Count - 1; i >= 0; i--)
     {
-        Vector3 opponentPos = opponentBase.position;
+        Entity aiEntity = aiEntities[i];
+        if (aiEntity == null) continue;
 
-        for (int i = aiEntities.Count - 1; i >= 0; i--)
+        WeaponsAspect weaponAspect = aiEntity.GetComponentInChildren<WeaponsAspect>();
+        float weaponRange = weaponAspect != null ? weaponAspect.weapon.range : 600f;
+
+        // Initialize cooldown if not present (use -1 to indicate "first move" state)
+        if (!entityCooldowns.ContainsKey(aiEntity))
         {
-            Entity aiEntity = aiEntities[i];
-            if (aiEntity == null) continue;
+            entityCooldowns[aiEntity] = -1f;
+        }
 
-            if (entityCooldowns.TryGetValue(aiEntity, out float cooldown) && cooldown > Time.time)
-                continue;
+        float currentDistance = Vector3.Distance(aiEntity.position, opponentPos);
+        float targetDistance;
 
-            float range = aiEntity.GetComponentInChildren<WeaponsAspect>()?.weapon.range ?? 600f;
-            Entity nearestEnemy = FindNearestEnemy(aiEntity, range);
+        // Check if this is the first move (hasn't reached 2000 units yet)
+        if (entityCooldowns[aiEntity] < 0f)
+        {
+            targetDistance = initialStopDistance; // Force first stop at 2000 units
 
+            // If close enough to 2000 units, mark as having completed first stop
+            if (currentDistance <= initialStopDistance + 50f) // Adding small buffer
+            {
+                entityCooldowns[aiEntity] = Time.time + 0.5f; // Normal cooldown starts
+            }
+        }
+        else
+        {
+            // After first stop, normal behavior
+            Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange);
             if (nearestEnemy != null)
             {
+                // Engage the enemy
                 UnitAI unitAI = aiEntity.GetComponentInChildren<UnitAI>();
                 unitAI?.StopAndRemoveAllCommands();
-                WeaponsMgr.inst.handleWeapon(aiEntity, nearestEnemy);
-                entityCooldowns[aiEntity] = Time.time + 0.2f;
+                continue; // Skip movement if engaging enemy
             }
             else
             {
-                AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentPos, false);
+                // No enemies in range, calculate dynamic distance
+                targetDistance = weaponAspect != null ? CalculateTargetDistance(aiEntity, weaponRange, currentDistance) : 600f;
                 entityCooldowns[aiEntity] = Time.time + 0.5f;
             }
         }
+
+        // Move towards the target distance
+        AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false, doneDistanceSq: targetDistance * targetDistance);
+    }
+}
+
+    private float CalculateTargetDistance(Entity aiEntity, float weaponRange, float currentDistance)
+    {
+        // Start with initial stop distance of 2000 units
+        float targetDistance = initialStopDistance;
+
+        // If no enemies are nearby and we're beyond weapon range, gradually reduce the distance
+        if (currentDistance > weaponRange && FindNearestEnemy(aiEntity, initialStopDistance) == null)
+        {
+            targetDistance = Mathf.Max(weaponRange, currentDistance - minDistanceReduction);
+        }
+        // Once within weapon range, stop reducing
+        else if (currentDistance <= weaponRange)
+        {
+            targetDistance = weaponRange;
+        }
+
+        return targetDistance;
     }
 
     private Entity FindNearestEnemy(Entity aiEntity, float range)
@@ -121,5 +170,11 @@ public class EnemyAIMgr : MonoBehaviour
                 result.Add(e);
         }
         return result;
+    }
+    private void HandleLevel2Behavior()
+    {
+        // Implement Level 2 behavior here
+        // This could involve more complex AI logic, such as flanking, retreating, etc.
+
     }
 }

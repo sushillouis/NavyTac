@@ -343,6 +343,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  attackMoves: []
   follows: []
   intercepts: []
   intercept3ds: []
@@ -415,7 +416,39 @@ Transform:
   - {fileID: 6464280051514964440}
   - {fileID: 4083887667456432583}
   - {fileID: 99377865231509194}
+  - {fileID: 159138624233363789}
   m_Father: {fileID: 7187487557739430685}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7979335405617730797
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4863037462011928315}
+  m_Layer: 0
+  m_Name: LaunchLocation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4863037462011928315
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7979335405617730797}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 5.2, z: 24.05}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 159138624233363789}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8242789660831846513
 GameObject:
@@ -448,6 +481,61 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7187487557739430685}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8445740828114962033
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 159138624233363789}
+  - component: {fileID: 1186422727445853342}
+  m_Layer: 0
+  m_Name: WeaponAspect
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &159138624233363789
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8445740828114962033}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4863037462011928315}
+  m_Father: {fileID: 1747651797385832923}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1186422727445853342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8445740828114962033}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8484a39e824370c4a9db2cc1178bdffb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entity: {fileID: 3922448631972919876}
+  weapon:
+    launchPoint: {fileID: 4863037462011928315}
+    cooldown: 1
+    behaviorType: 3
+    weaponEntityType: 15
+    range: 600
+    currentWeaponEntities: []
+    defaultDamage: 10
+    ammoCount: -1
 --- !u!1001 &2391100717290609749
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.WSA;
 
-
 [Serializable]
 public class WeaponData
 {
@@ -14,26 +13,76 @@ public class WeaponData
     public WeaponBehaviors behaviorType;
     public EntityType weaponEntityType;
     public float range = 200f;
-    public List<Entity> currentWeaponEntities; //list of alive weapons
+    public List<Entity> currentWeaponEntities; // List of active weapons
     public float defaultDamage;
-    // public Vector3 launchLocation;
-    // public Vector3 launchDirection;
     public float ammoCount;
     [NonSerialized]
     public float lastShotTime;
 }
+
 public class WeaponsAspect : MonoBehaviour
 {
+
     public Entity entity;
-    // public List<WeaponData> weapons = new List<WeaponData>();
     public WeaponData weapon;
 
-    private void Awake() {
-        
+    private void Awake()
+    {
         entity = GetComponentInParent<Entity>();
-    
+        if (entity == null) return;
+
         entity.weapons = this;
         weapon.currentWeaponEntities = new List<Entity>();
         weapon.lastShotTime = -weapon.cooldown;
+    }
+
+    private void Update()
+    {
+        if (entity == null || weapon == null) return;
+        UnitAI unitAI = entity.GetComponentInChildren<UnitAI>();
+        if(unitAI == null) return;
+        if ( unitAI.commands.Count > 0 && unitAI.commands.Peek() != null){
+            if (unitAI.commands.Peek().GetType() == typeof(Move))
+            {
+                return;
+            }
+        }
+        
+        bool isAmmoDepleted = (weapon.ammoCount != -1 && weapon.ammoCount <= 0);
+        if (Time.time - weapon.lastShotTime < weapon.cooldown || isAmmoDepleted )
+            return;
+        Entity target = FindTargetInRange();
+        if (target != null)
+        {
+            Debug.Log("Target found: " + target.name);
+            WeaponsMgr.inst.LaunchWeapon(entity, weapon, target, target.transform.position);
+        }
+    }
+
+    private Entity FindTargetInRange()
+    {
+        Debug.Log("Finding target in range...");
+        if (EntityMgr.inst == null || EntityMgr.inst.entities == null)
+            return null;
+
+        float weaponRange = weapon.range; // Fixed: Use weapon.range instead of undefined 'range'
+        float weaponRangeSq = weaponRange * weaponRange;
+        Entity nearest = null;
+        float minDistSq = float.MaxValue;
+
+        foreach (Entity e in EntityMgr.inst.entities)
+        {
+            if (e == null || e == entity || e.owner == entity.owner || !e.gameObject.activeSelf || e.entityClass == EntityClass.Missile)
+                continue;
+
+            float distSq = (e.position - entity.position).sqrMagnitude;
+            if (distSq < weaponRangeSq && distSq < minDistSq)
+            {
+                minDistSq = distSq;
+                nearest = e;
+            }
+        }
+        
+        return nearest;
     }
 }

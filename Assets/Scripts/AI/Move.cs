@@ -23,17 +23,18 @@ public class Move : Command
     public float angleDiff;
     public float cosValue;
     public float ds;
-    public float doneDistanceSq = 100000f;
+     public float doneDistanceSq ;
 
-    public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false) : base(ent)
+    public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false , float doneDistanceSq = 100000f) : base(ent)
     {
         movePosition = pos;
         this.maxSpeedMovement = maxSpeedMovement;
+        this.doneDistanceSq = doneDistanceSq;
     }
 
     public override void Init() 
     {
-        if(!FogWarMgr.inst.nonRevelers.Contains(entity)) 
+        if(!FogWarMgr.inst.nonRevelers.Contains(entity) ) 
         {
             line = LineMgr.inst.CreateMoveLine(entity.position, movePosition);
             line.gameObject.SetActive(false);
@@ -197,6 +198,7 @@ public class Move : Command
 
     public override bool IsDone()
     {
+        if (entity == null ) return true;
         if (entity.GetComponentInChildren<WeaponsAspect>() != null)
         {
             return (entity.position - movePosition).sqrMagnitude < entity.GetComponentInChildren<WeaponsAspect>().weapon.range * entity.GetComponentInChildren<WeaponsAspect>().weapon.range;

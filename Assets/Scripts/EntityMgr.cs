@@ -35,7 +35,7 @@ public class EntityMgr : MonoBehaviour
     public List<Entity> entities;
     public Dictionary<int, Entity> entitiesDict;
     public event Action<Entity> OnEntityAdded;
-    public event Action<Entity> OnEntityRemoved;
+    public event Action<Entity>  OnEntityRemoved;
     
     public int entityId = 0;
 

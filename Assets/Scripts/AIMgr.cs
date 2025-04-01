@@ -120,7 +120,8 @@ public class AIMgr : NetworkBehaviour
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
                 if(attackMove)
-                        HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, add);
+                        HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, add,ent);
+                
                 else if(ent == null || ent.transform.GetChild(0).gameObject.activeSelf == false || ent.entityType == EntityType.Rig_Balder) {
                     HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
                 }
@@ -140,9 +141,13 @@ public class AIMgr : NetworkBehaviour
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
     public void HandleAttackMove(List<Entity> entities, Vector3 point,
-        bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false,
-        FormationType formationType = FormationType.Circle, float formationRadius = 200f, bool groupMove = false)
+        bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false ,Entity target = null)
     {
+        if (target != null)
+        {
+            //do complex attack move 
+            // it will go towards the enemy in between it will fight with the enemy but it will go there if the enemy goes away more than 1000 units or it is not visble due to  fog it will stop 
+        }
         Debug.Log("Attack Move");
         if (isLocalCommand)
         {
@@ -182,8 +187,7 @@ public class AIMgr : NetworkBehaviour
         }
     }
     public void HandleMove(List<Entity> entities, Vector3 point,
-                      bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false,
-                      FormationType formationType = FormationType.Circle, float formationRadius = 200f, bool groupMove = false)
+                      bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, float doneDistanceSq = 100000)
     {
         if (isLocalCommand)
         {
@@ -196,27 +200,27 @@ public class AIMgr : NetworkBehaviour
 
             if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
             {
-                // Split into two commands: first to (0,0,0), then to target
+                
                 Vector3 intermediatePoint = new Vector3(
-                    UnityEngine.Random.Range(-500f, 500f), // X: -500 to 500
+                    UnityEngine.Random.Range(-500f, 500f), 
                     0f, // Y: Fixed at 0
-                    UnityEngine.Random.Range(-500f, 500f) // Z: -500 to 500
+                    UnityEngine.Random.Range(-500f, 500f)
                 );
 
-                Move intermediateMove = new Move(entity, intermediatePoint, maxSpeedMovement);
+                Move intermediateMove = new Move(entity, intermediatePoint, maxSpeedMovement, doneDistanceSq);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
 
                 // Replace current command with intermediate move
                 AddOrSet(intermediateMove, uai, add: false);
 
                 // Queue final move after intermediate
-                Move finalMove = new Move(entity, point, maxSpeedMovement);
+                Move finalMove = new Move(entity, point, maxSpeedMovement, doneDistanceSq);
                 AddOrSet(finalMove, uai, add: true);
             }
             else
             {
                 // Original single-entity behavior
-                Move m = new Move(entity, point, maxSpeedMovement);
+                Move m = new Move(entity, point, maxSpeedMovement, doneDistanceSq);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
                 AddOrSet(m, uai, add);
             }

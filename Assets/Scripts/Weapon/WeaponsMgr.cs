@@ -247,12 +247,11 @@ public class WeaponsMgr : MonoBehaviour
                 return;
             }
             MinimapMgr.inst.RemoveMinimapIcon(entity);
-            if (entity.TryGetComponent<UnitAI>(out var unitAI))
+            UnitAI unitAI = entity.GetComponentInChildren<UnitAI>();
+            if (unitAI != null)
             {
-                Debug.Log("unitAI found");
                 unitAI.StopAndRemoveAllCommands();
             }
-
             if (SelectionMgr.inst.selectedEntities.Contains(entity))
             {
                 SelectionMgr.inst.selectedEntities.Remove(entity);

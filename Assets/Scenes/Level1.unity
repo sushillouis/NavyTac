@@ -196,7 +196,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 2000, y: 5, z: 1000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &29624033
 Transform:
   m_ObjectHideFlags: 0
@@ -333,7 +333,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 2000, y: 5, z: 2000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &57805744
 Transform:
   m_ObjectHideFlags: 0
@@ -1004,7 +1004,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65cfb1489ff408b4abaedfa9abb7f27d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FOW: 1
+  FOW: 0
   playerSide: 00000000
   fogMaterial: {fileID: 2100000, guid: 043fa474478025747b66fd0c85b9458c, type: 2}
   fogPlaneSize: {x: 18520, y: 18520}
@@ -1049,7 +1049,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 4000, y: 5, z: 8000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &280782897
 Transform:
   m_ObjectHideFlags: 0
@@ -1169,7 +1169,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 4000, y: 5, z: 8000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &328336173
 Transform:
   m_ObjectHideFlags: 0
@@ -1449,7 +1449,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 4000, y: 5, z: 8000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &387582371
 Transform:
   m_ObjectHideFlags: 0
@@ -2587,14 +2587,14 @@ MonoBehaviour:
   isPotentialFieldsMovement: 1
   potentialDistanceThreshold: 900
   potentialDistanceThresholdSq: 10000000
-  attractionCoefficient: 20000
+  attractionCoefficient: 25000
   attractiveExponent: -1
-  repulsiveCoefficient: 50000
-  groupRepulsiveCoefficient: 2500
+  repulsiveCoefficient: 1000
+  groupRepulsiveCoefficient: 1000
   repulsiveExponent: -2
-  repulsive2Coefficient: 10000
+  repulsive2Coefficient: 15000
   attraction2Coefficient: 9500
-  layerMask: 576
+  layerMask: 0
 --- !u!65 &639876784
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2668,7 +2668,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 3000, y: 5, z: 3000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &641959633
 Transform:
   m_ObjectHideFlags: 0
@@ -3183,7 +3183,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 1820, y: 0, z: 18250}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!850595691 &886595368
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -3330,7 +3330,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 6000, y: 5, z: 4500}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &948085072
 Transform:
   m_ObjectHideFlags: 0
@@ -3688,7 +3688,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 2000, y: 5, z: 1000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &999004833
 Transform:
   m_ObjectHideFlags: 0
@@ -3750,7 +3750,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 1820, y: 0, z: 18250}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!1001 &1031111529
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4345,7 +4345,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 2000, y: 5, z: 1000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &1163002950
 Transform:
   m_ObjectHideFlags: 0
@@ -4590,7 +4590,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 2000, y: 5, z: 1000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &1212399376
 Transform:
   m_ObjectHideFlags: 0
@@ -4676,7 +4676,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 3000, y: 5, z: 3000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &1242683493
 Transform:
   m_ObjectHideFlags: 0
@@ -5471,7 +5471,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 2000, y: 5, z: 2000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &1448559878
 Transform:
   m_ObjectHideFlags: 0
@@ -5778,7 +5778,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 8000, y: 5, z: 5000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &1550387678
 Transform:
   m_ObjectHideFlags: 0
@@ -6068,7 +6068,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 1820, y: 0, z: 18250}
   repulsionStrength: 10000
-  repulsionRadius: 900
+  repulsionRadius: 1000
 --- !u!1 &1630728964
 GameObject:
   m_ObjectHideFlags: 0
@@ -6635,11 +6635,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc331097491174f41b1d50a6c2e61adf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseAttackRadius: 10
-  minEngagementDistance: 5
   currentLevel: 1
-  drawDebugVisuals: 1
-  aiEntities: []
 --- !u!1 &1852731777
 GameObject:
   m_ObjectHideFlags: 0
@@ -6818,7 +6814,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 2000, y: 5, z: 1000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!1 &1871514400
 GameObject:
   m_ObjectHideFlags: 0
@@ -6865,7 +6861,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 1820, y: 0, z: 18250}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!1 &1881115681
 GameObject:
   m_ObjectHideFlags: 0
@@ -7026,7 +7022,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 2000, y: 5, z: 2000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &1895626497
 Transform:
   m_ObjectHideFlags: 0
@@ -7307,7 +7303,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   localSize: {x: 2000, y: 5, z: 2000}
   repulsionStrength: 1000
-  repulsionRadius: 500
+  repulsionRadius: 1000
 --- !u!4 &1996769223
 Transform:
   m_ObjectHideFlags: 0
@@ -8109,7 +8105,7 @@ PrefabInstance:
     - target: {fileID: 229904364588993521, guid: 154d111a92a0b5044a70610b2316490d,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.00013517537
+      value: -0.00019060528
       objectReference: {fileID: 0}
     - target: {fileID: 623374846698746527, guid: 154d111a92a0b5044a70610b2316490d,
         type: 3}

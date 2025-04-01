@@ -145,7 +145,7 @@ public class SelectionMgr : MonoBehaviour
 
     public void SelectEntity(Entity ent, bool shouldClearSelection = true)
     {
-        if (ent != null && (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
+        if (ent != null&& ent.entityClass != EntityClass.Missile && (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
             && (selectedEntityIndex = EntityMgr.inst.entities.FindIndex(x => (x == ent))) >= 0) {
            
             if (shouldClearSelection) 

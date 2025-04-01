@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
 [System.Serializable]
 public class AttackMove : Move
 {
@@ -12,24 +11,17 @@ public class AttackMove : Move
 
     public override void Init() 
     {
-        // Initialize lines as in base class, if needed
         base.Init();
     }
 
     public override void Tick() 
     {
-        // Move toward the destination
-        base.Tick();
-
-        // Find and attack the nearest enemy
+        // Check for enemies first
         Entity nearestEnemy = FindNearestEnemy();
-        if (nearestEnemy != null)
-        {
-            WeaponsMgr.inst.handleWeapon(entity, nearestEnemy);
-        }
+        base.Tick();
+        
     }
 
-    // Helper method to find the nearest enemy within weapon range
     private Entity FindNearestEnemy()
     {
         WeaponsAspect weaponAspect = entity.GetComponentInChildren<WeaponsAspect>();
@@ -55,8 +47,6 @@ public class AttackMove : Move
         }
         return nearest;
     }
-
-    
 
     public override void Stop()
     {

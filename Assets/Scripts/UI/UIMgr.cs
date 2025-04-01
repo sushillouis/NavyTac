@@ -265,7 +265,7 @@ public class UIMgr : MonoBehaviour
     private float lastFuel = -1;
     private float lastRange = -1;
     private float lastAltitude = -1;
-    private float lastDesiredAltitude = -1;
+    // private float lastDesiredAltitude = -1;
 
 
     // Update is called once per frame
@@ -349,7 +349,6 @@ public class UIMgr : MonoBehaviour
 
     }
 
-    private float maxHealth = 100;
     private float greenHealth = 67;
     private float orangeHealth = 33;
     private void UpdateHealth(Entity ent) {
