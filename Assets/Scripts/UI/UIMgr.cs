@@ -321,7 +321,7 @@ public class UIMgr : MonoBehaviour
         };
         List<RaycastResult> results = new();
         cameraRayCaster.Raycast(eventDataCurrentPosition, results);
-        // Debug.Log(results.Count);
+        Debug.Log(results.Count);
         // This might result in issues later
         return results.Count > 1;
     }
@@ -332,7 +332,7 @@ public class UIMgr : MonoBehaviour
         CameraMgr.inst.ToggleRTSView();
     }
 
-    bool boxSelecting;
+    public bool boxSelecting;
     private void OnBoxSelectPerformed(InputAction.CallbackContext context)
     {
         if(IsPointerOverUIObject()) {

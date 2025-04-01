@@ -9,6 +9,9 @@ using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.UI;
 
+public delegate void SelectionDelegate(List<Entity> entities, EntityConditionDelegate conditionDelegate);
+public delegate bool EntityConditionDelegate(Entity entity);
+
 public class StreamingToCommand: MonoBehaviour 
 {
     [SerializeField] Transform commandDisplay;
@@ -32,7 +35,6 @@ public class StreamingToCommand: MonoBehaviour
         if(pause || fullCommand.Length>250) {
             return;
         }
-        Debug.Log(result);
         result = WordCleanup.StripPunctuation(result);
         string[] tokens = result.Split(' ');
         bool executeCommand = false;
@@ -162,21 +164,58 @@ public class StreamingToCommand: MonoBehaviour
     }
 
     public void ExecuteCommand(string command) {
+        Debug.Log(command);
         System.Collections.IEnumerator tokens = command.Split(' ').GetEnumerator();
         List<Entity> importantEnts = new();
         if(!tokens.MoveNext()) return;
-        if((string)tokens.Current=="select") {
+        SelectionDelegate selector =  SelectionMgr.inst.SelectAllEntitiesOnCondition;
+        EntityConditionDelegate entityCondition = (_) => true;
+        if((string)tokens.Current=="select" || (string)tokens.Current=="group") {
+            EntityClass classFilter = EntityClass.None;
+            if((string)tokens.Current=="group") {
+                selector = TacticalAIMgr.inst.AutoCreateBindControlGroup;
+            }
             if(!tokens.MoveNext()) return;
-            if((string)tokens.Current=="clear") {
+
+            if((string)tokens.Current=="set") {
+                if(!tokens.MoveNext()) return; 
                 SelectionMgr.inst.ClearSelection();
+            } else if((string)tokens.Current=="add") {
+                if(!tokens.MoveNext()) return; 
             }
+
             if((string)tokens.Current=="all") {
-                if(!tokens.MoveNext()) return; // "on"
-                if(!tokens.MoveNext()) return;
-                if((string)tokens.Current=="screen") {
-                    SelectionMgr.inst.SelectEntitiesInBox(Vector3.zero,new(9999,9999,0));
-                }
+                if(!tokens.MoveNext()) return; 
+            } else if((string)tokens.Current=="half") {
+                if(!tokens.MoveNext()) return; 
+                //TODO
             }
+
+            if((string)tokens.Current=="of"){
+                if(!tokens.MoveNext()) return; 
+                classFilter = EntityClass.Carrier; // Temp (find class)
+                entityCondition = ent => ent.entityClass == classFilter;
+            } 
+            if((string)tokens.Current=="on") {
+                if(!tokens.MoveNext()) return; 
+            } 
+
+
+            if((string)tokens.Current=="screen") {
+                if(!tokens.MoveNext()) return; 
+                importantEnts = SelectionMgr.inst.GetAllEntitiesOnScreen();
+            } else if((string)tokens.Current=="left") {
+                if(!tokens.MoveNext()) return; 
+                importantEnts = SelectionMgr.inst.GetAllEntitiesOnLeftScreen();
+            } else if((string)tokens.Current=="right") {
+                if(!tokens.MoveNext()) return; 
+                importantEnts = SelectionMgr.inst.GetAllEntitiesOnRightScreen();
+            } else if((string)tokens.Current=="map") {
+                if(!tokens.MoveNext()) return; 
+                importantEnts = EntityMgr.inst.entities;
+            } 
+
+            selector(importantEnts,entityCondition);
         } else if((string)tokens.Current=="attack") {
             if(!tokens.MoveNext()) return;
             int dirFlag = 0;
@@ -287,7 +326,7 @@ public class StreamingToCommand: MonoBehaviour
 
     public void FillOptions(List<(int,string)> options) {
         List<string> temp = new();
-        options.ForEach(option => temp.Add(option.Item2));
+        options.Where((option)=> option.Item1 !=-1).ToList().ForEach(option => temp.Add(option.Item2));
         FillOptions(temp);
     }
     
@@ -353,6 +392,10 @@ static class WordCleanup
             (0,"set")
         }}, {"add", new(){
             (0,"all"),
+            (0,"half"),
+        }}, {"set", new(){
+            (0,"all"),
+            (0,"half"),
         }}, {"attack", new(){
             (0,"furthest"),
             (0,"nearest"),
