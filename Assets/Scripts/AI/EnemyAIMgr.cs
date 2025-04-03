@@ -7,6 +7,7 @@ public class EnemyAIMgr : MonoBehaviour
     public static EnemyAIMgr inst;
 
     private Entity opponentBase; // Cached opponent base
+    public List<Entity> aiBases = new List<Entity>();
     private Dictionary<Entity, float> entityCooldowns = new Dictionary<Entity, float>();
     private float updateInterval = 0.5f;
     private float lastUpdateTime;
@@ -15,6 +16,7 @@ public class EnemyAIMgr : MonoBehaviour
 
     void Awake() 
     {
+        
         inst = this;
         opponentBase = FindOpponentBase(); // Initial search
     }
@@ -23,13 +25,46 @@ public class EnemyAIMgr : MonoBehaviour
     {
         if (Time.time - lastUpdateTime < updateInterval) return;
         lastUpdateTime = Time.time;
-
+        FindAIBases();
+        CheckAIBases();
+        if (aiBases.Count == 0) {
+            Debug.Log("No AI bases found, reloading scene.");
+            // GameMgr.inst.ReloadScene(); // No AI bases found
+            return;
+        }
+         // No AI bases found
         if (currentLevel == 1)
             HandleLevel1Behavior();
         if (currentLevel == 2)
             HandleLevel2Behavior();
     }
+     private void CheckAIBases()
+    {
+        for (int i = aiBases.Count - 1; i >= 0; i--)
+        {
+            Entity baseEntity = aiBases[i];
+            if (baseEntity == null)
+            {
+                Debug.Log("AI base destroyed");
+                aiBases.RemoveAt(i);
+            }
+        }
+    }
 
+    // New method to find all AI bases
+    private void FindAIBases()
+    {
+        aiBases.Clear();
+        foreach (Entity e in EntityMgr.inst.entities)
+        {
+            if (e != null && e.owner != null && 
+                e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase) && 
+                e.entityRole == EntityRole.Base)
+            {
+                aiBases.Add(e);
+            }
+        }
+    }
     private void HandleLevel1Behavior()
     {
         // Check if cached base is still valid
@@ -40,7 +75,9 @@ public class EnemyAIMgr : MonoBehaviour
 
         if (opponentBase == null)
         {
+            // GameMgr.inst.ReloadScene();
             Debug.Log("AI WON");
+             // No opponent base found, reload scene
             return;
         }
 

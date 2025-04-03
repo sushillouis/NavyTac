@@ -22,13 +22,13 @@ public enum Difficulty { Easy, Medium, Hard }
 
 public class GameMgr : MonoBehaviour
 {
-    private static int reloadCount = 0;
+    public static int reloadCount = 0;
     public static GameMgr inst;
 
     private void Awake()
     {
+        Random.InitState(seed);
         inst = this;
-        LoadPersistentData(); // Load saved seed and difficulty
         BuildEntityDictionary();
     }
 
@@ -188,8 +188,7 @@ public class GameMgr : MonoBehaviour
   void InitializeScenario()
     {
         // Combine the original seed with reload count to create a unique seed for this reload
-        int combinedSeed = seed + reloadCount;
-        Random.InitState(combinedSeed); // Deterministic randomness for THIS reload
+         // Deterministic randomness for THIS reload
 
         DetermineDifficulty();
         AdjustUnitCounts(); // Uses difficulty but varies with combinedSeed
@@ -341,27 +340,86 @@ public class GameMgr : MonoBehaviour
         EntityType.SeaBaby
     };
     [ContextMenu("Reload Scene")] // Creates an inspector context menu entry
-    public void ReloadScene()
+   [ContextMenu("Reload Scene")]
+public void ReloadScene()
+{
+    // Save current settings
+    reloadCount++;
+
+    // Clear all existing entities
+    ClearAllEntities();
+
+    // Reset game state
+    ResetGameState();
+
+    // Respawn entities
+    OpenOcean1x1();
+}
+
+private void ClearAllEntities()
+{
+    // Destroy all weapons
+    if (WeaponsMgr.inst != null)
     {
-        SavePersistentData(); // Save current seed and difficulty
-        reloadCount++; // Increment reload count for the next load
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        var weaponsCopy = new List<Entity>(WeaponsMgr.inst.weapons);
+        foreach (Entity weapon in weaponsCopy)
+        {
+            WeaponsMgr.inst.DestroyEntity(weapon);
+        }
     }
 
-    private void SavePersistentData()
+    // Destroy all entities
+    if (EntityMgr.inst != null)
     {
-        PlayerPrefs.SetInt("GameSeed", seed);
-        PlayerPrefs.SetFloat("DifficultyLevel", difficultyLevel);
-        PlayerPrefs.Save();
+        var entitiesCopy = new List<Entity>(EntityMgr.inst.entities);
+        foreach (Entity entity in entitiesCopy)
+        {
+            WeaponsMgr.inst.DestroyEntity(entity);
+        }
+        
+        // Clear the entity lists
+        EntityMgr.inst.entities.Clear();
+        
     }
 
-    private void LoadPersistentData()
+    // Clear selection
+    if (SelectionMgr.inst != null)
     {
-        if (PlayerPrefs.HasKey("GameSeed"))
-            seed = PlayerPrefs.GetInt("GameSeed");
-        if (PlayerPrefs.HasKey("DifficultyLevel"))
-            difficultyLevel = PlayerPrefs.GetFloat("DifficultyLevel");
+        SelectionMgr.inst.selectedEntities.Clear();
+        SelectionMgr.inst.selectedEntity = null;
     }
+}
+
+private void ResetGameState()
+{
+    // Reset time scale
+    Time.timeScale = 1f;
+    if (simSpeedButtonText != null)
+        simSpeedButtonText.text = "1";
+
+    // Reset position
+    position = Vector3.zero;
+    initZ = 0;
+
+    // Clear and rebuild entity dictionary
+    // entityQuantities.Clear();
+    BuildEntityDictionary();
+
+    // Reset any other necessary game state variables
+    if (AIMgr.inst != null)
+    {
+        AIMgr.inst.StopAllCoroutines();
+        
+    }
+
+    // Reset distance manager
+    if (DistanceMgr.inst != null)
+    {
+        DistanceMgr.inst.Initialize();
+    }
+}
+
+   
     
 
 

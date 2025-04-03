@@ -336,6 +336,7 @@ public class AIMgr : NetworkBehaviour
             OpenOceanMain.inst.localTactNetMgr.CommandUpdateServerRpc(netCommand);
         }
     }
+    
 
     TactCommandStruct MakeNetCommandStruct(TactCommandTypes cmdType, List<Entity> entities, Vector3 pos, Entity target, bool add) {
         TactCommandStruct netCommand = new TactCommandStruct();
