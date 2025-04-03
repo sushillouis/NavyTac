@@ -49,7 +49,29 @@ public class EnemyAIMgr : MonoBehaviour
 
         HandleCombatBehavior(aiEntities);
     }
+    private void HandleLevel2Behavior()
+    {
+        // Check if cached base is still valid
+        if (opponentBase == null || !EntityMgr.inst.entities.Contains(opponentBase))
+        {
+            opponentBase = FindOpponentBase();
+        }
 
+        if (opponentBase == null)
+        {
+            Debug.Log("AI WON");
+            return;
+        }
+
+        List<Entity> aiEntities = GetAIEntities();
+        if (aiEntities.Count == 0) return;
+
+        Handlelevel2CombatBehavior(aiEntities);
+    }
+    private void Handlelevel2CombatBehavior(List<Entity> aiEntities)
+    {
+        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, opponentBase, false);
+    }
     private void HandleCombatBehavior(List<Entity> aiEntities)
 {
     Vector3 opponentPos = opponentBase.position;
@@ -171,10 +193,5 @@ public class EnemyAIMgr : MonoBehaviour
         }
         return result;
     }
-    private void HandleLevel2Behavior()
-    {
-        // Implement Level 2 behavior here
-        // This could involve more complex AI logic, such as flanking, retreating, etc.
-
-    }
+    
 }

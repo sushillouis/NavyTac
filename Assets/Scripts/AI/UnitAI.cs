@@ -177,6 +177,7 @@ public class UnitAI : MonoBehaviour
         //potential fields lines
         if(!(current is Follow) && !(current is Intercept) && AIMgr.inst.isPotentialFieldsMovement){ 
             Move m = current as Move;
+            if (m.potentialLine == null) return;
             if(!FogWarMgr.inst.nonRevelers.Contains(entity)) m.potentialLine.SetPosition(0, entity.position);
             Vector3 newpos = Vector3.zero;
             newpos.x = Mathf.Sin(entity.desiredHeading * Mathf.Deg2Rad) * entity.desiredSpeed;

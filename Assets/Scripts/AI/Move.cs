@@ -39,7 +39,8 @@ public class Move : Command
             line = LineMgr.inst.CreateMoveLine(entity.position, movePosition);
             line.gameObject.SetActive(false);
             potentialLine = LineMgr.inst.CreatePotentialLine(entity.position);
-            potentialLine.gameObject.SetActive(false);
+            if (potentialLine != null)
+                potentialLine.gameObject.SetActive(false);
         }
     }
 

@@ -42,7 +42,10 @@ public class WeaponsAspect : MonoBehaviour
         UnitAI unitAI = entity.GetComponentInChildren<UnitAI>();
         if(unitAI == null) return;
         if ( unitAI.commands.Count > 0 && unitAI.commands.Peek() != null){
-            if (unitAI.commands.Peek().GetType() == typeof(Move))
+            if (unitAI.commands.Peek().GetType() == typeof(Move)||
+                unitAI.commands.Peek().GetType() == typeof(Intercept) ||
+                unitAI.commands.Peek().GetType() == typeof(Intercept3d) ||
+                unitAI.commands.Peek().GetType() == typeof(SmartIntercept))
             {
                 return;
             }

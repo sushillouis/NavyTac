@@ -5,41 +5,101 @@ using UnityEngine;
 [System.Serializable]
 public class AttackMove : Move
 {
-    public AttackMove(Entity ent, Vector3 pos, bool maxSpeedMovement = false) : base(ent, pos, maxSpeedMovement)
+    private Entity explicitTarget;
+    private bool hasExplicitTarget;
+
+    public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false) : base(ent, pos, maxSpeed)
     {
+        hasExplicitTarget = false;
     }
 
-    public override void Init() 
+    public AttackMove(Entity ent, Entity target, bool maxSpeed = false) : base(ent, target.position, maxSpeed)
     {
-        base.Init();
+        explicitTarget = target;
+        hasExplicitTarget = true;
     }
 
-    public override void Tick() 
+    public override void Tick()
     {
-        // Check for enemies first
-        Entity nearestEnemy = FindNearestEnemy();
-        base.Tick();
+        Entity immediateTarget = FindImmediateThreat();
+        bool shouldEngage = immediateTarget != null;
+
+        if (hasExplicitTarget)
+        {
+            HandleExplicitTargetBehavior(ref immediateTarget, ref shouldEngage);
+        }
+
+        if (shouldEngage)
+        {
+            HandleEngagement(immediateTarget);
+        }
+        else
+        {
+            base.Tick();
+        }
+    }
+
+    private void HandleExplicitTargetBehavior(ref Entity immediateTarget, ref bool shouldEngage)
+    {
+        if (!IsTargetValid(explicitTarget))
+        {
+            hasExplicitTarget = false;
+            return;
+        }
+
+        WeaponsAspect weapons = entity.GetComponentInChildren<WeaponsAspect>();
+        if (weapons == null || weapons.weapon == null)
+        {
+            hasExplicitTarget = false;
+            return;
+        }
+
+        // Use weapon range for pursuit calculations
+        float weaponRangeSq = weapons.weapon.range * weapons.weapon.range;
+        float targetDistSq = (explicitTarget.position - entity.position).sqrMagnitude;
+
+        // Update move position to track moving target
+        movePosition = explicitTarget.position;
+
+        if (targetDistSq <= weaponRangeSq)
+        {
+            // Prioritize explicit target when in weapon range
+            immediateTarget = explicitTarget;
+            shouldEngage = true;
+        }
+        else
+        {
+            // Allow engaging other threats while pursuing main target
+            shouldEngage = immediateTarget != null;
+        }
+    }
+
+    private void HandleEngagement(Entity target)
+    {
+        // Stop movement when in attack range
+        entity.desiredSpeed = 0;
         
+        // Face target
+        Vector3 toTarget = target.position - entity.position;
+        entity.desiredHeading = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
     }
 
-    private Entity FindNearestEnemy()
+    private Entity FindImmediateThreat()
     {
-        WeaponsAspect weaponAspect = entity.GetComponentInChildren<WeaponsAspect>();
-        if (weaponAspect == null || weaponAspect.weapon == null)
-            return null;
+        WeaponsAspect weapons = entity.GetComponentInChildren<WeaponsAspect>();
+        if (weapons == null || weapons.weapon == null) return null;
 
-        float weaponRange = weaponAspect.weapon.range;
-        float weaponRangeSq = weaponRange * weaponRange;
+        float rangeSq = weapons.weapon.range * weapons.weapon.range;
         Entity nearest = null;
         float minDistSq = float.MaxValue;
 
         foreach (Entity e in EntityMgr.inst.entities)
         {
-            if (e == entity || e.owner == entity.owner || !e.gameObject.activeSelf)
+            if (e == entity || e.owner == entity.owner || !IsTargetValid(e)) 
                 continue;
 
             float distSq = (e.position - entity.position).sqrMagnitude;
-            if (distSq < weaponRangeSq && distSq < minDistSq)
+            if (distSq < rangeSq && distSq < minDistSq)
             {
                 minDistSq = distSq;
                 nearest = e;
@@ -48,13 +108,19 @@ public class AttackMove : Move
         return nearest;
     }
 
-    public override void Stop()
+    private bool IsTargetValid(Entity target)
     {
-        entity.desiredSpeed = 0;
-        entity.desiredHeading = entity.heading;
-        LineMgr.inst.DestroyLR(line);
-        LineMgr.inst.DestroyLR(potentialLine);
-        line = null;
-        potentialLine = null;
+        return target != null && 
+               target.transform.GetChild(0).gameObject.activeSelf &&
+               target.gameObject.activeSelf;
+    }
+
+    public override bool IsDone()
+    {
+        if (hasExplicitTarget)
+        {
+            return !IsTargetValid(explicitTarget);
+        }
+        return base.IsDone();
     }
 }

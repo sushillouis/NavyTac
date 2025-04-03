@@ -94,7 +94,7 @@ public class AIMgr : NetworkBehaviour
 
     public RaycastHit hit;
     public int layerMask;
-
+    public List<Entity> selectedEntities = new List<Entity>();
     // Update is called once per frame
     void Update()
     {
@@ -106,9 +106,13 @@ public class AIMgr : NetworkBehaviour
     // Does not yet handle AI players
     public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, bool add)
     {
-       
-       
-        if(SelectionMgr.inst.selectedEntities.Count > 0) {
+        
+        
+        selectedEntities = SelectionMgr.inst.selectedEntities;
+        if(selectedEntities.Count > 0) {
+            foreach(Entity ent in selectedEntities) {
+                if (ent.entityType == EntityType.Rig_Balder|| ent.entityClass == EntityClass.Missile) return; // Ignore this entity
+            }
             if(Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask)) {
                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Terrain"))
                     {
@@ -119,8 +123,10 @@ public class AIMgr : NetworkBehaviour
                 Vector3 pos = hit.point;
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
+                if (ent != null && ent.entityClass == EntityClass.Missile) ent = null; // Ignore missiles
                 if(attackMove)
-                        HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, add,ent);
+                    
+                    HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, ent , add);
                 
                 else if(ent == null || ent.transform.GetChild(0).gameObject.activeSelf == false || ent.entityType == EntityType.Rig_Balder) {
                     HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
@@ -140,15 +146,25 @@ public class AIMgr : NetworkBehaviour
 
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
-    public void HandleAttackMove(List<Entity> entities, Vector3 point,
-        bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false ,Entity target = null)
+    public void HandleAttackMove(List<Entity> entities, Vector3 point,Entity target,bool add = false, bool isLocalCommand = true,bool maxSpeedMovement = false )
     {
         if (target != null)
+    {
+        Debug.Log("Executing targeted attack move");
+        if (isLocalCommand)
         {
-            //do complex attack move 
-            // it will go towards the enemy in between it will fight with the enemy but it will go there if the enemy goes away more than 1000 units or it is not visble due to  fog it will stop 
+            NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
         }
-        Debug.Log("Attack Move");
+        
+        foreach (Entity entity in entities)
+        {
+            AttackMove am = new AttackMove(entity, target, maxSpeedMovement);
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            AddOrSet(am, uai, add);
+        }
+        return;
+    }
+    
         if (isLocalCommand)
         {
             NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);

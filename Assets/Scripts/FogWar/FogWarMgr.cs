@@ -17,7 +17,15 @@ public class FogWarMgr : MonoBehaviour
     [Header("Grid Settings")]
     [Min(0.1f)] public float gridCellSize = 10f;
     public List<Entity> revelers = new List<Entity>();
-    public List<Entity> nonRevelers = new List<Entity>();
+    private List<Entity> _nonRevelers = new List<Entity>();
+    public List<Entity> nonRevelers {
+    get {
+        // Remove null and destroyed entities before returning
+        _nonRevelers.RemoveAll(e => e == null || e.Equals(null));
+        return _nonRevelers;
+    }
+    private set => _nonRevelers = value;
+}
     [Range(0,10000f)]
     public float fogRevealRadius = 150f;
     [Header("Compute Shader")]
@@ -199,13 +207,15 @@ public class FogWarMgr : MonoBehaviour
             entity != null && 
             entity.owner != null && 
             entity.gameObject.activeInHierarchy &&
-            playerSide.Contains(entity.owner.playerSide));
+            playerSide.Contains(entity.owner.playerSide) && 
+            entity.entityClass != EntityClass.Missile);
 
         nonRevelers = EntityMgr.inst.entities.FindAll(entity => 
-            entity != null && 
-            entity.owner != null && 
-            entity.gameObject.activeInHierarchy &&
-            !playerSide.Contains(entity.owner.playerSide));
+        entity != null && 
+        entity.owner != null && 
+        entity.gameObject.activeInHierarchy &&
+        !playerSide.Contains(entity.owner.playerSide) && 
+        entity.entityClass != EntityClass.Missile);
         
 
         if (revelers.Count == 0) return;
@@ -223,59 +233,70 @@ public class FogWarMgr : MonoBehaviour
         DispatchCompute(updateKernel);
     }
 
-    private void UpdateNonRevealerVisibility()
+    private HashSet<Entity> revealedRigBalders = new HashSet<Entity>();
+
+private void UpdateNonRevealerVisibility()
+{
+     if (nonRevelers.Count == 0) return;
+
+    EntityComputeData[] nonRevealerData = new EntityComputeData[nonRevelers.Count];
+    for (int i = 0; i < nonRevelers.Count; i++)
     {
-        // Filter out null entities to prevent processing invalid entries
+        Entity entity = nonRevelers[i];
+        // Additional null check for safety
+        if (entity == null || entity.transform == null) continue;
         
-        if (nonRevelers.Count == 0) return;
-
-        EntityComputeData[] nonRevealerData = new EntityComputeData[nonRevelers.Count];
-        for (int i = 0; i < nonRevelers.Count; i++)
+        Vector3 pos = entity.transform.position;
+        nonRevealerData[i] = new EntityComputeData
         {
-            Entity entity = nonRevelers[i];
-            Vector3 pos = entity.transform.position;
-            nonRevealerData[i] = new EntityComputeData
+            position = pos,
+            radius = 10f
+        };
+    }
+
+    nonRevelersBuffer?.Release();
+    nonRevelersBuffer = new ComputeBuffer(nonRevelers.Count, Marshal.SizeOf<EntityComputeData>());
+    nonRevelersBuffer.SetData(nonRevealerData);
+
+    visibilityResultsBuffer?.Release();
+    visibilityResultsBuffer = new ComputeBuffer(nonRevelers.Count, sizeof(uint));
+
+    fogComputeShader.SetBuffer(visibilityKernel, "NonRevelers", nonRevelersBuffer);
+    fogComputeShader.SetBuffer(visibilityKernel, "VisibilityResults", visibilityResultsBuffer);
+
+    fogComputeShader.SetInt("NonRevealerCount", nonRevelers.Count);
+    fogComputeShader.SetFloat("GridCellSize", gridCellSize);
+    fogComputeShader.SetVector("GridOrigin", gridOrigin);
+
+    fogComputeShader.GetKernelThreadGroupSizes(visibilityKernel, out uint threadGroupSize, out _, out _);
+    int groups = Mathf.CeilToInt(nonRevelers.Count / (float)threadGroupSize);
+    fogComputeShader.Dispatch(visibilityKernel, groups, 1, 1);
+
+    uint[] results = new uint[nonRevelers.Count];
+    visibilityResultsBuffer.GetData(results);
+
+    for (int i = 0; i < nonRevelers.Count; i++)
+    {
+        Entity entity = nonRevelers[i];
+        bool isVisible = results[i] != 0;
+
+        // Check if the entity is a Rig_Balder and handle its persistent visibility
+        if (entity.entityType == EntityType.Rig_Balder)
+        {
+            if (revealedRigBalders.Contains(entity))
             {
-                position = pos,
-                radius = 10f
-            };
-        }
-
-        // Release old buffers and create new ones with correct size
-        nonRevelersBuffer?.Release();
-        nonRevelersBuffer = new ComputeBuffer(nonRevelers.Count, Marshal.SizeOf<EntityComputeData>());
-        nonRevelersBuffer.SetData(nonRevealerData);
-
-        visibilityResultsBuffer?.Release();
-        visibilityResultsBuffer = new ComputeBuffer(nonRevelers.Count, sizeof(uint));
-
-        // Re-bind buffers to compute shader kernel
-        fogComputeShader.SetBuffer(visibilityKernel, "NonRevelers", nonRevelersBuffer);
-        fogComputeShader.SetBuffer(visibilityKernel, "VisibilityResults", visibilityResultsBuffer);
-
-        // Update shader parameters
-        fogComputeShader.SetInt("NonRevealerCount", nonRevelers.Count);
-        fogComputeShader.SetFloat("GridCellSize", gridCellSize);
-        fogComputeShader.SetVector("GridOrigin", gridOrigin);
-
-        // Calculate dispatch groups
-        fogComputeShader.GetKernelThreadGroupSizes(visibilityKernel, out uint threadGroupSize, out _, out _);
-        int groups = Mathf.CeilToInt(nonRevelers.Count / (float)threadGroupSize);
-        fogComputeShader.Dispatch(visibilityKernel, groups, 1, 1);
-
-        // Retrieve and apply results
-        uint[] results = new uint[nonRevelers.Count];
-        visibilityResultsBuffer.GetData(results);
-
-        for (int i = 0; i < nonRevelers.Count; i++)
-        {
-            bool isVisible = results[i] != 0;
-            nonRevelers[i].transform.GetChild(0).gameObject.SetActive(isVisible);
-            if(nonRevelers[i].entityType == EntityType.Rig_Balder) {
-                nonRevelers[i].transform.gameObject.SetActive(isVisible);
+                isVisible = true;
+            }
+            else if (isVisible)
+            {
+                revealedRigBalders.Add(entity);
+                isVisible = true;
             }
         }
+
+        entity.transform.GetChild(0).gameObject.SetActive(isVisible);
     }
+}
 
     void DispatchCompute(int kernel)
     {
@@ -284,7 +305,14 @@ public class FogWarMgr : MonoBehaviour
         int groupsY = Mathf.CeilToInt(gridHeight / (float)y);
         fogComputeShader.Dispatch(kernel, groupsX, groupsY, 1);
     }
-
+    public void CleanupEntities()
+    {
+        // For revelers list
+        revelers.RemoveAll(e => e == null || e.Equals(null));
+        
+        // For nonRevelers (already handled by property, but explicit cleanup)
+        _nonRevelers.RemoveAll(e => e == null || e.Equals(null));
+    }
     void UpdateEntityBuffer()
     {
         EntityComputeData[] entityData = new EntityComputeData[revelers.Count];

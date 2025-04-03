@@ -6,6 +6,7 @@ using UnityEngine;
 public class LineMgr : MonoBehaviour
 {
     public static LineMgr inst;
+    public bool isDebug = false;
 
     private void Awake()
     {
@@ -41,12 +42,20 @@ public class LineMgr : MonoBehaviour
     }
 
     public LineRenderer CreatePotentialLine(Vector3 p1)
-    {
-        LineRenderer lr = Instantiate<LineRenderer>(PotentialPrefab, transform);
+    {if (isDebug)
+        {
+            Debug.Log("Creating potential line");
+            LineRenderer lr = Instantiate<LineRenderer>(PotentialPrefab, transform);
         lr.SetPosition(0, p1);
         lr.SetPosition(1, Vector3.zero);
         lines.Add(lr);
         return lr;
+        }
+        else
+        {
+            return null;
+        }
+        
     }
 
     public LineRenderer CreateFollowLine(Vector3 p1, Vector3 p2, Vector3 p3)
