@@ -321,7 +321,7 @@ public class UIMgr : MonoBehaviour
         };
         List<RaycastResult> results = new();
         cameraRayCaster.Raycast(eventDataCurrentPosition, results);
-        Debug.Log(results.Count);
+        // Debug.Log(results.Count);
         // This might result in issues later
         return results.Count > 1;
     }
@@ -338,9 +338,19 @@ public class UIMgr : MonoBehaviour
         if(IsPointerOverUIObject()) {
             return;
         }
+        Ray ray = Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
+        RaycastHit hit;
+        if(Physics.Raycast(ray, out hit, 99999)) {
+            // Debug.Log(hit.transform.name);
+            Button btn = hit.transform.gameObject.GetComponent<Button>();
+            if(btn != null) {
+                btn.onClick.Invoke();
+                return;
+            }
+        }
         SelectionMgr.inst.StartBoxSelecting();
         boxSelecting = true;
-    }
+    } 
 
     private void OnBoxSelectCanceled(InputAction.CallbackContext context)
     {

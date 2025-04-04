@@ -8,6 +8,8 @@ using UnityEditor.Rendering;
 using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.UI;
+using Button = UnityEngine.UI.Button;
+using UnityEngine.UIElements;
 
 public delegate void SelectionDelegate(List<Entity> entities, EntityConditionDelegate conditionDelegate);
 public delegate bool EntityConditionDelegate(Entity entity);
@@ -23,6 +25,9 @@ public class StreamingToCommand: MonoBehaviour
     [SerializeField] GameObject optionsScrollPrefab;
     [SerializeField] List<GameObject> words = new();
     [SerializeField] List<GameObject> billboards = new();
+    [SerializeField] List<Entity> billboardTiedEntities = new();
+    [SerializeField] List<Vector3> billboardLocations = new();
+    int billboardFilter = 0;
     [SerializeField] string priorword = "";
     [SerializeField] string fullCommand = "";
     [SerializeField] Vector3 rectPos = Vector3.zero;
@@ -38,13 +43,17 @@ public class StreamingToCommand: MonoBehaviour
         result = WordCleanup.StripPunctuation(result);
         string[] tokens = result.Split(' ');
         bool executeCommand = false;
+        long tempNumb = -1;
         for (int i = 0;i<tokens.Length && fullCommand.Length<250;i++) {
             string word = tokens[i];
-            long tempNumb = WordCleanup.ConvertToNumbers(word,out bool numberFlag);
-            if(numberFlag) {
-                word = tempNumb.ToString();
+            tempNumb = WordCleanup.ConvertToNumbers(word,out bool numberFlag);
+            if(long.TryParse(word, out long number)) {
+                tempNumb=number;
+                numberFlag=true;
             }
-            if(WordCleanup.nearWords.TryGetValue(word, out string value)) {
+            if(numberFlag) {
+                word = tempNumb.ToString();  
+            } else if(WordCleanup.nearWords.TryGetValue(word, out string value)) {
                 word = value;
             }
             // Debug.Log("Current Word-"+word+"-");
@@ -52,11 +61,11 @@ public class StreamingToCommand: MonoBehaviour
             && priorword == "" && WordCleanup.startWords.Contains(word))  
             || (WordCleanup.CommandLanguageDict.ContainsKey(priorword) 
             && (WordCleanup.CommandLanguageDict[priorword].Any(option => word == option.Item2)
-            || WordCleanup.CommandLanguageDict[priorword].Any(option => option.Item2 == "NUMBER")))
+            || WordCleanup.CommandLanguageDict[priorword].Any(option => option.Item2 == "NUMBERS")
+            || WordCleanup.CommandLanguageDict[priorword].Any(option => option.Item2 == "LOCATIONS")))
             ) {
-                if(priorword != "" && WordCleanup.CommandLanguageDict[priorword][0].Item2 == "NUMBER" && numberFlag) {
+                if(priorword != "" && WordCleanup.CommandLanguageDict[priorword][0].Item2 == "NUMBERS" && numberFlag) {
                     executeCommand = true;
-                    fullCommand+=tempNumb;
                 }
                 // Debug.Log(WordCleanup.CommandLanguageDict[word].ToArray());
                 GameObject tempWord = Instantiate(commandWordPrefab,commandDisplay);
@@ -80,7 +89,9 @@ public class StreamingToCommand: MonoBehaviour
                     tempText = tempWord.GetComponentInChildren<TMP_Text>();
                     tempText.text = word.ToUpper();
                 } if(pair.Item1== -10) {
-                    DisplayBillboards(pair.Item2,EntityMgr.inst.entities);
+                    DisplayUnitBillboards(pair.Item2,EntityMgr.inst.entities);
+                } else if(pair.Item1== -9) {
+                    DisplayLocationBillboards(pair.Item2,Camera.current.transform.position);
                 }
                 priorword = word;
                 fullCommand+=word+" ";
@@ -98,7 +109,8 @@ public class StreamingToCommand: MonoBehaviour
             if(tester && tester.isActiveAndEnabled) {
                 tester.ValidateResult(fullCommand,time,1f/Time.deltaTime,testID);
             } if(testID<0) {
-                ExecuteCommand(fullCommand);
+                Debug.Log(tempNumb);
+                ExecuteCommand(fullCommand,(int)tempNumb);
             }
             pause=true;
             Stop();
@@ -116,7 +128,7 @@ public class StreamingToCommand: MonoBehaviour
         }
     }
 
-    public void DisplayBillboards(string command, List<Entity> entities) {
+    public void DisplayUnitBillboards(string command, List<Entity> entities) {
         if(billboards.Count > 0) {
             CameraMgr.inst.onCameraMove.RemoveListener(UpdateBillboardSzie);
         }
@@ -125,6 +137,9 @@ public class StreamingToCommand: MonoBehaviour
             Destroy(billboard);
         }
         billboards.Clear();
+        if(entities != null && entities.Count>0) {
+            billboardTiedEntities.Clear();
+        }
         switch (command)
         {
             case "#":
@@ -140,8 +155,51 @@ public class StreamingToCommand: MonoBehaviour
                     TMP_Text tempText = billboard.GetComponentInChildren<TMP_Text>();
                     tempText.text = i.ToString();
                     billboards.Add(billboard);
+                    billboardTiedEntities.Add(ent);
                     i++;
                 }
+                break;
+            default:
+            break;
+        }
+
+        if(billboards.Count > 0) {
+            CameraMgr.inst.onCameraMove.AddListener(UpdateBillboardSzie);
+            UpdateBillboardSzie();
+        }
+    }
+
+    public void DisplayLocationBillboards(string command, Vector3 cameraPos) {
+        if(billboards.Count > 0) {
+            CameraMgr.inst.onCameraMove.RemoveListener(UpdateBillboardSzie);
+        }
+        foreach (GameObject billboard in billboards)
+        {
+            Destroy(billboard);
+        }
+        billboards.Clear();
+        if(command == "") {
+            billboardTiedEntities.Clear();
+        }
+        switch (command)
+        {
+            case "#":
+                int i = 0;
+                for(int j=-10;j<11;j++) {for(int k=-10;k<11;k++) {
+                    Vector3 offset = new Vector3(500*j,0,500*k);
+                    GameObject billboard = Instantiate(billboardPrefab, cameraPos+offset, Quaternion.identity);
+                    billboard.GetComponent<Canvas>().worldCamera = CameraMgr.inst.myCamera;
+                    RectTransform tempRect = billboard.GetComponentInChildren<RectTransform>();
+                    Button tempButton = billboard.GetComponentInChildren<Button>();
+                    int q = i;
+                    tempButton.onClick.AddListener(() => this.ProcessResult(q.ToString()));
+                    tempRect.sizeDelta = new(40,42.5f);
+                    TMP_Text tempText = billboard.GetComponentInChildren<TMP_Text>();
+                    tempText.text = i.ToString();
+                    billboards.Add(billboard);
+                    billboardLocations.Add(cameraPos+offset);
+                    i++;
+                }}
                 break;
             default:
             break;
@@ -163,13 +221,14 @@ public class StreamingToCommand: MonoBehaviour
         }
     }
 
-    public void ExecuteCommand(string command) {
+    public void ExecuteCommand(string command, int id) {
         Debug.Log(command);
         System.Collections.IEnumerator tokens = command.Split(' ').GetEnumerator();
         List<Entity> importantEnts = new();
         if(!tokens.MoveNext()) return;
         SelectionDelegate selector =  SelectionMgr.inst.SelectAllEntitiesOnCondition;
-        EntityConditionDelegate entityCondition = (_) => true;
+        EntityConditionDelegate entityCondition = (_) => true; 
+        bool locationFlag = false;
         if((string)tokens.Current=="select" || (string)tokens.Current=="group") {
             EntityClass classFilter = EntityClass.None;
             if((string)tokens.Current=="group") {
@@ -220,7 +279,7 @@ public class StreamingToCommand: MonoBehaviour
             if(!tokens.MoveNext()) return;
             int dirFlag = 0;
             bool allyFlag=false;
-            importantEnts = EntityMgr.inst.entities.FindAll((Entity ent) => ent.owner == PlayerMgr.inst.localPlayer);
+            importantEnts = SelectionMgr.inst.selectedEntities.FindAll(ent => ent.owner == PlayerMgr.inst.localPlayer);
             if((string)tokens.Current=="furthest") {
                 dirFlag = 1;
                 if(!tokens.MoveNext()) return;
@@ -231,17 +290,34 @@ public class StreamingToCommand: MonoBehaviour
                 if(!tokens.MoveNext()) return;
             }
 
-            ExecuteDynamicAction(importantEnts,dirFlag,allyFlag,true);
+            if((string)tokens.Current=="ally") {
+                allyFlag=true;
+                if(!tokens.MoveNext()) return;
+            } else if((string)tokens.Current=="enemy") {
+                if(!tokens.MoveNext()) return;
+            }
+
+            if((string)tokens.Current=="group") {
+                allyFlag=true;
+                if(!tokens.MoveNext()) return;
+            } else if((string)tokens.Current=="single") {
+                if(!tokens.MoveNext()) return;
+            }
+
+            if(!tokens.MoveNext()) return; // #
+
+            ExecuteDynamicAction(importantEnts,dirFlag,allyFlag,true,locationFlag,id);
             
 
         } else if((string)tokens.Current=="move") {
             if(!tokens.MoveNext()) return;
+            importantEnts = SelectionMgr.inst.selectedEntities.FindAll((Entity ent) => ent.owner == PlayerMgr.inst.localPlayer);
             if((string)tokens.Current=="all") {
                 if(!tokens.MoveNext()) return;
-                importantEnts = EntityMgr.inst.entities.FindAll((Entity ent) => ent.owner == PlayerMgr.inst.localPlayer);
-            } else if((string)tokens.Current=="selected") {
+                
+            } else if((string)tokens.Current=="half") {
                 if(!tokens.MoveNext()) return;
-                importantEnts = SelectionMgr.inst.selectedEntities;
+                //todo
             }
 
             if(!tokens.MoveNext()) return; // "to"
@@ -257,47 +333,83 @@ public class StreamingToCommand: MonoBehaviour
                 if(!tokens.MoveNext()) return;
             }
 
-            ExecuteDynamicAction(importantEnts,dirFlag,allyFlag,false);
+            if((string)tokens.Current=="group") {
+                allyFlag=true;
+                if(!tokens.MoveNext()) return;
+            } else if((string)tokens.Current=="single") {
+                if(!tokens.MoveNext()) return;
+            }
+
+            if((string)tokens.Current=="location") {
+                if(!tokens.MoveNext()) return;
+                locationFlag = true;
+            }
+
+            ExecuteDynamicAction(importantEnts,dirFlag,allyFlag,false,locationFlag,id);
 
         }
     }
 
-    public void ExecuteDynamicAction(List<Entity> importantEnts, int dirFlag, bool allyFlag, bool attackFlag) {
+    public void ExecuteDynamicAction(List<Entity> importantEnts, int dirFlag, bool allyFlag, bool attackFlag, bool locationFlag, int specificID=-1) {
         TactPlayer player = PlayerMgr.inst.localPlayer;
         Vector3 center = Vector3.zero;
 
-        foreach(Entity ent in importantEnts) {
-            center += ent.position;
-        }
-        center/=importantEnts.Count;
 
-        if(allyFlag && attackFlag) {
-            Debug.LogWarning("Attacking Ally, currently not implemented");
-            return;
-        }
+        // if(allyFlag && attackFlag) {
+        //     Debug.LogWarning("Attacking Ally, currently not implemented");
+        //     return;
+        // }
 
         float disValue = dirFlag < 0 ? float.MaxValue : float.MinValue;
         int foundIndex = 0;
+        Vector3 targetPos = Vector3.zero;
+        Debug.Log(specificID);
+        Entity target = null;
+        if (specificID == -1)
+        {
+            foreach (Entity ent in importantEnts)
+            {
+                center += ent.position;
+            }
+            center /= importantEnts.Count;
 
-        for(int i =0; i<EntityMgr.inst.entities.Count;i++) {
-            if((EntityMgr.inst.entities[i].owner==player && !allyFlag) || (EntityMgr.inst.entities[i].owner!=player && allyFlag)) {
-                continue;
+            for (int i = 0; i < EntityMgr.inst.entities.Count; i++)
+            {
+                if ((EntityMgr.inst.entities[i].owner == player && !allyFlag) || (EntityMgr.inst.entities[i].owner != player && allyFlag))
+                {
+                    continue;
+                }
+                float dist = Vector3.Distance(center, EntityMgr.inst.entities[i].position);
+                if ((dirFlag < 0 && dist < disValue) || dist > disValue)
+                {
+                    foundIndex = i;
+                    disValue = dist;
+                }
             }
-            float dist = Vector3.Distance(center,EntityMgr.inst.entities[i].position);
-            if((dirFlag<0 && dist<disValue) || dist>disValue) {
-                foundIndex = i;
-                disValue=dist;
-            }
+            target = EntityMgr.inst.entities[foundIndex];
         }
+        else if(!locationFlag)
+        {
+            target = billboardTiedEntities[specificID];
+            if (target == null || target.health <= 0)
+            {
+                return; // Check for null and dead.
+            }
+        } else {
+            targetPos = billboardLocations[specificID];
+        }
+        if (target!=null && target.health>0) {
+            targetPos = target.position;
+        } 
         if(attackFlag) {
             foreach(Entity ent in importantEnts) {
                 ent.ai.StopAndRemoveAllCommands();
-                ent.ai.AddCommand(new Intercept(ent,EntityMgr.inst.entities[foundIndex]));
+                ent.ai.AddCommand(new Intercept(ent,target));
             }
         } else {
             foreach(Entity ent in importantEnts) {
                 ent.ai.StopAndRemoveAllCommands();
-                ent.ai.AddCommand(new Move(ent,EntityMgr.inst.entities[foundIndex].position));
+                ent.ai.AddCommand(new Move(ent,targetPos));
             }
         }
     }
@@ -316,7 +428,7 @@ public class StreamingToCommand: MonoBehaviour
     }
 
     public void Stop() {
-        DisplayBillboards("",null);
+        DisplayUnitBillboards("",null);
         if(currentOptionsScroll!=null) {
             Destroy(currentOptionsScroll);
         }
@@ -451,8 +563,8 @@ static class WordCleanup
         }}, {"formation", new(){
             (2,"at"),
         }}, {"#", new(){
-            (1,"NUMBER"),
-            (1,"LOCATION"),
+            (1,"NUMBERS"),
+            (1,"LOCATIONS"),
         }}, {"", new(){
         }}
         // , {"formation", new(){
@@ -498,7 +610,7 @@ static class WordCleanup
                 .Select(v => numberTable[v]);  
         long acc = 0, total = 0L;  
 
-        if(numbers.Count<long>() > 0)
+        if(numbers.Count() > 0)
             flag=true;
         else
             flag=false;
