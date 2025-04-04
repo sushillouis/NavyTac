@@ -187,10 +187,11 @@ public class GameMgr : MonoBehaviour
 
   void InitializeScenario()
     {
-        // Combine the original seed with reload count to create a unique seed for this reload
-         // Deterministic randomness for THIS reload
-
         DetermineDifficulty();
+        if(currentDifficulty == Difficulty.Easy)
+            EnemyAIMgr.inst.currentLevel = 1;
+        else
+            EnemyAIMgr.inst.currentLevel = 2;
         AdjustUnitCounts(); // Uses difficulty but varies with combinedSeed
     }
 

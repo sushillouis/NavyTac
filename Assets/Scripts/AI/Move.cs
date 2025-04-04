@@ -33,7 +33,7 @@ public class Move : Command
         {
             this.doneDistanceSq = ent.GetComponentInChildren<WeaponsAspect>().weapon.range * ent.GetComponentInChildren<WeaponsAspect>().weapon.range; 
         }
-        Debug.Log("DoneDistanceSq: " + this.doneDistanceSq);
+        // Debug.Log("DoneDistanceSq: " + this.doneDistanceSq);
         
     }
 
