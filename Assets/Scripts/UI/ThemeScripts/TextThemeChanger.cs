@@ -8,6 +8,8 @@ public class TextThemeChanger : MonoBehaviour
 {
 
     public TextMeshProUGUI textFont;
+    public bool changeTextColor;
+    public Color optionalTextColor;
     // Start is called before the first frame update
     void Start()
     {
@@ -23,6 +25,10 @@ public class TextThemeChanger : MonoBehaviour
         }
         
         textFont.font = ThemeMgr.inst.PanelThemeColorsList.Find(x => x.theme == theme).font;
+        if(changeTextColor == true && theme == Theme.Game)
+            textFont.color = optionalTextColor;
+        else
+            textFont.color = Color.white;
     }
 
 }

@@ -16,11 +16,14 @@ public class ThemeColors {
     public Theme theme;
     public TMP_FontAsset font;
     public Color color;
+    public Color audioColor;
     public Sprite frame;
+    public Sprite cornerFrame;
     public Sprite decorativeButton;
     public Sprite buttonFrame;
     public Sprite pressableButton;
     public Sprite quitButton;
+    public Sprite soundButton;
 }
 
 
