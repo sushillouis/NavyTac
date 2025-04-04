@@ -146,62 +146,49 @@ public class AIMgr : NetworkBehaviour
 
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
-    public void HandleAttackMove(List<Entity> entities, Vector3 point,Entity target,bool add = false, bool isLocalCommand = true,bool maxSpeedMovement = false )
+    public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false)
+{
+    if (isLocalCommand)
     {
-        if (target != null)
+        NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
+    }
+
+    foreach (Entity entity in entities)
     {
-        Debug.Log("Executing targeted attack move");
-        if (isLocalCommand)
+        Vector3 destinationPosition = target != null ? target.position : point;
+        QuadrantBounds startQuadrant = GetQuadrant(entity.position);
+        QuadrantBounds destinationQuadrant = GetQuadrant(destinationPosition);
+
+        if (startQuadrant != null && destinationQuadrant != null && startQuadrant != destinationQuadrant)
         {
-            NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
+            // Split into intermediate and final move
+            Vector3 intermediatePoint = new Vector3(
+                UnityEngine.Random.Range(-500f, 500f),
+                0f,
+                UnityEngine.Random.Range(-500f, 500f)
+            );
+
+            AttackMove intermediateMove = new AttackMove(entity, intermediatePoint, maxSpeedMovement);
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            AddOrSet(intermediateMove, uai, add: false);
+
+            AttackMove finalMove = target != null 
+                ? new AttackMove(entity, target, maxSpeedMovement) 
+                : new AttackMove(entity, point, maxSpeedMovement);
+
+            AddOrSet(finalMove, uai, add: true);
         }
-        
-        foreach (Entity entity in entities)
+        else
         {
-            AttackMove am = new AttackMove(entity, target, maxSpeedMovement);
+            AttackMove am = target != null 
+                ? new AttackMove(entity, target, maxSpeedMovement) 
+                : new AttackMove(entity, point, maxSpeedMovement);
+
             UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             AddOrSet(am, uai, add);
         }
-        return;
     }
-    
-        if (isLocalCommand)
-        {
-            NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
-        }
-        foreach (Entity entity in entities)
-        {
-            QuadrantBounds startQuadrant = GetQuadrant(entity.position);
-            QuadrantBounds targetQuadrant = GetQuadrant(point);
-
-            if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
-            {
-                // Split into two commands: first to (0,0,0), then to target
-                Vector3 intermediatePoint = new Vector3(
-                    UnityEngine.Random.Range(-500f, 500f), // X: -500 to 500
-                    0f, // Y: Fixed at 0
-                    UnityEngine.Random.Range(-500f, 500f) // Z: -500 to 500
-                );
-
-                AttackMove intermediateMove = new AttackMove(entity, intermediatePoint, maxSpeedMovement);
-                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-
-                // Replace current command with intermediate move
-                AddOrSet(intermediateMove, uai, add: false);
-
-                // Queue final move after intermediate
-                AttackMove finalMove = new AttackMove(entity, point, maxSpeedMovement);
-                AddOrSet(finalMove, uai, add: true);
-            }
-            else
-            {
-                // Original single-entity behavior
-                AttackMove am = new AttackMove(entity, point, maxSpeedMovement);
-                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-                AddOrSet(am, uai, add);
-            }
-        }
-    }
+}
     public void HandleMove(List<Entity> entities, Vector3 point,
                       bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, float doneDistanceSq = 100000)
     {

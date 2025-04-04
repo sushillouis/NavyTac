@@ -107,7 +107,7 @@ public class EnemyAIMgr : MonoBehaviour
     }
     private void Handlelevel2CombatBehavior(List<Entity> aiEntities)
     {
-        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, opponentBase, false);
+        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, null, false);
     }
     private void HandleCombatBehavior(List<Entity> aiEntities)
 {

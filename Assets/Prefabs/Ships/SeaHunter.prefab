@@ -64,14 +64,14 @@ MonoBehaviour:
   entityRole: 5
   acceleration: 5
   turnRate: 10
-  maxSpeed: 31.5
+  maxSpeed: 26.2
   minSpeed: 0
   cruiseSpeed: 12
-  mass: 1000
+  mass: 270
   length: 38
   width: 13.5
   height: 15
-  maxHealth: 45
+  maxHealth: 125
   minHealth: 0
   maxFuel: 0
   maxRange: 0
@@ -534,7 +534,7 @@ MonoBehaviour:
     weaponEntityType: 15
     range: 600
     currentWeaponEntities: []
-    defaultDamage: 10
+    defaultDamage: 20
     ammoCount: -1
 --- !u!1001 &2391100717290609749
 PrefabInstance:

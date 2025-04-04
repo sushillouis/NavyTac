@@ -21,17 +21,26 @@ public class AttackMove : Move
 
     public override void Tick()
     {
-        Entity immediateTarget = FindImmediateThreat();
-        bool shouldEngage = immediateTarget != null;
+        bool shouldEngage = false;
+        Entity immediateTarget = null;
+        WeaponsAspect weapons = entity.GetComponentInChildren<WeaponsAspect>();
 
+        // Priority 1: Explicit Target (always takes precedence)
         if (hasExplicitTarget)
         {
-            HandleExplicitTargetBehavior(ref immediateTarget, ref shouldEngage);
+            HandleExplicitTarget(weapons, ref immediateTarget, ref shouldEngage);
+        }
+
+        // Priority 2: Immediate Threats (only when no valid explicit target)
+        if (!shouldEngage && weapons != null)
+        {
+            immediateTarget = FindImmediateThreat(weapons);
+            shouldEngage = immediateTarget != null;
         }
 
         if (shouldEngage)
         {
-            HandleEngagement(immediateTarget);
+            HandleEngagement(immediateTarget, weapons);
         }
         else
         {
@@ -39,88 +48,90 @@ public class AttackMove : Move
         }
     }
 
-    private void HandleExplicitTargetBehavior(ref Entity immediateTarget, ref bool shouldEngage)
+    private void HandleExplicitTarget(WeaponsAspect weapons, ref Entity target, ref bool shouldEngage)
     {
-        if (!IsTargetValid(explicitTarget))
+        if (!IsTargetValid(explicitTarget) || weapons == null || weapons.weapon == null)
         {
             hasExplicitTarget = false;
             return;
         }
 
-        WeaponsAspect weapons = entity.GetComponentInChildren<WeaponsAspect>();
-        if (weapons == null || weapons.weapon == null)
-        {
-            hasExplicitTarget = false;
-            return;
-        }
-
-        // Use weapon range for pursuit calculations
-        float weaponRangeSq = weapons.weapon.range * weapons.weapon.range;
-        float targetDistSq = (explicitTarget.position - entity.position).sqrMagnitude;
-
-        // Update move position to track moving target
+        // Continuously update destination to track moving targets
         movePosition = explicitTarget.position;
+        target = explicitTarget;
+        shouldEngage = true;
 
-        if (targetDistSq <= weaponRangeSq)
+        float rangeSq = weapons.weapon.range * weapons.weapon.range;
+        float distSq = (explicitTarget.position - entity.position).sqrMagnitude;
+
+        if (distSq <= rangeSq)
         {
-            // Prioritize explicit target when in weapon range
-            immediateTarget = explicitTarget;
-            shouldEngage = true;
+            // Maintain position and face target
+            entity.desiredSpeed = 0;
+            Vector3 direction = explicitTarget.position - entity.position;
+            entity.desiredHeading = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+            WeaponsMgr.inst.handleWeapon(entity, explicitTarget);
         }
         else
         {
-            // Allow engaging other threats while pursuing main target
-            shouldEngage = immediateTarget != null;
+            // Continue moving toward explicit target
+            base.Tick();
         }
     }
 
-    private void HandleEngagement(Entity target)
+    private void HandleEngagement(Entity target, WeaponsAspect weapons)
     {
-        // Stop movement when in attack range
-        entity.desiredSpeed = 0;
-        
-        // Face target
-        Vector3 toTarget = target.position - entity.position;
-        entity.desiredHeading = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
+        if (weapons == null) return;
+
+        float rangeSq = weapons.weapon.range * weapons.weapon.range;
+        float distSq = (target.position - entity.position).sqrMagnitude;
+
+        if (distSq <= rangeSq)
+        {
+            entity.desiredSpeed = 0;
+            Vector3 direction = target.position - entity.position;
+            entity.desiredHeading = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;  
+            WeaponsMgr.inst.handleWeapon(entity,target);
+            }
+        else
+        {
+            base.Tick();
+        }
     }
 
-    private Entity FindImmediateThreat()
+    private Entity FindImmediateThreat(WeaponsAspect weapons)
     {
-        WeaponsAspect weapons = entity.GetComponentInChildren<WeaponsAspect>();
         if (weapons == null || weapons.weapon == null) return null;
 
         float rangeSq = weapons.weapon.range * weapons.weapon.range;
-        Entity nearest = null;
+        Entity closest = null;
         float minDistSq = float.MaxValue;
 
         foreach (Entity e in EntityMgr.inst.entities)
         {
-            if (e == entity || e.owner == entity.owner || !IsTargetValid(e)) 
-                continue;
+            if (e == entity || e.owner == entity.owner || !IsTargetValid(e)) continue;
 
             float distSq = (e.position - entity.position).sqrMagnitude;
             if (distSq < rangeSq && distSq < minDistSq)
             {
                 minDistSq = distSq;
-                nearest = e;
+                closest = e;
             }
         }
-        return nearest;
+        return closest;
     }
 
     private bool IsTargetValid(Entity target)
     {
         return target != null && 
                target.transform.GetChild(0).gameObject.activeSelf &&
-               target.gameObject.activeSelf;
+               target.gameObject.activeSelf && 
+               target.entityClass != EntityClass.Missile ;
     }
 
     public override bool IsDone()
     {
-        if (hasExplicitTarget)
-        {
-            return !IsTargetValid(explicitTarget);
-        }
+        if (hasExplicitTarget) return !IsTargetValid(explicitTarget);
         return base.IsDone();
     }
 }

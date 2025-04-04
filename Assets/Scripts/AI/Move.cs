@@ -23,13 +23,18 @@ public class Move : Command
     public float angleDiff;
     public float cosValue;
     public float ds;
-     public float doneDistanceSq ;
+     public float doneDistanceSq = 100000f;
 
     public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false , float doneDistanceSq = 100000f) : base(ent)
     {
         movePosition = pos;
         this.maxSpeedMovement = maxSpeedMovement;
-        this.doneDistanceSq = doneDistanceSq;
+        if (ent.GetComponentInChildren<WeaponsAspect>() != null)
+        {
+            this.doneDistanceSq = ent.GetComponentInChildren<WeaponsAspect>().weapon.range * ent.GetComponentInChildren<WeaponsAspect>().weapon.range; 
+        }
+        Debug.Log("DoneDistanceSq: " + this.doneDistanceSq);
+        
     }
 
     public override void Init() 
@@ -42,6 +47,7 @@ public class Move : Command
             if (potentialLine != null)
                 potentialLine.gameObject.SetActive(false);
         }
+        
     }
 
     public override void Tick() 
@@ -200,14 +206,7 @@ public class Move : Command
     public override bool IsDone()
     {
         if (entity == null ) return true;
-        if (entity.GetComponentInChildren<WeaponsAspect>() != null)
-        {
-            return (entity.position - movePosition).sqrMagnitude < entity.GetComponentInChildren<WeaponsAspect>().weapon.range * entity.GetComponentInChildren<WeaponsAspect>().weapon.range;
-        }
-        else 
-        {
-            return (entity.position - movePosition).sqrMagnitude < doneDistanceSq;
-        }
+        return (entity.position - movePosition).sqrMagnitude < doneDistanceSq;
         
     }
 

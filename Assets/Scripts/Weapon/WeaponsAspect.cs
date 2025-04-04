@@ -43,6 +43,8 @@ public class WeaponsAspect : MonoBehaviour
         if(unitAI == null) return;
         if ( unitAI.commands.Count > 0 && unitAI.commands.Peek() != null){
             if (unitAI.commands.Peek().GetType() == typeof(Move)||
+                unitAI.commands.Peek().GetType() == typeof(AttackMove) ||
+                unitAI.commands.Peek().GetType() == typeof(Follow) ||
                 unitAI.commands.Peek().GetType() == typeof(Intercept) ||
                 unitAI.commands.Peek().GetType() == typeof(Intercept3d) ||
                 unitAI.commands.Peek().GetType() == typeof(SmartIntercept))
@@ -58,7 +60,7 @@ public class WeaponsAspect : MonoBehaviour
         if (target != null)
         {
             Debug.Log("Target found: " + target.name);
-            WeaponsMgr.inst.LaunchWeapon(entity, weapon, target, target.transform.position);
+            WeaponsMgr.inst.handleWeapon(entity,target);
         }
     }
 

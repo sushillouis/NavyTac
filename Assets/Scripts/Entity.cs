@@ -63,10 +63,11 @@ public class Entity : MonoBehaviour
 
     void Start()
     {
+        
         fuel = maxFuel;
         health = maxHealth;
         isSelected = false;
-        
+        mass = 500f;
         Renderer mainRenderer = GetComponent<Renderer>();
         Renderer[] childRenderers = GetComponentsInChildren<Renderer>();
         

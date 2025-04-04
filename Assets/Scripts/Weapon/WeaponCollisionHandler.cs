@@ -10,10 +10,11 @@ public class WeaponCollisionHandler : MonoBehaviour
 
     void OnCollisionEnter(Collision collision) {
        
-        Entity otherEntity = collision.collider.GetComponent<Entity>();
-      
+        
+        
         if (WeaponsMgr.inst.weapons.Contains(entity)) {
-            if (collision.collider is TerrainCollider) {
+            Entity otherEntity = collision.collider.GetComponent<Entity>();
+                if (collision.collider is TerrainCollider) {
                 Debug.Log(collision.collider.name);
                 FXMgr.inst.CreateExplosionAt(collision.contacts[0].point, 1);
                 WeaponsMgr.inst.DestroyEntity(entity);

@@ -96,7 +96,7 @@ public class UnitAI : MonoBehaviour
         {
             Command cmd =  commands.Dequeue();
             StopAndRemoveCommand(cmd);
-            Debug.Log("Stopping and removing all commands");
+            // Debug.Log("Stopping and removing all commands");
         }
     }
 

@@ -30,7 +30,7 @@ public class WeaponsMgr : MonoBehaviour
             if (!Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, AIMgr.inst.layerMask)) continue;
 
             Entity targetEntity = UIMgr.inst.FindClosestEntInRadius(hit.point);
-            if (targetEntity != null) handleWeapon(selectedEnt, targetEntity);
+            if (targetEntity != null && targetEntity.entityClass!= EntityClass.Missile) handleWeapon(selectedEnt, targetEntity);
         }
     }
 
@@ -41,7 +41,7 @@ public class WeaponsMgr : MonoBehaviour
         WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
         if (weaponsAspect == null || weaponsAspect.weapon == null) return;
 
-        if (targetEntity != null && targetEntity.owner != entity.owner)
+        if (targetEntity != null && targetEntity.owner != entity.owner&& targetEntity.entityClass!= EntityClass.Missile)
         {
             LaunchWeapon(entity, weaponsAspect.weapon, targetEntity, targetEntity.transform.position);
         }
