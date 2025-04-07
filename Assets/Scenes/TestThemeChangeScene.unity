@@ -137,7 +137,7 @@ GameObject:
   - component: {fileID: 80782790}
   - component: {fileID: 80782789}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: BackgroundPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -334,7 +334,7 @@ GameObject:
   - component: {fileID: 140580213}
   - component: {fileID: 140580215}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: UIText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -472,6 +472,8 @@ MonoBehaviour:
   textFont: {fileID: 140580213}
   changeTextColor: 1
   optionalTextColor: {r: 0.18039216, g: 0.23137255, b: 0.28235295, a: 1}
+  gameTextLocation: {x: 0, y: -6}
+  seriousTextLocation: {x: 0, y: 0}
 --- !u!1 &144371541
 GameObject:
   m_ObjectHideFlags: 0
@@ -729,7 +731,7 @@ GameObject:
   - component: {fileID: 184516122}
   - component: {fileID: 184516121}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: SFXSoundText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -902,7 +904,7 @@ GameObject:
   - component: {fileID: 353130025}
   - component: {fileID: 353130028}
   m_Layer: 5
-  m_Name: LobbyButton
+  m_Name: WindowSizeButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1051,7 +1053,7 @@ GameObject:
   - component: {fileID: 356909946}
   - component: {fileID: 356909948}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: AudioText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1189,6 +1191,8 @@ MonoBehaviour:
   textFont: {fileID: 356909946}
   changeTextColor: 1
   optionalTextColor: {r: 0.18039216, g: 0.23137255, b: 0.28235295, a: 1}
+  gameTextLocation: {x: 0, y: -6}
+  seriousTextLocation: {x: 0, y: 0}
 --- !u!1 &358051248
 GameObject:
   m_ObjectHideFlags: 0
@@ -1235,7 +1239,7 @@ GameObject:
   - component: {fileID: 498128154}
   - component: {fileID: 498128153}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: BackgroundPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1813,7 +1817,7 @@ GameObject:
   - component: {fileID: 853547249}
   - component: {fileID: 853547251}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: SettingsPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2098,7 +2102,7 @@ GameObject:
   - component: {fileID: 1085919754}
   - component: {fileID: 1085919756}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: WindowText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2236,6 +2240,8 @@ MonoBehaviour:
   textFont: {fileID: 1085919754}
   changeTextColor: 1
   optionalTextColor: {r: 0.18039216, g: 0.23137255, b: 0.28235295, a: 1}
+  gameTextLocation: {x: 0, y: -6}
+  seriousTextLocation: {x: 0, y: 0}
 --- !u!1 &1088757466
 GameObject:
   m_ObjectHideFlags: 0
@@ -2249,8 +2255,9 @@ GameObject:
   - component: {fileID: 1088757469}
   - component: {fileID: 1088757468}
   - component: {fileID: 1088757471}
+  - component: {fileID: 1088757472}
   m_Layer: 5
-  m_Name: MapButton
+  m_Name: ChangeUIButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2321,9 +2328,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: MapMenuMain, Assembly-CSharp
-        m_MethodName: OnLogin
+      - m_Target: {fileID: 1088757472}
+        m_TargetAssemblyTypeName: ChangeUIButton, Assembly-CSharp
+        m_MethodName: pressedUIButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2386,6 +2393,19 @@ MonoBehaviour:
   buttonType: 2
   buttonImage: {fileID: 1088757469}
   shouldBeTransparent: 0
+--- !u!114 &1088757472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1088757466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 753ae7eab8950f94488b95266f255570, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  themeMgr: {fileID: 2077881717}
 --- !u!1 &1113731143
 GameObject:
   m_ObjectHideFlags: 0
@@ -3061,7 +3081,7 @@ GameObject:
   - component: {fileID: 1562430326}
   - component: {fileID: 1562430325}
   m_Layer: 5
-  m_Name: QuitButton
+  m_Name: ReturnButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3531,7 +3551,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 2000, y: 0}
+  m_AnchoredPosition: {x: 1958, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1690114268
@@ -3636,7 +3656,7 @@ GameObject:
   - component: {fileID: 1728466134}
   - component: {fileID: 1728466137}
   m_Layer: 5
-  m_Name: QuitButton
+  m_Name: ReturnButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4063,7 +4083,7 @@ GameObject:
   - component: {fileID: 1835012921}
   - component: {fileID: 1835012920}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: ReturnText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4108,7 +4128,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Quit
+  m_text: Return
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 7a11cf0b346dc7041825e43028f64fb7, type: 2}
   m_sharedMaterial: {fileID: 7241635252472587324, guid: 7a11cf0b346dc7041825e43028f64fb7,
@@ -4198,7 +4218,7 @@ GameObject:
   - component: {fileID: 1854722538}
   - component: {fileID: 1854722537}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: MusicText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4334,7 +4354,7 @@ GameObject:
   - component: {fileID: 1897801816}
   - component: {fileID: 1897801818}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: ReturnText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4472,6 +4492,8 @@ MonoBehaviour:
   textFont: {fileID: 1897801816}
   changeTextColor: 0
   optionalTextColor: {r: 0, g: 0, b: 0, a: 0}
+  gameTextLocation: {x: 0, y: 0}
+  seriousTextLocation: {x: 0, y: 0}
 --- !u!1 &1921026543
 GameObject:
   m_ObjectHideFlags: 0
@@ -4560,7 +4582,7 @@ GameObject:
   - component: {fileID: 1939499260}
   - component: {fileID: 1939499259}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: SettingsText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4600,6 +4622,8 @@ MonoBehaviour:
   textFont: {fileID: 1939499260}
   changeTextColor: 0
   optionalTextColor: {r: 0, g: 0, b: 0, a: 0}
+  gameTextLocation: {x: 0.0004882813, y: -55}
+  seriousTextLocation: {x: 0.0004882813, y: -55}
 --- !u!114 &1939499260
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4710,7 +4734,7 @@ GameObject:
   - component: {fileID: 1978516376}
   - component: {fileID: 1978516375}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: MasterVolumeText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5207,7 +5231,7 @@ GameObject:
   - component: {fileID: 2101206214}
   - component: {fileID: 2101206217}
   m_Layer: 5
-  m_Name: SettingsButton
+  m_Name: AudioButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5435,7 +5459,7 @@ GameObject:
   - component: {fileID: 2136448465}
   - component: {fileID: 2136448464}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: GradientBackgroundPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6226,8 +6250,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 70
-  m_fontSizeBase: 70
+  m_fontSize: 60
+  m_fontSizeBase: 60
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -7445,16 +7469,16 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5017620230690755572}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.00000012599048}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 386802233379472203}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -4}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0.000030517578, y: 0}
+  m_SizeDelta: {x: 508, y: 136}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &5571658933678492096
 MonoBehaviour:
@@ -7537,10 +7561,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad5fc58a93dc0dc47a926d701c60790a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  holdingPosition: {x: 0, y: 0}
+  holdingPosition: {x: 6000, y: 0}
   visiblePosition: {x: 0, y: 0}
   panel: {fileID: 8575230555363895656}
-  _isVisible: 1
+  _isVisible: 0
   isTimed: 0
   showDuration: 5
 --- !u!114 &6334840405679955887
@@ -7746,6 +7770,8 @@ MonoBehaviour:
   textFont: {fileID: 4703464309303016411}
   changeTextColor: 0
   optionalTextColor: {r: 0, g: 0, b: 0, a: 0}
+  gameTextLocation: {x: 17, y: -10}
+  seriousTextLocation: {x: 20, y: 0}
 --- !u!222 &7209056854743094154
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7892,8 +7918,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50
-  m_fontSizeBase: 50
+  m_fontSize: 55
+  m_fontSizeBase: 55
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -7928,7 +7954,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: -20.513, y: 0, z: -22.44104, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -7947,8 +7973,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textFont: {fileID: 7395283091232907535}
-  changeTextColor: 0
-  optionalTextColor: {r: 0, g: 0, b: 0, a: 0}
+  changeTextColor: 1
+  optionalTextColor: {r: 0.18039216, g: 0.23137255, b: 0.28235295, a: 1}
+  gameTextLocation: {x: 0, y: -6}
+  seriousTextLocation: {x: 0, y: 0}
 --- !u!114 &7420786903693939489
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8106,8 +8134,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textFont: {fileID: 2147290993392839540}
-  changeTextColor: 0
-  optionalTextColor: {r: 0, g: 0, b: 0, a: 0}
+  changeTextColor: 1
+  optionalTextColor: {r: 0.18039216, g: 0.23137255, b: 0.28235295, a: 1}
+  gameTextLocation: {x: 0, y: -6}
+  seriousTextLocation: {x: 0, y: 0}
 --- !u!1 &8036539610635616241
 GameObject:
   m_ObjectHideFlags: 0
@@ -8142,6 +8172,8 @@ MonoBehaviour:
   textFont: {fileID: 2191836945405731620}
   changeTextColor: 0
   optionalTextColor: {r: 0, g: 0, b: 0, a: 0}
+  gameTextLocation: {x: 17, y: -10}
+  seriousTextLocation: {x: 20, y: 0}
 --- !u!222 &8058339933202703563
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8227,6 +8259,8 @@ MonoBehaviour:
   textFont: {fileID: 5319812843053495181}
   changeTextColor: 0
   optionalTextColor: {r: 0, g: 0, b: 0, a: 0}
+  gameTextLocation: {x: 0, y: -6}
+  seriousTextLocation: {x: 0, y: 0}
 --- !u!224 &8575230555363895656
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8244,7 +8278,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 6000, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &8764530941457402952

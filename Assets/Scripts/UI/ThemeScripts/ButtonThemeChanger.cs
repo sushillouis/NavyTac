@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using UnityEngine;
 using TMPro;
 
+
+//This enum may grow as I add more button types
 [Serializable]
     public enum ButtonType {
         Decorative,
@@ -17,9 +19,10 @@ public class ButtonThemeChanger : MonoBehaviour
 {
     public ButtonType buttonType;
     public Image buttonImage;
+
+    //Some buttons are slightly transparent in specifically the game mode so this covers that specific case
     public bool shouldBeTransparent;
 
-    // Start is called before the first frame update
     void Start()
     {
         buttonImage = GetComponent<Image>();
@@ -31,6 +34,8 @@ public class ButtonThemeChanger : MonoBehaviour
         {
             case ButtonType.Decorative:
                 buttonImage.sprite = ThemeMgr.inst.PanelThemeColorsList.Find(x => x.theme == theme).decorativeButton;
+
+                //This covers the transparency issue with some game UI button, it's a bit much but I do need the specifics I think for certain buttons
                 Color c = buttonImage.color;
                 if (shouldBeTransparent == true && theme == Theme.Game)
                 {
@@ -60,6 +65,7 @@ public class ButtonThemeChanger : MonoBehaviour
                 break;
             case ButtonType.Sound:
                 buttonImage.sprite = ThemeMgr.inst.PanelThemeColorsList.Find(x => x.theme == theme).soundButton;
+                //This changes the color of the audio image on the button
                 GameObject child = this.gameObject.transform.GetChild(0).gameObject;
                 Image audioImage = child.GetComponent<Image>();
                 audioImage.color = ThemeMgr.inst.PanelThemeColorsList.Find(x => x.theme == theme).audioColor;

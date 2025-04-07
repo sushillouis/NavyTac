@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class FrameThemeChanger : MonoBehaviour
 {
+
+    // Whole refers to the rectangle frames and corner is the decorative frames I use in the sound panel
     public enum FrameType {
         Whole,
         Corner,
@@ -12,7 +14,6 @@ public class FrameThemeChanger : MonoBehaviour
     public FrameType frameType;
     public Image PanelImage;
 
-    // Start is called before the first frame update
     void Start()
     {
         PanelImage = GetComponent<Image>();        
@@ -25,6 +26,8 @@ public class FrameThemeChanger : MonoBehaviour
             case FrameType.Whole:
                 PanelImage.sprite = ThemeMgr.inst.PanelThemeColorsList.Find(x => x.theme == theme).frame;
             break;
+
+            // For the case of the serious UI, it doesn't use corner frames as of now, so I set them to transparent when the theme is serious
             case FrameType.Corner:
                 Color c = PanelImage.color;
                 if(theme == Theme.Game)

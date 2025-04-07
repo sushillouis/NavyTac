@@ -8,12 +8,12 @@ public class ThemeChanger : MonoBehaviour
 
     public Image PanelImage;
     public Color PanelColor;
-    // Start is called before the first frame update
+    
+
     void Start()
     {
         PanelImage = GetComponent<Image>();
         PanelColor = GetComponent<Color>();
-        
     }
 
     public void ChangeTheme(Theme theme)
