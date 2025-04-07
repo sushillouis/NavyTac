@@ -90,6 +90,14 @@ public class AIMgr : NetworkBehaviour
     [Header("Experimatal PF")]
     public float repulsive2Coefficient = 1000;
     public float attraction2Coefficient = 10000;
+    // In AIMgr.cs
+    [Header("Terrain Avoidance (Ships)")]
+    public float terrainDetectionRadius = 100f; // How far ships detect islands
+    public float maxTerrainRepulsion = 3000f;    // Maximum push force
+    public float minSafeDistance = 20f;          // Closest allowed to terrain
+
+    [Header("Debug")]
+    public bool showTerrainAvoidance = true;
 
 
     public RaycastHit hit;

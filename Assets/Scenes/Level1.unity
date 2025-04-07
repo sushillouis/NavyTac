@@ -630,7 +630,7 @@ Transform:
   m_GameObject: {fileID: 197748972}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7203, y: 0, z: 281}
+  m_LocalPosition: {x: -5469, y: 0, z: 281}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1004,7 +1004,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65cfb1489ff408b4abaedfa9abb7f27d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FOW: 1
+  FOW: 0
   playerSide: 00000000
   fogMaterial: {fileID: 2100000, guid: 043fa474478025747b66fd0c85b9458c, type: 2}
   fogPlaneSize: {x: 18520, y: 18520}
@@ -1017,6 +1017,53 @@ MonoBehaviour:
   fogComputeShader: {fileID: 7200000, guid: c1791acc49869e640a6dead7d276576f, type: 3}
   updateInterval: 0.1
   visibilityCheckInterval: 0.2
+--- !u!1 &269875889
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 269875890}
+  - component: {fileID: 269875891}
+  m_Layer: 0
+  m_Name: NoPlayZone (10)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &269875890
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 269875889}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.50000006, z: 0, w: 0.8660254}
+  m_LocalPosition: {x: 2454, y: 0, z: -12749}
+  m_LocalScale: {x: 1, y: 1, z: 1.0408}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2011532837}
+  m_LocalEulerAnglesHint: {x: 0, y: 120, z: 0}
+--- !u!114 &269875891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 269875889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e98e74cf0dae10844b85c7e7d7b00a74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localSize: {x: 3000, y: 5, z: 3000}
+  repulsionStrength: 1000
+  repulsionRadius: 1000
 --- !u!1 &280782895
 GameObject:
   m_ObjectHideFlags: 0
@@ -2550,6 +2597,10 @@ MonoBehaviour:
   repulsiveExponent: -2
   repulsive2Coefficient: 15000
   attraction2Coefficient: 9500
+  terrainDetectionRadius: 100
+  maxTerrainRepulsion: 3000
+  minSafeDistance: 20
+  showTerrainAvoidance: 1
   layerMask: 0
   selectedEntities: []
 --- !u!65 &639876784
@@ -2952,7 +3003,7 @@ Transform:
   m_GameObject: {fileID: 730663192}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -357, y: 0, z: -8243}
+  m_LocalPosition: {x: -357, y: 0, z: -6185}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5428,7 +5479,7 @@ Transform:
   m_GameObject: {fileID: 1456642180}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 586, y: 0, z: 7988}
+  m_LocalPosition: {x: 586, y: 0, z: 7030}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7143,6 +7194,7 @@ Transform:
   - {fileID: 1212399376}
   - {fileID: 948085072}
   - {fileID: 1242683493}
+  - {fileID: 269875890}
   - {fileID: 641959633}
   - {fileID: 885140572}
   - {fileID: 1871514401}

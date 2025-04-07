@@ -106,7 +106,7 @@ public class Move : Command
         {
             repulsivePotential += ComputeNoGoZoneContribution(zone, entity.position);
         }
-
+        repulsivePotential += ComputeTerrainRepulsion(entity.position);
         // Attraction to target
         Vector3 rawAttraction = movePosition - entity.position;
         attractivePotential = rawAttraction.normalized *
@@ -180,7 +180,64 @@ public class Move : Command
         
         return new DHDS(dh, ds);
     }
+   // In Move.cs - Replace ComputeTerrainRepulsion
+// In Move.cs
+private Vector3 ComputeTerrainRepulsion(Vector3 shipPosition)
+{
+    Vector3 totalRepulsion = Vector3.zero;
+    LayerMask terrainLayer = LayerMask.GetMask("Terrain");
+    float detectionRadius = AIMgr.inst.terrainDetectionRadius;
+    float maxRepel = AIMgr.inst.maxTerrainRepulsion;
 
+    // 1. Broad-phase detection using sphere overlap
+    Collider[] colliders = Physics.OverlapSphere(shipPosition, detectionRadius, terrainLayer);
+    
+    foreach (Collider col in colliders)
+    {
+        // 2. Narrow-phase using bounds approximation
+        Vector3 closestBoundsPoint = col.bounds.ClosestPoint(shipPosition);
+        Vector3 toShip = shipPosition - closestBoundsPoint;
+        float distance = toShip.magnitude;
+
+        if (distance > detectionRadius || distance < 0.1f) continue;
+
+        // 3. Fine-tune with raycast to actual surface
+        RaycastHit hit;
+        if (Physics.Raycast(shipPosition, (closestBoundsPoint - shipPosition).normalized, 
+                           out hit, detectionRadius, terrainLayer))
+        {
+            Vector3 surfaceNormal = hit.normal;
+            float surfaceDistance = hit.distance;
+            
+            // 4. Calculate repulsion force
+            float strength = Mathf.Clamp01(1 - (surfaceDistance / detectionRadius)) * maxRepel;
+            Vector3 repelDir = Vector3.Reflect(-hit.normal, Vector3.up).normalized;
+            repelDir.y = 0;
+
+            totalRepulsion += repelDir * strength;
+        }
+    }
+
+    // 5. Critical forward-looking rays
+    // Vector3[] criticalDirections = {
+    //     entity.transform.forward,
+    //     entity.transform.forward + entity.transform.right * 0.5f,
+    //     entity.transform.forward - entity.transform.right * 0.5f
+    // };
+
+    // foreach (Vector3 dir in criticalDirections)
+    // {
+    //     RaycastHit hit;
+    //     if (Physics.Raycast(shipPosition, dir, out hit, detectionRadius, terrainLayer))
+    //     {
+    //         float strength = Mathf.Lerp(maxRepel, 0, hit.distance / detectionRadius);
+    //         Vector3 evadeDir = Vector3.Cross(hit.normal, Vector3.up).normalized * Mathf.Sign(Vector3.Dot(-dir, hit.normal));
+    //         totalRepulsion += evadeDir * strength;
+    //     }
+    // }
+
+    return totalRepulsion.normalized * Mathf.Min(totalRepulsion.magnitude, maxRepel);
+}
     private Vector3 ComputeNoGoZoneContribution(NoGoZoneBounds zone, Vector3 entityPosition)
     {
         Vector3 contribution = Vector3.zero;
