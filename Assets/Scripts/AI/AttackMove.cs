@@ -18,6 +18,18 @@ public class AttackMove : Move
         explicitTarget = target;
         hasExplicitTarget = true;
     }
+    public override void Init() 
+    {
+        if(!FogWarMgr.inst.nonRevelers.Contains(entity) ) 
+        {
+            line = LineMgr.inst.CreateAttackMoveLine(entity.position, movePosition);
+            line.gameObject.SetActive(false);
+            potentialLine = LineMgr.inst.CreatePotentialLine(entity.position);
+            if (potentialLine != null)
+                potentialLine.gameObject.SetActive(false);
+        }
+        
+    }
 
     public override void Tick()
     {

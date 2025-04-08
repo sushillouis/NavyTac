@@ -91,7 +91,7 @@ public class WeaponsMgr : MonoBehaviour
     {
         MinimapMgr.inst.CreateMinimapIcon(weapon, uiAspect.minimapIcon);
     }
-    DistanceMgr.inst.Initialize();
+    // DistanceMgr.inst.Initialize();
     return weapon;
     }
 
@@ -243,7 +243,7 @@ public class WeaponsMgr : MonoBehaviour
                 EntityMgr.inst.entities.Remove(entity);
                 ReturnWeapon(entity);
                 weapons.Remove(entity);
-                DistanceMgr.inst.Initialize();
+                // DistanceMgr.inst.Initialize();
                 return;
             }
             MinimapMgr.inst.RemoveMinimapIcon(entity);

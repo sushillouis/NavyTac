@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [Serializable]
@@ -145,6 +146,7 @@ public class DistanceMgr : MonoBehaviour
     public int jj = 0;
     public void Initialize()
     {
+
         isInitialized = true;
         potentialsDictionary = new Dictionary<Entity, Dictionary<Entity, Potential>>();
         potentialsList = new List<List<Potential>>();
@@ -152,12 +154,16 @@ public class DistanceMgr : MonoBehaviour
         potentials2D = new Potential[n, n];
         ii = 0;
         foreach (Entity ent1 in EntityMgr.inst.entities) {
+            if (ent1.entityClass == EntityClass.Missile)
+                continue;  
             Dictionary<Entity, Potential> ent1PotDictionary = new Dictionary<Entity, Potential>();
             List<Potential> ent1PotList = new List<Potential>();
             potentialsDictionary.Add(ent1, ent1PotDictionary);
             potentialsList.Add(ent1PotList);
             jj = 0;
             foreach (Entity ent2 in EntityMgr.inst.entities) {
+                if (ent2.entityClass == EntityClass.Missile)
+                continue;
                 Potential pot = new Potential(ent1, ent2);
                 ent1PotDictionary.Add(ent2, pot);
                 ent1PotList.Add(pot);
@@ -184,30 +190,60 @@ public class DistanceMgr : MonoBehaviour
     }
 
     public List<Potential> selectedEntityPotentials; 
+    // void UpdatePotentials()
+    // {
+        
+    //     // Potential p1, p2;
+    //     Entity ent1, ent2;
+    //     int currentFrameMod = frameCounter % 10; 
+
+    //     for (int i = 0; i < EntityMgr.inst.entities.Count - 1; i++)
+    //     {
+            
+    //         if (i % 10 != currentFrameMod)
+    //             continue;
+
+    //         ent1 = EntityMgr.inst.entities[i];
+    //         if (ent1 == SelectionMgr.inst.selectedEntity)
+    //             selectedEntityPotentials = potentialsList[i];
+
+    //         for (int j = i + 1; j < EntityMgr.inst.entities.Count; j++)
+    //         {
+    //             ent2 = EntityMgr.inst.entities[j];
+    //             ComputePotentials(ent1, i, ent2, j);
+    //         }
+    //     }
+    // }
     void UpdatePotentials()
     {
-        // Potential p1, p2;
         Entity ent1, ent2;
         int currentFrameMod = frameCounter % 10; 
 
-        for (int i = 0; i < EntityMgr.inst.entities.Count - 1; i++)
+        for (int i = 0; i < EntityMgr.inst.entities.Count; i++)
         {
-            
             if (i % 10 != currentFrameMod)
                 continue;
 
             ent1 = EntityMgr.inst.entities[i];
+            if (ent1.entityClass == EntityClass.Missile)
+                continue; // Skip missiles
+
+            // Update selectedEntityPotentials safely
             if (ent1 == SelectionMgr.inst.selectedEntity)
-                selectedEntityPotentials = potentialsList[i];
+            {
+                selectedEntityPotentials = potentialsList.FirstOrDefault(pList => pList.Any(p => p.ownship == ent1));
+            }
 
             for (int j = i + 1; j < EntityMgr.inst.entities.Count; j++)
             {
                 ent2 = EntityMgr.inst.entities[j];
+                if (ent2.entityClass == EntityClass.Missile)
+                    continue; // Skip missiles
+
                 ComputePotentials(ent1, i, ent2, j);
             }
         }
     }
-
     public void ComputePotentials(Entity ent1, int ent1Index, Entity ent2, int ent2Index) {
         Potential p1, p2;
 

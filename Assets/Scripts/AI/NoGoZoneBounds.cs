@@ -12,6 +12,11 @@ public class NoGoZoneBounds : MonoBehaviour
     void OnDisable() => NoGoZoneManager.Unregister(this);
 
     // Calculate world-space min/max bounds based on rotation/position
+    void Start()
+    {
+        repulsionRadius = 1000f;
+        repulsionStrength = 10000f;
+    }
     public Vector3 WorldMinBounds
     {
         get
@@ -65,4 +70,15 @@ public class NoGoZoneBounds : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(Vector3.zero, localSize);
     }
+    public float GetPenetrationDepth(Vector3 position)
+{
+   
+        Vector3 localPos = transform.InverseTransformPoint(position);
+        return Mathf.Max(
+            localSize.x/2 - Mathf.Abs(localPos.x),
+            localSize.y/2 - Mathf.Abs(localPos.y),
+            localSize.z/2 - Mathf.Abs(localPos.z)
+        );
+    
+}
 }

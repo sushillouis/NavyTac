@@ -86,18 +86,18 @@ public class GameMgr : MonoBehaviour
 
     public void Create100()
     {
-        initZ = position.z;
-        for (int i = 0; i < 10; i++)
-        {
-            for (int j = 0; j < 10; j++)
-            {
-                Entity ent = EntityMgr.inst.CreateEntity(EntityType.PilotVessel, position, Vector3.zero);
-                position.z += spread;
-            }
-            position.x += spread;
-            position.z = initZ;
-        }
-        DistanceMgr.inst.Initialize();
+        // initZ = position.z;
+        // for (int i = 0; i < 10; i++)
+        // {
+        //     for (int j = 0; j < 10; j++)
+        //     {
+        //         Entity ent = EntityMgr.inst.CreateEntity(EntityType.PilotVessel, position, Vector3.zero);
+        //         position.z += spread;
+        //     }
+        //     position.x += spread;
+        //     position.z = initZ;
+        // }
+        // DistanceMgr.inst.Initialize();
     }
 
     public void InitMapMenu()

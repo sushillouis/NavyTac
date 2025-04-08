@@ -62,6 +62,9 @@ public class UIMgr : MonoBehaviour
     private InputAction create100;
 
     private InputAction selectAll;
+    private InputAction selectAllDDG51;
+    private InputAction selectAllSEAHUNTER;
+    private InputAction selectAllJARIUSV;
     private InputAction selectGroup1;
 
 
@@ -162,6 +165,17 @@ public class UIMgr : MonoBehaviour
         selectAll.Enable();
         selectAll.performed += OnSelectAllPerformed;
 
+        selectAllDDG51 = inputs.Selection.SelectAllDDG51;
+        selectAllDDG51.Enable();
+        selectAllDDG51.performed += OnSelectAllDDG51Performed;
+
+        selectAllJARIUSV = inputs.Selection.SelectAllJARIUSV;
+        selectAllJARIUSV.Enable();
+        selectAllJARIUSV.performed += OnSelectAllJARIUSVPerformed;
+
+        selectAllSEAHUNTER = inputs.Selection.SelectAllSEAHUNTER;
+        selectAllSEAHUNTER.Enable();
+        selectAllSEAHUNTER.performed += OnSelectAllSEAHUNTERPerformed;
         //Ctrl key signifies group commands so when we do right mouse button we run only if ctrl is not pressed
         inputs.Entities.ControlKey.Enable();
 
@@ -209,6 +223,9 @@ public class UIMgr : MonoBehaviour
         create100.Disable();
 
         selectAll.Disable();
+        selectAllDDG51.Disable();
+        selectAllJARIUSV.Disable();
+        selectAllSEAHUNTER.Disable();
         inputs.Entities.ControlKey.Disable();
 
         // attack1.Disable();
@@ -472,12 +489,23 @@ public class UIMgr : MonoBehaviour
     private void OnSelectAllPerformed(InputAction.CallbackContext context) {
         SelectionMgr.inst.SelectAll();
     }
+    private void OnSelectAllDDG51Performed(InputAction.CallbackContext context) {
+        SelectionMgr.inst.SelectAllDDG51();
+    }
+    
+    private void OnSelectAllJARIUSVPerformed(InputAction.CallbackContext context) {
+        SelectionMgr.inst.SelectALLJARIUSV();
+    }
+    private void OnSelectAllSEAHUNTERPerformed(InputAction.CallbackContext context) {
+        SelectionMgr.inst.SelectALLSEAHUNTER();
+    }
 
-
-    public WorldPosEntity MousePosToWorldPosEntity(Vector2 mousePos) {
+    public WorldPosEntity MousePosToWorldPosEntity(Vector2 mousePos)
+    {
         RaycastHit hit = new RaycastHit();
         int layerMask = 512; //Ocean layer = 9, 2^9 = 512
-        if(Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask)) {
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
+        {
             //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
             Vector3 pos = hit.point;
             pos.y = 0;

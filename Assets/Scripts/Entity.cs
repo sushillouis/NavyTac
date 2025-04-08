@@ -57,12 +57,20 @@ public class Entity : MonoBehaviour
     public NetAspect net = null;
     public OrientedPhysics phx = null;
     public UnitAI ai = null;
+    public int groupId = 0;
     public UIAspect ui = null;
     public WeaponsAspect weapons = null;
     
 
     void Start()
     {
+        if (entityClass != EntityClass.Missile)
+        {
+            maxSpeed = maxSpeed * 5f;
+            acceleration = acceleration * 5f;
+            turnRate = turnRate * 5f;  
+
+        }
         
         fuel = maxFuel;
         health = maxHealth;

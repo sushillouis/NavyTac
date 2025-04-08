@@ -1,3 +1,4 @@
+
 Shader "Custom/FogOfWar_Transparent" {
     Properties {
         _FogColor ("Fog Color", Color) = (0, 0, 0, 0)  
@@ -17,6 +18,7 @@ Shader "Custom/FogOfWar_Transparent" {
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            
             #include "UnityCG.cginc"
 
             struct appdata {

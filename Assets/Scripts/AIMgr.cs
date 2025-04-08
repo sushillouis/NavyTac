@@ -92,14 +92,19 @@ public class AIMgr : NetworkBehaviour
     public float attraction2Coefficient = 10000;
     // In AIMgr.cs
     [Header("Terrain Avoidance (Ships)")]
-    public float terrainDetectionRadius = 100f; // How far ships detect islands
-    public float maxTerrainRepulsion = 3000f;    // Maximum push force
-    public float minSafeDistance = 20f;          // Closest allowed to terrain
+    [Header("Terrain Repulsion")]
+    public float terrainRepulsionStrength = 100000f;
+    public float terrainRepulsionFalloff = 1.5f; // Higher = faster force dropoff
+    public float terrainContainmentStrength = 500000f;
 
     [Header("Debug")]
     public bool showTerrainAvoidance = true;
-
-
+    [Header("Flocking Parameters")]
+    public float cohesionStrength = 0.5f;
+    public float cohesionRadius = 10f;
+    public float alignmentStrength = 0.3f;
+    public float alignmentRadius = 15f;
+    public float speedMatchStrength = 0.4f;
     public RaycastHit hit;
     public int layerMask;
     public List<Entity> selectedEntities = new List<Entity>();
@@ -169,13 +174,13 @@ public class AIMgr : NetworkBehaviour
 
         if (startQuadrant != null && destinationQuadrant != null && startQuadrant != destinationQuadrant)
         {
-            // Split into intermediate and final move
-            Vector3 intermediatePoint = new Vector3(
-                UnityEngine.Random.Range(-500f, 500f),
-                0f,
-                UnityEngine.Random.Range(-500f, 500f)
-            );
-
+                // Split into intermediate and final move
+                // Vector3 intermediatePoint = new Vector3(
+                //     UnityEngine.Random.Range(-500f, 500f),
+                //     0f,
+                //     UnityEngine.Random.Range(-500f, 500f)
+                // );
+            Vector3 intermediatePoint = Vector3.zero;
             AttackMove intermediateMove = new AttackMove(entity, intermediatePoint, maxSpeedMovement);
             UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             AddOrSet(intermediateMove, uai, add: false);
@@ -212,12 +217,12 @@ public class AIMgr : NetworkBehaviour
             if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
             {
                 
-                Vector3 intermediatePoint = new Vector3(
-                    UnityEngine.Random.Range(-500f, 500f), 
-                    0f, // Y: Fixed at 0
-                    UnityEngine.Random.Range(-500f, 500f)
-                );
-
+                // Vector3 intermediatePoint = new Vector3(
+                //     UnityEngine.Random.Range(-500f, 500f), 
+                //     0f, // Y: Fixed at 0
+                //     UnityEngine.Random.Range(-500f, 500f)
+                // );
+                Vector3 intermediatePoint = Vector3.zero;
                 Move intermediateMove = new Move(entity, intermediatePoint, maxSpeedMovement, doneDistanceSq);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
 
@@ -269,9 +274,43 @@ public class AIMgr : NetworkBehaviour
 
     public void HandleFollow(List<Entity> entities, Entity ent, Vector3 offset, bool add, bool isLocalCommand = true)
     {
-        if(isLocalCommand) {
+       if (isLocalCommand)
+        {
             NetTellAllClients(TactCommandTypes.Follow, entities, offset, ent, add);
         }
+        foreach (Entity entity in entities)
+        {
+            QuadrantBounds startQuadrant = GetQuadrant(entity.position);
+            QuadrantBounds targetQuadrant = GetQuadrant(ent.position);
+
+            if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
+            {
+                
+                Vector3 intermediatePoint = new Vector3(
+                    UnityEngine.Random.Range(-500f, 500f), 
+                    0f, // Y: Fixed at 0
+                    UnityEngine.Random.Range(-500f, 500f)
+                );
+
+                Move intermediateMove = new Move(entity, intermediatePoint);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+
+                // Replace current command with intermediate move
+                AddOrSet(intermediateMove, uai, add: false);
+
+                // Queue final move after intermediate
+                Follow f = new Follow(entity, ent, offset);
+                AddOrSet(f, uai, true);
+            }
+            else
+            {
+                // Original single-entity behavior
+                Follow f = new Follow(entity, ent, offset);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(f, uai, add);
+            }
+        }
+        
         foreach(Entity entity in entities) {
             if(ent != entity) {
                 Follow f = new Follow(entity, ent, offset);
