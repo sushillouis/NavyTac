@@ -23,6 +23,7 @@ public class StreamingToCommand: MonoBehaviour
     [SerializeField] GameObject billboardPrefab;
     [SerializeField] GameObject currentOptionsScroll;
     [SerializeField] GameObject optionsScrollPrefab;
+    [SerializeField] List<GameObject> buttons; 
     [SerializeField] List<GameObject> words = new();
     [SerializeField] List<GameObject> billboards = new();
     [SerializeField] List<Entity> billboardTiedEntities = new();
@@ -36,6 +37,13 @@ public class StreamingToCommand: MonoBehaviour
     public float billboardHeightScale = .25f;
     [SerializeField] float pauseTimer = 2f;
     [SerializeField] WhisperTester tester;
+    /// <summary>
+    /// Start is called on the frame when a script is enabled just before
+    /// any of the Update methods is called the first time.
+    /// </summary>
+    void Start() {
+        ToggleState(false);
+    }
     public void ProcessResult(string result,int testID=-1,float time = 0f) {
         if(pause || fullCommand.Length>250) {
             return;
@@ -168,6 +176,33 @@ public class StreamingToCommand: MonoBehaviour
             UpdateBillboardSzie();
         }
     }
+    bool state = false;
+
+    public void ToggleState(bool state) {
+        this.state=state;
+
+        if(state) {
+            commandDisplay.gameObject.SetActive(true);
+            optionsDisplay.gameObject.SetActive(true);
+            foreach (GameObject button in buttons) {
+                button.SetActive(true);
+            }
+            Init();
+            
+        } else {
+            Stop();
+            foreach (GameObject button in buttons) {
+                button.SetActive(false);
+            }
+            commandDisplay.gameObject.SetActive(false);
+            optionsDisplay.gameObject.SetActive(false);
+        }
+    }
+
+    public void ToggleState() {
+        ToggleState(!state);
+    }
+
 
     public void DisplayLocationBillboards(string command, Vector3 cameraPos) {
         if(billboards.Count > 0) {
@@ -468,7 +503,7 @@ public class StreamingToCommand: MonoBehaviour
         RectTransform optionsRect = optionsScroll.content.GetComponent<RectTransform>();
         optionsRect.sizeDelta = new(0,42.5f*options.Count);
         optionsRect = optionsScroll.viewPort.GetComponent<RectTransform>();
-        int viewHeight = options.Count>2 ? 2 : options.Count; 
+        int viewHeight = options.Count>5 ? 5 : options.Count; 
         optionsRect.sizeDelta = new(baseWidth,42.5f*viewHeight);;
         currentOptionsScroll.GetComponent<RectTransform>().sizeDelta=new(baseWidth+20,42.5f*viewHeight);;
     }

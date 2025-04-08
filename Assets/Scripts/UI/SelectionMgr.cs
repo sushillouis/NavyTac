@@ -109,6 +109,7 @@ public class SelectionMgr : MonoBehaviour
     public Bounds GetScreenBounds(Vector3 start, Vector3 end) {
         wp1 = Camera.main.ScreenToViewportPoint(start);
         wp2 = Camera.main.ScreenToViewportPoint(end);
+        Debug.Log($"1: {wp1}, 2: {wp2}");
         Vector3 min = Vector3.Min(wp1, wp2);
         Vector3 max = Vector3.Max(wp1, wp2);
         min.z = Camera.main.nearClipPlane;
