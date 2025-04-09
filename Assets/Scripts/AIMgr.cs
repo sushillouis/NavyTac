@@ -141,10 +141,10 @@ public class AIMgr : NetworkBehaviour
                 }
                 else
                 {
-                    if (intercept)
-                        HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
-                    else
-                        HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
+                    // if (intercept)
+                    //     HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
+                    // else
+                    //     HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
                 }
             } else {
                 //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);

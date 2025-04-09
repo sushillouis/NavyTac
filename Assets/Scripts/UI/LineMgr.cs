@@ -29,6 +29,7 @@ public class LineMgr : MonoBehaviour
     public LineRenderer FollowPrefab;
     public LineRenderer InterceptPrefab;
     public LineRenderer PotentialPrefab;
+    public LineRenderer AttackMovePrefab;
 
     public List<LineRenderer> lines = new List<LineRenderer>();
     public LineRenderer CreateMoveLine(Vector3 p1, Vector3 p2)
@@ -40,7 +41,15 @@ public class LineMgr : MonoBehaviour
         lines.Add(lr);
         return lr;
     }
-
+     public LineRenderer CreateAttackMoveLine(Vector3 p1, Vector3 p2)
+    {
+        
+        LineRenderer lr = Instantiate<LineRenderer>(AttackMovePrefab, transform);
+        lr.SetPosition(0, p1);
+        lr.SetPosition(1, p2);
+        lines.Add(lr);
+        return lr;
+    }
     public LineRenderer CreatePotentialLine(Vector3 p1)
     {if (isDebug)
         {
