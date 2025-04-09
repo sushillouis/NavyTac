@@ -80,207 +80,57 @@ public class Move : Command
         return new DHDS(dhDegrees, entity.maxSpeed);
     }
 
-    // public virtual DHDS ComputePotentialDHDS(Vector3 movePosition)
-    // {
-    //     diffToMovePosition = movePosition - entity.position;
-    //     repulsivePotential = Vector3.zero;
-    //     attractivePotential = Vector3.zero;
-    //     potentialSum = Vector3.zero;
-
-    //     // Entity repulsion
-    //     foreach (Entity ent in EntityMgr.inst.entities)
-    //     {
-    //         if (ent.entityClass == EntityClass.Missile) continue;
-    //         if (ent == entity) continue;
-
-    //         Potential p = DistanceMgr.inst.GetPotential(entity, ent);
-    //         if (p.distance < AIMgr.inst.potentialDistanceThreshold)
-    //         {
-    //             repulsivePotential += p.direction * ent.mass *
-    //                 AIMgr.inst.repulsiveCoefficient * 
-    //                 Mathf.Pow(p.diff.magnitude, AIMgr.inst.repulsiveExponent);
-    //         }
-    //     }
-
-    //     // No-Go Zone repulsion
-    //     foreach (NoGoZoneBounds zone in NoGoZoneManager.Zones)
-    //     {
-    //         repulsivePotential += ComputeNoGoZoneContribution(zone, entity.position);
-    //     }
-
-    //     // Attraction to target
-    //     Vector3 rawAttraction = movePosition - entity.position;
-    //     attractivePotential = rawAttraction.normalized *
-    //         AIMgr.inst.attractionCoefficient *
-    //         Mathf.Pow(rawAttraction.magnitude, AIMgr.inst.attractiveExponent);
-
-    //     potentialSum = attractivePotential - repulsivePotential;
-        
-    //     // Calculate final DHDS
-    //     dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
-    //     angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
-    //     cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
-    //     ds = entity.maxSpeed * cosValue;
-
-    //     if (potentialLine != null)
-    //     {
-    //         potentialLine.SetPosition(0, entity.position);
-    //         potentialLine.SetPosition(1, entity.position + potentialSum);
-    //     }
-        
-    //     return new DHDS(dh, ds);
-    // }
-public virtual DHDS ComputePotentialDHDS(Vector3 movePosition)
-{
-    // Calculate basic position difference
-    diffToMovePosition = movePosition - entity.position;
-    repulsivePotential = Vector3.zero;
-    attractivePotential = Vector3.zero;
-    potentialSum = Vector3.zero;
-
-    // Calculate flocking forces
-    Vector3 cohesionForce = CalculateCohesionForce();
-    Vector3 alignmentForce = CalculateAlignmentForce();
-    float speedMatch = CalculateSpeedMatching();
-
-    // Entity repulsion calculation
-    foreach (Entity ent in EntityMgr.inst.entities)
+    public virtual DHDS ComputePotentialDHDS(Vector3 movePosition)
     {
-        if (ent.entityClass == EntityClass.Missile) continue;
-        if (ent == entity) continue;
+        diffToMovePosition = movePosition - entity.position;
+        repulsivePotential = Vector3.zero;
+        attractivePotential = Vector3.zero;
+        potentialSum = Vector3.zero;
 
-        Potential p = DistanceMgr.inst.GetPotential(entity, ent);
-        if (p.distance < AIMgr.inst.potentialDistanceThreshold)
-        {
-            Vector3 repulsion = p.direction * ent.mass *
-                              AIMgr.inst.repulsiveCoefficient *
-                              Mathf.Pow(p.diff.magnitude, AIMgr.inst.repulsiveExponent);
-            
-            // Add group-specific repulsion
-            if (ent.groupId == entity.groupId)
-            {
-                repulsion *= AIMgr.inst.groupRepulsiveCoefficient;
-            }
-            
-            repulsivePotential += repulsion;
-        }
-    }
-
-    // Terrain/No-Go Zone avoidance
-    foreach (NoGoZoneBounds zone in NoGoZoneManager.Zones)
-    {
-        repulsivePotential += ComputeNoGoZoneContribution(zone, entity.position);
-    }
-
-    // Calculate attraction to target
-    Vector3 rawAttraction = movePosition - entity.position;
-    attractivePotential = rawAttraction.normalized *
-                        AIMgr.inst.attractionCoefficient *
-                        Mathf.Pow(rawAttraction.magnitude, AIMgr.inst.attractiveExponent);
-
-    // Combine all forces
-    potentialSum = attractivePotential 
-                 - repulsivePotential 
-                 + (cohesionForce * AIMgr.inst.cohesionStrength)
-                 + (alignmentForce * AIMgr.inst.alignmentStrength);
-
-    // Calculate desired heading
-    dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
-    
-    // Calculate base speed from heading alignment
-    angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
-    cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
-    float baseDS = entity.maxSpeed * cosValue;
-
-    // Apply speed matching with group
-    ds = Mathf.Lerp(baseDS, speedMatch, AIMgr.inst.speedMatchStrength);
-    
-    // Apply final speed constraints
-    ds = Mathf.Clamp(ds, entity.minSpeed, entity.maxSpeed);
-
-    // Update debug visualization
-    if (potentialLine != null)
-    {
-        potentialLine.SetPosition(0, entity.position);
-        potentialLine.SetPosition(1, entity.position + potentialSum);
-        potentialLine.startColor = Color.Lerp(Color.red, Color.green, ds/entity.maxSpeed);
-        potentialLine.endColor = Color.blue;
-    }
-
-    return new DHDS(dh, ds);
-}
-private float CalculateSpeedMatching()
-{
-    float totalSpeed = 0f;
-    int groupCount = 0;
-
-    foreach (Entity ent in EntityMgr.inst.entities)
-    {
-        if (ent == entity || ent.groupId != entity.groupId) continue;
-        
-        float distance = Vector3.Distance(entity.position, ent.position);
-        if (distance < AIMgr.inst.cohesionRadius)
-        {
-            totalSpeed += ent.speed;
-            groupCount++;
-        }
-    }
-
-    return groupCount > 0 
-        ? Mathf.Clamp(totalSpeed/groupCount, entity.minSpeed, entity.maxSpeed)
-        : entity.speed;
-}
-    private Vector3 CalculateCohesionForce()
-    {
-        Vector3 groupCenter = Vector3.zero;
-        int groupCount = 0;
-
+        // Entity repulsion
         foreach (Entity ent in EntityMgr.inst.entities)
         {
-            if (ent == entity || ent.groupId != entity.groupId) continue;
+            if (ent.entityClass == EntityClass.Missile) continue;
+            if (ent == entity) continue;
 
-            float distance = Vector3.Distance(entity.position, ent.position);
-            if (distance < AIMgr.inst.cohesionRadius && distance > 0)
+            Potential p = DistanceMgr.inst.GetPotential(entity, ent);
+            if (p.distance < AIMgr.inst.potentialDistanceThreshold)
             {
-                groupCenter += ent.position;
-                groupCount++;
+                repulsivePotential += p.direction * ent.mass *
+                    AIMgr.inst.repulsiveCoefficient * 
+                    Mathf.Pow(p.diff.magnitude, AIMgr.inst.repulsiveExponent);
             }
         }
 
-        if (groupCount > 0)
+        // No-Go Zone repulsion
+        foreach (NoGoZoneBounds zone in NoGoZoneManager.Zones)
         {
-            groupCenter /= groupCount;
-            return (groupCenter - entity.position).normalized;
+            repulsivePotential += ComputeNoGoZoneContribution(zone, entity.position);
         }
 
-        return Vector3.zero;
+        // Attraction to target
+        Vector3 rawAttraction = movePosition - entity.position;
+        attractivePotential = rawAttraction.normalized *
+            AIMgr.inst.attractionCoefficient *
+            Mathf.Pow(rawAttraction.magnitude, AIMgr.inst.attractiveExponent);
+
+        potentialSum = attractivePotential - repulsivePotential;
+        
+        // Calculate final DHDS
+        dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
+        angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
+        cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
+        ds = entity.maxSpeed * cosValue;
+
+        if (potentialLine != null)
+        {
+            potentialLine.SetPosition(0, entity.position);
+            potentialLine.SetPosition(1, entity.position + potentialSum);
+        }
+        
+        return new DHDS(dh, ds);
     }
 
-    private Vector3 CalculateAlignmentForce()
-    {
-        Vector3 averageDirection = Vector3.zero;
-        int groupCount = 0;
-
-        foreach (Entity ent in EntityMgr.inst.entities)
-        {
-            if (ent == entity || ent.groupId != entity.groupId) continue;
-
-            float distance = Vector3.Distance(entity.position, ent.position);
-            if (distance < AIMgr.inst.alignmentRadius && distance > 0)
-            {
-                averageDirection += ent.velocity.normalized;
-                groupCount++;
-            }
-        }
-
-        if (groupCount > 0)
-        {
-            averageDirection /= groupCount;
-            return averageDirection.normalized;
-        }
-
-        return Vector3.zero;
-    }
     public DHDS ComputePF2() 
     {
         diffToMovePosition = movePosition - entity.position;
@@ -333,28 +183,26 @@ private float CalculateSpeedMatching()
     }
 
     private Vector3 ComputeNoGoZoneContribution(NoGoZoneBounds zone, Vector3 entityPosition)
-{
-    Vector3 closestPoint = zone.GetClosestPoint(entityPosition);
-    Vector3 toEntity = entityPosition - closestPoint;
-    float distance = toEntity.magnitude;
-
-    if(distance < 0.01f) return Vector3.zero;
-
-    Vector3 dir = toEntity.normalized;
-    
-    if(zone.Contains(entityPosition))
     {
-        float penetration = zone.GetPenetrationDepth(entityPosition);
-        float force = AIMgr.inst.terrainContainmentStrength * penetration;
-        return dir * force;
+        Vector3 contribution = Vector3.zero;
+        Vector3 closestPoint = zone.GetClosestPoint(entityPosition);
+        Vector3 diff = closestPoint - entityPosition;
+        float distance = diff.magnitude;
+
+        if (zone.Contains(entityPosition))
+        {
+            Vector3 dirFromCenter = (entityPosition - zone.transform.position).normalized;
+            contribution += dirFromCenter * zone.repulsionStrength;
+        }
+        else if (distance <= zone.repulsionRadius)
+        {
+            Vector3 dir = diff.normalized;
+            float force = zone.repulsionStrength * (1 - (distance / zone.repulsionRadius));
+            contribution += dir * force;
+        }
+
+        return contribution;
     }
-    else
-    {
-        float force = AIMgr.inst.terrainRepulsionStrength / 
-                      Mathf.Pow(distance, AIMgr.inst.terrainRepulsionFalloff);
-        return dir * force;
-    }
-}
 
     public override bool IsDone()
     {
@@ -372,4 +220,4 @@ private float CalculateSpeedMatching()
         line = null;
         potentialLine = null;
     }
-}
+} 
