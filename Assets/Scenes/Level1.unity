@@ -3768,46 +3768,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 983888704}
     m_Modifications:
-    - target: {fileID: 7731747306308124120, guid: b038d438b66901243bf74096dc5050c3,
-        type: 3}
-      propertyPath: m_Parameters.colorGradient.ctime1
-      value: 65535
-      objectReference: {fileID: 0}
-    - target: {fileID: 7731747306308124120, guid: b038d438b66901243bf74096dc5050c3,
-        type: 3}
-      propertyPath: m_Parameters.colorGradient.key0.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7731747306308124120, guid: b038d438b66901243bf74096dc5050c3,
-        type: 3}
-      propertyPath: m_Parameters.colorGradient.key0.g
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7731747306308124120, guid: b038d438b66901243bf74096dc5050c3,
-        type: 3}
-      propertyPath: m_Parameters.colorGradient.key0.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7731747306308124120, guid: b038d438b66901243bf74096dc5050c3,
-        type: 3}
-      propertyPath: m_Parameters.colorGradient.key1.b
-      value: 0.07058824
-      objectReference: {fileID: 0}
-    - target: {fileID: 7731747306308124120, guid: b038d438b66901243bf74096dc5050c3,
-        type: 3}
-      propertyPath: m_Parameters.colorGradient.key1.g
-      value: 0.015686275
-      objectReference: {fileID: 0}
-    - target: {fileID: 7731747306308124120, guid: b038d438b66901243bf74096dc5050c3,
-        type: 3}
-      propertyPath: m_Parameters.colorGradient.key1.r
-      value: 0.93725497
-      objectReference: {fileID: 0}
-    - target: {fileID: 7731747306308124120, guid: b038d438b66901243bf74096dc5050c3,
-        type: 3}
-      propertyPath: m_Parameters.colorGradient.m_ColorSpace
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7731747306308124122, guid: b038d438b66901243bf74096dc5050c3,
         type: 3}
       propertyPath: m_Name
@@ -3871,6 +3831,12 @@ PrefabInstance:
 --- !u!4 &988294861 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7731747306308124123, guid: b038d438b66901243bf74096dc5050c3,
+    type: 3}
+  m_PrefabInstance: {fileID: 988294860}
+  m_PrefabAsset: {fileID: 0}
+--- !u!120 &988294862 stripped
+LineRenderer:
+  m_CorrespondingSourceObject: {fileID: 7731747306308124120, guid: b038d438b66901243bf74096dc5050c3,
     type: 3}
   m_PrefabInstance: {fileID: 988294860}
   m_PrefabAsset: {fileID: 0}
@@ -6191,7 +6157,7 @@ MonoBehaviour:
     type: 3}
   PotentialPrefab: {fileID: 7190143859791935742, guid: bfa38735ac7725c44979a7084bcd30c6,
     type: 3}
-  AttackMovePrefab: {fileID: 0}
+  AttackMovePrefab: {fileID: 988294862}
   lines: []
   tmp: {fileID: 0}
 --- !u!1 &1708907976
