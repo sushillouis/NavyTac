@@ -2,67 +2,70 @@ using UnityEngine;
 
 public class NoGoZoneBounds : MonoBehaviour
 {
-    [Header("Local Bounds")]
-    public Vector3 localSize = new Vector3(10, 5, 10); // Size relative to the GameObject
+    [Header("Sphere Settings")]
+    public float radius = 5f; // Local radius of the sphere
 
     [Header("Repulsion Settings")]
     public float repulsionStrength = 1000f;
     public float repulsionRadius = 5f;
+
     void OnEnable() => NoGoZoneManager.Register(this);
     void OnDisable() => NoGoZoneManager.Unregister(this);
 
-    // Calculate world-space min/max bounds based on rotation/position
-    public Vector3 WorldMinBounds
-    {
-        get
-        {
-            Vector3 localMin = -localSize / 2f;
-            return transform.TransformPoint(localMin);
-        }
-    }
+    // World space center of the sphere
+    public Vector3 Center => transform.position;
 
-    public Vector3 WorldMaxBounds
-    {
-        get
-        {
-            Vector3 localMax = localSize / 2f;
-            return transform.TransformPoint(localMax);
-        }
-    }
+    // World space radius accounting for scale
+    public float ScaledRadius => radius * Mathf.Max(transform.lossyScale.x, 
+                                                    transform.lossyScale.y, 
+                                                    transform.lossyScale.z);
 
-    // Get closest point in WORLD space (accounts for rotation)
+    // Get closest point on sphere surface in WORLD space
     public Vector3 GetClosestPoint(Vector3 worldPosition)
     {
-        // Convert world position to LOCAL space
-        Vector3 localPos = transform.InverseTransformPoint(worldPosition);
+        Vector3 center = Center;
+        Vector3 direction = worldPosition - center;
+        float distance = direction.magnitude;
+        float scaledRadius = ScaledRadius;
 
-        // Clamp within local bounds
-        Vector3 clampedLocal = new Vector3(
-            Mathf.Clamp(localPos.x, -localSize.x / 2f, localSize.x / 2f),
-            Mathf.Clamp(localPos.y, -localSize.y / 2f, localSize.y / 2f),
-            Mathf.Clamp(localPos.z, -localSize.z / 2f, localSize.z / 2f)
-        );
+        if (distance < Mathf.Epsilon)
+        {
+            // If at center, return point in upward direction
+            return center + Vector3.up * scaledRadius;
+        }
 
-        // Convert clamped point back to WORLD space
-        return transform.TransformPoint(clampedLocal);
+        return center + (direction / distance) * scaledRadius;
     }
 
-    // Check if a point is inside the rotated bounds
+    // Check if a point is inside the sphere
     public bool Contains(Vector3 worldPosition)
     {
-        Vector3 localPos = transform.InverseTransformPoint(worldPosition);
-        return Mathf.Abs(localPos.x) <= localSize.x / 2f &&
-               Mathf.Abs(localPos.y) <= localSize.y / 2f &&
-               Mathf.Abs(localPos.z) <= localSize.z / 2f;
+        Vector3 center = Center;
+        float sqrDistance = (worldPosition - center).sqrMagnitude;
+        float scaledRadius = ScaledRadius;
+        return sqrDistance <= (scaledRadius * scaledRadius);
     }
 
-    // Visualize rotated box in the editor
+    // Calculate penetration depth (positive if inside)
+    public float GetPenetrationDepth(Vector3 position)
+    {
+        Vector3 center = Center;
+        float scaledRadius = ScaledRadius;
+        float distance = Vector3.Distance(position, center);
+        return scaledRadius - distance;
+    }
+
+    // Visualize sphere in editor
     void OnDrawGizmos()
     {
         Gizmos.color = new Color(1, 0, 0, 0.3f);
-        Gizmos.matrix = transform.localToWorldMatrix;
-        Gizmos.DrawCube(Vector3.zero, localSize);
+        float scaledRadius = ScaledRadius;
+        Gizmos.DrawSphere(Center, scaledRadius);
         Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(Vector3.zero, localSize);
+        Gizmos.DrawWireSphere(Center, scaledRadius);
     }
+
+    // Backwards compatibility properties (if needed)
+    public Vector3 WorldMinBounds => Center - Vector3.one * ScaledRadius;
+    public Vector3 WorldMaxBounds => Center + Vector3.one * ScaledRadius;
 }

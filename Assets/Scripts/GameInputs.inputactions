@@ -600,6 +600,33 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "SelectAllDDG51",
+                    "type": "Button",
+                    "id": "49117c76-8189-43b9-a6cd-96e880355c91",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SelectAllSEAHUNTER",
+                    "type": "Button",
+                    "id": "85c70685-a556-4d72-bed9-ce0b4bae0820",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SelectAllJARIUSV",
+                    "type": "Button",
+                    "id": "2395dbe4-5802-4922-8220-18f0969db1b6",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -688,6 +715,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "SelectAll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5adaa9d8-6a71-4be8-8f37-2458f46da267",
+                    "path": "<Keyboard>/f2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectAllDDG51",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6d7d084b-684f-4bd6-8e12-828d9d99d649",
+                    "path": "<Keyboard>/f3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectAllSEAHUNTER",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1e39c09e-0cae-477e-a11f-57c1f160ac3a",
+                    "path": "<Keyboard>/f4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectAllJARIUSV",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -622,6 +622,33 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SelectAllDDG51"",
+                    ""type"": ""Button"",
+                    ""id"": ""49117c76-8189-43b9-a6cd-96e880355c91"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SelectAllSEAHUNTER"",
+                    ""type"": ""Button"",
+                    ""id"": ""85c70685-a556-4d72-bed9-ce0b4bae0820"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SelectAllJARIUSV"",
+                    ""type"": ""Button"",
+                    ""id"": ""2395dbe4-5802-4922-8220-18f0969db1b6"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -710,6 +737,39 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""SelectAll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5adaa9d8-6a71-4be8-8f37-2458f46da267"",
+                    ""path"": ""<Keyboard>/f2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectAllDDG51"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6d7d084b-684f-4bd6-8e12-828d9d99d649"",
+                    ""path"": ""<Keyboard>/f3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectAllSEAHUNTER"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1e39c09e-0cae-477e-a11f-57c1f160ac3a"",
+                    ""path"": ""<Keyboard>/f4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectAllJARIUSV"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1146,6 +1206,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Selection_CursorPosition = m_Selection.FindAction("CursorPosition", throwIfNotFound: true);
         m_Selection_NextEntity = m_Selection.FindAction("NextEntity", throwIfNotFound: true);
         m_Selection_SelectAll = m_Selection.FindAction("SelectAll", throwIfNotFound: true);
+        m_Selection_SelectAllDDG51 = m_Selection.FindAction("SelectAllDDG51", throwIfNotFound: true);
+        m_Selection_SelectAllSEAHUNTER = m_Selection.FindAction("SelectAllSEAHUNTER", throwIfNotFound: true);
+        m_Selection_SelectAllJARIUSV = m_Selection.FindAction("SelectAllJARIUSV", throwIfNotFound: true);
         // Entities
         m_Entities = asset.FindActionMap("Entities", throwIfNotFound: true);
         m_Entities_Speed = m_Entities.FindAction("Speed", throwIfNotFound: true);
@@ -1331,6 +1394,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Selection_CursorPosition;
     private readonly InputAction m_Selection_NextEntity;
     private readonly InputAction m_Selection_SelectAll;
+    private readonly InputAction m_Selection_SelectAllDDG51;
+    private readonly InputAction m_Selection_SelectAllSEAHUNTER;
+    private readonly InputAction m_Selection_SelectAllJARIUSV;
     public struct SelectionActions
     {
         private @GameInputs m_Wrapper;
@@ -1341,6 +1407,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         public InputAction @CursorPosition => m_Wrapper.m_Selection_CursorPosition;
         public InputAction @NextEntity => m_Wrapper.m_Selection_NextEntity;
         public InputAction @SelectAll => m_Wrapper.m_Selection_SelectAll;
+        public InputAction @SelectAllDDG51 => m_Wrapper.m_Selection_SelectAllDDG51;
+        public InputAction @SelectAllSEAHUNTER => m_Wrapper.m_Selection_SelectAllSEAHUNTER;
+        public InputAction @SelectAllJARIUSV => m_Wrapper.m_Selection_SelectAllJARIUSV;
         public InputActionMap Get() { return m_Wrapper.m_Selection; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1368,6 +1437,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @SelectAll.started += instance.OnSelectAll;
             @SelectAll.performed += instance.OnSelectAll;
             @SelectAll.canceled += instance.OnSelectAll;
+            @SelectAllDDG51.started += instance.OnSelectAllDDG51;
+            @SelectAllDDG51.performed += instance.OnSelectAllDDG51;
+            @SelectAllDDG51.canceled += instance.OnSelectAllDDG51;
+            @SelectAllSEAHUNTER.started += instance.OnSelectAllSEAHUNTER;
+            @SelectAllSEAHUNTER.performed += instance.OnSelectAllSEAHUNTER;
+            @SelectAllSEAHUNTER.canceled += instance.OnSelectAllSEAHUNTER;
+            @SelectAllJARIUSV.started += instance.OnSelectAllJARIUSV;
+            @SelectAllJARIUSV.performed += instance.OnSelectAllJARIUSV;
+            @SelectAllJARIUSV.canceled += instance.OnSelectAllJARIUSV;
         }
 
         private void UnregisterCallbacks(ISelectionActions instance)
@@ -1390,6 +1468,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @SelectAll.started -= instance.OnSelectAll;
             @SelectAll.performed -= instance.OnSelectAll;
             @SelectAll.canceled -= instance.OnSelectAll;
+            @SelectAllDDG51.started -= instance.OnSelectAllDDG51;
+            @SelectAllDDG51.performed -= instance.OnSelectAllDDG51;
+            @SelectAllDDG51.canceled -= instance.OnSelectAllDDG51;
+            @SelectAllSEAHUNTER.started -= instance.OnSelectAllSEAHUNTER;
+            @SelectAllSEAHUNTER.performed -= instance.OnSelectAllSEAHUNTER;
+            @SelectAllSEAHUNTER.canceled -= instance.OnSelectAllSEAHUNTER;
+            @SelectAllJARIUSV.started -= instance.OnSelectAllJARIUSV;
+            @SelectAllJARIUSV.performed -= instance.OnSelectAllJARIUSV;
+            @SelectAllJARIUSV.canceled -= instance.OnSelectAllJARIUSV;
         }
 
         public void RemoveCallbacks(ISelectionActions instance)
@@ -1598,6 +1685,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnCursorPosition(InputAction.CallbackContext context);
         void OnNextEntity(InputAction.CallbackContext context);
         void OnSelectAll(InputAction.CallbackContext context);
+        void OnSelectAllDDG51(InputAction.CallbackContext context);
+        void OnSelectAllSEAHUNTER(InputAction.CallbackContext context);
+        void OnSelectAllJARIUSV(InputAction.CallbackContext context);
     }
     public interface IEntitiesActions
     {

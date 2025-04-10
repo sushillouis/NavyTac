@@ -1,5 +1,6 @@
-﻿using System.Collections;
+﻿﻿using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 //using UnityEngine.InputSystem;
 
@@ -230,9 +231,41 @@ public class SelectionMgr : MonoBehaviour
             }
         }
     }
+    public void SelectAllDDG51()
+    {
+        ClearSelection();
+        foreach(Entity ent in EntityMgr.inst.entities) {
+            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId && ent.entityType == EntityType.DDG51) {
+                SelectEntity(ent, shouldClearSelection: false);
+            }
+        }
+    }
 
-    public void FormControlGroup(int groupNumber) {
-        if(selectedEntities.Count > 0) {
+    public void SelectALLJARIUSV()
+    {
+        ClearSelection();
+        foreach(Entity ent in EntityMgr.inst.entities) {
+            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId && ent.entityType == EntityType.JARIUSV) {
+                SelectEntity(ent, shouldClearSelection: false);
+            }
+        }
+        
+    }
+
+    public void SelectALLSEAHUNTER()
+    {
+        ClearSelection();
+        foreach(Entity ent in EntityMgr.inst.entities) {
+            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId && ent.entityType == EntityType.SeaHunter) {
+                SelectEntity(ent, shouldClearSelection: false);
+            }
+        }
+    }
+
+    public void FormControlGroup(int groupNumber)
+    {
+        if (selectedEntities.Count > 0)
+        {
             TacticalAIMgr.inst.CreateBindControlGroup(selectedEntities, groupNumber);
         }
 
