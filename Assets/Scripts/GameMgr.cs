@@ -311,7 +311,7 @@ public class GameMgr : MonoBehaviour
                     Mathf.Cos(pos * angleStep * Mathf.Deg2Rad),
                     0,
                     Mathf.Sin(pos * angleStep * Mathf.Deg2Rad)
-                ) * (250f * (ring - 1));
+                ) * (500f * (ring - 1));
 
                 EntityMgr.inst.CreateEntity(queue[index], center + offset,
                     new(0, heading, 0), player);
