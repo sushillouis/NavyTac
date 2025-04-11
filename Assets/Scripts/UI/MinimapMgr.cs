@@ -138,7 +138,7 @@ public class MinimapMgr : MonoBehaviour
     // Modified CreateMinimapIcon
     public void CreateMinimapIcon(Entity ent, GameObject minimapIcon) 
     {
-        if (ent == null || mapIcons.ContainsKey(ent)) return;
+        if (ent == null || mapIcons.ContainsKey(ent) || ent.entityClass==EntityClass.Missile) return;
         
         var newIcon = Instantiate(minimapIcon);
         newIcon.name = ent.name + "Icon";
