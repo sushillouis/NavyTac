@@ -170,11 +170,7 @@ public class AIMgr : NetworkBehaviour
         if (startQuadrant != null && destinationQuadrant != null && startQuadrant != destinationQuadrant)
         {
             // Split into intermediate and final move
-            Vector3 intermediatePoint = new Vector3(
-                UnityEngine.Random.Range(-500f, 500f),
-                0f,
-                UnityEngine.Random.Range(-500f, 500f)
-            );
+            Vector3 intermediatePoint = Vector3.zero;
 
             AttackMove intermediateMove = new AttackMove(entity, intermediatePoint, maxSpeedMovement);
             UnitAI uai = entity.GetComponentInChildren<UnitAI>();
@@ -212,11 +208,7 @@ public class AIMgr : NetworkBehaviour
             if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
             {
                 
-                Vector3 intermediatePoint = new Vector3(
-                    UnityEngine.Random.Range(-500f, 500f), 
-                    0f, // Y: Fixed at 0
-                    UnityEngine.Random.Range(-500f, 500f)
-                );
+                Vector3 intermediatePoint = Vector3.zero;
 
                 Move intermediateMove = new Move(entity, intermediatePoint, maxSpeedMovement, doneDistanceSq);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
