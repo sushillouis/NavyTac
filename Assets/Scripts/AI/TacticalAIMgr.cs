@@ -45,7 +45,7 @@ public class TacticalAIMgr : MonoBehaviour
         }
     }
 
-    public void AutoCreateBindControlGroup(List<Entity> entities, EntityConditionDelegate entityCondition) {
+    public void AutoCreateBindControlGroup(List<Entity> entities, List<EntityConditionDelegate> conditionDelegates) {
         int i =0;
         foreach (int groupNumber in controlGroups.Keys) {
             if(i==groupNumber) {
@@ -56,9 +56,15 @@ public class TacticalAIMgr : MonoBehaviour
             Debug.LogWarning("Groups Full cannot make new group");
             return;
         }
-        List<Entity> conditionedEnts = entities.Where(e => entityCondition(e)).ToList();
+        foreach (EntityConditionDelegate filter in conditionDelegates) {
+            if(entities==null) {
+                entities = new();
+                break;
+            }
+            entities = entities.Where(ent => filter(ent)).ToList();
+        }
     
-        CreateBindControlGroup(conditionedEnts,i);
+        CreateBindControlGroup(entities,i);
     }
 
     public void SelectControlGroup(int groupNumber) {

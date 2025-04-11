@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 //using UnityEngine.InputSystem;
@@ -95,15 +96,20 @@ public class SelectionMgr : MonoBehaviour
         TacticalAIMgr.inst.currentGroup = new Group(new List<Entity>());
     }
 
-    public void SelectAllEntitiesOnCondition(List<Entity> entities, EntityConditionDelegate conditionDelegate)
+    public void SelectAllEntitiesOnCondition(List<Entity> entities, List<EntityConditionDelegate> conditionDelegates)
     {
-        foreach(Entity ent in entities) 
-            if (conditionDelegate(ent)) {
-                Debug.Log("Selected:"+ent.name);
-                SelectEntity(ent, shouldClearSelection: false);
+        foreach (EntityConditionDelegate filter in conditionDelegates) {
+            if(entities==null) {
+                entities = new();
+                break;
             }
+            entities = entities.Where(ent => filter(ent)).ToList();
+        }
+        foreach(Entity ent in entities) {
+            SelectEntity(ent, shouldClearSelection: false);
+        }
 
-        TacticalAIMgr.inst.currentGroup = new Group(new List<Entity>());
+        // TacticalAIMgr.inst.currentGroup = new Group(new List<Entity>());
     }
 
     public Bounds GetScreenBounds(Vector3 start, Vector3 end) {
@@ -120,7 +126,7 @@ public class SelectionMgr : MonoBehaviour
     }
 
     public List<Entity> GetAllEntitiesOnLeftScreen() {
-        Bounds bounds = GetScreenBounds(new(0,0,0),new(Camera.current.scaledPixelWidth/2,Camera.current.scaledPixelHeight,0));
+        Bounds bounds = GetScreenBounds(new(0,0,0),new(Camera.current.pixelWidth/2,Camera.current.pixelHeight,0));
         List<Entity> ents = new();
         foreach(Entity ent in EntityMgr.inst.entities) 
             if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 
@@ -129,7 +135,7 @@ public class SelectionMgr : MonoBehaviour
     }
 
     public List<Entity> GetAllEntitiesOnRightScreen() {
-        Bounds bounds = GetScreenBounds(new(Camera.current.scaledPixelWidth/2,0,0),new(Camera.current.scaledPixelWidth,Camera.current.scaledPixelHeight,0));
+        Bounds bounds = GetScreenBounds(new(Camera.current.pixelWidth/2,0,0),new(Camera.current.pixelWidth,Camera.current.pixelHeight,0));
         List<Entity> ents = new();
         foreach(Entity ent in EntityMgr.inst.entities) 
             if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 
@@ -138,7 +144,7 @@ public class SelectionMgr : MonoBehaviour
     }
 
     public List<Entity> GetAllEntitiesOnScreen() {
-        Bounds bounds = GetScreenBounds(new(0,0,0),new(Camera.current.scaledPixelWidth,Camera.current.scaledPixelHeight,0));
+        Bounds bounds = GetScreenBounds(new(0,0,0),new(Camera.current.pixelWidth,Camera.current.pixelHeight,0));
         List<Entity> ents = new();
         foreach(Entity ent in EntityMgr.inst.entities) 
             if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 

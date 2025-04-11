@@ -11,7 +11,7 @@ using UnityEngine.UI;
 using Button = UnityEngine.UI.Button;
 using UnityEngine.UIElements;
 
-public delegate void SelectionDelegate(List<Entity> entities, EntityConditionDelegate conditionDelegate);
+public delegate void SelectionDelegate(List<Entity> entities, List<EntityConditionDelegate> conditionDelegates);
 public delegate bool EntityConditionDelegate(Entity entity);
 
 public class StreamingToCommand: MonoBehaviour 
@@ -37,6 +37,7 @@ public class StreamingToCommand: MonoBehaviour
     public float billboardHeightScale = .25f;
     [SerializeField] float pauseTimer = 2f;
     [SerializeField] WhisperTester tester;
+    List<EntityConditionDelegate> billboardFilters = new(){(_) => true};
     /// <summary>
     /// Start is called on the frame when a script is enabled just before
     /// any of the Update methods is called the first time.
@@ -52,6 +53,7 @@ public class StreamingToCommand: MonoBehaviour
         string[] tokens = result.Split(' ');
         bool executeCommand = false;
         long tempNumb = -1;
+        bool listTypes = false; 
         for (int i = 0;i<tokens.Length && fullCommand.Length<250;i++) {
             string word = tokens[i];
             tempNumb = WordCleanup.ConvertToNumbers(word,out bool numberFlag);
@@ -70,11 +72,24 @@ public class StreamingToCommand: MonoBehaviour
             || (WordCleanup.CommandLanguageDict.ContainsKey(priorword) 
             && (WordCleanup.CommandLanguageDict[priorword].Any(option => word == option.Item2)
             || WordCleanup.CommandLanguageDict[priorword].Any(option => option.Item2 == "NUMBERS")
-            || WordCleanup.CommandLanguageDict[priorword].Any(option => option.Item2 == "LOCATIONS")))
+            || WordCleanup.CommandLanguageDict[priorword].Any(option => option.Item2 == "LOCATIONS")
+            || WordCleanup.CommandLanguageDict[priorword].Any(option => option.Item2 == "CLASS")))
             ) {
                 if(priorword != "" && WordCleanup.CommandLanguageDict[priorword][0].Item2 == "NUMBERS" && numberFlag) {
                     executeCommand = true;
                 }
+                if(word == "ally") {
+                    billboardFilters.Add(ent => ent.owner == PlayerMgr.inst.localPlayer);
+                } else if (word == "enemy") {
+                    billboardFilters.Add(ent => ent.owner != PlayerMgr.inst.localPlayer);
+                } 
+                
+                if (word == "of") {
+                    listTypes=true;
+                } else {
+                    listTypes=false;
+                }
+
                 // Debug.Log(WordCleanup.CommandLanguageDict[word].ToArray());
                 GameObject tempWord = Instantiate(commandWordPrefab,commandDisplay);
                 words.Add(tempWord);
@@ -85,6 +100,11 @@ public class StreamingToCommand: MonoBehaviour
                 tempText.text = word.ToUpper();
                 (int,string) pair = WordCleanup.CommandLanguageDict[priorword].Find(option => word == option.Item2);
                 // Debug.Log(pair);
+                fullCommand+=word+" ";
+                if(priorword != "" && WordCleanup.CommandLanguageDict[priorword].Any(option => option.Item2 == "CLASS")) {
+                    word = "CLASS";
+                }
+
                 if(pair.Item1 >1 ) {
                     fullCommand+=word+" ";
                     pair= WordCleanup.CommandLanguageDict[word][pair.Item1-2];
@@ -102,7 +122,6 @@ public class StreamingToCommand: MonoBehaviour
                     DisplayLocationBillboards(pair.Item2,Camera.current.transform.position);
                 }
                 priorword = word;
-                fullCommand+=word+" ";
                 if(!WordCleanup.CommandLanguageDict.ContainsKey(word) || pair.Item1 == 1) {
                     executeCommand=true;
                     break;
@@ -120,6 +139,7 @@ public class StreamingToCommand: MonoBehaviour
                 Debug.Log(tempNumb);
                 ExecuteCommand(fullCommand,(int)tempNumb);
             }
+            
             pause=true;
             Stop();
             if(testID<0) {
@@ -132,7 +152,11 @@ public class StreamingToCommand: MonoBehaviour
                 Destroy(currentOptionsScroll);
             }
             currentOptionsScroll = Instantiate(optionsScrollPrefab,optionsDisplay);
-            FillOptions(WordCleanup.CommandLanguageDict[priorword]);
+            if(!listTypes) {
+                FillOptions(WordCleanup.CommandLanguageDict[priorword]);
+            } else {
+                FillOptions<EntityClass>();
+            }
         }
     }
 
@@ -148,6 +172,15 @@ public class StreamingToCommand: MonoBehaviour
         if(entities != null && entities.Count>0) {
             billboardTiedEntities.Clear();
         }
+        
+        foreach (EntityConditionDelegate filter in billboardFilters) {
+            if(entities==null) {
+                entities = new();
+                break;
+            }
+            entities = entities.Where(ent => filter(ent)).ToList();
+        }
+
         switch (command)
         {
             case "#":
@@ -262,7 +295,7 @@ public class StreamingToCommand: MonoBehaviour
         List<Entity> importantEnts = new();
         if(!tokens.MoveNext()) return;
         SelectionDelegate selector =  SelectionMgr.inst.SelectAllEntitiesOnCondition;
-        EntityConditionDelegate entityCondition = (_) => true; 
+        List<EntityConditionDelegate> entityConditions = new(){(_) => true}; 
         bool locationFlag = false;
         if((string)tokens.Current=="select" || (string)tokens.Current=="group") {
             EntityClass classFilter = EntityClass.None;
@@ -276,6 +309,9 @@ public class StreamingToCommand: MonoBehaviour
                 SelectionMgr.inst.ClearSelection();
             } else if((string)tokens.Current=="add") {
                 if(!tokens.MoveNext()) return; 
+            } else if((string)tokens.Current=="clear") {
+                SelectionMgr.inst.ClearSelection(); 
+                return;
             }
 
             if((string)tokens.Current=="all") {
@@ -287,8 +323,13 @@ public class StreamingToCommand: MonoBehaviour
 
             if((string)tokens.Current=="of"){
                 if(!tokens.MoveNext()) return; 
-                classFilter = EntityClass.Carrier; // Temp (find class)
-                entityCondition = ent => ent.entityClass == classFilter;
+                bool sucess = Enum.TryParse(WordCleanup.ToTitleCase((string)tokens.Current),out EntityClass filter);
+                // Debug.Log(WordCleanup.ToTitleCase((string)tokens.Current));
+                if(sucess) {
+                    Debug.Log(filter);
+                    entityConditions.Add(ent => ent.entityClass==filter);
+                }
+                if(!tokens.MoveNext()) return; 
             } 
             if((string)tokens.Current=="on") {
                 if(!tokens.MoveNext()) return; 
@@ -309,7 +350,7 @@ public class StreamingToCommand: MonoBehaviour
                 importantEnts = EntityMgr.inst.entities;
             } 
 
-            selector(importantEnts,entityCondition);
+            selector(importantEnts,entityConditions);
         } else if((string)tokens.Current=="attack") {
             if(!tokens.MoveNext()) return;
             int dirFlag = 0;
@@ -464,6 +505,8 @@ public class StreamingToCommand: MonoBehaviour
 
     public void Stop() {
         DisplayUnitBillboards("",null);
+        billboardFilters.Clear();
+        billboardFilters.Add((_) => true); 
         if(currentOptionsScroll!=null) {
             Destroy(currentOptionsScroll);
         }
@@ -474,6 +517,11 @@ public class StreamingToCommand: MonoBehaviour
     public void FillOptions(List<(int,string)> options) {
         List<string> temp = new();
         options.Where((option)=> option.Item1 !=-1).ToList().ForEach(option => temp.Add(option.Item2));
+        FillOptions(temp);
+    }
+
+    public void FillOptions<enumType>() {
+        List<string> temp = Enum.GetNames(typeof(enumType)).ToList();
         FillOptions(temp);
     }
     
@@ -590,7 +638,9 @@ static class WordCleanup
             (1,"screen"),
             (1,"map"),
         }}, {"of", new(){
-            (0,"you shouldn't be seeing this :P"),
+            (2,"CLASS"),
+        }}, {"CLASS", new(){
+            (0, "on"),
         }}, {"execute", new(){
             (2,"tactic"),
         }}, {"tactic", new(){
@@ -637,6 +687,13 @@ static class WordCleanup
         {"clean","screen"},
         {"unsolveable","unselected"},
     };
+
+    public static string ToTitleCase(string str)
+    {
+        var firstword = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(str.Split(' ')[0].ToLower());
+        str = str.Replace(str.Split(' ')[0],firstword);
+        return str;
+    }
   
     public static long ConvertToNumbers(string numberString, out bool flag)   {  
         var numbers = Regex.Matches(numberString, @"\w+").Cast<Match>()  
