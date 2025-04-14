@@ -21,7 +21,7 @@ public class MapButtonHandler : MonoBehaviour
     public MapNames mapName = MapNames.OpenOcean;
 
     public void HandlePress() {
-        MapMgr.inst.SetMap(mapName);
+        // MapMgr.inst.SetMap(mapName);
     }
 
 }
