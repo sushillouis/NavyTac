@@ -145,9 +145,9 @@ public class OpenOceanMain : MonoBehaviour
 
     private void Start() {
         if(IsDebugging) {
-            lobbyState = LobbyState.Play;
+            lobbyState = LobbyState.MapSelect;
             SinglePlayerSetup();
-            GameMgr.inst.OpenOcean1x1(); //GameMgr.inst.MakeMapEntities();
+            // GameMgr.inst.OpenOcean1x1(); //GameMgr.inst.MakeMapEntities();
         } else {
 
             lobbyState = LobbyState.SingleMultiPlayer;

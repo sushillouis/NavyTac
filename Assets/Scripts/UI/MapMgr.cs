@@ -73,6 +73,7 @@ public class MapMgr : MonoBehaviour
     // Assign this to your "Start" button
     public void OnStartButtonPressed()
     {
-        SceneManager.LoadSceneAsync("Level1");
+        OpenOceanMain.inst.lobbyState = OpenOceanMain.LobbyState.Play;
+        GameMgr.inst.OpenOcean1x1();
     }
 }
