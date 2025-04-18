@@ -18,7 +18,7 @@ public class EnemyAIMgr : MonoBehaviour
     {
         
         inst = this;
-        opponentBase = FindOpponentBase(); // Initial search
+        // opponentBase = FindOpponentBase(); // Initial search
     }
 
     private void Update()

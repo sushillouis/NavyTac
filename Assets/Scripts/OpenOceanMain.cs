@@ -144,11 +144,15 @@ public class OpenOceanMain : MonoBehaviour
     public NetworkObject localTactNetMgrNetworkObject;
 
     private void Start() {
-        if(IsDebugging) {
+        if (IsDebugging)
+        {
             lobbyState = LobbyState.MapSelect;
             SinglePlayerSetup();
+            Time.timeScale = 0f;
             // GameMgr.inst.OpenOcean1x1(); //GameMgr.inst.MakeMapEntities();
-        } else {
+        }
+        else
+        {
 
             lobbyState = LobbyState.SingleMultiPlayer;
 
@@ -157,9 +161,12 @@ public class OpenOceanMain : MonoBehaviour
             {
                 playerName = loginNameInputField.text.Trim();
                 lobbyState = LobbyState.MapSelect;
-                if(isSinglePlayer) {
+                if (isSinglePlayer)
+                {
                     SinglePlayerSetup();
-                } else {
+                }
+                else
+                {
                     NetPlayersSetup();
                 }
             });

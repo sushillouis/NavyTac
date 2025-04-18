@@ -72,8 +72,9 @@ public class MapMgr : MonoBehaviour
 
     // Assign this to your "Start" button
     public void OnStartButtonPressed()
-    {
-        OpenOceanMain.inst.lobbyState = OpenOceanMain.LobbyState.Play;
+    {   Time.timeScale = 1; // Ensure time scale is normal
         GameMgr.inst.OpenOcean1x1();
+        OpenOceanMain.inst.lobbyState = OpenOceanMain.LobbyState.Play;
+        
     }
 }

@@ -172,9 +172,6 @@ public class WeaponsMgr : MonoBehaviour
             case WeaponBehaviors.AirInterceptor:
                 AIMgr.inst.Handle3dIntercept(entities, targetEntity, false);
                 break;
-            case WeaponBehaviors.Dumb:
-                AIMgr.inst.HandleDumbMove(entities, targetPosition, false);
-                break;
             case WeaponBehaviors.Smart:
                 AIMgr.inst.HandleSmartIntercept(entities, targetEntity, false);
                 break;

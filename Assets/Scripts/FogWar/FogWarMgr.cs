@@ -60,56 +60,18 @@ public class FogWarMgr : MonoBehaviour
         public float radius;
     }
     public static FogWarMgr inst;
-    private void Awake() {
+    private void Awake()
+    {
         inst = this;
-    }
-    void Start() {
         if (!FOW) return;
         InitializeFogPlane();
         InitializeGrid();
         InitializeComputeResources();
-        // lastPlayerSide = playerSide;
+    }
+    void Start() {
+        
     }
 
-    // void OnValidate()
-    // {
-    //     if (!FOW)
-    //     {
-    //         CleanupComputeResources();
-            
-    //         revelers.Clear();
-    //         foreach (Entity entity in nonRevelers)
-    //         {
-    //             if (entity != null)
-    //                 entity.gameObject.SetActive(true);
-    //         }
-    //         nonRevelers.Clear();
-    //     }
-    //     else
-    //     {
-    //         CleanupComputeResources();
-            
-    //         // InitializeFogPlane();
-    //         InitializeGrid();
-    //         InitializeComputeResources();
-    //     }
-    //     if (playerSide != lastPlayerSide)
-    //     {
-    //         lastPlayerSide = playerSide;
-    //         CleanupComputeResources();
-
-    //         revelers.Clear();
-    //         foreach (Entity entity in nonRevelers)
-    //         {
-    //             if (entity != null)
-    //                 entity.gameObject.SetActive(true);
-    //         }
-    //         nonRevelers.Clear();
-    //         // InitializeFogPlane();
-    //         InitializeGrid();
-    //         InitializeComputeResources();
-    //     } 
-    // }
     void Update()
     {
         if (!FOW) return;

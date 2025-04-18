@@ -17,7 +17,7 @@ public class NetConnectionMgr : MonoBehaviour
         Disconnected = 1,
     }
 
-    public event Action<ulong, ConnectionState> OnClientConnectionNotification;
+    // public event Action<ulong, ConnectionState> OnClientConnectionNotification;
 
     private void Start() {
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;

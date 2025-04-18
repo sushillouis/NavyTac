@@ -131,6 +131,7 @@ public class AIMgr : NetworkBehaviour
                 Vector3 pos = hit.point;
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
+                Debug.Log("Ent: " + ent + " at pos: " + pos + " with mousePos: " + mousePos);
                 if (ent != null && ent.entityClass == EntityClass.Missile) ent = null; // Ignore missiles
                 if(attackMove)
                     
@@ -231,24 +232,15 @@ public class AIMgr : NetworkBehaviour
     }
     // Helper to get the quadrant of a position
     private QuadrantBounds GetQuadrant(Vector3 position)
-{
-    foreach (QuadrantBounds zone in QuadrantManager.Zones)
     {
-        if (zone.Contains(position))
+        foreach (QuadrantBounds zone in QuadrantManager.Zones)
         {
-            return zone;
+            if (zone.Contains(position))
+            {
+                return zone;
+            }
         }
-    }
-    return null;
-}
-    public void HandleDumbMove(List<Entity> entities, Vector3 point, bool add)
-    {
-        foreach (Entity entity in entities)
-        {
-            Move m = new DumbMove(entity, point);
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-            AddOrSet(m, uai, add);
-        }
+        return null;
     }
     void AddOrSet(Command c, UnitAI uai, bool add)
     {

@@ -34,8 +34,7 @@ public class EntityMgr : MonoBehaviour
     public GameObject entitiesRoot;
     public List<Entity> entities;
     public Dictionary<int, Entity> entitiesDict;
-    public event Action<Entity> OnEntityAdded;
-    public event Action<Entity>  OnEntityRemoved;
+
     
     public int entityId = 0;
 
@@ -209,7 +208,6 @@ public class EntityMgr : MonoBehaviour
                 entity.owner = player;
                 entity.heading = entity.desiredHeading = eulerAngles.y;
                 entities.Add(entity);
-                OnEntityAdded?.Invoke(entity);
                 entitiesDict.Add(entity.entityId, entity);
             }
         }

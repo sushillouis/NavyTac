@@ -38,7 +38,7 @@ public class TactNetMgr : NetworkBehaviour
     private NetworkList<NetSyncStruct> syncList;
     private NetworkObject myNetworkObject;
 
-    [SerializeField] private TactPlayer ownPlayer = null;
+    // [SerializeField] private TactPlayer ownPlayer = null;
     [SerializeField] private float heartbeatInterval = 0.2f;
 
     private void Awake() {

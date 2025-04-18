@@ -50,6 +50,7 @@ public class MinimapMgr : MonoBehaviour
 
     // Update is called once per frame
     void Update() {
+        
         UpdateMinimap();
     }
 
