@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Button = UnityEngine.UI.Button;
 using UnityEngine.UIElements;
+using Unity.Mathematics;
 
 public delegate void SelectionDelegate(List<Entity> entities, List<EntityConditionDelegate> conditionDelegates);
 public delegate bool EntityConditionDelegate(Entity entity);
@@ -53,7 +54,8 @@ public class StreamingToCommand: MonoBehaviour
         string[] tokens = result.Split(' ');
         bool executeCommand = false;
         long tempNumb = -1;
-        bool listTypes = false; 
+        bool listOverride = false; 
+        bool locationGrid = false;
         for (int i = 0;i<tokens.Length && fullCommand.Length<250;i++) {
             string word = tokens[i];
             tempNumb = WordCleanup.ConvertToNumbers(word,out bool numberFlag);
@@ -65,6 +67,8 @@ public class StreamingToCommand: MonoBehaviour
                 word = tempNumb.ToString();  
             } else if(WordCleanup.nearWords.TryGetValue(word, out string value)) {
                 word = value;
+            } else if (!numberFlag) {
+                tempNumb=-1;
             }
             // Debug.Log("Current Word-"+word+"-");
             if ((WordCleanup.CommandLanguageDict.ContainsKey(word) 
@@ -85,9 +89,13 @@ public class StreamingToCommand: MonoBehaviour
                 } 
                 
                 if (word == "of") {
-                    listTypes=true;
+                    listOverride=true;
                 } else {
-                    listTypes=false;
+                    listOverride=false;
+                }
+
+                if(WordCleanup.NatoAlphabet.Contains(word)) {
+                    executeCommand=true;
                 }
 
                 // Debug.Log(WordCleanup.CommandLanguageDict[word].ToArray());
@@ -106,9 +114,9 @@ public class StreamingToCommand: MonoBehaviour
                 }
 
                 if(pair.Item1 >1 ) {
-                    fullCommand+=word+" ";
                     pair= WordCleanup.CommandLanguageDict[word][pair.Item1-2];
                     word = pair.Item2;
+                    fullCommand+=word+" ";
                     tempWord = Instantiate(commandWordPrefab,commandDisplay);
                     words.Add(tempWord);
                     tempRect = tempWord.GetComponent<RectTransform>();
@@ -119,7 +127,10 @@ public class StreamingToCommand: MonoBehaviour
                 } if(pair.Item1== -10) {
                     DisplayUnitBillboards(pair.Item2,EntityMgr.inst.entities);
                 } else if(pair.Item1== -9) {
-                    DisplayLocationBillboards(pair.Item2,Camera.current.transform.position);
+                    // DisplayLocationBillboards(pair.Item2,Camera.current.transform.position);
+                    listOverride=true;
+                    locationGrid=true;
+                    DisplayLocationGrid(CameraMgr.inst.myCamera);
                 }
                 priorword = word;
                 if(!WordCleanup.CommandLanguageDict.ContainsKey(word) || pair.Item1 == 1) {
@@ -136,7 +147,6 @@ public class StreamingToCommand: MonoBehaviour
             if(tester && tester.isActiveAndEnabled) {
                 tester.ValidateResult(fullCommand,time,1f/Time.deltaTime,testID);
             } if(testID<0) {
-                Debug.Log(tempNumb);
                 ExecuteCommand(fullCommand,(int)tempNumb);
             }
             
@@ -152,12 +162,62 @@ public class StreamingToCommand: MonoBehaviour
                 Destroy(currentOptionsScroll);
             }
             currentOptionsScroll = Instantiate(optionsScrollPrefab,optionsDisplay);
-            if(!listTypes) {
+            if(!listOverride) {
                 FillOptions(WordCleanup.CommandLanguageDict[priorword]);
+            } else if(locationGrid) {
+                FillOptions(WordCleanup.NatoAlphabet);
             } else {
                 FillOptions<EntityClass>();
             }
         }
+    }
+    [Header("Grid Content")]
+    [SerializeField] GameObject grid;
+    [SerializeField] GameObject gridItemPrefab;
+    [SerializeField] Transform canvasGrid;
+    [SerializeField] List<GameObject> gridItems;
+
+    public void DisplayLocationGrid(Camera cam) {
+        grid.SetActive(true);
+        foreach (GameObject item in gridItems)
+        {
+            Destroy(item);
+        }
+        gridItems.Clear();
+
+        float fov = cam.fieldOfView;
+        Vector3 camAngles =  cam.transform.rotation.eulerAngles;
+        Debug.Log(camAngles);
+
+        float xAngle = Mathf.Clamp(camAngles.x,-130f,-20f);
+
+        // Vector3 camForward  = cam.transform.forward - cam.transform.forward.
+
+        grid.transform.rotation = Quaternion.Euler(0,camAngles.y,0);
+        // Debug.Log($"CamRot:{cam.transform.rotation.eulerAngles} camPos:{cam.transform.position}");
+
+        Vector3 zeroIntercept = cam.transform.position + ((-1*cam.transform.position.y / cam.transform.forward.y) * cam.transform.forward);
+
+
+        // Debug.Log($"zint:{zeroIntercept}");
+        grid.transform.position = zeroIntercept+Vector3.up;
+
+        
+
+        for(int i =0 ;i<16;i++) {
+            GameObject tempItem = Instantiate(gridItemPrefab,canvasGrid);
+            tempItem.GetComponentInChildren<TMPro.TMP_Text>().text = WordCleanup.NatoAlphabet[i];
+            gridItems.Add(tempItem);
+        }
+    }
+
+    public void HideLocatationGrid() {
+        foreach (GameObject item in gridItems)
+        {
+            Destroy(item);
+        }
+        gridItems.Clear();
+        grid.SetActive(false);
     }
 
     public void DisplayUnitBillboards(string command, List<Entity> entities) {
@@ -282,7 +342,7 @@ public class StreamingToCommand: MonoBehaviour
     public void UpdateBillboardSzie() {
         foreach (GameObject billboard in billboards)
         {
-            float distance = Vector3.Distance(CameraMgr.inst.YawNode.transform.position,billboard.transform.position);
+            float distance = Vector3.Distance(CameraMgr.inst.myCamera.transform.position,billboard.transform.position);
             distance = Mathf.Clamp(distance,1f,99999f);
             billboard.transform.localScale =  billboardScale * Mathf.Sqrt(distance) * Vector3.one;
             billboard.transform.position = new(billboard.transform.position.x,60+distance*billboardHeightScale,billboard.transform.position.z);
@@ -380,7 +440,14 @@ public class StreamingToCommand: MonoBehaviour
                 if(!tokens.MoveNext()) return;
             }
 
-            if(!tokens.MoveNext()) return; // #
+            if((string)tokens.Current=="location") {
+                if(!tokens.MoveNext()) return;
+                if(!tokens.MoveNext()) return; // #
+                locationFlag = true;
+                if(gridItems.Count>0 && WordCleanup.NatoAlphabet.Contains((string)tokens.Current)) {
+                    id = WordCleanup.NatoAlphabet.IndexOf((string)tokens.Current);
+                }
+            }
 
             ExecuteDynamicAction(importantEnts,dirFlag,allyFlag,true,locationFlag,id);
             
@@ -409,8 +476,14 @@ public class StreamingToCommand: MonoBehaviour
                 if(!tokens.MoveNext()) return;
             }
 
-            if((string)tokens.Current=="group") {
+            if((string)tokens.Current=="ally") {
                 allyFlag=true;
+                if(!tokens.MoveNext()) return;
+            } else if((string)tokens.Current=="enemy") {
+                if(!tokens.MoveNext()) return;
+            }
+
+            if((string)tokens.Current=="group") {
                 if(!tokens.MoveNext()) return;
             } else if((string)tokens.Current=="single") {
                 if(!tokens.MoveNext()) return;
@@ -418,14 +491,19 @@ public class StreamingToCommand: MonoBehaviour
 
             if((string)tokens.Current=="location") {
                 if(!tokens.MoveNext()) return;
+                if(!tokens.MoveNext()) return; // #
+                Debug.Log("YAY for:"+ WordCleanup.ToTitleCase((string)tokens.Current));
                 locationFlag = true;
+                if(gridItems.Count>0 && WordCleanup.NatoAlphabet.Contains(WordCleanup.ToTitleCase((string)tokens.Current))) {
+                    id = WordCleanup.NatoAlphabet.IndexOf(WordCleanup.ToTitleCase((string)tokens.Current));
+                }
             }
 
             ExecuteDynamicAction(importantEnts,dirFlag,allyFlag,false,locationFlag,id);
 
         }
     }
-
+    // public void ExecuteDynamicAction(List<Entity> importantEnts, EntityConditionDelegate targetDelegate, 
     public void ExecuteDynamicAction(List<Entity> importantEnts, int dirFlag, bool allyFlag, bool attackFlag, bool locationFlag, int specificID=-1) {
         TactPlayer player = PlayerMgr.inst.localPlayer;
         Vector3 center = Vector3.zero;
@@ -463,14 +541,14 @@ public class StreamingToCommand: MonoBehaviour
                 }
             }
             target = EntityMgr.inst.entities[foundIndex];
-        }
-        else if(!locationFlag)
-        {
+        } else if(!locationFlag && billboardTiedEntities.Count > specificID) {
             target = billboardTiedEntities[specificID];
             if (target == null || target.health <= 0)
             {
                 return; // Check for null and dead.
             }
+        } else if(gridItems.Count>0 && specificID>=0) {
+            targetPos = gridItems[specificID].transform.position;
         } else {
             targetPos = billboardLocations[specificID];
         }
@@ -505,6 +583,7 @@ public class StreamingToCommand: MonoBehaviour
 
     public void Stop() {
         DisplayUnitBillboards("",null);
+        HideLocatationGrid();
         billboardFilters.Clear();
         billboardFilters.Add((_) => true); 
         if(currentOptionsScroll!=null) {
@@ -686,6 +765,37 @@ static class WordCleanup
         {"green","screen"},
         {"clean","screen"},
         {"unsolveable","unselected"},
+    };
+
+
+    public static readonly List<string> NatoAlphabet = new List<string>
+    {
+        "Alpha",   // A
+        "Bravo",   // B
+        "Charlie", // C
+        "Delta",   // D
+        "Echo",    // E
+        "Foxtrot", // F
+        "Golf",    // G
+        "Hotel",   // H
+        "India",   // I
+        "Juliett", // J
+        "Kilo",    // K
+        "Lima",    // L
+        "Mike",    // M
+        "November",// N
+        "Oscar",   // O
+        "Papa",    // P
+        "Quebec",  // Q
+        "Romeo",   // R
+        "Sierra",  // S
+        "Tango",   // T
+        "Uniform", // U
+        "Victor",  // V
+        "Whiskey", // W
+        "X-ray",   // X
+        "Yankee",  // Y
+        "Zulu"     // Z
     };
 
     public static string ToTitleCase(string str)

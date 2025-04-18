@@ -113,8 +113,23 @@ public class SelectionMgr : MonoBehaviour
     }
 
     public Bounds GetScreenBounds(Vector3 start, Vector3 end) {
+        // Debug.Log($"v1: {start}, v2: {end}");
         wp1 = Camera.main.ScreenToViewportPoint(start);
         wp2 = Camera.main.ScreenToViewportPoint(end);
+        // Debug.Log($"1: {wp1}, 2: {wp2}");
+        Vector3 min = Vector3.Min(wp1, wp2);
+        Vector3 max = Vector3.Max(wp1, wp2);
+        min.z = Camera.main.nearClipPlane;
+        max.z = Camera.main.farClipPlane;
+        Bounds bounds = new Bounds();
+        bounds.SetMinMax(min, max);
+        return bounds;
+    }
+
+    public Bounds GetScreenBoundsFromViewPort(Vector3 start, Vector3 end) {
+        Debug.Log($"v1: {start}, v2: {end}");
+        wp1 = start;
+        wp2 = end;
         Debug.Log($"1: {wp1}, 2: {wp2}");
         Vector3 min = Vector3.Min(wp1, wp2);
         Vector3 max = Vector3.Max(wp1, wp2);
@@ -126,7 +141,7 @@ public class SelectionMgr : MonoBehaviour
     }
 
     public List<Entity> GetAllEntitiesOnLeftScreen() {
-        Bounds bounds = GetScreenBounds(new(0,0,0),new(Camera.current.pixelWidth/2,Camera.current.pixelHeight,0));
+        Bounds bounds = GetScreenBoundsFromViewPort(new(0,1,0),new(.5f,0,0));
         List<Entity> ents = new();
         foreach(Entity ent in EntityMgr.inst.entities) 
             if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 
@@ -135,7 +150,7 @@ public class SelectionMgr : MonoBehaviour
     }
 
     public List<Entity> GetAllEntitiesOnRightScreen() {
-        Bounds bounds = GetScreenBounds(new(Camera.current.pixelWidth/2,0,0),new(Camera.current.pixelWidth,Camera.current.pixelHeight,0));
+        Bounds bounds = GetScreenBoundsFromViewPort(new(.5f,1,0),new(1,0,0));
         List<Entity> ents = new();
         foreach(Entity ent in EntityMgr.inst.entities) 
             if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 
@@ -144,7 +159,7 @@ public class SelectionMgr : MonoBehaviour
     }
 
     public List<Entity> GetAllEntitiesOnScreen() {
-        Bounds bounds = GetScreenBounds(new(0,0,0),new(Camera.current.pixelWidth,Camera.current.pixelHeight,0));
+        Bounds bounds = GetScreenBoundsFromViewPort(new(1,1,0),new(0,0,0));
         List<Entity> ents = new();
         foreach(Entity ent in EntityMgr.inst.entities) 
             if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 

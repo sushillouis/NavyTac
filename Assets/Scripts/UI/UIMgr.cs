@@ -346,6 +346,8 @@ public class UIMgr : MonoBehaviour
             if(btn != null) {
                 btn.onClick.Invoke();
                 return;
+            } else {
+               // Check for other buttons?
             }
         }
         SelectionMgr.inst.StartBoxSelecting();
