@@ -7,7 +7,7 @@ using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 public class CameraMgr : MonoBehaviour
 {
     public static CameraMgr inst;
-    private Vector3 moveVector;
+    public Vector3 moveVector;
     private float yawValue;
     private float pitchValue;
     
@@ -68,8 +68,10 @@ public class CameraMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         moveCoefficent = Mathf.Log(YawNode.transform.position.y * heightSensitivty);
-        moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);        
+        moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);   
+            
     }
     public bool isRTSMode = true;
 
