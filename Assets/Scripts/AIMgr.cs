@@ -14,8 +14,10 @@ public struct TactCommandStruct: INetworkSerializable, IEquatable<TactCommandStr
     public int targetEntityId;
     public Vector3 targetOrOffsetPosition;
     public bool add;
+    
 
-    public bool Equals(TactCommandStruct other) {
+    public bool Equals(TactCommandStruct other)
+    {
         return (commandType == other.commandType
             && IntArrayEqual(entityIds, other.entityIds)
             && targetEntityId == other.targetEntityId
@@ -99,7 +101,7 @@ public class AIMgr : NetworkBehaviour
     [Header("Debug")]
     public bool showTerrainAvoidance = true;
 
-
+    public Grid pathfindingGrid;
     public RaycastHit hit;
     public int layerMask;
     public List<Entity> selectedEntities = new List<Entity>();
@@ -194,42 +196,64 @@ public class AIMgr : NetworkBehaviour
         }
     }
 }
-    public void HandleMove(List<Entity> entities, Vector3 point,
-                      bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, float doneDistanceSq = 100000)
+   // Add to AIMgr.cs
+public void HandleMove(List<Entity> entities, Vector3 point,
+    bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, float doneDistanceSq = 100000)
+{
+    if (isLocalCommand)
     {
-        if (isLocalCommand)
-        {
-            NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
-        }
-        foreach (Entity entity in entities)
-        {
-            QuadrantBounds startQuadrant = GetQuadrant(entity.position);
-            QuadrantBounds targetQuadrant = GetQuadrant(point);
-
-            if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
-            {
-                
-                Vector3 intermediatePoint = Vector3.zero;
-
-                Move intermediateMove = new Move(entity, intermediatePoint, maxSpeedMovement, doneDistanceSq);
-                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-
-                // Replace current command with intermediate move
-                AddOrSet(intermediateMove, uai, add: false);
-
-                // Queue final move after intermediate
-                Move finalMove = new Move(entity, point, maxSpeedMovement, doneDistanceSq);
-                AddOrSet(finalMove, uai, add: true);
-            }
-            else
-            {
-                // Original single-entity behavior
-                Move m = new Move(entity, point, maxSpeedMovement, doneDistanceSq);
-                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-                AddOrSet(m, uai, add);
-            }
-        }
+        NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
     }
+    
+    foreach (Entity entity in entities)
+    {
+        // Use A* pathfinding if grid is available
+        if (pathfindingGrid != null)
+        {
+            List<Node> path = pathfindingGrid.FindPath(entity.position, point);
+            if (path != null && path.Count > 1)
+            {
+                // Create a series of Move commands for each waypoint
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                
+                if (!add)
+                {
+                    uai.StopAndRemoveAllCommands();
+                }
+                
+                // Add waypoint commands in reverse order (from first to last)
+                for (int i = 0; i < path.Count; i++)
+                {
+                    Move move = new Move(entity, path[i].worldPosition, maxSpeedMovement, doneDistanceSq);
+                    uai.AddCommand(move);
+                }
+                
+                continue;
+            }
+        }
+        
+        // Fall back to original behavior if no path found or no grid
+        // QuadrantBounds startQuadrant = GetQuadrant(entity.position);
+        // QuadrantBounds targetQuadrant = GetQuadrant(point);
+
+        // if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
+        // {
+        //     Vector3 intermediatePoint = Vector3.zero;
+        //     Move intermediateMove = new Move(entity, intermediatePoint, maxSpeedMovement, doneDistanceSq);
+        //     UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+        //     AddOrSet(intermediateMove, uai, add: false);
+
+        //     Move finalMove = new Move(entity, point, maxSpeedMovement, doneDistanceSq);
+        //     AddOrSet(finalMove, uai, add: true);
+        // }
+        // else
+        // {
+        //     Move m = new Move(entity, point, maxSpeedMovement, doneDistanceSq);
+        //     UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+        //     AddOrSet(m, uai, add);
+        // }
+    }
+}
     // Helper to get the quadrant of a position
     private QuadrantBounds GetQuadrant(Vector3 position)
     {
