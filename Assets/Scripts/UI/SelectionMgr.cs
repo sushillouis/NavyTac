@@ -1,7 +1,8 @@
-﻿﻿using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using JetBrains.Annotations;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 //using UnityEngine.InputSystem;
 
 
@@ -42,6 +43,9 @@ public class SelectionMgr : MonoBehaviour
     public float selectionSensitivity = 25;
     public void EndBoxSelecting()
     {
+        if(!UIMgr.inst.boxSelecting && UIMgr.inst.IsPointerOverUIObject()) {
+            return;
+        }
         if((Input.mousePosition - startMousePosition).sqrMagnitude > selectionSensitivity)
             ClearSelection(); // if not small box, then clear selection
 
@@ -86,19 +90,83 @@ public class SelectionMgr : MonoBehaviour
     public Vector3 wp2;
     public void SelectEntitiesInBox(Vector3 start, Vector3 end)
     {
+        Bounds bounds = GetScreenBounds(start,end);
+        foreach(Entity ent in EntityMgr.inst.entities) 
+            if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 
+                SelectEntity(ent, shouldClearSelection: false);
+
+        TacticalAIMgr.inst.currentGroup = new Group(new List<Entity>());
+    }
+
+    public void SelectAllEntitiesOnCondition(List<Entity> entities, List<EntityConditionDelegate> conditionDelegates)
+    {
+        foreach (EntityConditionDelegate filter in conditionDelegates) {
+            if(entities==null) {
+                entities = new();
+                break;
+            }
+            entities = entities.Where(ent => filter(ent)).ToList();
+        }
+        foreach(Entity ent in entities) {
+            SelectEntity(ent, shouldClearSelection: false);
+        }
+
+        // TacticalAIMgr.inst.currentGroup = new Group(new List<Entity>());
+    }
+
+    public Bounds GetScreenBounds(Vector3 start, Vector3 end) {
+        // Debug.Log($"v1: {start}, v2: {end}");
         wp1 = Camera.main.ScreenToViewportPoint(start);
         wp2 = Camera.main.ScreenToViewportPoint(end);
+        // Debug.Log($"1: {wp1}, 2: {wp2}");
         Vector3 min = Vector3.Min(wp1, wp2);
         Vector3 max = Vector3.Max(wp1, wp2);
         min.z = Camera.main.nearClipPlane;
         max.z = Camera.main.farClipPlane;
         Bounds bounds = new Bounds();
         bounds.SetMinMax(min, max);
+        return bounds;
+    }
+
+    public Bounds GetScreenBoundsFromViewPort(Vector3 start, Vector3 end) {
+        Debug.Log($"v1: {start}, v2: {end}");
+        wp1 = start;
+        wp2 = end;
+        Debug.Log($"1: {wp1}, 2: {wp2}");
+        Vector3 min = Vector3.Min(wp1, wp2);
+        Vector3 max = Vector3.Max(wp1, wp2);
+        min.z = Camera.main.nearClipPlane;
+        max.z = Camera.main.farClipPlane;
+        Bounds bounds = new Bounds();
+        bounds.SetMinMax(min, max);
+        return bounds;
+    }
+
+    public List<Entity> GetAllEntitiesOnLeftScreen() {
+        Bounds bounds = GetScreenBoundsFromViewPort(new(0,1,0),new(.5f,0,0));
+        List<Entity> ents = new();
         foreach(Entity ent in EntityMgr.inst.entities) 
             if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 
-                SelectEntity(ent, shouldClearSelection: false);
+                ents.Add(ent);
+        return ents;
+    }
 
-        TacticalAIMgr.inst.currentGroup = new Group(new List<Entity>());
+    public List<Entity> GetAllEntitiesOnRightScreen() {
+        Bounds bounds = GetScreenBoundsFromViewPort(new(.5f,1,0),new(1,0,0));
+        List<Entity> ents = new();
+        foreach(Entity ent in EntityMgr.inst.entities) 
+            if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 
+                ents.Add(ent);
+        return ents;
+    }
+
+    public List<Entity> GetAllEntitiesOnScreen() {
+        Bounds bounds = GetScreenBoundsFromViewPort(new(1,1,0),new(0,0,0));
+        List<Entity> ents = new();
+        foreach(Entity ent in EntityMgr.inst.entities) 
+            if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 
+                ents.Add(ent);
+        return ents;
     }
     //----------------------------------------------------------------------------------------------------
 

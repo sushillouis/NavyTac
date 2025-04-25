@@ -8,7 +8,6 @@ public class FXMgr : MonoBehaviour
     private void Awake() {
         inst = this;
     }
-
     public ExplosionSmall explosionSmallPrefab;
 
     public void CreateExplosionAt(Vector3 pos, float interval = 1) {
@@ -24,7 +23,4 @@ public class FXMgr : MonoBehaviour
         yield return new WaitForSeconds(interval+1);
         Destroy(et.gameObject);
     }
-
-    //Need smoke
-
 }

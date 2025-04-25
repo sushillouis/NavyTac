@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
@@ -19,38 +20,30 @@ public class CameraMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        onCameraMove.AddListener(UpdateMoveCoffef);
     }
     public void SetCameraPosition()
-{
-    // Position camera 1500 units above and 2000 units behind Player 1
-    Vector3 baseOffset = new Vector3(0, 1500, -2000);
-    Quaternion headingRotation = Quaternion.Euler(0, GameMgr.inst.headingPlayer1, 0);
-    Vector3 cameraPosition = GameMgr.inst.posPlayer1 + headingRotation * baseOffset;
-    
-    // Set camera position and orientation
-    RTSCameraRig.transform.position = cameraPosition;
-    YawNode.transform.rotation = headingRotation;
-    
-    // Look directly at Player 1's spawn point
-    PitchNode.transform.LookAt(GameMgr.inst.posPlayer1);
-}
-
-    Vector3 CalculateNewPosition(Vector3 current, Vector3 offset)
     {
-        return new Vector3(
-            (Mathf.Abs(current.x) + Mathf.Abs(offset.x)) * Mathf.Sign(offset.x),
-            current.y,
-            (Mathf.Abs(current.z) + Mathf.Abs(offset.z)) * Mathf.Sign(offset.z)
-        );
+        // Position camera 1500 units above and 2000 units behind Player 1
+        Vector3 baseOffset = new Vector3(0, 1500, -2000);
+        Quaternion headingRotation = Quaternion.Euler(0, GameMgr.inst.headingPlayer1, 0);
+        Vector3 cameraPosition = GameMgr.inst.posPlayer1 + headingRotation * baseOffset;
+        
+        // Set camera position and orientation
+        myCamera.transform.position = cameraPosition;
+        // myCamera.transform.rotation = headingRotation;
+        
+        // Look directly at Player 1's spawn point
+        myCamera.transform.LookAt(GameMgr.inst.posPlayer1);
+        onCameraMove.Invoke();
     }
 
-    public GameObject RTSCameraRig;
-    public GameObject YawNode;   // Child of RTSCameraRig
-    public GameObject PitchNode; // Child of YawNode
-    public GameObject RollNode;  // Child of PitchNode
+    // public GameObject RTSCameraRig;
+    // public GameObject myCamera.gameObject;   // Child of RTSCameraRig
+    // public GameObject myCamera.gameObject; // Child of myCamera.gameObject
+    // public GameObject myCamera.gameObject;  // Child of myCamera.gameObject
     public Camera myCamera;
-    //Camera is child of RollNode
+    //Camera is child of myCamera.gameObject
 
     public float cameraMoveSpeed = 500;
 
@@ -64,22 +57,26 @@ public class CameraMgr : MonoBehaviour
     float moveCoefficent;
     public Vector3 currentYawEulerAngles = Vector3.zero;
     public Vector3 currentPitchEulerAngles = Vector3.zero;
+    public UnityEvent onCameraMove;
 
     // Update is called once per frame
     void Update()
     {
-        moveCoefficent = Mathf.Log(YawNode.transform.position.y * heightSensitivty);
-        moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);        
+             
+    }
+
+    public void UpdateMoveCoffef() {
+        moveCoefficent = Mathf.Log(myCamera.transform.position.y * heightSensitivty);
+        moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);   
     }
     public bool isRTSMode = true;
 
     public void MoveCameraY(float yMoveValue)
     {
-        Vector3 moveVector = Vector3.zero;
-        moveVector.y = yMoveValue * moveCoefficent;
-        YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
-        float newY = Mathf.Clamp(YawNode.transform.position.y, minCameraHeight, maxCameraHeight);
-        YawNode.transform.position = new(YawNode.transform.position.x, newY, YawNode.transform.position.z);
+        myCamera.transform.Translate(moveCoefficent * yMoveValue * Vector3.up,Space.World);
+        float newY = Mathf.Clamp(myCamera.transform.position.y, minCameraHeight, maxCameraHeight);
+        myCamera.transform.position.Set(myCamera.transform.position.x,newY,myCamera.transform.position.z);
+        onCameraMove.Invoke();
     }
 
     public void MoveCameraXZ(Vector2 moveValue) 
@@ -87,21 +84,26 @@ public class CameraMgr : MonoBehaviour
         Vector3 moveVector = Vector3.zero; 
         moveVector.x += moveValue.x * moveCoefficent;
         moveVector.z += moveValue.y * moveCoefficent;
-        YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
+        myCamera.transform.Translate(Quaternion.Euler(0,myCamera.transform.eulerAngles.y,0)* (cameraMoveSpeed * Time.deltaTime * moveVector),Space.World);
+        onCameraMove.Invoke();
     }
 
     public void YawCamera(float yawValue)
     {
-        currentYawEulerAngles = YawNode.transform.localEulerAngles;
-        currentYawEulerAngles.y += yawValue * cameraTurnRate * Time.deltaTime;
-        YawNode.transform.localEulerAngles = currentYawEulerAngles;
+        // currentYawEulerAngles = myCamera.transform.localEulerAngles;
+        // currentYawEulerAngles.y += yawValue * cameraTurnRate * Time.deltaTime;
+        myCamera.transform.Rotate(Vector3.up,yawValue * cameraTurnRate * Time.deltaTime,Space.World);
+        
     }
 
     public void PitchCamera(float pitchValue) 
     {
-        currentPitchEulerAngles = PitchNode.transform.localEulerAngles;
-        currentPitchEulerAngles.x += pitchValue * cameraTurnRate * Time.deltaTime;
-        PitchNode.transform.localEulerAngles = currentPitchEulerAngles;
+        // currentPitchEulerAngles = myCamera.transform.localEulerAngles;
+        // currentPitchEulerAngles.x += pitchValue * cameraTurnRate * Time.deltaTime;
+        // myCamera.transform.localEulerAngles = currentPitchEulerAngles;
+        myCamera.transform.Rotate(Vector3.right, pitchValue * cameraTurnRate* Time.deltaTime);
+        float newX = Mathf.Clamp(myCamera.transform.eulerAngles.x,-88f,88f);
+        myCamera.transform.eulerAngles.Set(newX,myCamera.transform.eulerAngles.y,myCamera.transform.eulerAngles.z);
     }
 
     public void ToggleRTSView()
@@ -110,9 +112,9 @@ public class CameraMgr : MonoBehaviour
         {
             if (SelectionMgr.inst.selectedEntity != null) 
             {
-                YawNode.transform.SetParent(SelectionMgr.inst.selectedEntity.cameraRig.transform);
-                YawNode.transform.localPosition = Vector3.zero;
-                YawNode.transform.localEulerAngles = Vector3.zero;
+                myCamera.transform.SetParent(SelectionMgr.inst.selectedEntity.cameraRig.transform);
+                myCamera.transform.localPosition = Vector3.zero;
+                myCamera.transform.localEulerAngles = Vector3.zero;
             }
             else{
                 isRTSMode = !isRTSMode;
@@ -120,10 +122,11 @@ public class CameraMgr : MonoBehaviour
         }
         else
         {
-            YawNode.transform.SetParent(RTSCameraRig.transform);
-            YawNode.transform.localPosition = Vector3.zero;
-            YawNode.transform.localEulerAngles = Vector3.zero;
+            myCamera.transform.SetParent(null);
+            myCamera.transform.localPosition = Vector3.zero;
+            myCamera.transform.localEulerAngles = Vector3.zero;
         }
         isRTSMode = !isRTSMode;
+        onCameraMove.Invoke();
     }
 }

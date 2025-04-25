@@ -155,44 +155,44 @@ public class AIMgr : NetworkBehaviour
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
     public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false)
-{
-    if (isLocalCommand)
     {
-        NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
-    }
-
-    foreach (Entity entity in entities)
-    {
-        Vector3 destinationPosition = target != null ? target.position : point;
-        QuadrantBounds startQuadrant = GetQuadrant(entity.position);
-        QuadrantBounds destinationQuadrant = GetQuadrant(destinationPosition);
-
-        if (startQuadrant != null && destinationQuadrant != null && startQuadrant != destinationQuadrant)
+        if (isLocalCommand)
         {
-            // Split into intermediate and final move
-            Vector3 intermediatePoint = Vector3.zero;
-
-            AttackMove intermediateMove = new AttackMove(entity, intermediatePoint, maxSpeedMovement);
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-            AddOrSet(intermediateMove, uai, add: false);
-
-            AttackMove finalMove = target != null 
-                ? new AttackMove(entity, target, maxSpeedMovement) 
-                : new AttackMove(entity, point, maxSpeedMovement);
-
-            AddOrSet(finalMove, uai, add: true);
+            NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
         }
-        else
-        {
-            AttackMove am = target != null 
-                ? new AttackMove(entity, target, maxSpeedMovement) 
-                : new AttackMove(entity, point, maxSpeedMovement);
 
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-            AddOrSet(am, uai, add);
+        foreach (Entity entity in entities)
+        {
+            Vector3 destinationPosition = target != null ? target.position : point;
+            QuadrantBounds startQuadrant = GetQuadrant(entity.position);
+            QuadrantBounds destinationQuadrant = GetQuadrant(destinationPosition);
+
+            if (startQuadrant != null && destinationQuadrant != null && startQuadrant != destinationQuadrant)
+            {
+                // Split into intermediate and final move
+                Vector3 intermediatePoint = Vector3.zero;
+
+                AttackMove intermediateMove = new AttackMove(entity, intermediatePoint, maxSpeedMovement);
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(intermediateMove, uai, add: false);
+
+                AttackMove finalMove = target != null 
+                    ? new AttackMove(entity, target, maxSpeedMovement) 
+                    : new AttackMove(entity, point, maxSpeedMovement);
+
+                AddOrSet(finalMove, uai, add: true);
+            }
+            else
+            {
+                AttackMove am = target != null 
+                    ? new AttackMove(entity, target, maxSpeedMovement) 
+                    : new AttackMove(entity, point, maxSpeedMovement);
+
+                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+                AddOrSet(am, uai, add);
+            }
         }
     }
-}
     public void HandleMove(List<Entity> entities, Vector3 point,
                       bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, float doneDistanceSq = 100000)
     {

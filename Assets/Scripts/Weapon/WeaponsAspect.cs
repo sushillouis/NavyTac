@@ -5,21 +5,6 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.WSA;
 
-[Serializable]
-public class WeaponData
-{
-    public Transform launchPoint; 
-    public float cooldown;
-    public WeaponBehaviors behaviorType;
-    public EntityType weaponEntityType;
-    public float range = 200f;
-    public List<Entity> currentWeaponEntities; // List of active weapons
-    public float defaultDamage;
-    public float ammoCount;
-    [NonSerialized]
-    public float lastShotTime;
-}
-
 public class WeaponsAspect : MonoBehaviour
 {
 
@@ -90,4 +75,19 @@ public class WeaponsAspect : MonoBehaviour
         
         return nearest;
     }
+}
+
+[Serializable]
+public class WeaponData
+{
+    public Transform launchPoint; 
+    public float cooldown;
+    public WeaponBehaviors behaviorType;
+    public EntityType weaponEntityType;
+    public float range = 200f;
+    public List<Entity> currentWeaponEntities; // List of active weapons
+    public float defaultDamage;
+    public float ammoCount;
+    [NonSerialized]
+    public float lastShotTime;
 }

@@ -65,6 +65,9 @@ public class GameMgr : MonoBehaviour
         }
     }
 
+    [Header("Debug")]
+    public bool chaos = false;
+
     void Update()
     {
         if (Input.GetKeyUp(KeyCode.Equals))
@@ -151,6 +154,12 @@ public class GameMgr : MonoBehaviour
     public float headingPlayer1 = 0;
     public Vector3 posPlayer2 = new Vector3(0, 0, 10000);
     public float headingPlayer2 = 180;
+    // public void OpenOcean1x1() {
+    //     Vector3 posPlayer1 = new Vector3(0, 0, 0);
+    //     Vector3 posPlayer2 = new Vector3(0, 0, 1 * Utils.FromNauticalMiles);
+    //     MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1,chaos);
+    //     MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2,chaos);
+    // }
 
     [Range(0f, 1f)]
     public float difficultyLevel = 0.2f;
@@ -184,8 +193,13 @@ public class GameMgr : MonoBehaviour
         SpawnEntities();
         CameraMgr.inst.SetCameraPosition();
     }
+    public void MakeEntsForPlayer(Vector3 initPos, float initHeading, TactPlayer player, bool chaos = false) {
+        Vector3 eulerAngles = new Vector3(0, initHeading, 0);
+        Entity initEnt = EntityMgr.inst.CreateEntity(EntityType.CVN75, initPos, eulerAngles, player);
+        Entity tmpEnt;
+    }
 
-  void InitializeScenario()
+    void InitializeScenario()
     {
         DetermineDifficulty();
         if(currentDifficulty == Difficulty.Easy)

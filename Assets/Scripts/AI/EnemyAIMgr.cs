@@ -107,6 +107,7 @@ public class EnemyAIMgr : MonoBehaviour
     }
     private void Handlelevel2CombatBehavior(List<Entity> aiEntities)
     {
+        // Debug.Log(aiEntities.Count);
         AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, null, false);
     }
     private void HandleCombatBehavior(List<Entity> aiEntities)
@@ -225,8 +226,10 @@ public class EnemyAIMgr : MonoBehaviour
         {
             if (e != null && e.owner != null && 
                 e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase) && 
-                e.entityClass != EntityClass.Missile)
+                e.entityClass != EntityClass.Missile) {
+
                 result.Add(e);
+            }
         }
         return result;
     }

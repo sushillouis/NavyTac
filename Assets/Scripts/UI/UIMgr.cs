@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.Windows;
@@ -423,27 +424,63 @@ public class UIMgr : MonoBehaviour
 
     }
 
+    [SerializeField] GraphicRaycaster cameraRayCaster;
+
+    public bool IsPointerOverUIObject()
+    {
+        PointerEventData eventDataCurrentPosition = new(EventSystem.current)
+        {
+            position = UnityEngine.Input.mousePosition
+        };
+        List<RaycastResult> results = new();
+        cameraRayCaster.Raycast(eventDataCurrentPosition, results);
+        // Debug.Log(results.Count);
+        // This might result in issues later
+        return results.Count > 1;
+    }
+
 
     private void ToggleRTSView(InputAction.CallbackContext context)
     {
         CameraMgr.inst.ToggleRTSView();
     }
 
-    bool boxSelecting;
+    public bool boxSelecting;
     private void OnBoxSelectPerformed(InputAction.CallbackContext context)
     {
+        if(IsPointerOverUIObject()) {
+            return;
+        }
+        Ray ray = Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
+        RaycastHit hit;
+        if(Physics.Raycast(ray, out hit, 99999)) {
+            // Debug.Log(hit.transform.name);
+            Button btn = hit.transform.gameObject.GetComponent<Button>();
+            if(btn != null) {
+                btn.onClick.Invoke();
+                return;
+            } else {
+               // Check for other buttons?
+            }
+        }
         SelectionMgr.inst.StartBoxSelecting();
         boxSelecting = true;
-    }
+    } 
 
     private void OnBoxSelectCanceled(InputAction.CallbackContext context)
     {
+        // if(IsPointerOverUIObject()) {
+        //     return;
+        // }
         SelectionMgr.inst.EndBoxSelecting();
         boxSelecting = false;
     }
 
     private void OnSingleSelectPerformed(InputAction.CallbackContext context)
     {
+        if(IsPointerOverUIObject()) {
+            return;
+        }
         //SelectionMgr.inst.SelectEntity(selectionCursorPosition.ReadValue<Vector2>(), !addSelection.IsPressed());
         SelectionMgr.inst.SelectEntity2(selectionCursorPosition.ReadValue<Vector2>(), addSelection.IsPressed());
     }

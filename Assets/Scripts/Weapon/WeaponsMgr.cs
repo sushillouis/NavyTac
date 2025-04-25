@@ -233,9 +233,8 @@ public class WeaponsMgr : MonoBehaviour
             
             if(CameraMgr.inst!= null)
             {
-                if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name)
-                {
-                CameraMgr.inst.ToggleRTSView();
+                if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.myCamera.transform.parent.name == entity.name) {
+                    CameraMgr.inst.ToggleRTSView();
                 }
             }
             if (weapons.Contains(entity))

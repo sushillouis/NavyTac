@@ -45,6 +45,28 @@ public class TacticalAIMgr : MonoBehaviour
         }
     }
 
+    public void AutoCreateBindControlGroup(List<Entity> entities, List<EntityConditionDelegate> conditionDelegates) {
+        int i =0;
+        foreach (int groupNumber in controlGroups.Keys) {
+            if(i==groupNumber) {
+                i++;
+            }
+        }
+        if(i>10) {
+            Debug.LogWarning("Groups Full cannot make new group");
+            return;
+        }
+        foreach (EntityConditionDelegate filter in conditionDelegates) {
+            if(entities==null) {
+                entities = new();
+                break;
+            }
+            entities = entities.Where(ent => filter(ent)).ToList();
+        }
+    
+        CreateBindControlGroup(entities,i);
+    }
+
     public void SelectControlGroup(int groupNumber) {
         if(controlGroups.ContainsKey(groupNumber)) {
             foreach(Entity ent in controlGroups[groupNumber].groupEntities) {
