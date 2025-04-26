@@ -8,6 +8,7 @@ using TMPro;
 using Unity.Networking.Transport;
 using System.Net.NetworkInformation;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 
 public class OpenOceanMain : MonoBehaviour
@@ -15,6 +16,8 @@ public class OpenOceanMain : MonoBehaviour
     public static OpenOceanMain inst;
 
     public string playerName = "PFTest";
+    public int playerNo = 0;
+    public string playerCode = "LoginCode";
     public string ipAddress = "127.0.0.1";
     public bool IsDebugging = false;
     public bool IsNetDebugging = false;
@@ -57,6 +60,8 @@ public class OpenOceanMain : MonoBehaviour
 
     [Header("Login Screen")]
     public TMP_InputField loginNameInputField;
+    [SerializeField]
+     public TMP_InputField loginCodeInputField;
     [SerializeField]
     private Button loginButton;
     [SerializeField]
@@ -146,9 +151,52 @@ public class OpenOceanMain : MonoBehaviour
     private void Start() {
         if (IsDebugging)
         {
-            lobbyState = LobbyState.MapSelect;
-            SinglePlayerSetup();
             Time.timeScale = 0f;
+            lobbyState = LobbyState.Login;
+            loginButton.onClick.RemoveAllListeners();
+            loginButton.onClick.AddListener(() =>
+            {
+                Time.timeScale = 0f;
+                Debug.Log("Login button pressed");
+                playerName = loginNameInputField.text.Trim();
+                playerCode = loginCodeInputField.text.Trim();
+                Debug.Log($"Player Name: {playerName}");
+                Regex nameRegex = new Regex(@"^Student\s*\d+$");
+                if (!nameRegex.IsMatch(playerName))
+                {
+                    Debug.Log("Invalid name format");
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(playerCode))
+                {
+                    Debug.Log("Invalid code");
+                    return;
+                }
+                Match match = Regex.Match(playerName, @"\d+");
+                if (match.Success)
+                {
+                    // Get the last number found in the name
+                    var numbers = Regex.Matches(playerName, @"\d+");
+                    int.TryParse(numbers[numbers.Count - 1].Value, out playerNo);
+                }
+                else
+                {
+                    playerNo = 0; // Default if no number found
+                }
+                Debug.Log($"Player No: {playerNo}");
+                if(playerNo%2==0){
+                    Debug.Log("Player is Adaptive");
+                }
+                else{
+                    Debug.Log("Player is Non-Adaptive");
+                }
+                lobbyState = LobbyState.MapSelect;
+                SinglePlayerSetup();
+                
+            });
+            
+            
             // GameMgr.inst.OpenOcean1x1(); //GameMgr.inst.MakeMapEntities();
         }
         else
@@ -160,6 +208,8 @@ public class OpenOceanMain : MonoBehaviour
             loginButton.onClick.AddListener(() =>
             {
                 playerName = loginNameInputField.text.Trim();
+                playerCode = loginCodeInputField.text.Trim();
+                
                 lobbyState = LobbyState.MapSelect;
                 if (isSinglePlayer)
                 {

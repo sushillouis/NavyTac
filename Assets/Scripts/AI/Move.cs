@@ -1,21 +1,19 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿
 using UnityEngine;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class Move : Command
 {
+    // Existing potential field variables
     public Vector3 movePosition;
     public bool maxSpeedMovement;
     public float range;
     public float timeOnTarget;
-    
     public LineRenderer potentialLine;
     public Vector3 diffToMovePosition = Vector3.positiveInfinity;
     public float dhRadians;
     public float dhDegrees;
-    
-    // Potential field variables
     public Vector3 attractivePotential = Vector3.zero;
     public Vector3 potentialSum = Vector3.zero;
     public Vector3 repulsivePotential = Vector3.zero;
@@ -24,22 +22,29 @@ public class Move : Command
     public float cosValue;
     public float ds;
      public float doneDistanceSq = 100000f;
+    // A* Pathfinding integration
+    private List<Vector3> pathWaypoints = new List<Vector3>();
+    private int currentWaypointIndex = 0;
+    private bool hasPath = false;
+    private const float waypointThreshold = 100f; // Distance to consider waypoint reached
+    public float pathUpdateCooldown = 1f;
+    private float lastPathUpdateTime = -Mathf.Infinity;
 
-    public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false , float doneDistanceSq = 100000f) : base(ent)
+    public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false, float doneDistanceSq = 100000f) : base(ent)
     {
         movePosition = pos;
         this.maxSpeedMovement = maxSpeedMovement;
+        
         if (ent.GetComponentInChildren<WeaponsAspect>() != null)
         {
-            this.doneDistanceSq = ent.GetComponentInChildren<WeaponsAspect>().weapon.range * ent.GetComponentInChildren<WeaponsAspect>().weapon.range; 
+            this.doneDistanceSq = ent.GetComponentInChildren<WeaponsAspect>().weapon.range * 
+                                 ent.GetComponentInChildren<WeaponsAspect>().weapon.range;
         }
-        // Debug.Log("DoneDistanceSq: " + this.doneDistanceSq);
-        
     }
 
-    public override void Init() 
-    {
-        if(!FogWarMgr.inst.nonRevelers.Contains(entity) ) 
+    public override void Init()
+    {     
+        if (!FogWarMgr.inst.nonRevelers.Contains(entity))
         {
             line = LineMgr.inst.CreateMoveLine(entity.position, movePosition);
             line.gameObject.SetActive(false);
@@ -47,29 +52,92 @@ public class Move : Command
             if (potentialLine != null)
                 potentialLine.gameObject.SetActive(false);
         }
-        
     }
 
-    public override void Tick() 
+    private void RequestNewPath()
     {
-        DHDS dhds;
-        if (AIMgr.inst.isPotentialFieldsMovement) 
+        if (Time.time > lastPathUpdateTime + pathUpdateCooldown)
         {
-            dhds = ComputePotentialDHDS(movePosition);
+            PathRequestManager.RequestPath(entity.position, movePosition, OnPathReceived);
+            lastPathUpdateTime = Time.time;
+        }
+    }
+
+    private void OnPathReceived(Vector3[] path, bool success)
+    {
+        if (success && path.Length > 0)
+        {
+            pathWaypoints = new List<Vector3>(path);
+            currentWaypointIndex = 0;
+            hasPath = true;
         }
         else
         {
-            dhds = ComputeDHDS();
+            // Fallback to direct potential field movement
+            hasPath = false;
         }
+    }
+
+    public override void Tick()
+{
+    // Request path only when starting to process this command
+    if (!hasPath)
+    {
+        RequestNewPath();
+    }
+
+    if (hasPath && currentWaypointIndex < pathWaypoints.Count)
+    {
+        FollowPath();
+    }
+    else
+    {
+        UsePotentialFields();
+    }
+}
+
+    private void FollowPath()
+    {
+        Vector3 currentWaypoint = pathWaypoints[currentWaypointIndex];
+        DHDS dhds = ComputePotentialDHDS(currentWaypoint);
+
+        // Update entity movement parameters
+        entity.desiredHeading = dhds.dh;
+        entity.desiredSpeed = dhds.ds;
+
+        // Check waypoint progression
+        float distanceToWaypoint = Vector3.Distance(entity.position, currentWaypoint);
+        if (distanceToWaypoint < waypointThreshold)
+        {
+            currentWaypointIndex++;
+            
+            // Request new path if final waypoint is obsolete
+            if (currentWaypointIndex >= pathWaypoints.Count)
+            {
+                RequestNewPath();
+            }
+        }
+
+        // Periodic path validation
+        if (currentWaypointIndex > 0 && currentWaypointIndex < pathWaypoints.Count)
+        {
+            float segmentProgress = (float)currentWaypointIndex / pathWaypoints.Count;
+            if (segmentProgress > 0.7f) // Refresh path when 70% through current path
+            {
+                RequestNewPath();
+            }
+        }
+    }
+
+    private void UsePotentialFields()
+    {
+        // Original potential field implementation
+        DHDS dhds = AIMgr.inst.isPotentialFieldsMovement ? 
+                   ComputePotentialDHDS(movePosition) : 
+                   ComputeDHDS();
 
         entity.desiredHeading = dhds.dh;
         entity.desiredSpeed = dhds.ds;
-        
-        if(!FogWarMgr.inst.nonRevelers.Contains(entity))
-            line.SetPosition(1, movePosition);
-
-        range = diffToMovePosition.magnitude;
-        timeOnTarget = range / entity.speed;
     }
 
     public virtual DHDS ComputeDHDS()
@@ -268,12 +336,31 @@ private Vector3 ComputeTerrainRepulsion(Vector3 shipPosition)
     }
 
     public override void Stop()
+{
+    entity.desiredSpeed = 0;
+    pathWaypoints.Clear();
+    currentWaypointIndex = 0;
+    hasPath = false;
+    // Calculate direction to face the target when stopping
+    Vector3 direction = movePosition - entity.position;
+    if (direction.sqrMagnitude > 0.001f) // Check to avoid zero direction
     {
-        entity.desiredSpeed = 0;
-        entity.desiredHeading = entity.heading;
-        LineMgr.inst.DestroyLR(line);
-        LineMgr.inst.DestroyLR(potentialLine);
-        line = null;
-        potentialLine = null;
+        float dhRadians = Mathf.Atan2(direction.x, direction.z);
+        float dhDegrees = Utils.Degrees360(Mathf.Rad2Deg * dhRadians);
+        entity.desiredHeading = dhDegrees;
     }
+    else
+    {
+        entity.desiredHeading = entity.heading;
+    }
+
+    LineMgr.inst.DestroyLR(line);
+    LineMgr.inst.DestroyLR(potentialLine);
+    line = null;
+    potentialLine = null;
+    base.Stop();
+    pathWaypoints.Clear();
+    currentWaypointIndex = 0;
+    hasPath = false;
+}
 }

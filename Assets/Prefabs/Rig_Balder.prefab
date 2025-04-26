@@ -285,7 +285,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 9, y: 9, z: 9}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3024244368011963310}
@@ -367,8 +367,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 183.8673, y: 152.03815, z: 150.45088}
-  m_Center: {x: -7.9866686, y: 19.255781, z: -4.0093956}
+  m_Size: {x: 540, y: 800, z: 540}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8036105732478431344
 GameObject:
   m_ObjectHideFlags: 0
@@ -461,6 +461,18 @@ PrefabInstance:
       value: Rig_Balder
       objectReference: {fileID: 0}
     - target: {fileID: 4660187489248458, guid: 94335bd1e64edd54585a0f3f4b3bf7cf, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 4660187489248458, guid: 94335bd1e64edd54585a0f3f4b3bf7cf, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 4660187489248458, guid: 94335bd1e64edd54585a0f3f4b3bf7cf, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 4660187489248458, guid: 94335bd1e64edd54585a0f3f4b3bf7cf, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -528,16 +540,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_RootOrder
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3034060244875282372, guid: b1b64573597ecf94e812fd9d518ac68f,
-        type: 3}
-      propertyPath: m_LocalScale.x
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 3034060244875282372, guid: b1b64573597ecf94e812fd9d518ac68f,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 3034060244875282372, guid: b1b64573597ecf94e812fd9d518ac68f,
         type: 3}

@@ -137,16 +137,16 @@ public class AIMgr : NetworkBehaviour
                     
                     HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, ent , add);
                 
-                else if(ent == null || ent.transform.GetChild(0).gameObject.activeSelf == false || ent.entityType == EntityType.Rig_Balder) {
+                else {
                     HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
                 }
-                else
-                {
-                    // if (intercept)
-                    //     HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
-                    // else
-                    //     HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
-                }
+                // else
+                // {
+                //     // if (intercept)
+                //     //     HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
+                //     // else
+                //     //     HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
+                // }
             } else {
                 //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
             }
@@ -164,34 +164,14 @@ public class AIMgr : NetworkBehaviour
 
     foreach (Entity entity in entities)
     {
-        Vector3 destinationPosition = target != null ? target.position : point;
-        QuadrantBounds startQuadrant = GetQuadrant(entity.position);
-        QuadrantBounds destinationQuadrant = GetQuadrant(destinationPosition);
-
-        if (startQuadrant != null && destinationQuadrant != null && startQuadrant != destinationQuadrant)
-        {
-            // Split into intermediate and final move
-            Vector3 intermediatePoint = Vector3.zero;
-
-            AttackMove intermediateMove = new AttackMove(entity, intermediatePoint, maxSpeedMovement);
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-            AddOrSet(intermediateMove, uai, add: false);
-
-            AttackMove finalMove = target != null 
-                ? new AttackMove(entity, target, maxSpeedMovement) 
-                : new AttackMove(entity, point, maxSpeedMovement);
-
-            AddOrSet(finalMove, uai, add: true);
-        }
-        else
-        {
+        
             AttackMove am = target != null 
                 ? new AttackMove(entity, target, maxSpeedMovement) 
                 : new AttackMove(entity, point, maxSpeedMovement);
 
             UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             AddOrSet(am, uai, add);
-        }
+        
     }
 }
     public void HandleMove(List<Entity> entities, Vector3 point,
@@ -203,31 +183,10 @@ public class AIMgr : NetworkBehaviour
         }
         foreach (Entity entity in entities)
         {
-            QuadrantBounds startQuadrant = GetQuadrant(entity.position);
-            QuadrantBounds targetQuadrant = GetQuadrant(point);
-
-            if (startQuadrant != null && targetQuadrant != null && startQuadrant != targetQuadrant)
-            {
-                
-                Vector3 intermediatePoint = Vector3.zero;
-
-                Move intermediateMove = new Move(entity, intermediatePoint, maxSpeedMovement, doneDistanceSq);
-                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-
-                // Replace current command with intermediate move
-                AddOrSet(intermediateMove, uai, add: false);
-
-                // Queue final move after intermediate
-                Move finalMove = new Move(entity, point, maxSpeedMovement, doneDistanceSq);
-                AddOrSet(finalMove, uai, add: true);
-            }
-            else
-            {
-                // Original single-entity behavior
                 Move m = new Move(entity, point, maxSpeedMovement, doneDistanceSq);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
                 AddOrSet(m, uai, add);
-            }
+            
         }
     }
     // Helper to get the quadrant of a position

@@ -303,7 +303,26 @@ private void UpdateNonRevealerVisibility()
         if (fogRenderTexture != null && fogRenderTexture.IsCreated())
             fogRenderTexture.Release();
     }
+    public void ResetFog()
+    {
+        if (!FOW) return;
 
+        // Reset grid buffers to initial state (all zeros)
+        float[] gridData = new float[gridWidth * gridHeight];
+        gridBuffer.SetData(gridData);
+        visitedGridBuffer.SetData(gridData);
+
+        // Update the fog texture to show fully obscured areas
+        DispatchCompute(updateKernel);
+
+        // Clear persistent revealed entities
+        revealedRigBalders.Clear();
+
+        // Force update visibility of all entities
+        UpdateNonRevealerVisibility();
+
+        Debug.Log("Fog of War reset to initial state");
+    }
     void OnDisable()
     {
         revelers.Clear();

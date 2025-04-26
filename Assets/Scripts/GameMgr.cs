@@ -418,6 +418,14 @@ private void ResetGameState()
     {
         DistanceMgr.inst.Initialize();
     }
+    if (FogWarMgr.inst != null)
+    {
+        FogWarMgr.inst.ResetFog();
+    }
+    if (CameraMgr.inst != null)
+    {
+        CameraMgr.inst.ResetCamera();
+    }
 }
 
    

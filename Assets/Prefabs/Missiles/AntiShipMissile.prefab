@@ -605,6 +605,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  attackMoves: []
   follows: []
   intercepts: []
   intercept3ds: []
@@ -982,11 +983,11 @@ MonoBehaviour:
   range: 0
   fuelBurnRate: 0
   entityRole: 2
-  acceleration: 100
-  turnRate: 20
-  maxSpeed: 240
+  acceleration: 500
+  turnRate: 1
+  maxSpeed: 1000
   minSpeed: 0
-  cruiseSpeed: 240
+  cruiseSpeed: 1000
   mass: 690
   length: 5
   width: 1
@@ -1091,6 +1092,121 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: bdf05a1a37feb5c4cae37d060b65b4a4, type: 2}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: wakeSpeed
+      value: 500
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: wakeLengthFactor
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: dayGradient.key0.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: dayGradient.key0.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: dayGradient.key0.g
+      value: 0.19607843
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: dayGradient.key0.r
+      value: 0.097232126
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: dayGradient.key1.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: dayGradient.key1.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: dayGradient.key1.g
+      value: 0.19607843
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: dayGradient.key1.r
+      value: 0.09803922
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: duskGradient.key0.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: duskGradient.key0.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: duskGradient.key0.g
+      value: 0.19607843
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: duskGradient.key0.r
+      value: 0.097232126
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: duskGradient.key1.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: duskGradient.key1.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: duskGradient.key1.r
+      value: 0.09803922
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: nightGradient.key0.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: nightGradient.key0.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: nightGradient.key0.r
+      value: 0.097232126
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: nightGradient.key1.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: nightGradient.key1.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7351828984458705505, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: nightGradient.key1.r
+      value: 0.09803922
+      objectReference: {fileID: 0}
     - target: {fileID: 7464076882414629701, guid: d8082e6d06ae6824bb7326e150bc83ad,
         type: 3}
       propertyPath: m_Name

@@ -11,7 +11,12 @@ public class CameraMgr : MonoBehaviour
     private float yawValue;
     private float pitchValue;
     
-
+    private Vector3 startYawLocalPosition;
+    private Quaternion startYawLocalRotation;
+    private Vector3 startPitchLocalPosition;
+    private Quaternion startPitchLocalRotation;
+    private Vector3 startRollLocalPosition;
+    private Quaternion startRollLocalRotation;
     private void Awake()
     {
         inst = this;
@@ -19,9 +24,12 @@ public class CameraMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+       StoreInitialTransforms(); 
     }
-    public void SetCameraPosition()
+    private Vector3 baseYawLocalPosition;
+    private Quaternion baseYawLocalRotation;
+
+public void SetCameraPosition()
 {
     // Position camera 1500 units above and 2000 units behind Player 1
     Vector3 baseOffset = new Vector3(0, 1500, -2000);
@@ -34,16 +42,11 @@ public class CameraMgr : MonoBehaviour
     
     // Look directly at Player 1's spawn point
     PitchNode.transform.LookAt(GameMgr.inst.posPlayer1);
-}
 
-    Vector3 CalculateNewPosition(Vector3 current, Vector3 offset)
-    {
-        return new Vector3(
-            (Mathf.Abs(current.x) + Mathf.Abs(offset.x)) * Mathf.Sign(offset.x),
-            current.y,
-            (Mathf.Abs(current.z) + Mathf.Abs(offset.z)) * Mathf.Sign(offset.z)
-        );
-    }
+    // Store the base transform values
+    baseYawLocalPosition = YawNode.transform.localPosition;
+    baseYawLocalRotation = YawNode.transform.localRotation;
+}
 
     public GameObject RTSCameraRig;
     public GameObject YawNode;   // Child of RTSCameraRig
@@ -73,6 +76,7 @@ public class CameraMgr : MonoBehaviour
         moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);   
             
     }
+    
     public bool isRTSMode = true;
 
     public void MoveCameraY(float yMoveValue)
@@ -105,27 +109,59 @@ public class CameraMgr : MonoBehaviour
         currentPitchEulerAngles.x += pitchValue * cameraTurnRate * Time.deltaTime;
         PitchNode.transform.localEulerAngles = currentPitchEulerAngles;
     }
+    public void StoreInitialTransforms()
+    {
+        // Store all initial transform values
+        startYawLocalPosition = YawNode.transform.localPosition;
+        startYawLocalRotation = YawNode.transform.localRotation;
+        
+        startPitchLocalPosition = PitchNode.transform.localPosition;
+        startPitchLocalRotation = PitchNode.transform.localRotation;
+        
+        startRollLocalPosition = RollNode.transform.localPosition;
+        startRollLocalRotation = RollNode.transform.localRotation;
+    }
 
     public void ToggleRTSView()
+{
+    YawNode.transform.SetParent(RTSCameraRig.transform);
+    YawNode.transform.localPosition = baseYawLocalPosition; // Restore saved position
+    YawNode.transform.localRotation = baseYawLocalRotation;
+    // if (isRTSMode)
+    // {
+    //     if (SelectionMgr.inst.selectedEntity != null) 
+    //     {
+    //         YawNode.transform.SetParent(SelectionMgr.inst.selectedEntity.cameraRig.transform);
+    //         YawNode.transform.localPosition = Vector3.zero;
+    //         YawNode.transform.localEulerAngles = Vector3.zero;
+    //     }
+    //     else{
+    //         YawNode.transform.SetParent(RTSCameraRig.transform);
+    //         YawNode.transform.localPosition = baseYawLocalPosition; // Restore saved position
+    //         YawNode.transform.localRotation = baseYawLocalRotation;
+    //         isRTSMode = !isRTSMode;
+    //     }
+    // }
+    // else
+    // {
+    //     // Restore the base RTS position and rotation
+    //     YawNode.transform.SetParent(RTSCameraRig.transform);
+    //     YawNode.transform.localPosition = baseYawLocalPosition; // Restore saved position
+    //     YawNode.transform.localRotation = baseYawLocalRotation; // Restore saved rotation
+    // }
+    // isRTSMode = !isRTSMode;
+}
+public void ResetCamera()
     {
-        if (isRTSMode)
-        {
-            if (SelectionMgr.inst.selectedEntity != null) 
-            {
-                YawNode.transform.SetParent(SelectionMgr.inst.selectedEntity.cameraRig.transform);
-                YawNode.transform.localPosition = Vector3.zero;
-                YawNode.transform.localEulerAngles = Vector3.zero;
-            }
-            else{
-                isRTSMode = !isRTSMode;
-            }
-        }
-        else
-        {
-            YawNode.transform.SetParent(RTSCameraRig.transform);
-            YawNode.transform.localPosition = Vector3.zero;
-            YawNode.transform.localEulerAngles = Vector3.zero;
-        }
-        isRTSMode = !isRTSMode;
+        // Reset all nodes to their initial transforms
+        YawNode.transform.localPosition = startYawLocalPosition;
+        YawNode.transform.localRotation = startYawLocalRotation;
+        
+        PitchNode.transform.localPosition = startPitchLocalPosition;
+        PitchNode.transform.localRotation = startPitchLocalRotation;
+        
+        RollNode.transform.localPosition = startRollLocalPosition;
+        RollNode.transform.localRotation = startRollLocalRotation;
     }
+
 }
