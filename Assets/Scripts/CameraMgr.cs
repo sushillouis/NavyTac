@@ -11,15 +11,10 @@ public class CameraMgr : MonoBehaviour
     private float yawValue;
     private float pitchValue;
 
-
     private void Awake()
     {
         inst = this;
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
-
+        rtsRollNodeLocalPosition = RollNode.transform.localPosition;
     }
 
     public GameObject RTSCameraRig;
@@ -27,13 +22,8 @@ public class CameraMgr : MonoBehaviour
     public GameObject PitchNode; // Child of YawNode
     public GameObject RollNode;  // Child of PitchNode
     public Camera myCamera;
-    //Camera is child of RollNode
 
     public float cameraMoveSpeed = 500;
-
-    /// <summary>
-    /// Note this is reduced by a log scale;
-    /// </summary>
     public float heightSensitivty = 5;
     public float maxCameraHeight = 9600;
     public float minCameraHeight = 20;
@@ -42,47 +32,54 @@ public class CameraMgr : MonoBehaviour
     public Vector3 currentYawEulerAngles = Vector3.zero;
     public Vector3 currentPitchEulerAngles = Vector3.zero;
 
-    // Update is called once per frame
+    // Orbit variables
+    public float orbitSpeed = 10f; // Degrees per second
+    private bool isOrbiting = false;
+    private Vector3 rtsRollNodeLocalPosition;
+    private Vector3 savedRollNodeLocalPosition;
+
     void Update()
     {
         moveCoefficent = Mathf.Log(YawNode.transform.position.y * heightSensitivty);
         moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);
 
-
+        if (isOrbiting)
+        {
+            currentYawEulerAngles = YawNode.transform.localEulerAngles;
+            currentYawEulerAngles.y += orbitSpeed * Time.deltaTime;
+            YawNode.transform.localEulerAngles = currentYawEulerAngles;
+        }
     }
 
     public bool isRTSMode = true;
 
     public void MoveCameraY(float yMoveValue)
     {
-        if (float.IsNaN(yMoveValue) || float.IsNaN(moveCoefficent) || float.IsNaN(cameraMoveSpeed)) return;
+        if (float.IsNaN(yMoveValue) )return;
         Vector3 moveVector = Vector3.zero;
         moveVector.y = yMoveValue * moveCoefficent;
         YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
         float newY = Mathf.Clamp(YawNode.transform.position.y, minCameraHeight, maxCameraHeight);
-        YawNode.transform.position = new(YawNode.transform.position.x, newY, YawNode.transform.position.z);
+        YawNode.transform.position = new Vector3(YawNode.transform.position.x, newY, YawNode.transform.position.z);
     }
 
     public void MoveCameraXZ(Vector2 moveValue)
     {
-        if (float.IsNaN(moveValue.x) || float.IsNaN(moveValue.y) || float.IsNaN(moveCoefficent) || float.IsNaN(cameraMoveSpeed)) return;
-        Vector3 moveVector = Vector3.zero;
-        moveVector.x += moveValue.x * moveCoefficent;
-        moveVector.z += moveValue.y * moveCoefficent;
+        Vector3 moveVector = new Vector3(moveValue.x, 0, moveValue.y) * moveCoefficent;
         YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
     }
 
-    public void YawCamera(float yawValue)
+    public void YawCamera(float yawInput)
     {
         currentYawEulerAngles = YawNode.transform.localEulerAngles;
-        currentYawEulerAngles.y += yawValue * cameraTurnRate * Time.deltaTime;
+        currentYawEulerAngles.y += yawInput * cameraTurnRate * Time.deltaTime;
         YawNode.transform.localEulerAngles = currentYawEulerAngles;
     }
 
-    public void PitchCamera(float pitchValue)
+    public void PitchCamera(float pitchInput)
     {
         currentPitchEulerAngles = PitchNode.transform.localEulerAngles;
-        currentPitchEulerAngles.x += pitchValue * cameraTurnRate * Time.deltaTime;
+        currentPitchEulerAngles.x = Mathf.Clamp(currentPitchEulerAngles.x + pitchInput * cameraTurnRate * Time.deltaTime, -80f, 80f);
         PitchNode.transform.localEulerAngles = currentPitchEulerAngles;
     }
 
@@ -90,19 +87,54 @@ public class CameraMgr : MonoBehaviour
     {
         if (isRTSMode)
         {
-            if (SelectionMgr.inst.selectedEntity != null)
+            Entity selectedEntity = SelectionMgr.inst.selectedEntity;
+            if (selectedEntity != null)
             {
-                YawNode.transform.SetParent(SelectionMgr.inst.selectedEntity.cameraRig.transform);
-                YawNode.transform.localPosition = Vector3.zero;
-                YawNode.transform.localEulerAngles = Vector3.zero;
+              // Switch to entity view
+            Vector3 entityPos = selectedEntity.transform.position;
+            Vector3 cameraPos = myCamera.transform.position;
+            
+            // Calculate direction and distance
+            Vector3 direction = (cameraPos - entityPos).normalized;
+            float distance = Vector3.Distance(entityPos, cameraPos);
+            
+            // Calculate angles with height reduction
+            float yaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+            float pitch = Mathf.Asin(direction.y) * Mathf.Rad2Deg;
+
+            // Save state before changing hierarchy
+            savedRollNodeLocalPosition = RollNode.transform.localPosition;
+            
+            // Set up orbital camera rig
+            YawNode.transform.SetParent(selectedEntity.cameraRig.transform);
+            YawNode.transform.localPosition = Vector3.zero;
+            
+            // Apply rotations with downward tilt adjustment
+            YawNode.transform.localEulerAngles = new Vector3(0, yaw, 0);
+            
+            // Add 15 degree downward tilt and clamp between -20° and 45°
+            float targetPitch = Mathf.Clamp(pitch - 15f, -20f, 45f);
+            PitchNode.transform.localEulerAngles = new Vector3(targetPitch, 0, 0);
+            
+            // Position camera closer with height adjustment
+            float verticalOffset = Mathf.Lerp(2f, 5f, Mathf.InverseLerp(minCameraHeight, maxCameraHeight, distance));
+            RollNode.transform.localPosition = new Vector3(0, -verticalOffset, -distance * 0.2f);
+
+            isOrbiting = true;
+            isRTSMode = false;
             }
         }
         else
         {
+            // Return to RTS mode
             YawNode.transform.SetParent(RTSCameraRig.transform);
             YawNode.transform.localPosition = Vector3.zero;
             YawNode.transform.localEulerAngles = Vector3.zero;
+            PitchNode.transform.localEulerAngles = Vector3.zero;
+            RollNode.transform.localPosition = savedRollNodeLocalPosition;
+
+            isOrbiting = false;
+            isRTSMode = true;
         }
-        isRTSMode = !isRTSMode;
     }
 }

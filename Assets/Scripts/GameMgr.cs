@@ -137,7 +137,7 @@ public class GameMgr : MonoBehaviour
         Entity tmpEnt;
 
         //Escort on right
-        Vector3 offset = initEnt.transform.right * 1000;
+        Vector3 offset = initEnt.transform.right * 10000;
         tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
 
 
@@ -147,7 +147,7 @@ public class GameMgr : MonoBehaviour
 
         //USV in front
         offset = initEnt.transform.forward * 1000;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
+        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.JARIUSV, initPos + offset, eulerAngles, player);
 
         //USV in behind
         offset = -initEnt.transform.forward * 1000;
