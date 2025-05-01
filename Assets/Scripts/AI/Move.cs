@@ -21,7 +21,10 @@ public class Move : Command
     public float angleDiff;
     public float cosValue;
     public float ds;
-     public float doneDistanceSq = 100000f;
+    public float doneDistanceSq = 100000f;
+    private int stuckFrames = 0;
+    private const int maxStuckFrames = 30; // Adjust based on testing (e.g., ~1 second at 30 FPS)
+    private float previousDistanceToWaypoint = Mathf.Infinity;
     // A* Pathfinding integration
     private List<Vector3> pathWaypoints = new List<Vector3>();
     private int currentWaypointIndex = 0;
@@ -98,12 +101,58 @@ public class Move : Command
 
     private void FollowPath()
     {
-        Vector3 currentWaypoint = pathWaypoints[currentWaypointIndex];
-        DHDS dhds = ComputePotentialDHDS(currentWaypoint);
+    Vector3 currentWaypoint = pathWaypoints[currentWaypointIndex];
+    DHDS dhds = ComputePotentialDHDS(currentWaypoint);
 
-        // Update entity movement parameters
-        entity.desiredHeading = dhds.dh;
-        entity.desiredSpeed = dhds.ds;
+    entity.desiredHeading = dhds.dh;
+    entity.desiredSpeed = dhds.ds;
+
+    // Calculate current distance and direction to waypoint
+    float currentDistance = Vector3.Distance(entity.position, currentWaypoint);
+    Vector3 toWaypointDir = (currentWaypoint - entity.position).normalized;
+
+    // Directional alignment check using potential sum
+    Vector3 potentialDir = potentialSum.normalized;
+    float directionDot = Vector3.Dot(toWaypointDir, potentialDir);
+
+    // Progress check: compare with previous distance
+    if (currentDistance >= previousDistanceToWaypoint - waypointThreshold * 0.1f)
+    {
+        stuckFrames++;
+    }
+    else
+    {
+        stuckFrames = Mathf.Max(0, stuckFrames - 1);
+    }
+
+    // Update previous distance
+    previousDistanceToWaypoint = currentDistance;
+
+    // Check if potential is working against reaching the waypoint
+    if (directionDot < 0.3f) // Threshold for directional misalignment
+    {
+        stuckFrames += 2; // Accelerate stuck count
+    }
+
+    // Skip waypoint if stuck
+    if (stuckFrames >= maxStuckFrames)
+    {
+        currentWaypointIndex++;
+        stuckFrames = 0;
+        previousDistanceToWaypoint = Mathf.Infinity;
+        
+        // Immediately request new path if skipping waypoints
+        RequestNewPath();
+        return;
+    }
+
+    // Existing waypoint distance check
+    if (currentDistance < waypointThreshold)
+    {
+        currentWaypointIndex++;
+        stuckFrames = 0;
+        previousDistanceToWaypoint = Mathf.Infinity;
+    }
 
         // Check waypoint progression
         float distanceToWaypoint = Vector3.Distance(entity.position, currentWaypoint);

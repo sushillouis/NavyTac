@@ -225,14 +225,14 @@ public class WeaponsMgr : MonoBehaviour
 
     public void DestroyEntity(Entity entity)
     {
-        
-        try{
-            
-            if(CameraMgr.inst!= null)
+
+        try
+        {
+            if (CameraMgr.inst != null)
             {
                 if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name)
                 {
-                CameraMgr.inst.ToggleRTSView();
+                    CameraMgr.inst.ToggleRTSView();
                 }
             }
             if (weapons.Contains(entity))
@@ -252,19 +252,40 @@ public class WeaponsMgr : MonoBehaviour
             if (SelectionMgr.inst.selectedEntities.Contains(entity))
             {
                 SelectionMgr.inst.selectedEntities.Remove(entity);
-                SelectionMgr.inst.selectedEntity = SelectionMgr.inst.selectedEntities.Count > 0 
-                    ? SelectionMgr.inst.selectedEntities[0] 
+                SelectionMgr.inst.selectedEntity = SelectionMgr.inst.selectedEntities.Count > 0
+                    ? SelectionMgr.inst.selectedEntities[0]
                     : null;
             }
 
             EntityMgr.inst.entities.Remove(entity);
             DistanceMgr.inst.Initialize();
             Destroy(entity.gameObject);
+            if (entity.entityRole == EntityRole.Base)
+            {
+                if (entity.owner != null)
+                {
+                    bool wasAIBase = entity.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase);
+
+                    if (wasAIBase)
+                    {
+                        ScoreMgr.inst.playerWon = true;
+                        Debug.Log("Player destroyed AI base!");
+                    }
+                    else
+                    {
+                        ScoreMgr.inst.aiWon = true;
+                        Debug.Log("AI destroyed Player base!");
+                    }
+
+                    ScoreMgr.inst.CheckVictory();
+                }
+            }
         }
-        catch (System.Exception e){
+        catch (System.Exception e)
+        {
             string entityName = entity != null ? entity.name : "null";
             Debug.LogError($"Error in DestroyEntity for entity: {entityName}. Exception: {e.Message}");
-        
+
         }
         
     }

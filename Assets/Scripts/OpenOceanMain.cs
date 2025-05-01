@@ -25,7 +25,7 @@ public class OpenOceanMain : MonoBehaviour
 
     [SerializeField]
     private ushort port = 7777;
-    
+
 
     [Header("Panels")]
     [SerializeField]
@@ -38,6 +38,8 @@ public class OpenOceanMain : MonoBehaviour
     private PanelPlus MainGamePanel;
     [SerializeField]
     private PanelPlus SingleMultiplayerPanel;
+    [SerializeField]
+    private PanelPlus ScorePanel;
     [SerializeField]
     private RectTransform NetDebugConsolePanel;
 
@@ -61,7 +63,7 @@ public class OpenOceanMain : MonoBehaviour
     [Header("Login Screen")]
     public TMP_InputField loginNameInputField;
     [SerializeField]
-     public TMP_InputField loginCodeInputField;
+    public TMP_InputField loginCodeInputField;
     [SerializeField]
     private Button loginButton;
     [SerializeField]
@@ -70,7 +72,12 @@ public class OpenOceanMain : MonoBehaviour
     [Header("Map Select Screen")]
     [SerializeField]
     private Button startButton;
+    [Header("Score Panel")]
 
+    [SerializeField] public TMP_Text damageDealtText;
+    [SerializeField] public TMP_Text damageTakenText;
+    [SerializeField] public TMP_Text winnerText;
+    [SerializeField] public Button nextGameButton;
     public enum LobbyState
     {
         None = 0,
@@ -80,6 +87,7 @@ public class OpenOceanMain : MonoBehaviour
         HostOrJoin,
         Play,
         Done,
+        ScorePanel
     }
     [Header("Lobby State and the rest")]
 
@@ -89,7 +97,8 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField]
     private GameObject NetworkManagerGo;
 
-    private void Awake() {
+    private void Awake()
+    {
         inst = this;
         hostButton.onClick.RemoveAllListeners();
         hostButton.onClick.AddListener(() =>
@@ -131,12 +140,15 @@ public class OpenOceanMain : MonoBehaviour
         startButton.onClick.RemoveAllListeners();
         startButton.onClick.AddListener(OnMapSelected);
 
+
+
     }
 
-    void SetupIPAddressAndPort() {
+    void SetupIPAddressAndPort()
+    {
         string tmp = ipAddressInputField.text.Trim();
         int count = tmp.Count(x => x == '.');
-        if(count == 3)
+        if (count == 3)
             ipAddress = tmp;
         //else use the default ip address of 127.0.0.1 initialized above
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, port);
@@ -148,7 +160,8 @@ public class OpenOceanMain : MonoBehaviour
     public TactNetMgr localTactNetMgr;
     public NetworkObject localTactNetMgrNetworkObject;
 
-    private void Start() {
+    private void Start()
+    {
         if (IsDebugging)
         {
             Time.timeScale = 0f;
@@ -185,18 +198,20 @@ public class OpenOceanMain : MonoBehaviour
                     playerNo = 0; // Default if no number found
                 }
                 Debug.Log($"Player No: {playerNo}");
-                if(playerNo%2==0){
+                if (playerNo % 2 == 0)
+                {
                     Debug.Log("Player is Adaptive");
                 }
-                else{
+                else
+                {
                     Debug.Log("Player is Non-Adaptive");
                 }
                 lobbyState = LobbyState.MapSelect;
                 SinglePlayerSetup();
-                
+
             });
-            
-            
+
+
             // GameMgr.inst.OpenOcean1x1(); //GameMgr.inst.MakeMapEntities();
         }
         else
@@ -209,7 +224,7 @@ public class OpenOceanMain : MonoBehaviour
             {
                 playerName = loginNameInputField.text.Trim();
                 playerCode = loginCodeInputField.text.Trim();
-                
+
                 lobbyState = LobbyState.MapSelect;
                 if (isSinglePlayer)
                 {
@@ -223,18 +238,23 @@ public class OpenOceanMain : MonoBehaviour
         }
     }
 
-    void NetPlayersSetup() {
+    void NetPlayersSetup()
+    {
         Debug.Log("Setting up network multiplayer ...");
-        foreach(NetSetup ns in FindObjectsOfType<NetSetup>()) {
+        foreach (NetSetup ns in FindObjectsOfType<NetSetup>())
+        {
             NetworkObject tmp = ns.GetComponent<NetworkObject>();
-            if(tmp.IsLocalPlayer) {
+            if (tmp.IsLocalPlayer)
+            {
                 localNetSetupNetworkObject = tmp;
                 localNetSetup = ns;
             }
         }
-        foreach(TactNetMgr tnm in FindObjectsOfType<TactNetMgr>()) {
+        foreach (TactNetMgr tnm in FindObjectsOfType<TactNetMgr>())
+        {
             NetworkObject tmp = tnm.GetComponent<NetworkObject>();
-            if(tmp.IsLocalPlayer) {
+            if (tmp.IsLocalPlayer)
+            {
                 localTactNetMgrNetworkObject = tmp;
                 localTactNetMgr = tnm;
             }
@@ -243,7 +263,8 @@ public class OpenOceanMain : MonoBehaviour
 
     }
 
-    void SinglePlayerSetup() {
+    void SinglePlayerSetup()
+    {
         Debug.Log("Setting up single player ...");
         TactPlayer tmp = PlayerMgr.inst.CreateSinglePlayer(playerName);
         PlayerMgr.inst.AddPlayer(tmp);
@@ -254,10 +275,12 @@ public class OpenOceanMain : MonoBehaviour
 
     public LobbyState lobbyState
     {
-        get {
+        get
+        {
             return _lobbyState;
         }
-        set {
+        set
+        {
             _lobbyState = value;
 
             loginPanel.isVisible = (value == LobbyState.Login);
@@ -266,42 +289,56 @@ public class OpenOceanMain : MonoBehaviour
             MainGamePanel.isVisible = (value == LobbyState.Play);
             NetDebugConsolePanel.gameObject.SetActive(IsDebugging && IsNetDebugging);
             SingleMultiplayerPanel.isVisible = (value == LobbyState.SingleMultiPlayer);
+            ScorePanel.isVisible = (value == LobbyState.ScorePanel);
+            Time.timeScale = (value == LobbyState.ScorePanel) ? 0f : 1f;
         }
     }
-    
 
 
-    public void OnMapSelected() {
-        if(isSinglePlayer)
+
+    public void OnMapSelected()
+    {
+        if (isSinglePlayer)
             GameMgr.inst.OpenOcean1x1(); //GameMgr.inst.MakeMapEntities();
-        else 
+        else
             localNetSetup.OnStartButton();
         lobbyState = LobbyState.Play;
     }
 
 
-    public void OnSinglePlayer() {
+    public void OnSinglePlayer()
+    {
         isSinglePlayer = true;
         lobbyState = LobbyState.Login;
     }
-    public void OnMultiPlayer() {
+    public void OnMultiPlayer()
+    {
         isSinglePlayer = false;
         lobbyState = LobbyState.HostOrJoin;
     }
 
 
-    public void OnQuitButton() {
+    public void OnQuitButton()
+    {
         Debug.Log("Shutting down TactNetMgr and quitting");
         TactNetMgr.inst.TactNetShutdown();
         NetworkManager.Singleton.Shutdown();
-        if(Application.isEditor) {
+        if (Application.isEditor)
+        {
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #endif
-        } else {
+        }
+        else
+        {
             Application.Quit();
         }
 
+    }
+    
+    public void  ResetGameState()
+    {
+        lobbyState = LobbyState.Play;
     }
 
 }

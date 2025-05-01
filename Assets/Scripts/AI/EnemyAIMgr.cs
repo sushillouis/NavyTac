@@ -74,12 +74,11 @@ public class EnemyAIMgr : MonoBehaviour
         }
 
         if (opponentBase == null)
-        {
-            // GameMgr.inst.ReloadScene();
-            Debug.Log("AI WON");
-             // No opponent base found, reload scene
-            return;
-        }
+    {
+        ScoreMgr.inst.aiWon = true;
+        ScoreMgr.inst.CheckVictory();
+        return;
+    }
 
         List<Entity> aiEntities = GetAIEntities();
         if (aiEntities.Count == 0) return;
@@ -95,10 +94,11 @@ public class EnemyAIMgr : MonoBehaviour
         }
 
         if (opponentBase == null)
-        {
-            Debug.Log("AI WON");
-            return;
-        }
+    {
+        ScoreMgr.inst.aiWon = true;
+        ScoreMgr.inst.CheckVictory();
+        return;
+    }
 
         List<Entity> aiEntities = GetAIEntities();
         if (aiEntities.Count == 0) return;

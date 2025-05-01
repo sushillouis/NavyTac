@@ -341,20 +341,22 @@ public class GameMgr : MonoBehaviour
         EntityType.SeaBaby
     };
     [ContextMenu("Reload Scene")] // Creates an inspector context menu entry
-   [ContextMenu("Reload Scene")]
-public void ReloadScene()
-{
-    // Save current settings
-    reloadCount++;
+    [ContextMenu("Reload Scene")]
+    public void ReloadScene()
+    {
+        // Save current settings
+        reloadCount++;
 
-    // Clear all existing entities
-    ClearAllEntities();
+        // Clear all existing entities
+        ClearAllEntities();
 
-    // Reset game state
-    ResetGameState();
+        // Reset game state
+        ResetGameState();
 
-    // Respawn entities
-    OpenOcean1x1();
+        // Respawn entities
+        OpenOcean1x1();
+        
+
 }
 
 private void ClearAllEntities()
@@ -365,7 +367,15 @@ private void ClearAllEntities()
         var weaponsCopy = new List<Entity>(WeaponsMgr.inst.weapons);
         foreach (Entity weapon in weaponsCopy)
         {
-            WeaponsMgr.inst.DestroyEntity(weapon);
+           if (weapon != null)
+            {
+                if (weapon.weapons != null)
+                {
+                    WeaponsMgr.inst.weapons.Remove(weapon);
+                    Destroy(weapon.gameObject);
+                }
+            }
+            // Destroy the weapon GameObject
         }
     }
 
@@ -391,41 +401,49 @@ private void ClearAllEntities()
     }
 }
 
-private void ResetGameState()
-{
-    // Reset time scale
-    Time.timeScale = 1f;
-    if (simSpeedButtonText != null)
-        simSpeedButtonText.text = "1";
-
-    // Reset position
-    position = Vector3.zero;
-    initZ = 0;
-
-    // Clear and rebuild entity dictionary
-    // entityQuantities.Clear();
-    BuildEntityDictionary();
-
-    // Reset any other necessary game state variables
-    if (AIMgr.inst != null)
+    private void ResetGameState()
     {
-        AIMgr.inst.StopAllCoroutines();
-        
-    }
+        // Reset time scale
+        Time.timeScale = 1f;
+        if (simSpeedButtonText != null)
+            simSpeedButtonText.text = "1";
 
-    // Reset distance manager
-    if (DistanceMgr.inst != null)
-    {
-        DistanceMgr.inst.Initialize();
-    }
-    if (FogWarMgr.inst != null)
-    {
-        FogWarMgr.inst.ResetFog();
-    }
-    if (CameraMgr.inst != null)
-    {
-        CameraMgr.inst.ResetCamera();
-    }
+        // Reset position
+        position = Vector3.zero;
+        initZ = 0;
+
+        // Clear and rebuild entity dictionary
+        // entityQuantities.Clear();
+        BuildEntityDictionary();
+
+        // Reset any other necessary game state variables
+        if (AIMgr.inst != null)
+        {
+            AIMgr.inst.StopAllCoroutines();
+
+        }
+
+        // Reset distance manager
+        if (DistanceMgr.inst != null)
+        {
+            DistanceMgr.inst.Initialize();
+        }
+        if (FogWarMgr.inst != null)
+        {
+            FogWarMgr.inst.ResetFog();
+        }
+        if (CameraMgr.inst != null)
+        {
+            CameraMgr.inst.ResetCamera();
+        }
+        if (ScoreMgr.inst != null)
+        {
+            ScoreMgr.inst.ResetScores();
+        }
+        if (OpenOceanMain.inst != null)
+        {
+            OpenOceanMain.inst.ResetGameState();
+        }
 }
 
    
