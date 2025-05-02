@@ -1082,6 +1082,36 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8904057369288579252}
     m_Modifications:
+    - target: {fileID: 7300802009010406659, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: lengthInSec
+      value: 500
+      objectReference: {fileID: 0}
+    - target: {fileID: 7300802009010406659, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: InitialModule.startSpeed.scalar
+      value: 500
+      objectReference: {fileID: 0}
+    - target: {fileID: 7300802009010406659, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: InitialModule.startLifetime.scalar
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7300802009010406659, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: InitialModule.startLifetime.minScalar
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7300802009010406659, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: startDelay.maxCurve.m_Curve.Array.data[0].value
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7300802009010406659, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: startDelay.maxCurve.m_Curve.Array.data[1].value
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7302508167063552837, guid: d8082e6d06ae6824bb7326e150bc83ad,
         type: 3}
       propertyPath: m_Materials.Array.size

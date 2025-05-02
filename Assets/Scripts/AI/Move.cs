@@ -208,8 +208,15 @@ public class Move : Command
         foreach (Entity ent in EntityMgr.inst.entities)
         {
             if (ent == entity) continue;
+            
+            // Skip missiles and invalid entities
+            if (ent.entityClass == EntityClass.Missile || ent == null) continue;
 
             Potential p = DistanceMgr.inst.GetPotential(entity, ent);
+            
+            // Add null check for potential
+            if (p == null) continue;
+
             if (p.distance < AIMgr.inst.potentialDistanceThreshold)
             {
                 repulsivePotential += p.direction * ent.mass *

@@ -22,6 +22,7 @@ public class ScoreMgr : MonoBehaviour
         OpenOceanMain.inst.lobbyState = OpenOceanMain.LobbyState.ScorePanel;
         UpdateScoreDisplay();
         LogVictoryMessage();
+        
     }
 
     private void UpdateScoreDisplay()

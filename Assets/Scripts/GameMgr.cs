@@ -361,36 +361,57 @@ public class GameMgr : MonoBehaviour
 
 private void ClearAllEntities()
 {
-    // Destroy all weapons
+    // Clear weapons first with direct destruction
     if (WeaponsMgr.inst != null)
     {
+        // Stop all weapon behaviors first
+        WeaponsMgr.inst.StopAllWeapons();
+        
+        // Destroy weapons using a copy of the list
         var weaponsCopy = new List<Entity>(WeaponsMgr.inst.weapons);
         foreach (Entity weapon in weaponsCopy)
         {
-           if (weapon != null)
+            if (weapon != null && weapon.gameObject != null)
             {
-                if (weapon.weapons != null)
+                // Cancel any pending commands
+                if (weapon.TryGetComponent<UnitAI>(out var unitAI))
                 {
-                    WeaponsMgr.inst.weapons.Remove(weapon);
-                    Destroy(weapon.gameObject);
+                    unitAI.StopAndRemoveAllCommands();
+                }
+                
+                // Immediate destruction with null-check
+                if (weapon.gameObject != null)
+                {
+                    DestroyImmediate(weapon.gameObject);
                 }
             }
-            // Destroy the weapon GameObject
         }
+        WeaponsMgr.inst.weapons.Clear();
     }
 
-    // Destroy all entities
+    // Clear all other entities
     if (EntityMgr.inst != null)
     {
+        // Use a copy to avoid modification during iteration
         var entitiesCopy = new List<Entity>(EntityMgr.inst.entities);
         foreach (Entity entity in entitiesCopy)
         {
-            WeaponsMgr.inst.DestroyEntity(entity);
+            if (entity != null && entity.gameObject != null)
+            {
+                // Stop AI first
+                if (entity.TryGetComponent<UnitAI>(out var unitAI))
+                {
+                    unitAI.StopAndRemoveAllCommands();
+                }
+                
+                // Immediate destruction with null-check
+                if (entity.gameObject != null)
+                {
+                    DestroyImmediate(entity.gameObject);
+                }
+            }
         }
-        
-        // Clear the entity lists
         EntityMgr.inst.entities.Clear();
-        
     }
 
     // Clear selection
@@ -399,6 +420,11 @@ private void ClearAllEntities()
         SelectionMgr.inst.selectedEntities.Clear();
         SelectionMgr.inst.selectedEntity = null;
     }
+
+    // Force cleanup
+    System.GC.Collect();
+    Resources.UnloadUnusedAssets();
+    Physics.SyncTransforms();
 }
 
     private void ResetGameState()
@@ -443,6 +469,10 @@ private void ClearAllEntities()
         if (OpenOceanMain.inst != null)
         {
             OpenOceanMain.inst.ResetGameState();
+        }
+        if (MinimapMgr.inst != null)
+        {
+            MinimapMgr.inst.ResetMinimap();
         }
 }
 

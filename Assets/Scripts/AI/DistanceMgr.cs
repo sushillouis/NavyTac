@@ -143,21 +143,33 @@ public class DistanceMgr : MonoBehaviour
     public bool isInitialized = false;
     public int ii = 0;
     public int jj = 0;
-    public void Initialize()
+     public void Initialize()
     {
         isInitialized = true;
         potentialsDictionary = new Dictionary<Entity, Dictionary<Entity, Potential>>();
         potentialsList = new List<List<Potential>>();
-        int n = EntityMgr.inst.entities.Count;
+        
+        // Filter out missiles first
+        var validEntities = EntityMgr.inst.entities.FindAll(e => e.entityClass != EntityClass.Missile);
+        int n = validEntities.Count;
+        
         potentials2D = new Potential[n, n];
         ii = 0;
-        foreach (Entity ent1 in EntityMgr.inst.entities) {
+        
+        foreach (Entity ent1 in validEntities) 
+        {
+            if (ent1.entityClass == EntityClass.Missile) continue;
+            
             Dictionary<Entity, Potential> ent1PotDictionary = new Dictionary<Entity, Potential>();
             List<Potential> ent1PotList = new List<Potential>();
             potentialsDictionary.Add(ent1, ent1PotDictionary);
             potentialsList.Add(ent1PotList);
+            
             jj = 0;
-            foreach (Entity ent2 in EntityMgr.inst.entities) {
+            foreach (Entity ent2 in validEntities) 
+            {
+                if (ent2.entityClass == EntityClass.Missile) continue;
+                
                 Potential pot = new Potential(ent1, ent2);
                 ent1PotDictionary.Add(ent2, pot);
                 ent1PotList.Add(pot);
@@ -188,9 +200,9 @@ public class DistanceMgr : MonoBehaviour
     {
         // Potential p1, p2;
         Entity ent1, ent2;
-        int currentFrameMod = frameCounter % 10; 
-
-        for (int i = 0; i < EntityMgr.inst.entities.Count - 1; i++)
+        int currentFrameMod = frameCounter % 10;
+        List<Entity> validEntities = EntityMgr.inst.entities.FindAll(e => e.entityClass != EntityClass.Missile);
+        for (int i = 0; i < validEntities.Count - 1; i++)
         {
             
             if (i % 10 != currentFrameMod)
@@ -209,6 +221,8 @@ public class DistanceMgr : MonoBehaviour
     }
 
     public void ComputePotentials(Entity ent1, int ent1Index, Entity ent2, int ent2Index) {
+        if (ent1.entityClass == EntityClass.Missile || ent2.entityClass == EntityClass.Missile)
+            return;
         Potential p1, p2;
 
         p1 = potentials2D[ent1Index, ent2Index];

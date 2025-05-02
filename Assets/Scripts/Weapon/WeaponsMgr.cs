@@ -293,7 +293,27 @@ public class WeaponsMgr : MonoBehaviour
         public EntityType entityType;
         public float defaultDamage;
     }
-
+    public void StopAllWeapons()
+{
+    foreach (Entity weapon in weapons)
+    {
+        if (weapon != null)
+        {
+            // Stop movement and AI
+            weapon.StopAllCoroutines();
+            if (weapon.TryGetComponent<UnitAI>(out var unitAI))
+            {
+                unitAI.StopAndRemoveAllCommands();
+            }
+            
+            // Disable collision handling
+            if (weapon.TryGetComponent<WeaponCollisionHandler>(out var handler))
+            {
+                handler.enabled = false;
+            }
+        }
+    }
+}
     [Header("Context Menu")]
     
     public List<EntityTypes> weaponTypes = new List<EntityTypes>();

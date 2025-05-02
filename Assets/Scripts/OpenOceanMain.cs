@@ -290,7 +290,8 @@ public class OpenOceanMain : MonoBehaviour
             NetDebugConsolePanel.gameObject.SetActive(IsDebugging && IsNetDebugging);
             SingleMultiplayerPanel.isVisible = (value == LobbyState.SingleMultiPlayer);
             ScorePanel.isVisible = (value == LobbyState.ScorePanel);
-            Time.timeScale = (value == LobbyState.ScorePanel) ? 0f : 1f;
+            Time.timeScale = 0f;
+            Time.timeScale = (value == LobbyState.Play) ? 1f : 0f;
         }
     }
 

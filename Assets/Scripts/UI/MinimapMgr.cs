@@ -257,4 +257,43 @@ public class MinimapMgr : MonoBehaviour
         InitMapToWorldTransformationMatrix();
         InitWorldToMapTransformationMatrix();
     }
+    public void ResetMinimap()
+{
+    // Clear all entity icons
+    foreach (var icon in mapIcons.Values)
+    {
+        if (icon != null) Destroy(icon);
+    }
+    mapIcons.Clear();
+
+    // Reset camera icon
+    if (cameraIcon != null) Destroy(cameraIcon);
+    cameraIcon = Instantiate(cameraIconPrefab);
+    cameraIcon.name = "CameraIcon";
+    cameraIcon.transform.SetParent(minimapImage.transform, false);
+
+    // Reset zoom and pan
+    minimapZoom = 1;
+    mapOffset = Vector2.zero;
+
+    // Reset transformation matrices
+    InitWorldToMapTransformationMatrix();
+    InitMapToWorldTransformationMatrix();
+
+    // Reset minimap size if expanded
+    if (mapIsBig)
+    {
+        ResizeMap(); // Toggle back to small size
+    }
+
+    // Force reset UI layout
+    minimapImage.SetParent(minimapPanel);
+    rootPanel.gameObject.SetActive(false);
+    minimapImage.anchorMin = minimapImage.anchorMax = new Vector2(0.45f, 0.45f);
+    minimapImage.anchoredPosition = Vector2.zero;
+    minimapImage.sizeDelta = new Vector2(200, 200);
+    
+    // Reset radar size
+    radar.sizeDelta = Vector2.one * 200;
+}
 }
