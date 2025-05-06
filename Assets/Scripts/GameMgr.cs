@@ -42,7 +42,7 @@ public class GameMgr : MonoBehaviour
     public float colNum = 10;
     public float initZ;
 
-    [SerializeField] private List<EntityQuantity> entityQuantities = new List<EntityQuantity>();
+    [SerializeField] public List<EntityQuantity> entityQuantities = new List<EntityQuantity>();
     private Dictionary<EntityType, int> entityDict;
     [Range(1, 4)]
     [SerializeField] public int players;
@@ -83,7 +83,38 @@ public class GameMgr : MonoBehaviour
                 simSpeedButtonText.text = Time.timeScale.ToString("0");
         }
     }
+    void DetermineDifficulty()
+    {
+        switch (OpenOceanMain.inst.currentTrainingState)
+        {
+            case OpenOceanMain.TrainingState.PreTest:
+                difficultyLevel = difficultyRanges["easy"];
+                break;
+            case OpenOceanMain.TrainingState.PostTest:
+                difficultyLevel = difficultyRanges["medium"];
+                break;
+            case OpenOceanMain.TrainingState.Adaptive:
+                difficultyLevel = ComputeAdaptiveDifficulty(); // custom method
+                break;
+            case OpenOceanMain.TrainingState.NonAdaptive:
+                difficultyLevel = difficultyRanges["easy"];
+                break;
+            default:
+                difficultyLevel = difficultyRanges["easy"];
+                break;
+        }
 
+        if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
+        else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
+        else currentDifficulty = Difficulty.Hard;
+    }
+
+    float ComputeAdaptiveDifficulty()
+    {
+        difficultyLevel = difficultyLevel + 0.05f * ScoreMgr.inst.score / 100;
+        return difficultyLevel ;
+        
+    }
     public void Create100()
     {
         initZ = position.z;
@@ -171,12 +202,12 @@ public class GameMgr : MonoBehaviour
         {3, 0, 1}, // West: opposite=3, right=0, left=1
         {2, 1, 0}  // East: opposite=2, right=1, left=0
     };
-    void DetermineDifficulty()
-    {
-        if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
-        else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
-        else currentDifficulty = Difficulty.Hard;
-    }
+    // void DetermineDifficulty()
+    // {
+    //     if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
+    //     else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
+    //     else currentDifficulty = Difficulty.Hard;
+    // }
 
     public void OpenOcean1x1()
     {
@@ -474,6 +505,19 @@ private void ClearAllEntities()
         {
             MinimapMgr.inst.ResetMinimap();
         }
+        if (LineMgr.inst != null)
+        {
+            LineMgr.inst.DestroyAllLines();
+        }
+        if (WeaponsMgr.inst != null)
+        {
+            WeaponsMgr.inst.DestroyAllWeaponsImmediately();
+        }
+        if (FXMgr.inst != null)
+        {
+            FXMgr.inst.ResetEffects();
+        }
+
 }
 
    

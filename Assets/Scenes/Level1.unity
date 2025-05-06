@@ -7194,6 +7194,7 @@ MonoBehaviour:
   winnerText: {fileID: 1046015789}
   nextGameButton: {fileID: 2122797629}
   _lobbyState: 1
+  currentTrainingState: 0
   NetworkManagerGo: {fileID: 0}
   localNetSetup: {fileID: 0}
   localNetSetupNetworkObject: {fileID: 0}
@@ -8243,6 +8244,7 @@ MonoBehaviour:
   damageDealt: 0
   damageTaken: 0
   playerWon: 0
+  score: 0
   aiWon: 0
 --- !u!1 &2089646770
 GameObject:
@@ -10553,6 +10555,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5736990493930232814, guid: 3769d37cb4868da47b56c4040c02c3a9,
+        type: 3}
+      propertyPath: m_Texture
+      value: 
+      objectReference: {fileID: 2800000, guid: aeb46cca28f824843a34813025d13ac8, type: 3}
     - target: {fileID: 5886451697930039949, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}
       propertyPath: m_AnchorMax.x

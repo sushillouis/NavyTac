@@ -25,6 +25,14 @@ public class FXMgr : MonoBehaviour
         Destroy(et.gameObject);
     }
 
+    public void ResetEffects() {
+    StopAllCoroutines(); // Stops any pending ExplodeAndDestroy coroutines
+    foreach (Transform child in transform) {
+        Destroy(child.gameObject); // Destroys any still-active explosion effects
+    }
+}
+
+
     //Need smoke
 
 }

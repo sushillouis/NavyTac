@@ -96,6 +96,13 @@ public class LineMgr : MonoBehaviour
             lines.Remove(lr);
         }
         Destroy(tmp);
-
+    }
+    public void DestroyAllLines()
+    {
+        foreach (LineRenderer lr in lines)
+        {
+            Destroy(lr.gameObject);
+        }
+        lines.Clear();
     }
 }

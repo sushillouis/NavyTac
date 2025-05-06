@@ -93,7 +93,15 @@ public class OpenOceanMain : MonoBehaviour
 
     [SerializeField]
     private LobbyState _lobbyState = LobbyState.None;
-
+        public enum TrainingState
+    {
+        None,
+        PreTest,
+        PostTest,
+        Adaptive,
+        NonAdaptive
+    }
+    public TrainingState currentTrainingState = TrainingState.None;
     [SerializeField]
     private GameObject NetworkManagerGo;
 
@@ -180,12 +188,33 @@ public class OpenOceanMain : MonoBehaviour
                     Debug.Log("Invalid name format");
                     return;
                 }
-
-                if (string.IsNullOrEmpty(playerCode))
+                if (playerCode == "AAA")
+                {
+                    Debug.Log("Adaptive code");
+                    currentTrainingState = TrainingState.Adaptive;
+                }
+                else if (playerCode == "BBB")
+                {
+                    Debug.Log("Non-Adaptive code");
+                    currentTrainingState = TrainingState.NonAdaptive;
+                }
+                else if (playerCode == "ABC")
+                {
+                    Debug.Log("Pre-test code");
+                    currentTrainingState = TrainingState.PreTest;
+                }
+                else if (playerCode == "XYZ")
+                {
+                    Debug.Log("Post-test code");
+                    currentTrainingState = TrainingState.PostTest;
+                }
+                else
                 {
                     Debug.Log("Invalid code");
                     return;
                 }
+
+
                 Match match = Regex.Match(playerName, @"\d+");
                 if (match.Success)
                 {

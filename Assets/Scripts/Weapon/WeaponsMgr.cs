@@ -333,6 +333,60 @@ public class WeaponsMgr : MonoBehaviour
             }
         }
     }
+    // Add this method to WeaponsMgr class
+public void DestroyAllWeaponsImmediately(bool includePooled = true)
+{
+    // Destroy active weapons
+    List<Entity> weaponsToDestroy = weapons.ToList();
+    foreach (Entity weapon in weaponsToDestroy)
+    {
+        if (weapon == null) continue;
+
+        // Remove from management systems
+        EntityMgr.inst.entities.Remove(weapon);
+        weapons.Remove(weapon);
+        
+        // Clean up components
+        MinimapMgr.inst.RemoveMinimapIcon(weapon);
+        
+        // Stop AI and physics
+        if (weapon.TryGetComponent<UnitAI>(out var unitAI))
+        {
+            unitAI.StopAndRemoveAllCommands();
+        }
+        
+        // Immediate destruction
+        GameObject.Destroy(weapon.gameObject);
+    }
+    weapons.Clear();
+
+    // Destroy pooled weapons if requested
+    if (includePooled)
+    {
+        foreach (var playerEntry in weaponPools)
+        {
+            foreach (var typePool in playerEntry.Value)
+            {
+                while (typePool.Value.Count > 0)
+                {
+                    Entity pooledWeapon = typePool.Value.Dequeue();
+                    if (pooledWeapon != null && pooledWeapon.gameObject != null)
+                    {
+                        // Clean up pooled instance
+                        MinimapMgr.inst.RemoveMinimapIcon(pooledWeapon);
+                        GameObject.Destroy(pooledWeapon.gameObject);
+                    }
+                }
+                typePool.Value.Clear();
+            }
+            playerEntry.Value.Clear();
+        }
+        weaponPools.Clear();
+    }
+
+    // Reinitialize distance manager
+    DistanceMgr.inst.Initialize();
+}
 
     [ContextMenu("Damage Matrix to CSV")]
     public void DamageMatrixToCSV()
