@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq; // Added for LINQ usage in PruneEntityCooldowns
 using UnityEngine;
 
 public class EnemyAIMgr : MonoBehaviour
@@ -9,179 +10,231 @@ public class EnemyAIMgr : MonoBehaviour
     private Entity opponentBase; // Cached opponent base
     public List<Entity> aiBases = new List<Entity>();
     private Dictionary<Entity, float> entityCooldowns = new Dictionary<Entity, float>();
-    private float updateInterval = 0.5f;
-    private float lastUpdateTime;
-    private float initialStopDistance = 2000f; // Initial stopping distance
-    private float minDistanceReduction = 200f; // Reduce distance by this amount each step
 
-    void Awake() 
+    // Constants for configuration and magic numbers
+    private const string AiOwnerName = "Ai";
+    private const float DefaultUpdateInterval = 0.5f;
+    private const float DefaultInitialStopDistance = 2000f;
+    private const float DefaultMinDistanceReduction = 200f;
+    private const float DefaultWeaponRangeFallback = 600f;
+    private const float EntityMoveCooldownDuration = 0.5f;
+    private const float InitialMoveTargetBuffer = 50f; // Buffer for reaching initial stop distance
+    private const float FirstMoveSentinel = -1f; // Sentinel value for entityCooldowns indicating initial move
+
+    private float updateInterval = DefaultUpdateInterval;
+    private float lastUpdateTime;
+    private float initialStopDistance = DefaultInitialStopDistance;
+    private float minDistanceReduction = DefaultMinDistanceReduction;
+    private readonly System.StringComparison aiOwnerNameComparison = System.StringComparison.OrdinalIgnoreCase;
+
+    void Awake()
     {
-        
-        inst = this;
-        // opponentBase = FindOpponentBase(); // Initial search
+        if (inst == null)
+        {
+            inst = this;
+            // DontDestroyOnLoad(gameObject); // Uncomment if this manager should persist across scenes
+        }
+        else if (inst != this)
+        {
+            Debug.LogWarning("Duplicate EnemyAIMgr instance found. Destroying this one.");
+            Destroy(gameObject);
+            return;
+        }
     }
 
     private void Update()
     {
         if (Time.time - lastUpdateTime < updateInterval) return;
         lastUpdateTime = Time.time;
+
         FindAIBases();
-        CheckAIBases();
-        if (aiBases.Count == 0) {
-            Debug.Log("No AI bases found, reloading scene.");
-            // GameMgr.inst.ReloadScene(); // No AI bases found
+        CheckAndLogDestroyedAIBases();
+
+        if (aiBases.Count == 0)
+        {
+            HandleNoAIBases();
             return;
         }
-         // No AI bases found
-        if (currentLevel == 1)
-            HandleLevel1Behavior();
-        if (currentLevel == 2)
-            HandleLevel2Behavior();
+
+        UpdateOpponentBaseCache();
+        if (opponentBase == null)
+        {
+            HandleNoOpponentBase();
+            return;
+        }
+
+        List<Entity> aiEntities = GetAIEntities();
+        if (aiEntities.Count == 0)
+        {
+            // No AI units available, could be a specific game state or just wait.
+            return;
+        }
+        
+        PruneEntityCooldowns(aiEntities);
+        ProcessLevelBehavior(aiEntities);
     }
-     private void CheckAIBases()
+
+    private void PruneEntityCooldowns(List<Entity> activeAiEntities)
+    {
+        var activeSet = new HashSet<Entity>(activeAiEntities);
+        var keysToRemove = entityCooldowns.Keys
+            .Where(entityKey => entityKey == null || !activeSet.Contains(entityKey))
+            .ToList();
+
+        foreach (var key in keysToRemove)
+        {
+            entityCooldowns.Remove(key);
+        }
+    }
+
+    private void CheckAndLogDestroyedAIBases()
     {
         for (int i = aiBases.Count - 1; i >= 0; i--)
         {
             Entity baseEntity = aiBases[i];
-            if (baseEntity == null)
+            if (baseEntity == null) // Unity's overloaded null check for destroyed objects
             {
-                Debug.Log("AI base destroyed");
+                Debug.Log("AI base previously identified was found destroyed.");
                 aiBases.RemoveAt(i);
             }
         }
     }
 
-    // New method to find all AI bases
     private void FindAIBases()
     {
         aiBases.Clear();
         foreach (Entity e in EntityMgr.inst.entities)
         {
-            if (e != null && e.owner != null && 
-                e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase) && 
-                e.entityRole == EntityRole.Base)
+            // Using Unity's overloaded null check (e == null) is important for destroyed GameObjects
+            if (e == null || e.owner == null ||
+                !e.owner.name.Equals(AiOwnerName, aiOwnerNameComparison) ||
+                e.entityRole != EntityRole.Base)
             {
-                aiBases.Add(e);
+                continue;
             }
+            aiBases.Add(e);
         }
     }
-    private void HandleLevel1Behavior()
+    
+    private void HandleNoAIBases()
     {
-        // Check if cached base is still valid
+        Debug.Log("No AI bases found. This might trigger a game event (e.g., AI loss or scene reload).");
+        // GameMgr.inst.ReloadScene(); // Example action
+    }
+
+    private void UpdateOpponentBaseCache()
+    {
+        // If opponentBase is destroyed, Unity's overloaded '==' will make it appear null.
+        // Also, ensure it's still in the canonical list of entities if EntityMgr prunes destroyed ones.
         if (opponentBase == null || !EntityMgr.inst.entities.Contains(opponentBase))
         {
             opponentBase = FindOpponentBase();
         }
+    }
 
-        if (opponentBase == null)
+    private void HandleNoOpponentBase()
     {
         ScoreMgr.inst.aiWon = true;
         ScoreMgr.inst.CheckVictory();
-        return;
     }
 
-        List<Entity> aiEntities = GetAIEntities();
-        if (aiEntities.Count == 0) return;
-
-        HandleCombatBehavior(aiEntities);
-    }
-    private void HandleLevel2Behavior()
+    private void ProcessLevelBehavior(List<Entity> aiEntities)
     {
-        // Check if cached base is still valid
-        if (opponentBase == null || !EntityMgr.inst.entities.Contains(opponentBase))
+        switch (currentLevel)
         {
-            opponentBase = FindOpponentBase();
+            case 1:
+                HandleLevel1CombatBehavior(aiEntities);
+                break;
+            case 2:
+                HandleLevel2CombatBehavior(aiEntities);
+                break;
+            default:
+                Debug.LogWarning($"Unhandled AI level: {currentLevel}");
+                break;
         }
-
-        if (opponentBase == null)
-    {
-        ScoreMgr.inst.aiWon = true;
-        ScoreMgr.inst.CheckVictory();
-        return;
     }
 
-        List<Entity> aiEntities = GetAIEntities();
-        if (aiEntities.Count == 0) return;
-
-        Handlelevel2CombatBehavior(aiEntities);
-    }
-    private void Handlelevel2CombatBehavior(List<Entity> aiEntities)
+    private void HandleLevel1CombatBehavior(List<Entity> aiEntities)
     {
+        Vector3 opponentPos = opponentBase.position;
+
+        for (int i = aiEntities.Count - 1; i >= 0; i--)
+        {
+            Entity aiEntity = aiEntities[i];
+            if (aiEntity == null) continue; // Skip destroyed entities
+
+            WeaponsAspect weaponAspect = aiEntity.GetComponentInChildren<WeaponsAspect>();
+            float weaponRange = weaponAspect != null ? weaponAspect.weapon.range : DefaultWeaponRangeFallback;
+
+            if (!entityCooldowns.ContainsKey(aiEntity))
+            {
+                entityCooldowns[aiEntity] = FirstMoveSentinel; // Mark for initial move
+            }
+
+            float currentDistance = Vector3.Distance(aiEntity.position, opponentPos);
+            float targetDistance;
+
+            bool isInitialMovePhase = entityCooldowns[aiEntity] == FirstMoveSentinel;
+
+            if (isInitialMovePhase)
+            {
+                targetDistance = initialStopDistance;
+                if (currentDistance <= initialStopDistance + InitialMoveTargetBuffer)
+                {
+                    // Completed initial approach, set cooldown for next decision
+                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
+                }
+                // If not yet at initialStopDistance + buffer, no cooldown is set here;
+                // it will re-evaluate next frame until it reaches the spot or the state changes.
+            }
+            else // Not initial move phase, regular behavior
+            {
+                // Check if entity is cooling down from a previous move/action
+                if (Time.time < entityCooldowns[aiEntity]) 
+                {
+                    continue; // Still cooling down
+                }
+
+                Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange);
+                if (nearestEnemy != null)
+                {
+                    UnitAI unitAI = aiEntity.GetComponentInChildren<UnitAI>();
+                    unitAI?.StopAndRemoveAllCommands(); // Engage enemy
+                    // Potentially set a cooldown after engaging
+                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration; 
+                    continue; 
+                }
+                else
+                {
+                    targetDistance = CalculateDynamicTargetDistance(aiEntity, weaponRange, currentDistance);
+                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration; // Set cooldown for next move decision
+                }
+            }
+            AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false, doneDistanceSq: targetDistance * targetDistance);
+        }
+    }
+
+    private void HandleLevel2CombatBehavior(List<Entity> aiEntities)
+    {
+        // For Level 2, AI directly attack-moves towards the opponent base.
+        // Cooldowns or complex positioning might not be needed here as per original logic.
         AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, null, false);
     }
-    private void HandleCombatBehavior(List<Entity> aiEntities)
-{
-    Vector3 opponentPos = opponentBase.position;
 
-    for (int i = aiEntities.Count - 1; i >= 0; i--)
+    private float CalculateDynamicTargetDistance(Entity aiEntity, float weaponRange, float currentDistance)
     {
-        Entity aiEntity = aiEntities[i];
-        if (aiEntity == null) continue;
+        float targetDist = initialStopDistance; // Default to initial stop distance
 
-        WeaponsAspect weaponAspect = aiEntity.GetComponentInChildren<WeaponsAspect>();
-        float weaponRange = weaponAspect != null ? weaponAspect.weapon.range : 600f;
-
-        // Initialize cooldown if not present (use -1 to indicate "first move" state)
-        if (!entityCooldowns.ContainsKey(aiEntity))
-        {
-            entityCooldowns[aiEntity] = -1f;
-        }
-
-        float currentDistance = Vector3.Distance(aiEntity.position, opponentPos);
-        float targetDistance;
-
-        // Check if this is the first move (hasn't reached 2000 units yet)
-        if (entityCooldowns[aiEntity] < 0f)
-        {
-            targetDistance = initialStopDistance; // Force first stop at 2000 units
-
-            // If close enough to 2000 units, mark as having completed first stop
-            if (currentDistance <= initialStopDistance + 50f) // Adding small buffer
-            {
-                entityCooldowns[aiEntity] = Time.time + 0.5f; // Normal cooldown starts
-            }
-        }
-        else
-        {
-            // After first stop, normal behavior
-            Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange);
-            if (nearestEnemy != null)
-            {
-                // Engage the enemy
-                UnitAI unitAI = aiEntity.GetComponentInChildren<UnitAI>();
-                unitAI?.StopAndRemoveAllCommands();
-                continue; // Skip movement if engaging enemy
-            }
-            else
-            {
-                // No enemies in range, calculate dynamic distance
-                targetDistance = weaponAspect != null ? CalculateTargetDistance(aiEntity, weaponRange, currentDistance) : 600f;
-                entityCooldowns[aiEntity] = Time.time + 0.5f;
-            }
-        }
-
-        // Move towards the target distance
-        AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false, doneDistanceSq: targetDistance * targetDistance);
-    }
-}
-
-    private float CalculateTargetDistance(Entity aiEntity, float weaponRange, float currentDistance)
-    {
-        // Start with initial stop distance of 2000 units
-        float targetDistance = initialStopDistance;
-
-        // If no enemies are nearby and we're beyond weapon range, gradually reduce the distance
+        // If no enemies are nearby (checked up to initialStopDistance) and we're beyond weapon range, gradually reduce the distance
         if (currentDistance > weaponRange && FindNearestEnemy(aiEntity, initialStopDistance) == null)
         {
-            targetDistance = Mathf.Max(weaponRange, currentDistance - minDistanceReduction);
+            targetDist = Mathf.Max(weaponRange, currentDistance - minDistanceReduction);
         }
-        // Once within weapon range, stop reducing
-        else if (currentDistance <= weaponRange)
+        else if (currentDistance <= weaponRange) // Once within weapon range (or if enemies were found closer), target weapon range
         {
-            targetDistance = weaponRange;
+            targetDist = weaponRange;
         }
-
-        return targetDistance;
+        return targetDist;
     }
 
     private Entity FindNearestEnemy(Entity aiEntity, float range)
@@ -189,18 +242,21 @@ public class EnemyAIMgr : MonoBehaviour
         Vector3 aiPos = aiEntity.position;
         float sqrRange = range * range;
         Entity nearest = null;
-        float nearestDist = float.MaxValue;
+        float nearestDistSq = float.MaxValue;
 
         foreach (Entity e in EntityMgr.inst.entities)
         {
-            if (e == null || e.owner == null || e.entityClass == EntityClass.Missile) continue;
-            if (e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase)) continue;
+            if (e == null || e.owner == null || e.entityClass == EntityClass.Missile ||
+                e.owner.name.Equals(AiOwnerName, aiOwnerNameComparison)) // Skip own units and missiles
+            {
+                continue;
+            }
 
-            float dist = (e.position - aiPos).sqrMagnitude;
-            if (dist < sqrRange && dist < nearestDist)
+            float distSq = (e.position - aiPos).sqrMagnitude;
+            if (distSq < sqrRange && distSq < nearestDistSq)
             {
                 nearest = e;
-                nearestDist = dist;
+                nearestDistSq = distSq;
             }
         }
         return nearest;
@@ -210,25 +266,30 @@ public class EnemyAIMgr : MonoBehaviour
     {
         foreach (Entity e in EntityMgr.inst.entities)
         {
-            if (e != null && e.owner != null && 
-                !e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase) && 
-                e.entityRole == EntityRole.Base)
-                return e;
+            if (e == null || e.owner == null ||
+                e.owner.name.Equals(AiOwnerName, aiOwnerNameComparison) ||
+                e.entityRole != EntityRole.Base)
+            {
+                continue;
+            }
+            return e; // Found an opponent's base
         }
         return null;
     }
 
     private List<Entity> GetAIEntities()
     {
-        List<Entity> result = new List<Entity>(EntityMgr.inst.entities.Count / 2);
+        List<Entity> result = new List<Entity>(EntityMgr.inst.entities.Count / 2); // Pre-allocate
         foreach (Entity e in EntityMgr.inst.entities)
         {
-            if (e != null && e.owner != null && 
-                e.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase) && 
-                e.entityClass != EntityClass.Missile)
-                result.Add(e);
+            if (e == null || e.owner == null ||
+                !e.owner.name.Equals(AiOwnerName, aiOwnerNameComparison) ||
+                e.entityClass == EntityClass.Missile) // Exclude missiles
+            {
+                continue;
+            }
+            result.Add(e);
         }
         return result;
     }
-    
 }

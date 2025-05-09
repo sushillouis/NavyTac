@@ -6,6 +6,7 @@ public class AttackMove : Move
     private Entity explicitTarget;
     private bool hasExplicitTarget;
     private float basePathUpdateCooldown;
+    private Vector3 lastKnownTargetPosition; // Store the last known position of the explicit target
 
     public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false) : base(ent, pos, maxSpeed)
     {
@@ -18,6 +19,11 @@ public class AttackMove : Move
     {
         explicitTarget = target;
         hasExplicitTarget = true;
+        // Initialize lastKnownTargetPosition with the target's initial position
+        if (target != null) 
+        {
+            lastKnownTargetPosition = target.position;
+        }
         pathUpdateCooldown = 0.2f; // Most frequent updates for moving targets
         basePathUpdateCooldown = pathUpdateCooldown;
     }
@@ -34,13 +40,22 @@ public class AttackMove : Move
 
     public override void Tick()
     {
-        // Update target position for moving targets
-        if (hasExplicitTarget && explicitTarget != null)
+        if (hasExplicitTarget)
         {
-            movePosition = explicitTarget.position;
-            
-            // Increase update frequency when target is moving
-            pathUpdateCooldown = explicitTarget.speed > 1f ? 0.2f : basePathUpdateCooldown;
+            if (IsTargetValid(explicitTarget))
+            {
+                movePosition = explicitTarget.position;
+                lastKnownTargetPosition = explicitTarget.position; // Update last known position
+                
+                // Increase update frequency when target is moving
+                pathUpdateCooldown = explicitTarget.speed > 1f ? 0.2f : basePathUpdateCooldown;
+            }
+            else
+            {
+                // Target is invalid (e.g., destroyed), move to its last known position
+                movePosition = lastKnownTargetPosition;
+                pathUpdateCooldown = basePathUpdateCooldown; // Revert to base cooldown for static point
+            }
         }
 
         // Check for immediate threats
@@ -53,7 +68,9 @@ public class AttackMove : Move
         }
         else
         {
-            base.Tick(); // Proceed with normal pathfinding
+            // If hasExplicitTarget and target became invalid, movePosition is now lastKnownTargetPosition.
+            // base.Tick() will pathfind towards movePosition.
+            base.Tick(); 
         }
 
         UpdateAttackLineRenderer();
@@ -66,7 +83,7 @@ public class AttackMove : Move
             line.gameObject.SetActive(entity.isSelected);
             line.positionCount = 2;
             line.SetPosition(0, entity.position);
-            line.SetPosition(1, movePosition);
+            line.SetPosition(1, movePosition); // movePosition will be target or lastKnownTargetPosition
         }
     }
 
@@ -110,7 +127,7 @@ public class AttackMove : Move
         else
         {
             // Approach target using pathfinding
-            movePosition = target.position;
+            movePosition = target.position; // Ensure movePosition is the engagement target
             base.Tick();
         }
     }
@@ -119,10 +136,18 @@ public class AttackMove : Move
     {
         if (hasExplicitTarget)
         {
-            return !IsTargetValid(explicitTarget) || 
-                   (entity.position - explicitTarget.position).sqrMagnitude < doneDistanceSq;
+            if (IsTargetValid(explicitTarget))
+            {
+                // Target is still valid, check distance to target
+                return (entity.position - explicitTarget.position).sqrMagnitude < doneDistanceSq;
+            }
+            else
+            {
+                // Target is invalid, check distance to last known position
+                return (entity.position - lastKnownTargetPosition).sqrMagnitude < doneDistanceSq;
+            }
         }
-        return base.IsDone();
+        return base.IsDone(); // Handles AttackMove to a position, or if explicit target part is done
     }
 
     private bool IsTargetValid(Entity target)
@@ -137,12 +162,17 @@ public class AttackMove : Move
     {
         if (hasExplicitTarget)
         {
-            movePosition = explicitTarget.position;
-            base.Stop();
+            if (IsTargetValid(explicitTarget))
+            {
+                movePosition = explicitTarget.position;
+            }
+            else
+            {
+                // Target is invalid, use last known position for stopping
+                movePosition = lastKnownTargetPosition;
+            }
         }
-        else
-        {
-            base.Stop();
-        }
+        // base.Stop() will use the updated movePosition
+        base.Stop();
     }
 }

@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 [System.Serializable]
@@ -32,6 +31,33 @@ public class Move : Command
     private const float waypointThreshold = 100f; // Distance to consider waypoint reached
     public float pathUpdateCooldown = 1f;
     private float lastPathUpdateTime = -Mathf.Infinity;
+
+    // Optimization for ComputeTerrainRepulsion
+    private static readonly int terrainMask;
+    private Collider[] nearbyColliders = new Collider[32]; // Pre-allocate for terrain
+
+    // Optimizations for entity repulsion
+    private static readonly int entityLayerMask; // Layer mask for entities
+    private Collider[] nearbyEntityColliders = new Collider[32]; // Pre-allocate for entities
+
+    static Move()
+    {
+        terrainMask = 1 << LayerMask.NameToLayer("Terrain");
+        // TODO: Ensure your entities are on a layer named "Entities" or change the layer name here.
+        // If entities are on multiple layers, or you need a more complex mask, adjust accordingly.
+        // Example: entityLayerMask = LayerMask.GetMask("Entities", "LargeEntities");
+        // Example: entityLayerMask = ~(terrainMask); // All layers except terrain
+        int mask = LayerMask.GetMask("Entities");
+        if (mask == 0) {
+            Debug.LogWarning("Move.cs: 'Entities' layer not found or empty. Entity repulsion might not work correctly. Please configure layers.");
+            // Fallback to default layer or all layers if appropriate, e.g., LayerMask.NameToLayer("Default") or -1
+            // For safety, using a mask that likely includes entities if "Entities" layer is not set up:
+            entityLayerMask = ~(terrainMask | (1 << LayerMask.NameToLayer("Ignore Raycast")) | (1 << LayerMask.NameToLayer("Water"))); // Example: Exclude terrain, ignore raycast, water
+        } else {
+            entityLayerMask = mask;
+        }
+
+    }
 
     public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false, float doneDistanceSq = 100000f) : base(ent)
     {
@@ -70,7 +96,8 @@ public class Move : Command
     {
         if (success && path.Length > 0)
         {
-            pathWaypoints = new List<Vector3>(path);
+            pathWaypoints.Clear(); // Reuse existing list
+            pathWaypoints.AddRange(path); // Add new path waypoints
             currentWaypointIndex = 0;
             hasPath = true;
         }
@@ -82,96 +109,102 @@ public class Move : Command
     }
 
     public override void Tick()
-{
-    // Request path only when starting to process this command
-    if (!hasPath)
     {
-        RequestNewPath();
-    }
+        // Request path only when starting to process this command
+        if (!hasPath && (pathWaypoints == null || pathWaypoints.Count == 0)) // Ensure path is requested if empty
+        {
+            RequestNewPath();
+        }
 
-    if (hasPath && currentWaypointIndex < pathWaypoints.Count)
-    {
-        FollowPath();
+        if (hasPath && currentWaypointIndex < pathWaypoints.Count)
+        {
+            FollowPath();
+        }
+        else
+        {
+            // If path becomes invalid or finishes, can request new or switch to potential fields
+            if (hasPath && currentWaypointIndex >= pathWaypoints.Count) {
+                 hasPath = false; // Path finished or invalid
+                 RequestNewPath(); // Attempt to get a new path to final destination
+            }
+            UsePotentialFields();
+        }
     }
-    else
-    {
-        UsePotentialFields();
-    }
-}
 
     private void FollowPath()
     {
-    Vector3 currentWaypoint = pathWaypoints[currentWaypointIndex];
-    DHDS dhds = ComputePotentialDHDS(currentWaypoint);
-
-    entity.desiredHeading = dhds.dh;
-    entity.desiredSpeed = dhds.ds;
-
-    // Calculate current distance and direction to waypoint
-    float currentDistance = Vector3.Distance(entity.position, currentWaypoint);
-    Vector3 toWaypointDir = (currentWaypoint - entity.position).normalized;
-
-    // Directional alignment check using potential sum
-    Vector3 potentialDir = potentialSum.normalized;
-    float directionDot = Vector3.Dot(toWaypointDir, potentialDir);
-
-    // Progress check: compare with previous distance
-    if (currentDistance >= previousDistanceToWaypoint - waypointThreshold * 0.1f)
-    {
-        stuckFrames++;
-    }
-    else
-    {
-        stuckFrames = Mathf.Max(0, stuckFrames - 1);
-    }
-
-    // Update previous distance
-    previousDistanceToWaypoint = currentDistance;
-
-    // Check if potential is working against reaching the waypoint
-    if (directionDot < 0.3f) // Threshold for directional misalignment
-    {
-        stuckFrames += 2; // Accelerate stuck count
-    }
-
-    // Skip waypoint if stuck
-    if (stuckFrames >= maxStuckFrames)
-    {
-        currentWaypointIndex++;
-        stuckFrames = 0;
-        previousDistanceToWaypoint = Mathf.Infinity;
+        Vector3 currentWaypoint = pathWaypoints[currentWaypointIndex];
         
-        // Immediately request new path if skipping waypoints
-        RequestNewPath();
-        return;
-    }
+        // The A* path provides global guidance (the "flow field").
+        // ComputePotentialDHDS uses the current A* waypoint as the attractive target.
+        // The repulsive forces within ComputePotentialDHDS act as the "collision-avoidance delta."
+        // This combination helps avoid local minima common in pure potential field navigation.
+        DHDS dhds = ComputePotentialDHDS(currentWaypoint); 
 
-    // Existing waypoint distance check
-    if (currentDistance < waypointThreshold)
-    {
-        currentWaypointIndex++;
-        stuckFrames = 0;
-        previousDistanceToWaypoint = Mathf.Infinity;
-    }
+        entity.desiredHeading = dhds.dh;
+        entity.desiredSpeed = dhds.ds;
 
-        // Check waypoint progression
-        float distanceToWaypoint = Vector3.Distance(entity.position, currentWaypoint);
-        if (distanceToWaypoint < waypointThreshold)
+        float distanceToWaypointSq = (entity.position - currentWaypoint).sqrMagnitude;
+        float waypointThresholdSq = waypointThreshold * waypointThreshold;
+
+        // Progress check: compare with previous distance
+        // Note: Using sqrMagnitude for previousDistanceToWaypoint would complicate this check.
+        // Sticking to linear distance for clarity here as it's not the primary N^2 bottleneck.
+        float currentLinearDistanceToWaypoint = Mathf.Sqrt(distanceToWaypointSq);
+
+        if (currentLinearDistanceToWaypoint >= previousDistanceToWaypoint - waypointThreshold * 0.1f)
+        {
+            stuckFrames++;
+        }
+        else
+        {
+            stuckFrames = Mathf.Max(0, stuckFrames - 1); // Decrease stuck frames if making progress
+        }
+        previousDistanceToWaypoint = currentLinearDistanceToWaypoint;
+        
+        Vector3 toWaypointDir = (currentWaypoint - entity.position).normalized;
+        Vector3 potentialDir = potentialSum.normalized; // potentialSum is calculated in ComputePotentialDHDS
+        float directionDot = Vector3.Dot(toWaypointDir, potentialDir);
+
+        if (directionDot < 0.3f) // Potential fields are strongly opposing path direction
+        {
+            stuckFrames += 2; 
+        }
+
+        if (stuckFrames >= maxStuckFrames)
         {
             currentWaypointIndex++;
-            
-            // Request new path if final waypoint is obsolete
+            stuckFrames = 0;
+            previousDistanceToWaypoint = Mathf.Infinity;
+            if (currentWaypointIndex < pathWaypoints.Count)
+            {
+                // Still more waypoints, continue
+            }
+            else
+            {
+                hasPath = false; // Reached end of path or path became too short
+                RequestNewPath(); // Request new path to final destination
+            }
+            return;
+        }
+
+        if (distanceToWaypointSq < waypointThresholdSq)
+        {
+            currentWaypointIndex++;
+            stuckFrames = 0;
+            previousDistanceToWaypoint = Mathf.Infinity;
             if (currentWaypointIndex >= pathWaypoints.Count)
             {
-                RequestNewPath();
+                 hasPath = false; // Reached end of path
+                 RequestNewPath(); // Request new path to final destination
             }
         }
 
-        // Periodic path validation
-        if (currentWaypointIndex > 0 && currentWaypointIndex < pathWaypoints.Count)
+        // Periodic path validation/refresh (optional, can be tuned)
+        if (hasPath && currentWaypointIndex > 0 && currentWaypointIndex < pathWaypoints.Count)
         {
             float segmentProgress = (float)currentWaypointIndex / pathWaypoints.Count;
-            if (segmentProgress > 0.7f) // Refresh path when 70% through current path
+            if (segmentProgress > 0.7f && Time.time > lastPathUpdateTime + pathUpdateCooldown * 2) // More aggressive refresh if near end
             {
                 RequestNewPath();
             }
@@ -180,7 +213,6 @@ public class Move : Command
 
     private void UsePotentialFields()
     {
-        // Original potential field implementation
         DHDS dhds = AIMgr.inst.isPotentialFieldsMovement ? 
                    ComputePotentialDHDS(movePosition) : 
                    ComputeDHDS();
@@ -197,31 +229,37 @@ public class Move : Command
         return new DHDS(dhDegrees, entity.maxSpeed);
     }
 
-    public virtual DHDS ComputePotentialDHDS(Vector3 movePosition)
+    public virtual DHDS ComputePotentialDHDS(Vector3 targetPosition) // Renamed movePosition to targetPosition for clarity
     {
-        diffToMovePosition = movePosition - entity.position;
+        diffToMovePosition = targetPosition - entity.position; // Use targetPosition
         repulsivePotential = Vector3.zero;
         attractivePotential = Vector3.zero;
         potentialSum = Vector3.zero;
 
-        // Entity repulsion
-        foreach (Entity ent in EntityMgr.inst.entities)
+        // Entity repulsion using spatial query
+        float actualPotentialDistanceThreshold = AIMgr.inst.potentialDistanceThreshold;
+        float potentialDistanceThresholdSq = actualPotentialDistanceThreshold * actualPotentialDistanceThreshold;
+        
+        int numFoundEntities = Physics.OverlapSphereNonAlloc(entity.position, actualPotentialDistanceThreshold, nearbyEntityColliders, entityLayerMask, QueryTriggerInteraction.Ignore);
+
+        for (int i = 0; i < numFoundEntities; i++)
         {
-            if (ent == entity) continue;
-            
-            // Skip missiles and invalid entities
-            if (ent.entityClass == EntityClass.Missile || ent == null) continue;
+            Entity ent = nearbyEntityColliders[i].GetComponent<Entity>(); // Assuming Entity component is on the collider's GameObject
 
-            Potential p = DistanceMgr.inst.GetPotential(entity, ent);
+            if (ent == null || ent == entity || ent.entityClass == EntityClass.Missile) continue;
             
-            // Add null check for potential
-            if (p == null) continue;
+            Vector3 diffToEnt = ent.position - entity.position;
+            float sqrDistToEnt = diffToEnt.sqrMagnitude;
 
-            if (p.distance < AIMgr.inst.potentialDistanceThreshold)
+            if (sqrDistToEnt < potentialDistanceThresholdSq && sqrDistToEnt > 0.0001f) 
             {
-                repulsivePotential += p.direction * ent.mass *
+                float distToEnt = Mathf.Sqrt(sqrDistToEnt);
+                Vector3 dirToEnt = diffToEnt / distToEnt; 
+
+                // -dirToEnt results in a vector pointing from 'ent' towards 'entity', i.e., a push-away direction.
+                repulsivePotential += -dirToEnt * ent.mass * 
                     AIMgr.inst.repulsiveCoefficient * 
-                    Mathf.Pow(p.diff.magnitude, AIMgr.inst.repulsiveExponent);
+                    Mathf.Pow(distToEnt, AIMgr.inst.repulsiveExponent);
             }
         }
 
@@ -231,24 +269,34 @@ public class Move : Command
             repulsivePotential += ComputeNoGoZoneContribution(zone, entity.position);
         }
         repulsivePotential += ComputeTerrainRepulsion(entity.position);
-        // Attraction to target
-        Vector3 rawAttraction = movePosition - entity.position;
-        attractivePotential = rawAttraction.normalized *
-            AIMgr.inst.attractionCoefficient *
-            Mathf.Pow(rawAttraction.magnitude, AIMgr.inst.attractiveExponent);
 
-        potentialSum = attractivePotential - repulsivePotential;
+        // Attraction to target
+        Vector3 rawAttraction = targetPosition - entity.position; // Use targetPosition
+        float distToTarget = rawAttraction.magnitude;
+        if (distToTarget > 0.001f) 
+        {
+            attractivePotential = (rawAttraction / distToTarget) * 
+                AIMgr.inst.attractionCoefficient *
+                Mathf.Pow(distToTarget, AIMgr.inst.attractiveExponent);
+        }
+        else
+        {
+            attractivePotential = Vector3.zero;
+        }
         
-        // Calculate final DHDS
+        // Repulsive potential is calculated as a push-away vector.
+        // So, it should be added to the attractive potential.
+        potentialSum = attractivePotential + repulsivePotential; 
+        
         dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
         angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
         cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
         ds = entity.maxSpeed * cosValue;
 
-        if (potentialLine != null)
+        if (potentialLine != null && potentialLine.gameObject.activeInHierarchy) 
         {
             potentialLine.SetPosition(0, entity.position);
-            potentialLine.SetPosition(1, entity.position + potentialSum);
+            potentialLine.SetPosition(1, entity.position + potentialSum.normalized * 100f); 
         }
         
         return new DHDS(dh, ds);
@@ -257,13 +305,18 @@ public class Move : Command
     public DHDS ComputePF2() 
     {
         diffToMovePosition = movePosition - entity.position;
-        repulsivePotential = Vector3.one;
-        repulsivePotential.y = 0;
+        repulsivePotential = Vector3.one; 
+        repulsivePotential.y = 0; 
 
-        // Entity repulsion
-        foreach(Entity otherEnt in EntityMgr.inst.entities) 
+        float detectionRadius = Mathf.Sqrt(AIMgr.inst.potentialDistanceThresholdSq); 
+        int numFoundEntities = Physics.OverlapSphereNonAlloc(entity.position, detectionRadius, nearbyEntityColliders, entityLayerMask, QueryTriggerInteraction.Ignore);
+
+        for (int i = 0; i < numFoundEntities; i++)
         {
-            if(otherEnt != entity && (entity.position - otherEnt.position).sqrMagnitude < AIMgr.inst.potentialDistanceThresholdSq) 
+            Entity otherEnt = nearbyEntityColliders[i].GetComponent<Entity>();
+            if (otherEnt == null || otherEnt == entity) continue;
+
+            if ((entity.position - otherEnt.position).sqrMagnitude < AIMgr.inst.potentialDistanceThresholdSq)
             {
                 Potential pot;
                 if(entity.ai.potentialsD.ContainsKey(otherEnt)) 
@@ -272,14 +325,15 @@ public class Move : Command
                 } 
                 else 
                 {
-                    pot = new Potential(entity, otherEnt);
+                    pot = new Potential(entity, otherEnt); 
                     entity.ai.potentialsD.Add(otherEnt, pot);
                     entity.ai.potentialsL.Add(new EntityPotential { entity = otherEnt, potential = pot });
                 }
-                pot.ReCompute();
+                pot.ReCompute(); 
                 foreach(SubPotential subPot in pot.subPotentials) 
                 {
-                    repulsivePotential += subPot.direction * otherEnt.mass * 0.05f
+                    // Assuming subPot.direction is a push-away vector (oriented to push 'entity' away from 'otherEnt').
+                    repulsivePotential += subPot.direction * otherEnt.mass * 0.05f 
                         * AIMgr.inst.repulsive2Coefficient * Mathf.Pow(subPot.distance, AIMgr.inst.repulsiveExponent);
                 }
             }
@@ -292,11 +346,19 @@ public class Move : Command
         }
 
         // Attraction to target
-        Vector3 tmp = (movePosition - entity.position).normalized;
-        attractivePotential = tmp 
-            * AIMgr.inst.attraction2Coefficient * entity.mass * Mathf.Pow(diffToMovePosition.magnitude, AIMgr.inst.attractiveExponent);
-
-        potentialSum = attractivePotential - repulsivePotential;
+        Vector3 tmp = (movePosition - entity.position); 
+        float magDiffToMovePos = tmp.magnitude;
+        if (magDiffToMovePos > 0.001f)
+        {
+             attractivePotential = (tmp / magDiffToMovePos) 
+                * AIMgr.inst.attraction2Coefficient * entity.mass * Mathf.Pow(magDiffToMovePos, AIMgr.inst.attractiveExponent);
+        } else {
+            attractivePotential = Vector3.zero;
+        }
+       
+        // If repulsivePotential accumulates push-away vectors (as assumed from subPot.direction's role),
+        // it should be added to attractivePotential, not subtracted.
+        potentialSum = attractivePotential + repulsivePotential; // Changed from subtraction to addition
         dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z)); 
         angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
         cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
@@ -304,83 +366,84 @@ public class Move : Command
         
         return new DHDS(dh, ds);
     }
-   // In Move.cs - Replace ComputeTerrainRepulsion
-// In Move.cs
-private Vector3 ComputeTerrainRepulsion(Vector3 shipPosition)
-{
-    Vector3 totalRepulsion = Vector3.zero;
-    LayerMask terrainLayer = LayerMask.GetMask("Terrain");
-    float detectionRadius = AIMgr.inst.terrainDetectionRadius;
-    float maxRepel = AIMgr.inst.maxTerrainRepulsion;
 
-    // 1. Broad-phase detection using sphere overlap
-    Collider[] colliders = Physics.OverlapSphere(shipPosition, detectionRadius, terrainLayer);
-    
-    foreach (Collider col in colliders)
+    private Vector3 ComputeTerrainRepulsion(Vector3 shipPosition)
     {
-        // 2. Narrow-phase using bounds approximation
-        Vector3 closestBoundsPoint = col.bounds.ClosestPoint(shipPosition);
-        Vector3 toShip = shipPosition - closestBoundsPoint;
-        float distance = toShip.magnitude;
+        Vector3 totalRepulsion = Vector3.zero;
+        float detectionRadius = AIMgr.inst.terrainDetectionRadius;
+        float maxRepel = AIMgr.inst.maxTerrainRepulsion;
 
-        if (distance > detectionRadius || distance < 0.1f) continue;
-
-        // 3. Fine-tune with raycast to actual surface
-        RaycastHit hit;
-        if (Physics.Raycast(shipPosition, (closestBoundsPoint - shipPosition).normalized, 
-                           out hit, detectionRadius, terrainLayer))
+        int numColliders = Physics.OverlapSphereNonAlloc(shipPosition, detectionRadius, nearbyColliders, terrainMask, QueryTriggerInteraction.Collide);
+        
+        for (int i = 0; i < numColliders; i++)
         {
-            Vector3 surfaceNormal = hit.normal;
-            float surfaceDistance = hit.distance;
-            
-            // 4. Calculate repulsion force
-            float strength = Mathf.Clamp01(1 - (surfaceDistance / detectionRadius)) * maxRepel;
-            Vector3 repelDir = Vector3.Reflect(-hit.normal, Vector3.up).normalized;
-            repelDir.y = 0;
+            Collider col = nearbyColliders[i];
+            Vector3 closestBoundsPoint = col.bounds.ClosestPoint(shipPosition);
+            Vector3 toShip = shipPosition - closestBoundsPoint;
+            float distanceToBounds = toShip.magnitude; 
 
-            totalRepulsion += repelDir * strength;
+            if (distanceToBounds > detectionRadius || distanceToBounds < 0.01f) continue; 
+
+            RaycastHit hit;
+            if (Physics.Raycast(shipPosition, (closestBoundsPoint - shipPosition).normalized, 
+                               out hit, detectionRadius, terrainMask))
+            {
+                float strength = Mathf.Clamp01(1 - (hit.distance / detectionRadius)) * maxRepel;
+                
+                Vector3 repelDir = hit.normal; 
+                repelDir.y = 0; 
+                                
+                if (repelDir.sqrMagnitude < 0.001f && hit.normal.y > 0.99f) { 
+                    Vector3 entityForwardPlanar = entity.transform.forward;
+                    entityForwardPlanar.y = 0;
+                    repelDir = Vector3.Reflect(entityForwardPlanar.normalized, hit.normal);
+                    repelDir.y = 0;
+                }
+                
+                if (repelDir.sqrMagnitude > 0.001f) {
+                    totalRepulsion += repelDir.normalized * strength;
+                }
+            }
         }
+
+        if (totalRepulsion.sqrMagnitude > maxRepel * maxRepel)
+        {
+            totalRepulsion = totalRepulsion.normalized * maxRepel;
+        }
+        return totalRepulsion;
     }
 
-    // 5. Critical forward-looking rays
-    // Vector3[] criticalDirections = {
-    //     entity.transform.forward,
-    //     entity.transform.forward + entity.transform.right * 0.5f,
-    //     entity.transform.forward - entity.transform.right * 0.5f
-    // };
-
-    // foreach (Vector3 dir in criticalDirections)
-    // {
-    //     RaycastHit hit;
-    //     if (Physics.Raycast(shipPosition, dir, out hit, detectionRadius, terrainLayer))
-    //     {
-    //         float strength = Mathf.Lerp(maxRepel, 0, hit.distance / detectionRadius);
-    //         Vector3 evadeDir = Vector3.Cross(hit.normal, Vector3.up).normalized * Mathf.Sign(Vector3.Dot(-dir, hit.normal));
-    //         totalRepulsion += evadeDir * strength;
-    //     }
-    // }
-
-    return totalRepulsion.normalized * Mathf.Min(totalRepulsion.magnitude, maxRepel);
-}
     private Vector3 ComputeNoGoZoneContribution(NoGoZoneBounds zone, Vector3 entityPosition)
     {
         Vector3 contribution = Vector3.zero;
         Vector3 closestPoint = zone.GetClosestPoint(entityPosition);
-        Vector3 diff = closestPoint - entityPosition;
-        float distance = diff.magnitude;
-
+        Vector3 diff = entityPosition - closestPoint; 
+        
         if (zone.Contains(entityPosition))
         {
             Vector3 dirFromCenter = (entityPosition - zone.transform.position).normalized;
-            contribution += dirFromCenter * zone.repulsionStrength;
+            dirFromCenter.y = 0; 
+            if (dirFromCenter.sqrMagnitude < 0.001f) dirFromCenter = Vector3.forward; 
+            contribution += dirFromCenter.normalized * zone.repulsionStrength; 
         }
-        else if (distance <= zone.repulsionRadius)
+        else
         {
-            Vector3 dir = diff.normalized;
-            float force = zone.repulsionStrength * (1 - (distance / zone.repulsionRadius));
-            contribution += dir * force;
-        }
+            float sqrDistance = diff.sqrMagnitude;
+            float repulsionRadiusSq = zone.repulsionRadius * zone.repulsionRadius;
+            if (sqrDistance <= repulsionRadiusSq && sqrDistance > 0.0001f) 
+            {
+                float distance = Mathf.Sqrt(sqrDistance);
+                Vector3 dir = diff / distance; 
+                dir.y = 0; 
+                if (dir.sqrMagnitude < 0.001f) dir = (entityPosition - zone.transform.position).normalized; 
+                dir.y = 0;
+                if (dir.sqrMagnitude < 0.001f) dir = Vector3.forward;
 
+
+                float force = zone.repulsionStrength * (1 - (distance / zone.repulsionRadius));
+                contribution += dir.normalized * force;
+            }
+        }
         return contribution;
     }
 
@@ -388,35 +451,31 @@ private Vector3 ComputeTerrainRepulsion(Vector3 shipPosition)
     {
         if (entity == null ) return true;
         return (entity.position - movePosition).sqrMagnitude < doneDistanceSq;
-        
     }
 
     public override void Stop()
-{
-    entity.desiredSpeed = 0;
-    pathWaypoints.Clear();
-    currentWaypointIndex = 0;
-    hasPath = false;
-    // Calculate direction to face the target when stopping
-    Vector3 direction = movePosition - entity.position;
-    if (direction.sqrMagnitude > 0.001f) // Check to avoid zero direction
     {
-        float dhRadians = Mathf.Atan2(direction.x, direction.z);
-        float dhDegrees = Utils.Degrees360(Mathf.Rad2Deg * dhRadians);
-        entity.desiredHeading = dhDegrees;
-    }
-    else
-    {
-        entity.desiredHeading = entity.heading;
-    }
+        entity.desiredSpeed = 0;
+        
+        Vector3 directionToTarget = movePosition - entity.position;
+        if (directionToTarget.sqrMagnitude > 0.001f) 
+        {
+            float targetDhRadians = Mathf.Atan2(directionToTarget.x, directionToTarget.z);
+            entity.desiredHeading = Utils.Degrees360(Mathf.Rad2Deg * targetDhRadians);
+        }
 
-    LineMgr.inst.DestroyLR(line);
-    LineMgr.inst.DestroyLR(potentialLine);
-    line = null;
-    potentialLine = null;
-    base.Stop();
-    pathWaypoints.Clear();
-    currentWaypointIndex = 0;
-    hasPath = false;
-}
+        if (line != null) LineMgr.inst.DestroyLR(line);
+        if (potentialLine != null) LineMgr.inst.DestroyLR(potentialLine);
+        line = null;
+        potentialLine = null;
+        
+        pathWaypoints.Clear();
+        currentWaypointIndex = 0;
+        hasPath = false;
+        lastPathUpdateTime = -Mathf.Infinity; 
+        stuckFrames = 0;
+        previousDistanceToWaypoint = Mathf.Infinity;
+
+        base.Stop(); 
+    }
 }
