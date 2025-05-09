@@ -77,7 +77,16 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField] public TMP_Text damageDealtText;
     [SerializeField] public TMP_Text damageTakenText;
     [SerializeField] public TMP_Text winnerText;
+    [SerializeField] public TMP_Text scoreText;
+    [SerializeField] public TMP_Text ourUnitsDestroyedText;
+    [SerializeField] public TMP_Text enemyUnitsDestroyedText;
     [SerializeField] public Button nextGameButton;
+    [SerializeField] public TMP_Text winConditionText;
+
+    private int gamesPlayedCount = 0;
+    private const string NEXT_GAME_BUTTON_TEXT = "Next Game";
+    private const string EXIT_BUTTON_TEXT = "Exit";
+
     public enum LobbyState
     {
         None = 0,
@@ -147,8 +156,10 @@ public class OpenOceanMain : MonoBehaviour
 
         startButton.onClick.RemoveAllListeners();
         startButton.onClick.AddListener(OnMapSelected);
-
-
+        // Map selected, start button
+        // Score Panel next game button
+        nextGameButton.onClick.RemoveAllListeners();
+        nextGameButton.onClick.AddListener(OnNextGameOrExitClicked);
 
     }
 
@@ -319,6 +330,24 @@ public class OpenOceanMain : MonoBehaviour
             NetDebugConsolePanel.gameObject.SetActive(IsDebugging && IsNetDebugging);
             SingleMultiplayerPanel.isVisible = (value == LobbyState.SingleMultiPlayer);
             ScorePanel.isVisible = (value == LobbyState.ScorePanel);
+
+            if (value == LobbyState.ScorePanel)
+            {
+                gamesPlayedCount++; // Increment when a game is completed and score panel is shown
+                TMP_Text buttonTextComponent = nextGameButton.GetComponentInChildren<TMP_Text>();
+                if (buttonTextComponent != null)
+                {
+                    if (gamesPlayedCount >= 5)
+                    {
+                        buttonTextComponent.text = EXIT_BUTTON_TEXT;
+                    }
+                    else
+                    {
+                        buttonTextComponent.text = NEXT_GAME_BUTTON_TEXT;
+                    }
+                }
+            }
+            
             Time.timeScale = 0f;
             Time.timeScale = (value == LobbyState.Play) ? 1f : 0f;
         }
@@ -351,8 +380,15 @@ public class OpenOceanMain : MonoBehaviour
     public void OnQuitButton()
     {
         Debug.Log("Shutting down TactNetMgr and quitting");
-        TactNetMgr.inst.TactNetShutdown();
-        NetworkManager.Singleton.Shutdown();
+        if (TactNetMgr.inst != null) // Check if TactNetMgr.inst exists
+        {
+            TactNetMgr.inst.TactNetShutdown();
+        }
+        if (NetworkManager.Singleton != null) // Check if NetworkManager.Singleton exists
+        {
+            NetworkManager.Singleton.Shutdown();
+        }
+        
         if (Application.isEditor)
         {
 #if UNITY_EDITOR
@@ -366,9 +402,15 @@ public class OpenOceanMain : MonoBehaviour
 
     }
     
-    public void  ResetGameState()
+    public void ResetGameState()
     {
         lobbyState = LobbyState.Play;
     }
 
-}
+    public void OnNextGameOrExitClicked()
+    {
+        if (gamesPlayedCount >= 5)
+        {
+            OnQuitButton();
+        }
+        }}

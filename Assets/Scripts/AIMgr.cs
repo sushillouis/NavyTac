@@ -131,7 +131,6 @@ public class AIMgr : NetworkBehaviour
                 Vector3 pos = hit.point;
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
-                Debug.Log("Ent: " + ent + " at pos: " + pos + " with mousePos: " + mousePos);
                 if (ent != null && ent.entityClass == EntityClass.Missile) ent = null; // Ignore missiles
                 if(attackMove)
                     

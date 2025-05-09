@@ -85,6 +85,7 @@ public class FogWarMgr : MonoBehaviour
         visibilityCheckTimer -= Time.deltaTime;
         if (visibilityCheckTimer <= 0)
         {
+            UpdateRevealerVisibility();
             UpdateNonRevealerVisibility();
             visibilityCheckTimer = visibilityCheckInterval;
         }
@@ -196,6 +197,19 @@ public class FogWarMgr : MonoBehaviour
     }
 
     private HashSet<Entity> revealedRigBalders = new HashSet<Entity>();
+private void UpdateRevealerVisibility()
+{
+    foreach (Entity reveler in revelers)
+    {
+        if (reveler == null || reveler.transform == null) continue;
+        
+        // Revelers are always visible to their owning player
+        bool shouldBeVisible = true;
+        
+        // Special case handling if needed (e.g., damaged/destroyed states)
+        reveler.transform.GetChild(0).gameObject.SetActive(shouldBeVisible);
+    }
+}
 
 private void UpdateNonRevealerVisibility()
 {

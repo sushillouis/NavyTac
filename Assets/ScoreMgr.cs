@@ -1,7 +1,7 @@
 using UnityEngine;
-using TMPro;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 public class ScoreMgr : MonoBehaviour
 {
@@ -11,6 +11,7 @@ public class ScoreMgr : MonoBehaviour
     public bool playerWon;
     public float score;
     public bool aiWon;
+    public String winReason;
     private void Awake()
     {
         if (inst != null && inst != this)
@@ -42,6 +43,14 @@ public class ScoreMgr : MonoBehaviour
 
         if (OpenOceanMain.inst.winnerText != null)
             OpenOceanMain.inst.winnerText.text = playerWon ? "Player Victory!" : "AI Victory!";
+        if (OpenOceanMain.inst.scoreText != null)
+            OpenOceanMain.inst.scoreText.text = $"{score:0.##}%";
+        if (OpenOceanMain.inst.ourUnitsDestroyedText != null)
+            OpenOceanMain.inst.ourUnitsDestroyedText.text = $"{GetDestroyedUnits(PlayerMgr.inst.localPlayer).Values.Sum()}";
+        if (OpenOceanMain.inst.enemyUnitsDestroyedText != null)
+            OpenOceanMain.inst.enemyUnitsDestroyedText.text = $"{GetDestroyedUnits(PlayerMgr.inst.players.Find(p => p.name == "Ai")).Values.Sum()}";
+        if (OpenOceanMain.inst.winConditionText != null)
+            OpenOceanMain.inst.winConditionText.text = winReason;
     }
 
 
@@ -69,6 +78,25 @@ public class ScoreMgr : MonoBehaviour
 
         // 1. Basic Info
         string studentID = OpenOceanMain.inst.playerName;
+        string group = "Non-Adaptive"; // Default group
+        if (studentID != null && studentID.StartsWith("Student", StringComparison.OrdinalIgnoreCase))
+        {
+            string numericPart = studentID.Substring("Student".Length);
+            if (int.TryParse(numericPart, out int studentIdNumber))
+            {
+            group = (studentIdNumber % 2 == 0) ? "Adaptive" : "Non-Adaptive";
+            }
+            else
+            {
+            Debug.LogWarning($"Numeric part of StudentID '{numericPart}' could not be parsed. Defaulting group to 'Non-Adaptive'.");
+            group = "Non-Adaptive"; // Ensure group is set in this case too
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"StudentID '{studentID}' could not be parsed as an integer. Defaulting group to 'Non-Adaptive'.");
+        }
+
         string gameType = OpenOceanMain.inst.currentTrainingState.ToString();
         string result = playerWon ? "Win" : "Loss";
         float scorePercent = score;
@@ -89,51 +117,45 @@ public class ScoreMgr : MonoBehaviour
 
 
         // 5. Base Locations (Cardinal Directions)
-        // Ensure posplayer1 is defined and accessible, holding the player's base position Vector3
-        // Vector3 playerBasePos = FindBasePosition(PlayerMgr.inst.localPlayer); // Original approach
-        string playerBaseLocation = GetCardinalDirection(GameMgr.inst.posPlayer1); // Use posplayer1 directly
+        string playerBaseLocation = GetCardinalDirection(GameMgr.inst.posPlayer1);
         string aiBaseLocation = GetCardinalDirection(GameMgr.inst.posPlayer2);
 
 
         // 6. Metadata
-        string winCondition = playerWon ? "AI Base Destroyed" : "Player Base Destroyed"; // Or other conditions
+        string winCondition = winReason;
         float timeTaken = Time.timeSinceLevelLoad;
-        int aiLevel = (EnemyAIMgr.inst != null) ? EnemyAIMgr.inst.currentLevel : -1; // Handle potential null
+        int aiLevel = (EnemyAIMgr.inst != null) ? EnemyAIMgr.inst.currentLevel : -1;
         float aiDifficulty = GameMgr.inst.difficultyLevel;
 
         // Prepare CSV path
         string csvPath = System.IO.Path.Combine(Application.persistentDataPath, "GameLogs.csv");
         bool fileExists = System.IO.File.Exists(csvPath);
 
-        try // Add error handling for file operations
+        try
         {
-            // Use 'using' to ensure the writer is disposed correctly
-            using (var writer = new System.IO.StreamWriter(csvPath, true)) // true for append mode
+            using (var writer = new System.IO.StreamWriter(csvPath, true))
             {
-                // Get all unique entity types involved in this game session
                 var allEntityTypes = initialUnitCounts.Keys
                                     .Union(destroyedPlayerUnits.Keys)
                                     .Union(destroyedAIUnits.Keys)
                                     .Distinct()
-                                    .OrderBy(et => et.ToString()); // Order for consistent column order
+                                    .OrderBy(et => et.ToString());
 
-                if (!fileExists || new System.IO.FileInfo(csvPath).Length == 0) // Check if file is new or empty
+                if (!fileExists || new System.IO.FileInfo(csvPath).Length == 0)
                 {
                     // Write header if file doesn't exist or is empty
-                    writer.Write("DateTime,StudentID,GameType,Result,DamageTaken,DamageDealt,ScorePercent,TimeTaken,AILevel,AIDifficulty,WinCondition,PlayerBaseLocation,AIBaseLocation"); // Updated Header
+                    writer.Write("DateTime,StudentID,Group,GameType,Result,DamageTaken,DamageDealt,ScorePercent,TimeTaken,AILevel,AIDifficulty,WinCondition,PlayerBaseLocation,AIBaseLocation"); // Added "Group" to Header
 
-                    // Add dynamic columns for unit counts (initial) and destroyed units
                     foreach (var unitType in allEntityTypes)
                     {
                         writer.Write($",Initial_{unitType},DestroyedPlayer_{unitType},DestroyedAI_{unitType}");
                     }
-                    writer.WriteLine(); // End header row
+                    writer.WriteLine();
                 }
 
                 // Write data row
-                writer.Write($"{dateTimeNow},{studentID},{gameType},{result},{damageTaken:0.##},{damageDealt:0.##},{scorePercent:0.##},{timeTaken:0.##},{aiLevel},{aiDifficulty:0.##},{winCondition},{playerBaseLocation},{aiBaseLocation}"); // Updated Data Row
+                writer.Write($"{dateTimeNow},{studentID},{group},{gameType},{result},{damageTaken:0.##},{damageDealt:0.##},{scorePercent:0.##},{timeTaken:0.##},{aiLevel},{aiDifficulty:0.##},{winCondition},{playerBaseLocation},{aiBaseLocation}"); // Added group to Data Row
 
-                // Add dynamic values for unit counts and destroyed units
                 foreach (var unitType in allEntityTypes)
                 {
                     int initialCount = initialUnitCounts.TryGetValue(unitType, out var ic) ? ic : 0;
@@ -142,7 +164,7 @@ public class ScoreMgr : MonoBehaviour
 
                     writer.Write($",{initialCount},{destroyedPlayerCount},{destroyedAICount}");
                 }
-                writer.WriteLine(); // End data row
+                writer.WriteLine();
             }
              Debug.Log($"Game data logged to {csvPath}");
         }
@@ -153,25 +175,23 @@ public class ScoreMgr : MonoBehaviour
     }
 
     // Helper to get cardinal direction (assuming Z is North/South, X is East/West)
-    private string GetCardinalDirection(Vector3 position, float threshold = 10.0f) // Added threshold for center
+    private string GetCardinalDirection(Vector3 position, float threshold = 10.0f) 
     {
-        if (position == Vector3.zero) return "Unknown"; // Handle case where base wasn't found
+        if (position == Vector3.zero) return "Unknown"; 
 
         float absX = Mathf.Abs(position.x);
         float absZ = Mathf.Abs(position.z);
 
-        // Check if close to center
         if (absX < threshold && absZ < threshold) return "Center";
 
-        if (absZ >= absX) // Primarily North or South
+        if (absZ >= absX) 
         {
             return position.z > 0 ? "North" : "South";
         }
-        else // Primarily East or West
+        else 
         {
             return position.x > 0 ? "East" : "West";
         }
-        // Could add NE, NW, SE, SW if needed by comparing signs and relative magnitudes
     }
 
 // Helper methods

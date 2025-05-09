@@ -196,24 +196,37 @@ public class EntityMgr : MonoBehaviour
     
 
     public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles, TactPlayer player) {
-        Entity entity = null;
-        GameObject entityPrefab = entityPrefabs.Find(x => (x.GetComponent<Entity>().entityType == et));
-        if(entityPrefab != null) {
-            GameObject entityGo = Instantiate(entityPrefab, position, Quaternion.Euler(eulerAngles), entitiesRoot.transform);
-            entityGo.SetActive(true);
-            if(entityGo != null) {
-                entity = entityGo.GetComponent<Entity>();
-                entity.entityId = entityId;
-                entityGo.name = et.ToString() + entityId++;
-                entity.owner = player;
-                entity.heading = entity.desiredHeading = eulerAngles.y;
-                entities.Add(entity);
-                entitiesDict.Add(entity.entityId, entity);
-            }
-        }
-        DistanceMgr.inst.Initialize();
+    Entity entity = null;
+    GameObject entityPrefab = entityPrefabs.Find(x => (x.GetComponent<Entity>().entityType == et));
+    if(entityPrefab != null) {
+        GameObject entityGo = Instantiate(entityPrefab, position, Quaternion.Euler(eulerAngles), entitiesRoot.transform);
+        if(entityGo != null) {
+            entity = entityGo.GetComponent<Entity>();
+            entity.entityId = entityId;
+            entityGo.name = et.ToString() + entityId++;
+            entity.owner = player;
+            entity.heading = entity.desiredHeading = eulerAngles.y;
+            
+            // AlwaentityGo.SetActive(true);ys activate the root object
+            
 
-        return entity;
+            // Let FogWarMgr handle visibility of the model
+            if(FogWarMgr.inst != null && FogWarMgr.inst.FOW && entity.entityClass != EntityClass.Missile) {
+                // Default to hidden, FogWar will reveal when appropriate
+                entity.transform.GetChild(0).gameObject.SetActive(false);
+            }
+            else {
+                // Show immediately if no fog of war
+                entity.transform.GetChild(0).gameObject.SetActive(true);
+            }
+
+            entities.Add(entity);
+            entitiesDict.Add(entity.entityId, entity);
+        }
     }
+    DistanceMgr.inst.Initialize();
+
+    return entity;
+}
 
 }

@@ -267,20 +267,47 @@ public class WeaponsMgr : MonoBehaviour
                     bool wasAIBase = entity.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase);
 
                     if (wasAIBase)
-                    {
-                        ScoreMgr.inst.playerWon = true;
-                        Debug.Log("Player destroyed AI base!");
-                    }
-                    else
-                    {
-                        ScoreMgr.inst.aiWon = true;
-                        Debug.Log("AI destroyed Player base!");
-                    }
+            {
+                ScoreMgr.inst.playerWon = true;
+                ScoreMgr.inst.winReason = "AI Base Destroyed"; // Set win reason
+            }
+            else
+            {
+                ScoreMgr.inst.aiWon = true;
+                ScoreMgr.inst.winReason = "Player Base Destroyed";
+            }
+            ScoreMgr.inst.CheckVictory();
+            }
+            }   
+            else if (entity.entityClass != EntityClass.Missile)
+            {
+                // Check if owner has any combat entities left (non-missile, non-base)
+                TactPlayer owner = entity.owner;
+                if (owner != null)
+                {
+                    bool hasCombatEntities = EntityMgr.inst.entities.Any(e => 
+                        e.owner == owner && 
+                        e.entityClass != EntityClass.Missile && 
+                        e.entityRole != EntityRole.Base);
 
-                    ScoreMgr.inst.CheckVictory();
+                    if (!hasCombatEntities)
+                    {
+                        if (owner == PlayerMgr.inst.localPlayer)
+                        {
+                            ScoreMgr.inst.aiWon = true;
+                            ScoreMgr.inst.winReason = "Player Lost All Combat Entities";
+                        }
+                        else if (owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            ScoreMgr.inst.playerWon = true;
+                            ScoreMgr.inst.winReason = "AI Lost All Combat Entities";
+                        }
+                        ScoreMgr.inst.CheckVictory();
+                    }
                 }
             }
         }
+        
         catch (System.Exception e)
         {
             string entityName = entity != null ? entity.name : "null";
