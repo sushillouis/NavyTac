@@ -1112,7 +1112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65cfb1489ff408b4abaedfa9abb7f27d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FOW: 1
+  FOW: 0
   playerSide: 00000000
   fogMaterial: {fileID: 2100000, guid: 043fa474478025747b66fd0c85b9458c, type: 2}
   fogPlaneSize: {x: 18520, y: 18520}
@@ -2161,6 +2161,141 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 471557944}
+  m_CullTransparentMesh: 1
+--- !u!1 &516424163
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 516424164}
+  - component: {fileID: 516424166}
+  - component: {fileID: 516424165}
+  m_Layer: 5
+  m_Name: 'Feedback '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &516424164
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 516424163}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1889620527}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5315088, y: 1}
+  m_AnchoredPosition: {x: -18, y: -16}
+  m_SizeDelta: {x: 232, y: 50}
+  m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &516424165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 516424163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: Feedback
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 06c44d93c488a354aa0d7ff058e9ddad, type: 2}
+  m_sharedMaterial: {fileID: 6643591532545578594, guid: 06c44d93c488a354aa0d7ff058e9ddad,
+    type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 24
+  m_fontSizeBase: 24
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_enableWordWrapping: 0
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &516424166
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 516424163}
   m_CullTransparentMesh: 1
 --- !u!1001 &529577187
 PrefabInstance:
@@ -5029,14 +5164,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f307a68b0cd5d24da3eb78422925657, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  seedPreTest: 10
+  seedPostTest: 20
+  seedAdaptive: 30
+  seedNonAdaptive: 40
   plusButton: {fileID: 6012287531714796469}
   minusButton: {fileID: 6012287531714796468}
   simSpeedButtonText: {fileID: 6012287531714796467}
   timeScale: 1
   position: {x: -100, y: 0, z: -700}
   spread: 100
-  colNum: 10
-  initZ: 0
   entityQuantities:
   - entityType: 16
     unitCount: 1
@@ -5048,12 +5185,11 @@ MonoBehaviour:
     unitCount: 8
   players: 0
   sameEnityForAll: 1
-  seed: 15
   posPlayer1: {x: 0, y: 0, z: -7000}
   headingPlayer1: 0
   posPlayer2: {x: 0, y: 0, z: 7000}
   headingPlayer2: 180
-  difficultyLevel: 0.2
+  difficultyLevel: 0.362
   priorityList: 100000000d0000000e000000000000000a000000090000000400000002000000050000000b000000010000000300000007000000080000000c000000
 --- !u!1 &1142393662
 GameObject:
@@ -5536,6 +5672,18 @@ Transform:
   - {fileID: 1735050322}
   m_Father: {fileID: 1708907977}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1298545461 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 118097320676064333, guid: 237a1a63acdb71544844a930ca79d548,
+    type: 3}
+  m_PrefabInstance: {fileID: 1364656299}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1302052643
 GameObject:
   m_ObjectHideFlags: 0
@@ -8117,6 +8265,7 @@ MonoBehaviour:
   IsNetDebugging: 0
   isSinglePlayer: 1
   port: 7777
+  gamePlayCountMAX: 5
   loginPanel: {fileID: 2126898623}
   mapSelectPanel: {fileID: 49458995}
   HostOrJoinPanel: {fileID: 6234182296967638321}
@@ -8135,6 +8284,8 @@ MonoBehaviour:
   loginCodeInputField: {fileID: 1936329287}
   loginButton: {fileID: 1972992353}
   LoginQuitButton: {fileID: 1160171842796198464}
+  mapNameText: {fileID: 1934876240}
+  mapDescriptionText: {fileID: 1298545461}
   startButton: {fileID: 612928919}
   damageDealtText: {fileID: 1755515727}
   damageTakenText: {fileID: 1185172940}
@@ -8142,8 +8293,11 @@ MonoBehaviour:
   scoreText: {fileID: 537676955}
   ourUnitsDestroyedText: {fileID: 1090743268}
   enemyUnitsDestroyedText: {fileID: 625472713}
+  feedbackText: {fileID: 516424165}
+  playerNameText: {fileID: 0}
   nextGameButton: {fileID: 2122797629}
   winConditionText: {fileID: 1143228188}
+  gamesPlayedCount: 0
   _lobbyState: 1
   currentTrainingState: 0
   NetworkManagerGo: {fileID: 0}
@@ -8807,6 +8961,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1185172939}
+    - targetCorrespondingSourceObject: {fileID: 1096226473963957700, guid: 80bce631b4c42184898a37f5096c046b,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 516424164}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 80bce631b4c42184898a37f5096c046b, type: 3}
 --- !u!1 &1895626495
@@ -8862,6 +9020,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2118974282}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1934876240 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6327002555833984070, guid: 237a1a63acdb71544844a930ca79d548,
+    type: 3}
+  m_PrefabInstance: {fileID: 1364656299}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1936329287 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8491019669320125697, guid: 25a77a5a7d309544b9cdd76bf96382f5,
