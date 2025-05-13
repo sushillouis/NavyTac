@@ -131,20 +131,23 @@ public class AIMgr : NetworkBehaviour
                 Vector3 pos = hit.point;
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
-                if (ent != null && !ent.transform.GetChild(0).gameObject.activeSelf &&ent.entityClass == EntityClass.Missile) ent = null; // Ignore missiles
+                if (ent != null && !ent.isVisible &&ent.entityClass == EntityClass.Missile) ent = null; // Ignore missiles
                 if(ent == null) {
-                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
+                    if (attackMove)
+                        HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, null, add);
+                    else
+                        HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
+                    
                 }
                 else{
                     if(attackMove)
                     
                     HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, ent , add);
-                
-                
-                else
-                {
-                    HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
-                }
+
+                    else
+                    {
+                        HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
+                    }
                 }
                 
             } else {

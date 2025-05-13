@@ -213,11 +213,11 @@ public class EntityMgr : MonoBehaviour
             // Let FogWarMgr handle visibility of the model
             if(FogWarMgr.inst != null && FogWarMgr.inst.FOW && entity.entityClass != EntityClass.Missile) {
                 // Default to hidden, FogWar will reveal when appropriate
-                entity.transform.GetChild(0).gameObject.SetActive(false);
+                entity.isVisible = false;
             }
             else {
                 // Show immediately if no fog of war
-                entity.transform.GetChild(0).gameObject.SetActive(true);
+                entity.isVisible = true;
             }
 
             entities.Add(entity);

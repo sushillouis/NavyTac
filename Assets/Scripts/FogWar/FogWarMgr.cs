@@ -207,7 +207,7 @@ private void UpdateRevealerVisibility()
         bool shouldBeVisible = true;
         
         // Special case handling if needed (e.g., damaged/destroyed states)
-        reveler.transform.GetChild(0).gameObject.SetActive(shouldBeVisible);
+        reveler.isVisible = shouldBeVisible;
     }
 }
 
@@ -261,16 +261,22 @@ private void UpdateNonRevealerVisibility()
         {
             if (revealedRigBalders.Contains(entity))
             {
-                isVisible = true;
+                entity.isVisible = true;
             }
             else if (isVisible)
             {
                 revealedRigBalders.Add(entity);
-                isVisible = true;
+                entity.isVisible = true; // Ensure it's set to true when first revealed
+            }
+            else
+            {
+                entity.isVisible = false; // Not revealed yet and not currently visible
             }
         }
-
-        entity.transform.GetChild(0).gameObject.SetActive(isVisible);
+        else
+        {
+            entity.isVisible = isVisible;
+        }
     }
 }
 

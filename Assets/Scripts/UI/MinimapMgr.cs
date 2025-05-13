@@ -102,7 +102,7 @@ public class MinimapMgr : MonoBehaviour
 
             if (mapIcons.TryGetValue(ent, out var mapIcon))
             {
-                bool shouldShow = ent.transform.GetChild(0).gameObject.activeSelf && 
+                bool shouldShow = ent.isVisible && 
                                 ent.gameObject.activeInHierarchy &&
                                 EntityMgr.inst.entities.Contains(ent);
 

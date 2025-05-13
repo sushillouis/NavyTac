@@ -203,7 +203,7 @@ public class AttackMove : Move
     private bool IsTargetValid(Entity target)
     {
         return target != null && 
-               target.transform.GetChild(0).gameObject.activeSelf && 
+               target.isVisible && 
                target.gameObject.activeSelf && 
                target.entityClass != EntityClass.Missile; 
     }

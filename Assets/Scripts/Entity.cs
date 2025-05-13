@@ -40,9 +40,10 @@ public class Entity : MonoBehaviour
     public float height;
     public float maxHealth;
     public float minHealth;
-
+    public bool isVisible = true;
     public float maxFuel;
     public float maxRange;
+    public float entityCollisionRadius = 1.0f; // Added entity collision radius
 
     public EntityType entityType;
     public EntityClass entityClass;
@@ -63,7 +64,7 @@ public class Entity : MonoBehaviour
 
     void Start()
     {
-        
+        entityCollisionRadius = length;
         fuel = maxFuel;
         health = maxHealth;
         isSelected = false;
@@ -90,6 +91,9 @@ public class Entity : MonoBehaviour
                 WeaponsMgr.inst.DestroyEntity(this);
             }
         }
+        
+        transform.GetChild(0).gameObject.SetActive(isVisible);
+        
     }
 
     void ComputeFuelRange() {
@@ -103,5 +107,13 @@ public class Entity : MonoBehaviour
         range = Mathf.Clamp(fuel * cruiseSpeed, 0, maxRange);
 
     }
+
+    // Draw Gizmo for entity collision radius
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, entityCollisionRadius);
+    }
     
 }
+

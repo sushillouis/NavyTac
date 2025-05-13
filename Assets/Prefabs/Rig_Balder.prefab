@@ -324,13 +324,15 @@ MonoBehaviour:
   minSpeed: 0
   cruiseSpeed: 0
   mass: 10000
-  length: 2000
-  width: 2000
-  height: 2000
+  length: 400
+  width: 400
+  height: 400
   maxHealth: 2000
   minHealth: 1000000
+  isVisible: 1
   maxFuel: 0
   maxRange: 0
+  entityCollisionRadius: 1
   entityType: 16
   entityClass: 0
   cameraRig: {fileID: 6619095571109785082}
