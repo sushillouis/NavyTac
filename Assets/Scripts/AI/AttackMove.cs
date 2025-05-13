@@ -25,27 +25,23 @@ public class AttackMove : Move
     /// <param name="ent">The entity performing the move.</param>
     /// <param name="pos">The target position.</param>
     /// <param name="maxSpeed">Whether the entity should move at maximum speed.</param>
-    public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false) : base(ent, pos, maxSpeed)
-    {
-        hasExplicitTarget = false;
-        pathUpdateCooldown = DefaultPathUpdateCooldown;
-        basePathUpdateCooldown = pathUpdateCooldown;
-    }
+    // Constructor for position-based attack-move
+public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, pos, maxSpeed, doneDistanceSq)
+{
+    hasExplicitTarget = false;
+    pathUpdateCooldown = DefaultPathUpdateCooldown;
+    basePathUpdateCooldown = pathUpdateCooldown;
+}
 
-    /// <summary>
-    /// Constructor for an attack-move towards a specific target entity.
-    /// </summary>
-    /// <param name="ent">The entity performing the move.</param>
-    /// <param name="target">The target entity.</param>
-    /// <param name="maxSpeed">Whether the entity should move at maximum speed.</param>
-    public AttackMove(Entity ent, Entity target, bool maxSpeed = false) : base(ent, target.position, maxSpeed)
-    {
-        explicitTarget = target;
-        hasExplicitTarget = true;
-        lastKnownTargetPosition = target.position;
-        pathUpdateCooldown = MovingTargetPathUpdateCooldown; 
-        basePathUpdateCooldown = pathUpdateCooldown;
-    }
+// Constructor for entity-target attack-move
+public AttackMove(Entity ent, Entity target, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, target.position, maxSpeed, doneDistanceSq)
+{
+    explicitTarget = target;
+    hasExplicitTarget = true;
+    lastKnownTargetPosition = target.position;
+    pathUpdateCooldown = MovingTargetPathUpdateCooldown; 
+    basePathUpdateCooldown = pathUpdateCooldown;
+}
 
     /// <summary>
     /// Initializes the attack move, setting up pathfinding, line renderers, and caching components.

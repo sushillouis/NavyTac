@@ -78,13 +78,14 @@ public class Move : Command
     {
         movePosition = pos;
         this.maxSpeedMovement = maxSpeedMovement;
-        this.doneDistanceSq = doneDistanceSq; 
+        this.doneDistanceSq = doneDistanceSq;
         
-        if (ent.GetComponentInChildren<WeaponsAspect>() != null)
-        {
-            this.doneDistanceSq = ent.GetComponentInChildren<WeaponsAspect>().weapon.range * 
-                                 ent.GetComponentInChildren<WeaponsAspect>().weapon.range;
-        }
+        Debug.Log("Move.cs: doneDistanceSq set to " + this.doneDistanceSq);
+        // if (ent.GetComponentInChildren<WeaponsAspect>() != null)
+        // {
+        //     this.doneDistanceSq = AIMgr.inst.StoppingDistanceSq(ent.entityType);
+        //     Debug.Log("Move.cs: doneDistanceSq set to " + this.doneDistanceSq);
+        // }
     }
 
     public override void Init()

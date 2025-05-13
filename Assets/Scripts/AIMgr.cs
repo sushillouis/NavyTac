@@ -158,7 +158,8 @@ public class AIMgr : NetworkBehaviour
 
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
-    public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false)
+    // Constructor for position-based attack-move
+public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false)
 {
     if (isLocalCommand)
     {
@@ -167,14 +168,46 @@ public class AIMgr : NetworkBehaviour
 
     foreach (Entity entity in entities)
     {
-        
-            AttackMove am = target != null 
-                ? new AttackMove(entity, target, maxSpeedMovement) 
-                : new AttackMove(entity, point, maxSpeedMovement);
+        float doneDistanceSq;
 
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-            AddOrSet(am, uai, add);
-        
+        if (target != null)
+        {
+            // Use weapon range squared if available
+            WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+            doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null) 
+                ? weaponsAspect.weapon.range * weaponsAspect.weapon.range 
+                : 100000f; // Fallback
+        }
+        else
+        {
+            // Use Move's logic based on entity count
+            if (entities.Count == 1)
+            {
+                doneDistanceSq = 500f;
+            }
+            else if (entities.Count < 5)
+            {
+                doneDistanceSq = 500f * 500f;
+            }
+            else if (entities.Count >= 10)
+            {
+                WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+                doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null) 
+                    ? weaponsAspect.weapon.range * weaponsAspect.weapon.range 
+                    : 100000f;
+            }
+            else
+            {
+                doneDistanceSq = StoppingDistanceSq(entity.entityType);
+            }
+        }
+
+        AttackMove am = target != null 
+            ? new AttackMove(entity, target, maxSpeedMovement, doneDistanceSq) 
+            : new AttackMove(entity, point, maxSpeedMovement, doneDistanceSq);
+
+        UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+        AddOrSet(am, uai, add);
     }
 }
     public void HandleMove(List<Entity> entities, Vector3 point,
@@ -186,11 +219,72 @@ public class AIMgr : NetworkBehaviour
         }
         foreach (Entity entity in entities)
         {
-                Move m = new Move(entity, point, maxSpeedMovement, doneDistanceSq);
-                UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-                AddOrSet(m, uai, add);
+            // Original log, kept inside the loop. If intended once per call, move outside.
+            Debug.Log("EntityCount: " + entities.Count); 
+
+            float currentDoneDistanceSq;
+
+            if (entities.Count == 1)
+            {
+                currentDoneDistanceSq = 500f;
+            }
+            else if (entities.Count < 5) // Covers 2, 3, 4 entities
+            {
+                currentDoneDistanceSq = 500f * 500f;
+            }
+            else if (entities.Count >= 10)
+            {
+                Debug.Log("Entities: " + entities.Count); // Specific log for this case
+                WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+                if (weaponsAspect != null && weaponsAspect.weapon != null)
+                {
+                    currentDoneDistanceSq = weaponsAspect.weapon.range * weaponsAspect.weapon.range;
+                }
+                else
+                {
+                    // Fallback if WeaponsAspect or weapon is null
+                    currentDoneDistanceSq = doneDistanceSq; 
+                    Debug.LogWarning($"Entity {entity.entityId} missing WeaponsAspect or weapon. Using fallback doneDistanceSq: {currentDoneDistanceSq}");
+                }
+            }
+            else // Covers 5, 6, 7, 8, 9 entities
+            {
+                currentDoneDistanceSq = StoppingDistanceSq(entity.entityType);
+            }
             
+            Move m = new Move(entity, point, maxSpeedMovement, currentDoneDistanceSq);
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            if (uai != null)
+            {
+                AddOrSet(m, uai, add);
+            }
+            else
+            {
+                Debug.LogWarning($"Entity {entity.entityId} does not have a UnitAI component. Command not issued.");
+            }
         }
+    }
+
+    public float StoppingDistanceSq(EntityType entityType)
+    {
+        // Using float literals for consistency
+        if (entityType == EntityType.DDG51)
+        {
+            return 800f * 800f;
+        }
+        else if (entityType == EntityType.SeaHunter)
+        {
+            return 500f * 500f;
+        }
+        else if (entityType == EntityType.JARIUSV)
+        {
+            return 400f * 400f;
+        }
+        else
+        {
+            return 100f * 100f;
+        }
+       
     }
     void AddOrSet(Command c, UnitAI uai, bool add)
     {
