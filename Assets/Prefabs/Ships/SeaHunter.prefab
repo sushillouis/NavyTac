@@ -68,9 +68,9 @@ MonoBehaviour:
   minSpeed: 0
   cruiseSpeed: 12
   mass: 1500
-  length: 38
-  width: 13.5
-  height: 15
+  length: 100
+  width: 40
+  height: 45
   maxHealth: 125
   minHealth: 0
   maxFuel: 0
@@ -532,7 +532,7 @@ MonoBehaviour:
     cooldown: 1
     behaviorType: 3
     weaponEntityType: 15
-    range: 600
+    range: 1000
     currentWeaponEntities: []
     defaultDamage: 20
     ammoCount: -1

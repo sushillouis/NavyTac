@@ -131,21 +131,22 @@ public class AIMgr : NetworkBehaviour
                 Vector3 pos = hit.point;
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
-                if (ent != null && ent.entityClass == EntityClass.Missile) ent = null; // Ignore missiles
-                if(attackMove)
+                if (ent != null && !ent.transform.GetChild(0).gameObject.activeSelf &&ent.entityClass == EntityClass.Missile) ent = null; // Ignore missiles
+                if(ent == null) {
+                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
+                }
+                else{
+                    if(attackMove)
                     
                     HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, ent , add);
                 
-                else {
-                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
+                
+                else
+                {
+                    HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
                 }
-                // else
-                // {
-                //     // if (intercept)
-                //     //     HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
-                //     // else
-                //     //     HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
-                // }
+                }
+                
             } else {
                 //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
             }
@@ -187,18 +188,6 @@ public class AIMgr : NetworkBehaviour
                 AddOrSet(m, uai, add);
             
         }
-    }
-    // Helper to get the quadrant of a position
-    private QuadrantBounds GetQuadrant(Vector3 position)
-    {
-        foreach (QuadrantBounds zone in QuadrantManager.Zones)
-        {
-            if (zone.Contains(position))
-            {
-                return zone;
-            }
-        }
-        return null;
     }
     void AddOrSet(Command c, UnitAI uai, bool add)
     {
@@ -361,4 +350,12 @@ public class AIMgr : NetworkBehaviour
         }
         return minEnt;
     }
-*/
+
+
+
+/*
+ * 
+    public float rClickRadiusSq = 10000;
+rsq        Entity minEntmin = float.MaxValue;
+        foreach (Entity ent in EntityMgr.inst.entities) {
+rsq) {if (distanceSq < min) minEntentmindistanceSq    minEnt*/

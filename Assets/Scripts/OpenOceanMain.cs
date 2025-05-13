@@ -65,6 +65,10 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField]
     public TMP_InputField loginCodeInputField;
     [SerializeField]
+    public TMP_Text WrongCodeText;
+    [SerializeField]
+    public TMP_Text WrongNameText;
+    [SerializeField]
     private Button loginButton;
     [SerializeField]
     private Button LoginQuitButton;
@@ -200,15 +204,22 @@ public class OpenOceanMain : MonoBehaviour
         
         Debug.Log($"Attempting login for Player Name: {playerName}, Code: {playerCode}");
 
+        // Hide previous error messages
+        if (WrongNameText != null) WrongNameText.gameObject.SetActive(false);
+        if (WrongCodeText != null) WrongCodeText.gameObject.SetActive(false);
+
         Regex nameRegex = new Regex(@"^Student\s*\d+$");
         if (!nameRegex.IsMatch(playerName))
         {
             Debug.LogWarning($"Invalid player name format: '{playerName}'. Expected 'Student <number>'.");
-            // Optionally, provide UI feedback to the user here
+            if (WrongNameText != null)
+            {
+                WrongNameText.text = "Invalid name format. Expected 'Student <number>'.";
+                StartCoroutine(ShowMessageForDuration(WrongNameText, 10f));
+            }
             return false;
         }
 
-        bool codeValid = true;
         if (playerCode == "AAA")
         {
             Debug.Log("Code: AAA (Adaptive session type)");
@@ -233,8 +244,11 @@ public class OpenOceanMain : MonoBehaviour
         else
         {
             Debug.LogWarning($"Invalid player code: '{playerCode}'.");
-            // Optionally, provide UI feedback to the user here
-            codeValid = false;
+            if (WrongCodeText != null)
+            {
+                WrongCodeText.text = "Invalid login code.";
+                StartCoroutine(ShowMessageForDuration(WrongCodeText, 10f));
+            }
             return false;
         }
 
@@ -245,18 +259,43 @@ public class OpenOceanMain : MonoBehaviour
             {
                 Debug.LogWarning($"Could not parse player number from name: '{playerName}'.");
                 playerNo = 0; // Default or handle as error
-                // return false; // Decide if this is a fatal error for login
             }
         }
         else
         {
             Debug.LogWarning($"No number found at the end of player name: '{playerName}'.");
             playerNo = 0; // Default or handle as error
-            // return false; // Decide if this is a fatal error for login
         }
-        Debug.Log($"Player No set to: {playerNo}. Training State: {currentTrainingState}");
+        
+        // Set seed for GameMgr based on the currentTrainingState
+        if (GameMgr.inst != null)
+        {
+            // Assuming GameMgr.GetSelectedSeed() is a public method in GameMgr
+            // and GameMgr.CurrentSeed is a public field/property in GameMgr.
+            // The GetSelectedSeed() method (defined in GameMgr) uses OpenOceanMain.inst.currentTrainingState.
+            Random.InitState( GameMgr.inst.GetSelectedSeed()); 
+            Debug.Log($"Player No set to: {playerNo}. Training State: {currentTrainingState}. GameMgr seed set to: {GameMgr.inst.GetSelectedSeed()}");
+        }
+        else
+        {
+            Debug.LogWarning("GameMgr.inst is null. Cannot set seed.");
+            Debug.Log($"Player No set to: {playerNo}. Training State: {currentTrainingState}. GameMgr seed NOT set.");
+        }
+        
         return true;
     }
+
+    private IEnumerator ShowMessageForDuration(TMP_Text textElement, float duration)
+    {
+        if (textElement != null)
+        {
+            textElement.gameObject.SetActive(true);
+            yield return new WaitForSecondsRealtime(duration); // Use WaitForSecondsRealtime as Time.timeScale might be 0
+            textElement.gameObject.SetActive(false);
+        }
+    }
+
+    // Overload for custom messages
 
     private void Start()
     {
@@ -432,6 +471,7 @@ public class OpenOceanMain : MonoBehaviour
             SingleMultiplayerPanel.isVisible = (value == LobbyState.SingleMultiPlayer);
             ScorePanel.isVisible = (value == LobbyState.ScorePanel);
 
+           
             if (value == LobbyState.MapSelect)
             {
                 UpdateMapSelectionUI(); // Update map name and description
@@ -466,8 +506,10 @@ public class OpenOceanMain : MonoBehaviour
                 }
             }
             
-            // Time.timeScale = 0f; // Setting to 0f always first might be disruptive if not intended
             Time.timeScale = (value == LobbyState.Play) ? 1f : 0f;
+            if (UIMgr.inst != null)  UIMgr.inst.gameObject.SetActive(value == LobbyState.Play);
+            if (GroupUIMgr.inst != null) GroupUIMgr.inst.gameObject.SetActive(value == LobbyState.Play);
+            
         }
     }
 
@@ -523,7 +565,7 @@ public class OpenOceanMain : MonoBehaviour
         // This method might need more logic to truly reset the game for a new session
         // For now, it just sets the lobby state.
         // Consider resetting player scores, map states, etc.
-        lobbyState = LobbyState.MapSelect; // Or LobbyState.Login / SingleMultiPlayer depending on desired flow
+        lobbyState = LobbyState.Play; // Or LobbyState.Login / SingleMultiPlayer depending on desired flow
     }
 
     public void OnNextGameOrExitClicked()
@@ -539,7 +581,7 @@ public class OpenOceanMain : MonoBehaviour
             // For now, let's assume going back to map select if another game is to be played.
             // You might need to reset other game-specific states here.
             Debug.Log("Next game selected.");
-            lobbyState = LobbyState.MapSelect; // Or another appropriate state like Login or SingleMultiPlayer
+            lobbyState = LobbyState.Play; // Or another appropriate state like Login or SingleMultiPlayer
         }
     }
 }

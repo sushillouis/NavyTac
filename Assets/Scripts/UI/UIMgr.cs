@@ -516,20 +516,28 @@ public class UIMgr : MonoBehaviour
         return null;
     }
 
-    public const float rClickRadiusSq = 10000;
-    public Entity FindClosestEntInRadius(Vector3 point, float rsq = rClickRadiusSq) {
-        Entity minEnt = null;
-        float min = float.MaxValue;
-        foreach(Entity ent in EntityMgr.inst.entities) {
-            float distanceSq = (ent.transform.position - point).sqrMagnitude;
-            if(distanceSq < rsq) {
-                if(distanceSq < min) {
-                    minEnt = ent;
-                    min = distanceSq;
+    public const float rClickRadiusSq = 100;
+
+    public Entity FindClosestEntInRadius(Vector3 position, float radius = rClickRadiusSq)
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(position, radius);
+        Entity closestEntity = null;
+        float minDistanceSqr = float.MaxValue;
+
+        foreach (var hitCollider in hitColliders)
+        {
+            Entity entity = hitCollider.GetComponentInParent<Entity>(); // Or GetComponent<Entity>() if Entity is on the same GameObject as the collider
+            if (entity != null)
+            {
+                float distanceSqr = (entity.transform.position - position).sqrMagnitude;
+                if (distanceSqr < minDistanceSqr)
+                {
+                    minDistanceSqr = distanceSqr;
+                    closestEntity = entity;
                 }
             }
         }
-        return minEnt;
+        return closestEntity;
     }
 
     public void ActivateEntityCommands(bool shouldActivate) {

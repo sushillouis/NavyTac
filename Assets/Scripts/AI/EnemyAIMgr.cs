@@ -283,7 +283,7 @@ public class EnemyAIMgr : MonoBehaviour
                 // If close enough to the initial stop distance, transition out of the initial move phase.
                 if (currentDistance <= initialStopDistance + InitialMoveTargetBuffer)
                 {
-                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration; // Set cooldown for next action.
+                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
                 }
             }
             else 
@@ -635,7 +635,8 @@ public class EnemyAIMgr : MonoBehaviour
     }
 
     /// <summary>
-    /// Finds the nearest enemy entity within a specified range of an AI entity.
+    /// Finds the nearest enemy entity within a specified range of an AI entity using physics overlap.
+    /// Assumes entities have Collider components.
     /// </summary>
     /// <param name="aiEntity">The AI entity searching for enemies.</param>
     /// <param name="range">The search range.</param>
@@ -643,25 +644,35 @@ public class EnemyAIMgr : MonoBehaviour
     private Entity FindNearestEnemy(Entity aiEntity, float range)
     {
         Vector3 aiPos = aiEntity.position;
-        float sqrRange = range * range; 
         Entity nearest = null;
         float nearestDistSq = float.MaxValue;
 
-        foreach (Entity e in EntityMgr.inst.entities)
+        // Use Physics.OverlapSphere to find colliders within the specified range.
+        // Consider adding a LayerMask if entities are on specific layers for optimization.
+        Collider[] hitColliders = Physics.OverlapSphere(aiPos, range); 
+
+        foreach (Collider hitCollider in hitColliders)
         {
-            if (e == null || e.owner == null || e.entityClass == EntityClass.Missile ||
-                e.owner.name.Equals(AiOwnerName, aiOwnerNameComparison) || e == aiEntity) 
+            // Attempt to get the Entity component from the collider's game object or its parent.
+            Entity potentialEnemy = hitCollider.GetComponentInParent<Entity>();
+
+            if (potentialEnemy == null || potentialEnemy.owner == null ||
+                potentialEnemy.owner.name.Equals(AiOwnerName, aiOwnerNameComparison) ||
+                potentialEnemy.entityClass == EntityClass.Missile ||
+                potentialEnemy == aiEntity) // Don't target self, own units, or missiles
             {
                 continue;
             }
 
-            float distSq = (e.position - aiPos).sqrMagnitude; 
-            if (distSq < sqrRange && distSq < nearestDistSq)
+            float distSq = (potentialEnemy.position - aiPos).sqrMagnitude;
+            // OverlapSphere ensures entities are within 'range', but we still need the *closest* one.
+            if (distSq < nearestDistSq)
             {
-                nearest = e;
+                nearest = potentialEnemy;
                 nearestDistSq = distSq;
             }
         }
+        Debug.Log("Nearest enemy found enemy ai : " + (nearest != null ? nearest.name : "None"));
         return nearest;
     }
 

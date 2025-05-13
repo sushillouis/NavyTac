@@ -60,7 +60,7 @@ public class GameMgr : MonoBehaviour
     /// Gets the random seed based on the current training state from OpenOceanMain.
     /// </summary>
     /// <returns>The selected integer seed.</returns>
-    private int GetSelectedSeed()
+    public int GetSelectedSeed()
     {
         int selectedSeed = seedPreTest; // Default to PreTest seed
         if (OpenOceanMain.inst != null)
@@ -104,11 +104,8 @@ public class GameMgr : MonoBehaviour
             return;
         }
         
-        // Initialize random state with the selected seed
-        int selectedSeed = GetSelectedSeed();
-        Random.InitState(selectedSeed);
-
-        // Build the initial entity dictionary based on inspector settings
+        // // Initialize random state with the selected seed
+       // Build the initial entity dictionary based on inspector settings
         BuildEntityDictionary();
     }
 
@@ -199,28 +196,28 @@ public class GameMgr : MonoBehaviour
             switch (OpenOceanMain.inst.currentTrainingState)
             {
                 case OpenOceanMain.TrainingState.PreTest:
-                    difficultyLevel = difficultyRanges["easy"];
+                    difficultyLevel = .2f;
                     break;
                 case OpenOceanMain.TrainingState.PostTest:
                     // Example: Difficulty increases in the latter part of PostTest
                     if (OpenOceanMain.inst.gamePlayCountMAX > 0 && 
                         OpenOceanMain.inst.gamesPlayedCount <= OpenOceanMain.inst.gamePlayCountMAX * 0.6f)
                     {
-                        difficultyLevel = difficultyRanges["easy"];
+                        difficultyLevel =.2f;
                     }
                     else
                     {
-                        difficultyLevel = difficultyRanges["medium"];
+                        difficultyLevel = 0.5f;
                     }
                     break;
                 case OpenOceanMain.TrainingState.Adaptive:
                     difficultyLevel = ComputeAdaptiveDifficulty(); // Custom logic for adaptive difficulty
                     break;
                 case OpenOceanMain.TrainingState.NonAdaptive:
-                    difficultyLevel = difficultyRanges["easy"]; // Or specific logic for NonAdaptive
+                    difficultyLevel = .2f; // Or specific logic for NonAdaptive
                     break;
                 default:
-                    difficultyLevel = difficultyRanges["easy"];
+                    difficultyLevel = .2f;
                     break;
             }
         }
@@ -380,11 +377,7 @@ public class GameMgr : MonoBehaviour
     /// </summary>
     void InitializeScenario()
     {
-        // Re-initialize Random with the correct seed for the current training state.
-        // This ensures deterministic behavior for each scenario run if desired.
-        int selectedSeed = GetSelectedSeed();
-        Random.InitState(selectedSeed);
-
+                
         DetermineDifficulty(); // Sets currentDifficulty and difficultyLevel
 
         // Set enemy AI level based on the determined difficulty

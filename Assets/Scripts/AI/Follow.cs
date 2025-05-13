@@ -7,69 +7,75 @@ public class Follow : Move
 {
     public Entity targetEntity;
     public Vector3 relativeOffset;
-    public Vector3 randomizedOffset;
-    public float perturbationMagnitude = 50;
-    public Follow(Entity ent, Entity target, Vector3 delta): base(ent, target.transform.position)
+    public float followThresholdSq = 200f;
+    public Vector3 offset;
+    private Vector3 lastValidTargetPosition;
+
+    public Follow(Entity ent, Entity target, Vector3 delta) : base(ent, target.transform.position)
     {
         targetEntity = target;
         relativeOffset = delta;
+        lastValidTargetPosition = target.transform.position;
     }
 
-    // Start is called before the first frame update
     public override void Init()
     {
-        //Debug.Log("Follow:\t Following: " + targetEntity.gameObject.name);
+        base.Init();
         offset = targetEntity.transform.TransformVector(relativeOffset);
         line = LineMgr.inst.CreateFollowLine(entity.position, targetEntity.position + offset, targetEntity.position);
         line.gameObject.SetActive(false);
-        randomizedOffset = Random.onUnitSphere * perturbationMagnitude;
     }
 
-    public float followThresholdSq = 2000;
-    public Vector3 offset;
-    // Update is called once per frame
     public override void Tick()
     {
-        offset = targetEntity.transform.TransformVector(relativeOffset);
-        movePosition = targetEntity.transform.position + offset;
-        entity.desiredHeading = ComputePredictiveDH(movePosition);
-       // entity.desiredHeading = ComputeDHDS().dh;
-        if (diffToMovePosition.sqrMagnitude < followThresholdSq) {
-            entity.desiredSpeed = targetEntity.speed;
-            entity.desiredHeading = targetEntity.heading;
-        } else {
-            entity.desiredSpeed = entity.maxSpeed;
+        if (targetEntity == null || !targetEntity.gameObject.activeSelf)
+        {
+            // Target is invalid; stop following
+            movePosition = lastValidTargetPosition;
+            base.Tick();
+            return;
         }
-        range = diffToMovePosition.magnitude;
-        timeOnTarget = range / entity.speed;
-    }
 
-    public bool done = false;//user can set it to done
+        // Update position and offset
+        offset = targetEntity.transform.TransformVector(relativeOffset);
+        movePosition = targetEntity.position + offset;
+        // Debug.Log(Mathf.Sqrt((movePosition-entity.position).sqrMagnitude));
+        lastValidTargetPosition = movePosition;
+
+        // Calculate movement
+        DHDS dhds = ComputePotentialDHDS(movePosition);
+        entity.desiredHeading = dhds.dh;
+
+        // Adjust speed based on proximity
+        float distanceSq = (movePosition - entity.position).sqrMagnitude;
+        entity.desiredSpeed = (Mathf.Sqrt(distanceSq) < followThresholdSq) 
+            ? targetEntity.desiredSpeed
+            : entity.maxSpeed;
+        Debug.Log(followThresholdSq);
+        Debug.Log((Mathf.Sqrt(distanceSq) < followThresholdSq) );
+        // base.Tick(); // Allow base class to handle pathfinding if needed
+    }
 
     public override bool IsDone()
     {
-        if (targetEntity == null)
-        {
-            base.IsDone();
-        }
-        return done;
+        // Terminate if target is invalid or base condition met
+        return targetEntity == null || !targetEntity.gameObject.activeSelf ;
     }
 
     public override void Stop()
     {
         base.Stop();
         entity.desiredSpeed = 0;
-        isRunning = false;
-
     }
 
-    Vector3 relativeVelocity;
+
+    public Vector3 relativeVelocity;
     public float predictedInterceptTime;
     public Vector3 predictedMovePosition;
     Vector3 predictedDiff;
     public Vector3 diff;
-    //------------------------------------------------------
-    public float ComputePredictiveDH(Vector3 movePosition)
+    // this is also used by the Intercept class
+   public float ComputePredictiveDH(Vector3 movePosition)
     {
         float dh;
         movePosition = targetEntity.position + targetEntity.transform.TransformVector(relativeOffset);
@@ -89,21 +95,5 @@ public class Follow : Move
         }
         return dh;
     }
-
-    //     public DHDS ComputePotentialPredictiveDHDS(Vector3 relativeOffset)
-    // {
-    //     movePosition = targetEntity.position + targetEntity.transform.TransformVector(relativeOffset);
-    //     diff = movePosition - entity.position;
-    //     relativeVelocity = entity.velocity - targetEntity.velocity;
-    //     predictedInterceptTime = relativeVelocity.magnitude > 0 ? diff.magnitude / relativeVelocity.magnitude : 0;
-
-    //     if (predictedInterceptTime >= 0)
-    //     {
-    //         predictedMovePosition = movePosition + (targetEntity.velocity * predictedInterceptTime);
-    //         movePosition = predictedMovePosition;
-    //     }
-
-    //     return ComputePotentialDHDS();
-    // }
 
 }

@@ -41,7 +41,7 @@ public class WeaponsAspect : MonoBehaviour
         if (unitAI.commands.Count > 0 && unitAI.commands.Peek() != null){
             if (unitAI.commands.Peek().GetType() == typeof(Move)||
                 unitAI.commands.Peek().GetType() == typeof(AttackMove) ||
-                unitAI.commands.Peek().GetType() == typeof(Follow) ||
+                // unitAI.commands.Peek().GetType() == typeof(Follow) ||
                 unitAI.commands.Peek().GetType() == typeof(Intercept) ||
                 unitAI.commands.Peek().GetType() == typeof(Intercept3d) ||
                 unitAI.commands.Peek().GetType() == typeof(SmartIntercept))
@@ -63,28 +63,40 @@ public class WeaponsAspect : MonoBehaviour
 
     private Entity FindTargetInRange()
     {
-        // Debug.Log("Finding target in range...");
-        if (EntityMgr.inst == null || EntityMgr.inst.entities == null)
-            return null;
+        if (entity == null || weapon == null) return null;
 
-        float weaponRange = weapon.range; // Fixed: Use weapon.range instead of undefined 'range'
-        float weaponRangeSq = weaponRange * weaponRange;
-        Entity nearest = null;
-        float minDistSq = float.MaxValue;
+        Vector3 currentPosition = entity.position;
+        Entity nearestEnemy = null;
+        float nearestDistSq = float.MaxValue;
+        float currentWeaponRange = weapon.range;
 
-        foreach (Entity e in EntityMgr.inst.entities)
+        // Use Physics.OverlapSphere to find colliders within the specified range.
+        // Consider adding a LayerMask if entities are on specific layers for optimization.
+        Collider[] hitColliders = Physics.OverlapSphere(currentPosition, currentWeaponRange); 
+
+        foreach (Collider hitCollider in hitColliders)
         {
-            if (e == null || e == entity || e.owner == entity.owner || !e.gameObject.activeSelf || e.entityClass == EntityClass.Missile)
-                continue;
+            // Attempt to get the Entity component from the collider's game object or its parent.
+            Entity potentialEnemy = hitCollider.GetComponentInParent<Entity>();
 
-            float distSq = (e.position - entity.position).sqrMagnitude;
-            if (distSq < weaponRangeSq && distSq < minDistSq)
+            if (potentialEnemy == null || 
+                potentialEnemy == entity || // Don't target self
+                potentialEnemy.owner == entity.owner || // Don't target own units
+                potentialEnemy.entityClass == EntityClass.Missile || // Don't target missiles
+                !potentialEnemy.gameObject.activeSelf) 
             {
-                minDistSq = distSq;
-                nearest = e;
+                continue;
+            }
+
+            float distSq = (potentialEnemy.position - currentPosition).sqrMagnitude;
+            // OverlapSphere ensures entities are within 'range', but we still need the *closest* one.
+            if (distSq < nearestDistSq)
+            {
+                nearestEnemy = potentialEnemy;
+                nearestDistSq = distSq;
             }
         }
-        
-        return nearest;
+
+        return nearestEnemy;
     }
 }

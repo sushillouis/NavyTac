@@ -29,9 +29,34 @@ public class WeaponsMgr : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(mousePos);
             if (!Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, AIMgr.inst.layerMask)) continue;
 
-            Entity targetEntity = UIMgr.inst.FindClosestEntInRadius(hit.point);
+            // Find the closest entity using a physics overlap sphere
+            Entity targetEntity = FindClosestEntityWithCollider(hit.point, 5f); // 5f is an example radius, adjust as needed
+
             if (targetEntity != null && targetEntity.entityClass!= EntityClass.Missile) handleWeapon(selectedEnt, targetEntity);
         }
+    }
+
+    // New method to find the closest entity using colliders
+    private Entity FindClosestEntityWithCollider(Vector3 position, float radius)
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(position, radius);
+        Entity closestEntity = null;
+        float minDistanceSqr = float.MaxValue;
+
+        foreach (var hitCollider in hitColliders)
+        {
+            Entity entity = hitCollider.GetComponentInParent<Entity>(); // Or GetComponent<Entity>() if Entity is on the same GameObject as the collider
+            if (entity != null)
+            {
+                float distanceSqr = (entity.transform.position - position).sqrMagnitude;
+                if (distanceSqr < minDistanceSqr)
+                {
+                    minDistanceSqr = distanceSqr;
+                    closestEntity = entity;
+                }
+            }
+        }
+        return closestEntity;
     }
 
     public void handleWeapon(Entity entity, Entity targetEntity)
@@ -182,46 +207,72 @@ public class WeaponsMgr : MonoBehaviour
     }
 
     public void LaunchWeapon(Entity launchingEntity, WeaponData wd, Entity target, Vector3 targetPosition)
-{
-    if (wd == null) return;
-
-    float timeSinceLastShot = Time.time - wd.lastShotTime;
-    if (timeSinceLastShot < wd.cooldown || wd.ammoCount == 0) return;
-
-    if (wd.ammoCount > 0)
     {
-        wd.ammoCount--;
+        if (wd == null) return;
+
+        float timeSinceLastShot = Time.time - wd.lastShotTime;
+        if (timeSinceLastShot < wd.cooldown || wd.ammoCount == 0) return;
+
+        Vector3 launchPos = wd.launchPoint.position; // Define launch position early
+        float actualDistanceToTarget;
+
+        // Get the target's collider. GetComponentInChildren is used assuming colliders might be on child objects.
+        // If colliders are always on the same GameObject as the Entity script, target.GetComponent<Collider>() can be used.
+        Collider targetCollider = target.GetComponentInChildren<Collider>();
+
+        if (targetCollider != null && targetCollider.enabled)
+        {
+            // Calculate the closest point on the target's collider to the launch position
+            Vector3 closestPointOnTarget = targetCollider.ClosestPoint(launchPos);
+            actualDistanceToTarget = Vector3.Distance(launchPos, closestPointOnTarget);
+        }
+        else
+        {
+            // Fallback to using the target's transform position if no enabled collider is found
+            actualDistanceToTarget = Vector3.Distance(launchPos, target.transform.position);
+            // Optionally, log a warning if a precise collider-based distance could not be determined:
+            // if (targetCollider == null)
+            //     Debug.LogWarning($"Target {target.name} has no Collider. Using transform-based distance for range check.");
+            // else if (!targetCollider.enabled)
+            //     Debug.LogWarning($"Target {target.name}'s Collider is disabled. Using transform-based distance for range check.");
+        }
+
+        if (wd.range < actualDistanceToTarget)
+        {
+            Debug.Log($"Target out of range. Weapon Range: {wd.range}, Calculated Distance: {actualDistanceToTarget}");
+            return;
+        }
+
+        if (wd.ammoCount > 0)
+        {
+            wd.ammoCount--;
+        }
+        // Note: If ammoCount was 0, the method would have returned from the initial check.
+
+        // Calculate direction to aim the weapon (using targetPosition, which might be an intercept point)
+        Vector3 directionToTargetAim = (targetPosition - launchPos).normalized;
+        Quaternion targetRotation = Quaternion.LookRotation(directionToTargetAim);
+        Vector3 dir = targetRotation.eulerAngles; // Use rotation angles from target direction
+
+        Entity ent = GetWeapon(wd.weaponEntityType, launchPos, dir, launchingEntity.owner, launchingEntity);
+        if (ent == null)
+        {
+            Debug.Log("No Weapon entity found or could be created/reused from pool.");
+            return;
+        }
+
+        if (!ent.gameObject.activeSelf) // Check if the retrieved/created weapon is active
+        {
+            // This might indicate an issue with pooling or entity creation if it occurs unexpectedly
+            Debug.LogWarning("Weapon entity is not active immediately after GetWeapon call.");
+        }
+
+        weapons.Add(ent);
+        wd.currentWeaponEntities.Add(ent);
+
+        StartCoroutine(TargetEntity(ent, wd, target, targetPosition));
+        wd.lastShotTime = Time.time;
     }
-    if(wd.range < Vector3.Distance(launchingEntity.transform.position, target.transform.position))
-    {
-        Debug.Log("Target out of range");
-        return;
-    }
-
-    Vector3 pos = wd.launchPoint.position;
-    // Calculate direction to face the target
-    Vector3 directionToTarget = (targetPosition - pos).normalized;
-    Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
-    Vector3 dir = targetRotation.eulerAngles; // Use rotation angles from target direction
-
-    Entity ent = GetWeapon(wd.weaponEntityType, pos, dir, launchingEntity.owner, launchingEntity);
-    if (ent == null)
-    {
-        Debug.Log("No Weapon entity found");
-        return;
-    }
-
-    if (ent.gameObject.activeSelf == false)
-    {
-        Debug.Log("entity not active");
-    }
-
-    weapons.Add(ent);
-    wd.currentWeaponEntities.Add(ent);
-
-    StartCoroutine(TargetEntity(ent, wd, target, targetPosition));
-    wd.lastShotTime = Time.time;
-}
 
     public void DestroyEntity(Entity entity)
     {
@@ -371,7 +422,7 @@ public void DestroyAllWeaponsImmediately(bool includePooled = true)
 
         // Remove from management systems
         EntityMgr.inst.entities.Remove(weapon);
-        weapons.Remove(weapon);
+        // weapons.Remove(weapon); // This will be cleared at the end
         
         // Clean up components
         MinimapMgr.inst.RemoveMinimapIcon(weapon);
@@ -385,7 +436,7 @@ public void DestroyAllWeaponsImmediately(bool includePooled = true)
         // Immediate destruction
         GameObject.Destroy(weapon.gameObject);
     }
-    weapons.Clear();
+    weapons.Clear(); // Clear the set after iterating and destroying
 
     // Destroy pooled weapons if requested
     if (includePooled)
@@ -400,19 +451,22 @@ public void DestroyAllWeaponsImmediately(bool includePooled = true)
                     if (pooledWeapon != null && pooledWeapon.gameObject != null)
                     {
                         // Clean up pooled instance
-                        MinimapMgr.inst.RemoveMinimapIcon(pooledWeapon);
+                        MinimapMgr.inst.RemoveMinimapIcon(pooledWeapon); // Ensure minimap icons for pooled items are handled if they were ever created
                         GameObject.Destroy(pooledWeapon.gameObject);
                     }
                 }
-                typePool.Value.Clear();
+                // typePool.Value.Clear(); // Already cleared by Dequeue loop
             }
-            playerEntry.Value.Clear();
+            // playerEntry.Value.Clear(); // Dictionaries of queues will be empty
         }
-        weaponPools.Clear();
+        weaponPools.Clear(); // Clear the main dictionary
     }
 
-    // Reinitialize distance manager
-    DistanceMgr.inst.Initialize();
+    // Reinitialize distance manager if it depends on active entities
+    if (DistanceMgr.inst != null)
+    {
+        DistanceMgr.inst.Initialize();
+    }
 }
 
     [ContextMenu("Damage Matrix to CSV")]

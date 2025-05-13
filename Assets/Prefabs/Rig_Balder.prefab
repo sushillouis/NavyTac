@@ -323,10 +323,10 @@ MonoBehaviour:
   maxSpeed: 0
   minSpeed: 0
   cruiseSpeed: 0
-  mass: 1500
-  length: 0
-  width: 0
-  height: 0
+  mass: 10000
+  length: 2000
+  width: 2000
+  height: 2000
   maxHealth: 2000
   minHealth: 1000000
   maxFuel: 0
@@ -367,8 +367,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 540, y: 800, z: 540}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 600, y: 800, z: 540}
+  m_Center: {x: -50, y: 0, z: 0}
 --- !u!1 &8036105732478431344
 GameObject:
   m_ObjectHideFlags: 0
