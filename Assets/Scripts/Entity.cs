@@ -60,7 +60,7 @@ public class Entity : MonoBehaviour
     public UnitAI ai = null;
     public UIAspect ui = null;
     public WeaponsAspect weapons = null;
-    
+    private GameObject healthBarObject;
 
     void Start()
     {
@@ -70,6 +70,7 @@ public class Entity : MonoBehaviour
         isSelected = false;
         Renderer mainRenderer = GetComponent<Renderer>();
         Renderer[] childRenderers = GetComponentsInChildren<Renderer>(true);
+
         
         for (int i = 0; i < childRenderers.Length; i++)
         {
@@ -77,6 +78,12 @@ public class Entity : MonoBehaviour
                 childRenderers[i].material.color = owner.playerColor;
             }
             
+        }
+        HealthBarMgr healthBarMgr = GetComponentInChildren<HealthBarMgr>(true);
+        if(healthBarMgr != null)
+        {
+            healthBarObject = healthBarMgr.gameObject;
+            healthBarObject.SetActive(false);  // Start hidden
         }
     }
     private void FixedUpdate() {
@@ -93,6 +100,12 @@ public class Entity : MonoBehaviour
         }
         
         transform.GetChild(0).gameObject.SetActive(isVisible);
+        if(healthBarObject!= null)
+        {
+            healthBarObject.SetActive(isVisible);
+        }
+        
+        
         
     }
 

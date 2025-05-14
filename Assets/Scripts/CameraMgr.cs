@@ -17,6 +17,8 @@ public class CameraMgr : MonoBehaviour
     private Quaternion startPitchLocalRotation;
     private Vector3 startRollLocalPosition;
     private Quaternion startRollLocalRotation;
+
+    
     private void Awake()
     {
         inst = this;
@@ -64,6 +66,13 @@ public void SetCameraPosition()
     public float maxCameraHeight = 9600;
     public float minCameraHeight = 20;
     public float cameraTurnRate = 10;
+     public float edgeScrollMargin = 30f;
+     [Header("Mouse Rotation Settings")]
+    public float mouseYawSensitivity = 0.1f;
+    public float mousePitchSensitivity = 0.1f;
+    public float minPitchAngle = -80f;
+    public float maxPitchAngle = 80f;
+
     float moveCoefficent;
     public Vector3 currentYawEulerAngles = Vector3.zero;
     public Vector3 currentPitchEulerAngles = Vector3.zero;
@@ -74,6 +83,8 @@ public void SetCameraPosition()
 
         moveCoefficent = Mathf.Log(YawNode.transform.position.y * heightSensitivty);
         moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);   
+        HandleEdgeScrolling();
+        HandleMiddleMouseDrag();
             
     }
     
@@ -162,6 +173,71 @@ public void ResetCamera()
         
         RollNode.transform.localPosition = startRollLocalPosition;
         RollNode.transform.localRotation = startRollLocalRotation;
+    }
+private void HandleEdgeScrolling()
+    {
+        if (!isRTSMode) return;
+
+        Vector2 mousePosition = Mouse.current.position.ReadValue();
+        Vector2 moveInput = Vector2.zero;
+
+        // Left edge
+        if (mousePosition.x <= edgeScrollMargin)
+        {
+            float distanceFromEdge = mousePosition.x;
+            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
+            moveInput.x -= factor;
+        }
+        // Right edge
+        if (mousePosition.x >= Screen.width - edgeScrollMargin)
+        {
+            float distanceFromEdge = Screen.width - mousePosition.x;
+            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
+            moveInput.x += factor;
+        }
+        // Bottom edge
+        if (mousePosition.y <= edgeScrollMargin)
+        {
+            float distanceFromEdge = mousePosition.y;
+            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
+            moveInput.y -= factor;
+        }
+        // Top edge
+        if (mousePosition.y >= Screen.height - edgeScrollMargin)
+        {
+            float distanceFromEdge = Screen.height - mousePosition.y;
+            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
+            moveInput.y += factor;
+        }
+
+        if (moveInput != Vector2.zero)
+        {
+            MoveCameraXZ(moveInput);
+        }
+    }
+    private void HandleMiddleMouseDrag()
+    {
+        if (Mouse.current.middleButton.isPressed)
+        {
+            Vector2 mouseDelta = Mouse.current.delta.ReadValue();
+
+            // Yaw rotation (horizontal mouse movement)
+            float yawChange = mouseDelta.x * mouseYawSensitivity;
+            YawNode.transform.Rotate(Vector3.up * yawChange, Space.Self);
+
+            // Pitch rotation (vertical mouse movement)
+            float pitchChange = mouseDelta.y * mousePitchSensitivity;
+            float currentPitch = PitchNode.transform.localEulerAngles.x;
+            
+            // Convert to -180 to 180 range for clamping
+            if (currentPitch > 180f)
+                currentPitch -= 360f;
+            
+            currentPitch -= pitchChange; // Adjust based on mouse movement
+            
+            currentPitch = Mathf.Clamp(currentPitch, minPitchAngle, maxPitchAngle);
+            PitchNode.transform.localEulerAngles = new Vector3(currentPitch, 0f, 0f);
+        }
     }
 
 }

@@ -353,11 +353,11 @@ public class UIMgr : MonoBehaviour
 
 
         if(singleSelect.IsPressed())
-            MinimapMgr.inst.MoveCameraViaMinimap(selectionCursorPosition.ReadValue<Vector2>());
+            // MinimapMgr.inst.MoveCameraViaMinimap(selectionCursorPosition.ReadValue<Vector2>());
 
         if(MinimapMgr.inst.CursorOverMap(selectionCursorPosition.ReadValue<Vector2>())) {
             MinimapMgr.inst.ChangeZoom(mouseScroll.ReadValue<Vector2>().y);
-            MinimapMgr.inst.ChangeCenter(mouseDelta.ReadValue<Vector2>());
+            // MinimapMgr.inst.ChangeCenter(mouseDelta.ReadValue<Vector2>());
         } else {
             CameraMgr.inst.MoveCameraY(mouseScroll.ReadValue<Vector2>().y);
             CameraMgr.inst.MoveCameraXZ(mouseDelta.ReadValue<Vector2>());
@@ -482,7 +482,7 @@ public class UIMgr : MonoBehaviour
 
 
     private void ToggleMap(InputAction.CallbackContext context) {
-        MinimapMgr.inst.ResizeMap();
+        // MinimapMgr.inst.ResizeMap();
     }
 
 

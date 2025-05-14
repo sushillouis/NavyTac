@@ -1,26 +1,44 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 public class HealthBarMgr : MonoBehaviour
 {
-    // Start is called before the first frame update
-    Entity entity;
+    private Entity entity;
+    [SerializeField] private Slider slider;
+
+    
+
     void Start()
     {
         entity = GetComponentInParent<Entity>();
-        if (entity == null) return;
+        if (slider == null)
+        {
+            Debug.LogError("HealthBarMgr: Slider reference not set!");
+            enabled = false;
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    void Update()  // Changed from FixedUpdate to Update
     {
-        this.transform.LookAt(Camera.main.transform.position);
+        if (entity == null) return;
 
-        // this.gameObject.SetActive(entity.isVisible);
+        // Billboard effect
+        transform.LookAt(Camera.main.transform.position);
+        transform.Rotate(0, 180, 0);
+
+        // Visibility check
+        gameObject.SetActive(entity.isVisible);
+        
+        SetHealthBar();
     }
 
-    
-
-    
+    public void SetHealthBar()
+    {
+        if (slider == null || entity.maxHealth <= 0) return;
+        
+        // Clamp health and calculate normalized value
+        float healthPercentage = Mathf.Clamp(entity.health, 0, entity.maxHealth) / entity.maxHealth;
+        slider.value = healthPercentage;
+    }
 }

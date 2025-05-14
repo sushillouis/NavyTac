@@ -42,6 +42,8 @@ public class OpenOceanMain : MonoBehaviour
     private PanelPlus ScorePanel;
     [SerializeField]
     private RectTransform NetDebugConsolePanel;
+    [SerializeField]
+    private PanelPlus GamePausePanel;
 
     [Header("Single / Multi player Screen")]
     [SerializeField]
@@ -71,7 +73,7 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField]
     private Button loginButton;
     [SerializeField]
-    private Button LoginQuitButton;
+    private Button  LoginQuitButton;
 
     [Header("Map Select Screen")]
     [SerializeField]
@@ -102,6 +104,15 @@ public class OpenOceanMain : MonoBehaviour
     private float playSessionStartTime;
     public float playSessionDuration { get; private set; }
 
+    [Header("Game Pause Panel")]
+    [SerializeField]
+    private Button resumeButton;
+    [SerializeField]
+    private Button quitButton;
+    [SerializeField]
+    private List<Button> menuButtons;
+    
+
     public enum LobbyState
     {
         None = 0,
@@ -111,7 +122,8 @@ public class OpenOceanMain : MonoBehaviour
         HostOrJoin,
         Play,
         Done,
-        ScorePanel
+        ScorePanel,
+        GamePaused
     }
     [Header("Lobby State and the rest")]
 
@@ -161,6 +173,15 @@ public class OpenOceanMain : MonoBehaviour
 
         SingleMultiQuitButton.onClick.RemoveAllListeners();
         SingleMultiQuitButton.onClick.AddListener(OnQuitButton);
+        resumeButton.onClick.RemoveAllListeners();
+        resumeButton.onClick.AddListener(OnResumeButton);
+        quitButton.onClick.RemoveAllListeners();
+        quitButton.onClick.AddListener(OnQuitButton);
+        foreach (Button button in menuButtons)
+        {
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(OnMenuButton);
+        }
 
         if (startButton != null) // Ensure startButton is assigned in Inspector
         {
@@ -436,19 +457,13 @@ public class OpenOceanMain : MonoBehaviour
         {
             mapNameText.text = name;
         }
-        else
-        {
-            Debug.LogError("mapNameText is not assigned in the Inspector.");
-        }
+       
 
         if (mapDescriptionText != null)
         {
             mapDescriptionText.text = description;
         }
-        else
-        {
-            Debug.LogError("mapDescriptionText is not assigned in the Inspector.");
-        }
+        
     }
 
 
@@ -470,6 +485,7 @@ public class OpenOceanMain : MonoBehaviour
             NetDebugConsolePanel.gameObject.SetActive(IsDebugging && IsNetDebugging);
             SingleMultiplayerPanel.isVisible = (value == LobbyState.SingleMultiPlayer);
             ScorePanel.isVisible = (value == LobbyState.ScorePanel);
+            GamePausePanel.isVisible = (value == LobbyState.GamePaused);
 
            
             if (value == LobbyState.MapSelect)
@@ -504,6 +520,16 @@ public class OpenOceanMain : MonoBehaviour
                         buttonTextComponent.text = NEXT_GAME_BUTTON_TEXT;
                     }
                 }
+            }
+            if (value == LobbyState.GamePaused)
+            {
+                // Pause the game
+                Time.timeScale = 0f;
+            }
+            else
+            {
+                // Resume the game
+                Time.timeScale = 1f;
             }
             
             Time.timeScale = (value == LobbyState.Play) ? 1f : 0f;
@@ -559,7 +585,15 @@ public class OpenOceanMain : MonoBehaviour
             Application.Quit();
         }
     }
-    
+    public void OnResumeButton()
+    {
+        
+        lobbyState = LobbyState.Play;
+    }
+    public void OnMenuButton()
+    {
+        lobbyState = LobbyState.GamePaused;
+    }
     public void ResetGameState()
     {
         // This method might need more logic to truly reset the game for a new session
