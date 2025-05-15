@@ -175,46 +175,49 @@ public void ResetCamera()
         RollNode.transform.localRotation = startRollLocalRotation;
     }
 private void HandleEdgeScrolling()
+{
+    if (!isRTSMode) return;
+    
+    Vector2 mousePosition = Mouse.current.position.ReadValue();
+    // Ignore mouse if it's outside the screen
+    if (mousePosition.x < 0 || mousePosition.x > Screen.width || mousePosition.y < 0 || mousePosition.y > Screen.height) return;
+    
+    Vector2 moveInput = Vector2.zero;
+
+    // Left edge
+    if (mousePosition.x <= edgeScrollMargin)
     {
-        if (!isRTSMode) return;
-
-        Vector2 mousePosition = Mouse.current.position.ReadValue();
-        Vector2 moveInput = Vector2.zero;
-
-        // Left edge
-        if (mousePosition.x <= edgeScrollMargin)
-        {
-            float distanceFromEdge = mousePosition.x;
-            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
-            moveInput.x -= factor;
-        }
-        // Right edge
-        if (mousePosition.x >= Screen.width - edgeScrollMargin)
-        {
-            float distanceFromEdge = Screen.width - mousePosition.x;
-            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
-            moveInput.x += factor;
-        }
-        // Bottom edge
-        if (mousePosition.y <= edgeScrollMargin)
-        {
-            float distanceFromEdge = mousePosition.y;
-            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
-            moveInput.y -= factor;
-        }
-        // Top edge
-        if (mousePosition.y >= Screen.height - edgeScrollMargin)
-        {
-            float distanceFromEdge = Screen.height - mousePosition.y;
-            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
-            moveInput.y += factor;
-        }
-
-        if (moveInput != Vector2.zero)
-        {
-            MoveCameraXZ(moveInput);
-        }
+        float distanceFromEdge = mousePosition.x;
+        float factor = 1 - (distanceFromEdge / edgeScrollMargin);
+        moveInput.x -= factor;
     }
+    // Right edge
+    if (mousePosition.x >= Screen.width - edgeScrollMargin)
+    {
+        float distanceFromEdge = Screen.width - mousePosition.x;
+        float factor = 1 - (distanceFromEdge / edgeScrollMargin);
+        moveInput.x += factor;
+    }
+    // Bottom edge
+    if (mousePosition.y <= edgeScrollMargin)
+    {
+        float distanceFromEdge = mousePosition.y;
+        float factor = 1 - (distanceFromEdge / edgeScrollMargin);
+        moveInput.y -= factor;
+    }
+    // Top edge
+    if (mousePosition.y >= Screen.height - edgeScrollMargin)
+    {
+        float distanceFromEdge = Screen.height - mousePosition.y;
+        float factor = 1 - (distanceFromEdge / edgeScrollMargin);
+        moveInput.y += factor;
+    }
+
+    if (moveInput != Vector2.zero)
+    {
+        MoveCameraXZ(moveInput);
+    }
+}
     private void HandleMiddleMouseDrag()
     {
         if (Mouse.current.middleButton.isPressed)

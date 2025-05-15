@@ -107,4 +107,17 @@ public class Pathfinding : MonoBehaviour
             14*dstY + 10*(dstX-dstY) : 
             14*dstX + 10*(dstY-dstX);
     }
+
+    // store the last computed path
+    public Vector3[] gizmoPath;
+
+    // draw it in the editor
+    void OnDrawGizmos() {
+        if (gizmoPath == null || gizmoPath.Length < 2) return;
+        Gizmos.color = Color.green;
+        for (int i = 0; i < gizmoPath.Length - 1; i++) {
+            Gizmos.DrawSphere(gizmoPath[i], 0.1f);
+            Gizmos.DrawLine(gizmoPath[i], gizmoPath[i + 1]);
+        }
+    }
 }

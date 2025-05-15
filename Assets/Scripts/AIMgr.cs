@@ -95,14 +95,16 @@ public class AIMgr : NetworkBehaviour
     public float terrainDetectionRadius = 100f; // How far ships detect islands
     public float maxTerrainRepulsion = 3000f;    // Maximum push force
     public float minSafeDistance = 20f;          // Closest allowed to terrain
-
+    public float collisionRepulsionCoefficient = 5.0f;
     [Header("Debug")]
     public bool showTerrainAvoidance = true;
-
+    public LayerMask terrainLayerMask;
 
     public RaycastHit hit;
     public int layerMask;
     public List<Entity> selectedEntities = new List<Entity>();
+
+
     // Update is called once per frame
     void Update()
     {

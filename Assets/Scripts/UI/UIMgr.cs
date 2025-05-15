@@ -293,8 +293,17 @@ public class UIMgr : MonoBehaviour
             Entity ent = SelectionMgr.inst.selectedEntity;
             if (ent.name != lastEntityName)
             {
-                lastEntityName = ent.name;
-                entityName.text = ent.name;
+                if(ent.entityRole == EntityRole.Base)
+                {
+                    lastEntityName = "Command Center";
+                    entityName.text = "Command Center";
+                }
+                    
+                else
+                {
+                    lastEntityName = ent.name;
+                    entityName.text = ent.name;
+                }
             }
             if (ent.speed != lastSpeed)
             {
