@@ -9,6 +9,9 @@ using UnityEngine;
 public class SelectionMgr : MonoBehaviour
 {
     public static SelectionMgr inst;
+    // Add these variables
+    [SerializeField]
+    private PanelPlus EntityControlPanel; // Assign this in Unity Inspector
     private void Awake()
     {
         inst = this;
@@ -30,8 +33,17 @@ public class SelectionMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(selectedEntities.Count > 1) {
+        if (selectedEntities.Count > 1)
+        {
             DeselectEntity(selectedEntities.Find(x => x.entityType == EntityType.Rig_Balder));
+        }
+        if(selectedEntities.Count > 0)
+        {
+            GroupUIMgr.inst.EntityControlPanel.isVisible = true;
+        }
+        else
+        {
+            GroupUIMgr.inst.EntityControlPanel.isVisible = false;
         }
     }
     public void StartBoxSelecting()
@@ -119,13 +131,16 @@ public class SelectionMgr : MonoBehaviour
             shouldClearSelection: !clearSelection);
     }
 
-    public void ClearSelection()
-    {
+    public void ClearSelection() {
         foreach(Entity ent in EntityMgr.inst.entities)
             ent.isSelected = false;
         selectedEntities.Clear();
         selectedEntity = null;
+        GroupUIMgr.inst.EntityControlPanel.isVisible = false;
+        
     }
+
+
 
 
     public void DeselectEntity(Entity ent) {
@@ -191,25 +206,29 @@ public class SelectionMgr : MonoBehaviour
     */
 
     public void SelectEntity2(Vector2 mousePos, bool addSelection) {
-        RaycastHit hit;
-        Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
-        Entity ent = UIMgr.inst.FindClosestEntInRadius(hit.point);
+    RaycastHit hit;
+    Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
+    Entity ent = UIMgr.inst.FindClosestEntInRadius(hit.point);
 
-        if(ent == null) {
-            ClearSelection();
-        } else {
-            if(addSelection) {
-                if(!selectedEntities.Contains(ent)) {
-                    SelectEntity(ent, shouldClearSelection: false);
-                } else {
-                    DeselectEntity(ent);
-                }
+    if(ent == null) {
+        ClearSelection();
+    } else {
+        if(addSelection) {
+            if(!selectedEntities.Contains(ent)) {
+                SelectEntity(ent, shouldClearSelection: false);
             } else {
-                SelectEntity(ent, shouldClearSelection: true);
+                DeselectEntity(ent);
             }
+        } else {
+            SelectEntity(ent, shouldClearSelection: true);
+        }
 
+        // Show entity control panel if only one entity is selected
+        if (selectedEntities.Count == 1) {
+            GroupUIMgr.inst.ShowEntityControlPanel(mousePos);
         }
     }
+}
 
 
     /// <summary>

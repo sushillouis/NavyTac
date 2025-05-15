@@ -21,12 +21,15 @@ public class GroupUIMgr : MonoBehaviour
 
     [SerializeField]
     private PanelPlus TacticalCommandsPanel;
+    [SerializeField]
+   public PanelPlus EntityControlPanel; 
 
     [SerializeField]
     private List<Button> tacticsButtonsList = new List<Button>();
 
 
-    private void Awake() {
+    private void Awake()
+    {
         inst = this;
     }
 
@@ -47,11 +50,12 @@ public class GroupUIMgr : MonoBehaviour
         */
         InitGroupCommandButtons();
         //-----------------------------------------------------------------------------
-        
+
     }
 
 
-    private void OnDisable() {
+    private void OnDisable()
+    {
 
         UIMapDisable();
         groupInputs.Tactical.ShowTactics.Disable();
@@ -62,64 +66,76 @@ public class GroupUIMgr : MonoBehaviour
 
     }
 
-    public void Bind(InputAction.CallbackContext ctx) {
+    public void Bind(InputAction.CallbackContext ctx)
+    {
         int groupNumber = ParseContextForControlGroupNumber(ctx.control.path);
         NetDebugConsole.inst.Log("Binding..." + ctx.control + " : " + groupNumber);
         SelectionMgr.inst.FormControlGroup(groupNumber);
     }
 
-    public void Retreive(InputAction.CallbackContext context) {
+    public void Retreive(InputAction.CallbackContext context)
+    {
         int groupNumber = ParseContextForControlGroupNumber(context.control.path);
         NetDebugConsole.inst?.Log("Retreiving..." + context.control + " : " + groupNumber);
         SelectionMgr.inst.SelectControlGroup(groupNumber);
     }
-    int ParseContextForControlGroupNumber(string path) {
+    int ParseContextForControlGroupNumber(string path)
+    {
         string[] pathElements = path.Split('/');
         string keycode = pathElements[pathElements.Length - 1];
         return int.Parse(keycode);
     }
 
-    void CancelEntCommands(List<Entity> entities) {
-        foreach(Entity ent in entities) {
+    void CancelEntCommands(List<Entity> entities)
+    {
+        foreach (Entity ent in entities)
+        {
             ent.ai.StopAndRemoveAllCommands();
         }
     }
 
- 
+
     //public List<Entity> tacticalEntityList;
-    void HandleTacticalCommand2(InputAction.CallbackContext context) {
-        if(SelectionMgr.inst.selectedEntities.Count > 1) { // a group is more than 1
+    void HandleTacticalCommand2(InputAction.CallbackContext context)
+    {
+        if (SelectionMgr.inst.selectedEntities.Count > 1)
+        { // a group is more than 1
             Vector2 mousePos = groupInputs.Tactical.CursorPosition.ReadValue<Vector2>();
             worldPosAndEntity = UIMgr.inst.MousePosToWorldPosEntity(mousePos);
             commandableGroup = new Group(SelectionMgr.inst.selectedEntities);
             TacticalCommandsPanel.isVisible = true; //becomes invisible after 5 secs
-        } 
+        }
     }
 
     public WorldPosEntity worldPosAndEntity;
     public Group commandableGroup;
 
 
-    void HandleButton(TacticsType tt) {
+    void HandleButton(TacticsType tt)
+    {
         Debug.Log("handling button: " + tt);
         TacticalAIMgr.inst.HandleTacticalCommand(commandableGroup, worldPosAndEntity, tt);
         TacticalCommandsPanel.isVisible = false;
         TacticalCommandsPanel.StopAllCoroutines();
     }
 
-    void InitGroupCommandButtons() {
+    void InitGroupCommandButtons()
+    {
 
-        foreach(TacticsType tt in Enum.GetValues(typeof(TacticsType))) {
-            if(tt != TacticsType.None) {
+        foreach (TacticsType tt in Enum.GetValues(typeof(TacticsType)))
+        {
+            if (tt != TacticsType.None)
+            {
                 //Debug.Log("Button: " + tt);
-                Button tb = tacticsButtonsList[(int) tt];
+                Button tb = tacticsButtonsList[(int)tt];
                 tb.GetComponentInChildren<TextMeshProUGUI>().text = Utils.SplitCamelCase(tt.ToString());
-                tacticsButtonsList[(int) tt].onClick.AddListener(() => HandleButton(tt));
+                tacticsButtonsList[(int)tt].onClick.AddListener(() => HandleButton(tt));
             }
         }
     }
 
-    void UIMapDisable() {
+    void UIMapDisable()
+    {
 
         groupInputs.BindGroup.Disable();
 
@@ -155,7 +171,8 @@ public class GroupUIMgr : MonoBehaviour
         groupInputs.BindGroup.RetreiveControlGroup10.Disable();
     }
 
-    void UIMapControlGroups() {
+    void UIMapControlGroups()
+    {
         groupInputs.Enable();
         groupInputs.BindGroup.Enable();
         //-----------------------------------------------------------------------------
@@ -223,7 +240,19 @@ public class GroupUIMgr : MonoBehaviour
         groupInputs.BindGroup.RetreiveControlGroup10.performed += Retreive;
 
     }
+    // Add this method to show/hide panels
+public void ShowEntityControlPanel(Vector2 mousePos) {
+    if (SelectionMgr.inst.selectedEntities.Count == 1) {
+        // Convert mouse position to UI canvas position
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(mainCanvas, mousePos, null, out localPoint);
+        EntityControlPanel.GetComponent<RectTransform>().localPosition = localPoint;
+        EntityControlPanel.isVisible = true;
+        TacticalCommandsPanel.isVisible = false; // Hide tactical panel
+    }
+}
 
+// Update ClearSelection to hide panels
 
 }
 
