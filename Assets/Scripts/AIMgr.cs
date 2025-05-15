@@ -146,7 +146,7 @@ public class AIMgr : NetworkBehaviour
 
                     else
                     {
-                        HandleFollow(SelectionMgr.inst.selectedEntities, ent, new Vector3(100, 0, 0), add);
+                        HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
                     }
                 }
                 
@@ -159,7 +159,7 @@ public class AIMgr : NetworkBehaviour
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
     // Constructor for position-based attack-move
-public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false)
+public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, bool acquireTarget = false)
 {
     if (isLocalCommand)
     {
@@ -203,7 +203,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
         }
 
         AttackMove am = target != null 
-            ? new AttackMove(entity, target, maxSpeedMovement, doneDistanceSq) 
+            ? new AttackMove(entity, target,acquireTargetsOnWay:acquireTarget, maxSpeedMovement, doneDistanceSq) 
             : new AttackMove(entity, point, maxSpeedMovement, doneDistanceSq);
 
         UnitAI uai = entity.GetComponentInChildren<UnitAI>();

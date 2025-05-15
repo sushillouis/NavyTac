@@ -1,148 +1,201 @@
 ﻿using UnityEngine;
 
-/// <summary>
-/// Represents an attack-move command for an entity.
-/// The entity will move towards a target position or entity,
-/// engaging any enemies it encounters along the way or near its destination.
-/// </summary>
 [System.Serializable]
 public class AttackMove : Move
 {
-    private Entity explicitTarget;          // The specific entity to target, if any.
-    private bool hasExplicitTarget;         // Flag indicating if an explicit target was given.
-    private float basePathUpdateCooldown;   // Base cooldown for path updates, can be adjusted dynamically.
-    private Vector3 lastKnownTargetPosition; // Stores the last known position of the explicit target if it becomes invalid.
-    private WeaponsAspect _weaponsAspect;   // Cached WeaponsAspect component.
+    private Entity explicitTarget;
+    private bool hasExplicitTarget; // True if currently pursuing a specific target
+    private Entity commandedTarget; // The original entity target provided in the constructor
+    private Vector3 lastKnownCommandedTargetPosition; // Last known position of the commandedTarget
+    private bool isAcquiredTarget; // True if explicitTarget is an acquired target along the way
+    private bool acquireTargetsOnWay; // True if unit should acquire targets along the path
 
-    // Constants for path update logic
-    private const float DefaultPathUpdateCooldown = 0.3f; // For combat scenarios or static targets.
-    private const float MovingTargetPathUpdateCooldown = 0.2f; // For actively moving targets.
-    private const float TargetMovingSpeedThreshold = 1.0f; // Speed above which a target is considered "moving".
+    // Fields for original command type
+    private Vector3 originalDestinationForAttackMove; // Stores the original destination for an attack-move to a point
+    private bool wasOriginallyAttackMoveToPosition;   // True if the command was an attack-move to a point
 
-    /// <summary>
-    /// Constructor for an attack-move to a specific position.
-    /// </summary>
-    /// <param name="ent">The entity performing the move.</param>
-    /// <param name="pos">The target position.</param>
-    /// <param name="maxSpeed">Whether the entity should move at maximum speed.</param>
-    // Constructor for position-based attack-move
-public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, pos, maxSpeed, doneDistanceSq)
-{
-    hasExplicitTarget = false;
-    pathUpdateCooldown = DefaultPathUpdateCooldown;
-    basePathUpdateCooldown = pathUpdateCooldown;
-}
+    private float basePathUpdateCooldown;
+    private Vector3 lastKnownTargetPosition; // Last known position of an 'explicitTarget'
+    private WeaponsAspect _weaponsAspect;
 
-// Constructor for entity-target attack-move
-public AttackMove(Entity ent, Entity target, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, target.position, maxSpeed, doneDistanceSq)
-{
-    explicitTarget = target;
-    hasExplicitTarget = true;
-    lastKnownTargetPosition = target.position;
-    pathUpdateCooldown = MovingTargetPathUpdateCooldown; 
-    basePathUpdateCooldown = pathUpdateCooldown;
-}
+    private const float DefaultPathUpdateCooldown = 0.3f;
+    private const float MovingTargetPathUpdateCooldown = 0.2f;
+    private const float TargetMovingSpeedThreshold = 1.0f;
 
-    /// <summary>
-    /// Initializes the attack move, setting up pathfinding, line renderers, and caching components.
-    /// </summary>
+    // Constructor for attack-move to a position
+    public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, pos, maxSpeed, doneDistanceSq)
+    {
+        hasExplicitTarget = false;
+        explicitTarget = null;
+        commandedTarget = null;
+        isAcquiredTarget = false;
+        acquireTargetsOnWay = false; // Default for position constructor
+        pathUpdateCooldown = DefaultPathUpdateCooldown;
+        basePathUpdateCooldown = DefaultPathUpdateCooldown;
+        this.originalDestinationForAttackMove = pos;
+        this.wasOriginallyAttackMoveToPosition = true;
+        lastKnownTargetPosition = pos;
+        lastKnownCommandedTargetPosition = pos;
+    }
+
+    // Constructor for attacking a specific entity
+    public AttackMove(Entity ent, Entity target, bool acquireTargetsOnWay = false, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, target.position, maxSpeed, doneDistanceSq)
+    {
+        explicitTarget = target;
+        hasExplicitTarget = true;
+        commandedTarget = target;
+        isAcquiredTarget = false;
+        this.acquireTargetsOnWay = acquireTargetsOnWay;
+        lastKnownTargetPosition = target != null ? target.position : ent.position;
+        lastKnownCommandedTargetPosition = target != null ? target.position : ent.position;
+
+        if (target != null && IsTargetValid(target))
+        {
+            pathUpdateCooldown = target.speed > TargetMovingSpeedThreshold ? MovingTargetPathUpdateCooldown : DefaultPathUpdateCooldown;
+        }
+        else
+        {
+            pathUpdateCooldown = DefaultPathUpdateCooldown;
+        }
+        basePathUpdateCooldown = DefaultPathUpdateCooldown;
+        this.wasOriginallyAttackMoveToPosition = false;
+    }
+
     public override void Init()
     {
-        base.Init(); 
+        base.Init();
         _weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
 
         if (!FogWarMgr.inst.nonRevelers.Contains(entity))
         {
             line = LineMgr.inst.CreateAttackMoveLine(entity.position, movePosition);
-            line.gameObject.SetActive(false); 
+            line.gameObject.SetActive(false);
         }
     }
 
-    /// <summary>
-    /// Called every frame to update the attack-move logic.
-    /// Handles target tracking, engagement, and movement.
-    /// </summary>
     public override void Tick()
     {
-        // 1. Update primary movePosition and pathUpdateCooldown based on explicit target (if any)
-        if (hasExplicitTarget)
+        // Update last known positions
+        if (commandedTarget != null && IsTargetValid(commandedTarget))
         {
-            if (IsTargetValid(explicitTarget))
+            lastKnownCommandedTargetPosition = commandedTarget.position;
+        }
+        if (hasExplicitTarget && explicitTarget != null && IsTargetValid(explicitTarget))
+        {
+            lastKnownTargetPosition = explicitTarget.position;
+        }
+
+        // Handle explicitTarget becoming invalid
+        if (hasExplicitTarget && (explicitTarget == null || !IsTargetValid(explicitTarget)))
+        {
+            if (isAcquiredTarget)
             {
-                movePosition = explicitTarget.position;
-                lastKnownTargetPosition = explicitTarget.position;
-                pathUpdateCooldown = explicitTarget.speed > TargetMovingSpeedThreshold ? MovingTargetPathUpdateCooldown : basePathUpdateCooldown;
+                // Acquired target destroyed, revert to commandedTarget
+                if (commandedTarget != null && IsTargetValid(commandedTarget))
+                {
+                    explicitTarget = commandedTarget;
+                    isAcquiredTarget = false;
+                }
+                else
+                {
+                    hasExplicitTarget = false;
+                    movePosition = lastKnownCommandedTargetPosition;
+                }
             }
             else
             {
-                movePosition = lastKnownTargetPosition; // Move to last known position
-                pathUpdateCooldown = basePathUpdateCooldown; // Revert to base cooldown
+                // Commanded target destroyed, move to its LKP
+                hasExplicitTarget = false;
+                movePosition = lastKnownTargetPosition;
             }
         }
 
-        // 2. Determine target for engagement
-        Entity currentEngagementTarget = null;
+        // Check for threats if acquireTargetsOnWay is enabled
+        if (acquireTargetsOnWay)
+        {
+            Entity threat = FindImmediateThreatInRange();
+            if (threat != null && threat != explicitTarget)
+            {
+                explicitTarget = threat;
+                isAcquiredTarget = true;
+                hasExplicitTarget = true;
+            }
+        }
+
+        // Determine movePosition
+        if (hasExplicitTarget)
+        {
+            movePosition = explicitTarget.position;
+            pathUpdateCooldown = explicitTarget.speed > TargetMovingSpeedThreshold ? MovingTargetPathUpdateCooldown : basePathUpdateCooldown;
+        }
+        else
+        {
+            if (wasOriginallyAttackMoveToPosition)
+            {
+                movePosition = originalDestinationForAttackMove;
+            }
+            else
+            {
+                movePosition = lastKnownCommandedTargetPosition;
+            }
+            pathUpdateCooldown = basePathUpdateCooldown;
+        }
+
+        // Engagement Logic
+        Entity targetToEngage = null;
         bool canEngage = _weaponsAspect != null && _weaponsAspect.weapon != null;
 
         if (canEngage)
         {
-            // Prioritize explicit target if in range
-            if (hasExplicitTarget && IsTargetValid(explicitTarget))
+            if (hasExplicitTarget && explicitTarget != null && IsTargetValid(explicitTarget))
             {
                 float rangeSq = _weaponsAspect.weapon.range * _weaponsAspect.weapon.range;
                 if ((explicitTarget.position - entity.position).sqrMagnitude <= rangeSq)
                 {
-                    currentEngagementTarget = explicitTarget;
+                    targetToEngage = explicitTarget;
                 }
             }
-
-            // If no explicit target in range (or no explicit target), look for other threats
-            if (currentEngagementTarget == null)
+            else
             {
-                currentEngagementTarget = FindImmediateThreatInRange(); // This already checks weapon range and validity
+                targetToEngage = FindImmediateThreatInRange();
             }
         }
 
-        // 3. Act based on engagement
-        if (currentEngagementTarget != null)
+        // Act
+        if (targetToEngage != null)
         {
-            AimAndFireAtTarget(currentEngagementTarget); // Aim and fire
+            AimAndFireAtTarget(targetToEngage);
 
-            // Once in range (currentEngagementTarget is not null), stop moving to engage.
-            entity.desiredSpeed = 0; 
-            // The entity will remain stationary and fire as long as currentEngagementTarget is valid and in range.
-            // If the target moves out of range or is destroyed, currentEngagementTarget will become null in the next Tick,
-            // and the entity will resume movement based on the 'else' block below.
+            if (hasExplicitTarget && targetToEngage == explicitTarget)
+            {
+                
+                base.Tick();
+                entity.desiredSpeed = targetToEngage.speed;
+            }
+            else
+            {
+                entity.desiredSpeed = 0f;
+            }
         }
-        else // Not engaged with any target (either no valid targets in range, or weapon system issue)
+        else
         {
-            // Continue with original move command (or move to explicit target's last known position).
-            // The pathUpdateCooldown is set in section 1 if hasExplicitTarget,
-            // or defaults if no explicit target. This ensures appropriate pathfinding frequency.
-            base.Tick(); 
+            base.Tick();
         }
 
         UpdateAttackLineRenderer();
     }
 
-    /// <summary>
-    /// Updates the line renderer for the attack move command.
-    /// </summary>
     private void UpdateAttackLineRenderer()
     {
         if (line != null && !FogWarMgr.inst.nonRevelers.Contains(entity))
         {
-            line.gameObject.SetActive(entity.isSelected); 
+            line.gameObject.SetActive(entity.isSelected);
             line.positionCount = 2;
             line.SetPosition(0, entity.position);
-            line.SetPosition(1, movePosition); 
+            line.SetPosition(1, movePosition);
         }
     }
 
-    /// <summary>
-    /// Finds the closest valid enemy target *within weapon range*.
-    /// </summary>
-    /// <returns>The closest engageable entity, or null if none are in range.</returns>
     private Entity FindImmediateThreatInRange()
     {
         if (_weaponsAspect == null || _weaponsAspect.weapon == null) return null;
@@ -156,7 +209,7 @@ public AttackMove(Entity ent, Entity target, bool maxSpeed = false, float doneDi
             if (potentialTarget == entity || potentialTarget.owner == entity.owner || !IsTargetValid(potentialTarget)) continue;
 
             float distanceSq = (potentialTarget.position - entity.position).sqrMagnitude;
-            if (distanceSq <= rangeSq && distanceSq < minDistanceSq) // Ensure it's within range
+            if (distanceSq <= rangeSq && distanceSq < minDistanceSq)
             {
                 minDistanceSq = distanceSq;
                 closestThreat = potentialTarget;
@@ -165,15 +218,8 @@ public AttackMove(Entity ent, Entity target, bool maxSpeed = false, float doneDi
         return closestThreat;
     }
 
-    /// <summary>
-    /// Handles aiming at and firing upon a specific target.
-    /// Assumes the target is valid.
-    /// </summary>
-    /// <param name="target">The entity to engage.</param>
     private void AimAndFireAtTarget(Entity target)
     {
-        // _weaponsAspect and weapon null checks are done before calling this or by FindImmediateThreatInRange
-        // but an extra check for target is good.
         if (target == null || _weaponsAspect == null || _weaponsAspect.weapon == null) return;
 
         Vector3 directionToTarget = target.position - entity.position;
@@ -181,45 +227,41 @@ public AttackMove(Entity ent, Entity target, bool maxSpeed = false, float doneDi
         WeaponsMgr.inst.handleWeapon(entity, target);
     }
 
-    /// <summary>
-    /// Checks if the attack-move command is completed.
-    /// Relies on the base class's IsDone logic, using the continuously updated movePosition.
-    /// </summary>
-    /// <returns>True if the command is done, false otherwise.</returns>
     public override bool IsDone()
-    {
-        return base.IsDone(); 
-    }
-
-    /// <summary>
-    /// Checks if a target entity is valid for engagement.
-    /// </summary>
-    /// <param name="target">The entity to check.</param>
-    /// <returns>True if the target is valid, false otherwise.</returns>
-    private bool IsTargetValid(Entity target)
-    {
-        return target != null && 
-               target.isVisible && 
-               target.gameObject.activeSelf && 
-               target.entityClass != EntityClass.Missile; 
-    }
-
-    /// <summary>
-    /// Stops the attack-move command. Updates movePosition based on target status.
-    /// </summary>
-    public override void Stop()
     {
         if (hasExplicitTarget)
         {
-            if (IsTargetValid(explicitTarget))
-            {
-                movePosition = explicitTarget.position;
-            }
-            else
-            {
-                movePosition = lastKnownTargetPosition;
-            }
+            return false;
         }
+        else
+        {
+            bool canEngageNow = _weaponsAspect != null && _weaponsAspect.weapon != null;
+            if (canEngageNow)
+            {
+                Entity threatInRange = FindImmediateThreatInRange();
+                if (threatInRange != null)
+                {
+                    return false;
+                }
+            }
+            return base.IsDone();
+        }
+    }
+
+    private bool IsTargetValid(Entity target)
+    {
+        return target != null &&
+               target.isVisible &&
+               target.gameObject.activeSelf &&
+               target.entityClass != EntityClass.Missile;
+    }
+
+    public override void Stop()
+    {
         base.Stop();
+        if (line != null)
+        {
+            line.gameObject.SetActive(false);
+        }
     }
 }

@@ -324,7 +324,7 @@ public class EnemyAIMgr : MonoBehaviour
     {
         if (opponentBase == null) return; // Requires an opponent base to target.
         // Issue an attack-move command for all AI entities towards the opponent's base.
-        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, opponentBase, false);
+        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, null, false,false);
     }
 
     /// <summary>
@@ -530,40 +530,8 @@ public class EnemyAIMgr : MonoBehaviour
         if (attackers.Count == 0) return;
         // If globalTargetOpponentBase is null here, attackers won't have a fallback move target.
         // This is consistent with original logic where opponentBase was checked before calling.
-
-        List<Entity> allEnemyTargets = FindAllEnemyTargets(); // Get all potential enemy targets (uses reusable list).
-
-        foreach (Entity attacker in attackers)
-        {
-            if (attacker == null) continue;
-
-            if (allEnemyTargets.Count == 0)
-            {
-                // No enemies found anywhere, move towards the opponent's base if it exists.
-                if (globalTargetOpponentBase != null)
-                {
-                    AIMgr.inst.HandleMove(new List<Entity> { attacker }, globalTargetOpponentBase.position, false);
-                }
-                continue;
-            }
-
-            // Sort targets: 1. Priority (desc), 2. Health (asc), 3. Distance to attacker (asc).
-            Entity bestTarget = allEnemyTargets
-                .Where(t => t != null) 
-                .OrderByDescending(t => GetTargetPriority(t)) 
-                .ThenBy(t => t.health) 
-                .ThenBy(t => (t.position - attacker.position).sqrMagnitude) 
-                .FirstOrDefault();
-
-            if (bestTarget != null)
-            {
-                AIMgr.inst.HandleAttackMove(new List<Entity> { attacker }, bestTarget.position, bestTarget, false);
-            }
-            else if (globalTargetOpponentBase != null) 
-            {
-                 AIMgr.inst.HandleMove(new List<Entity> { attacker }, globalTargetOpponentBase.position, false);
-            }
-        }
+        if(opponentBase == null) return;
+        AIMgr.inst.HandleAttackMove(attackers, globalTargetOpponentBase.position, globalTargetOpponentBase, false, acquireTarget: true);
     }
 
     /// <summary>
