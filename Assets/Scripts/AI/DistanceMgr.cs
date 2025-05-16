@@ -33,7 +33,7 @@ public class Potential
         ownship = own;
         target = tgt;
         cpaInfo = new CPAInfo(own, target);
-        //Debug.Log($"({own.name}, {tgt.name}): pfListCount: {own.ai.pfList.Count}");
+        ////Debug.Log($"({own.name}, {tgt.name}): pfListCount: {own.ai.pfList.Count}");
         subPotentials = new List<SubPotential> ();
         foreach(Transform t in own.ai.pfList) {
             SubPotential subPotential = new SubPotential();
@@ -269,9 +269,23 @@ public class DistanceMgr : MonoBehaviour
 
     public Potential GetPotential(Entity e1, Entity e2)
     {
+        if (e1 == null || e2 == null)
+            return null;
+        if (e1 == e2)
+            return null;
+        if (e1.entityClass == EntityClass.Missile || e2.entityClass == EntityClass.Missile)
+            return null;
         Potential p = null;
         if (isInitialized)
-            p = potentialsDictionary[e1][e2];
+        {
+            if (potentialsDictionary.ContainsKey(e1))
+            {
+                if (potentialsDictionary[e1].ContainsKey(e2))
+                {
+                    p = potentialsDictionary[e1][e2];
+                }
+            }
+        }
         return p;
     }
 

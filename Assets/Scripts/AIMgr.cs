@@ -96,7 +96,7 @@ public class AIMgr : NetworkBehaviour
     public float maxTerrainRepulsion = 3000f;    // Maximum push force
     public float minSafeDistance = 20f;          // Closest allowed to terrain
     public float collisionRepulsionCoefficient = 5.0f;
-    [Header("Debug")]
+    [Header("//Debug")]
     public bool showTerrainAvoidance = true;
     public LayerMask terrainLayerMask;
 
@@ -129,7 +129,7 @@ public class AIMgr : NetworkBehaviour
                         return; // Ignore this hit
                     }
                 
-                Debug.DrawLine(Camera.main.transform.position, hit.point, UnityEngine.Color.yellow, 2); //for debugging
+                //Debug.DrawLine(Camera.main.transform.position, hit.point, UnityEngine.Color.yellow, 2); //for debugging
                 Vector3 pos = hit.point;
                 pos.y = 0;
                 Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
@@ -153,7 +153,7 @@ public class AIMgr : NetworkBehaviour
                 }
                 
             } else {
-                //Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
+                ////Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
             }
         }
     }
@@ -222,7 +222,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
         foreach (Entity entity in entities)
         {
             // Original log, kept inside the loop. If intended once per call, move outside.
-            Debug.Log("EntityCount: " + entities.Count); 
+            //Debug.Log("EntityCount: " + entities.Count); 
 
             float currentDoneDistanceSq;
 
@@ -236,7 +236,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
             }
             else if (entities.Count >= 10)
             {
-                Debug.Log("Entities: " + entities.Count); // Specific log for this case
+                //Debug.Log("Entities: " + entities.Count); // Specific log for this case
                 WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
                 if (weaponsAspect != null && weaponsAspect.weapon != null)
                 {
@@ -246,7 +246,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
                 {
                     // Fallback if WeaponsAspect or weapon is null
                     currentDoneDistanceSq = doneDistanceSq; 
-                    Debug.LogWarning($"Entity {entity.entityId} missing WeaponsAspect or weapon. Using fallback doneDistanceSq: {currentDoneDistanceSq}");
+                    //Debug.LogWarning($"Entity {entity.entityId} missing WeaponsAspect or weapon. Using fallback doneDistanceSq: {currentDoneDistanceSq}");
                 }
             }
             else // Covers 5, 6, 7, 8, 9 entities
@@ -262,7 +262,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
             }
             else
             {
-                Debug.LogWarning($"Entity {entity.entityId} does not have a UnitAI component. Command not issued.");
+                //Debug.LogWarning($"Entity {entity.entityId} does not have a UnitAI component. Command not issued.");
             }
         }
     }
@@ -384,7 +384,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
 
 
     public void HandleNetCommandSpec(TactCommandStruct command) {
-        //Debug.Log(OwnerClientId + " recvd Command: " + command.ToString());
+        ////Debug.Log(OwnerClientId + " recvd Command: " + command.ToString());
 
         List<Entity> entities = new List<Entity>();
         Entity entTmp;
@@ -397,7 +397,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
 
         switch(command.commandType) {
             case TactCommandTypes.Move:
-                //Debug.Log("NetCmd: MoveTo pos:" + command.targetOrOffsetPosition);
+                ////Debug.Log("NetCmd: MoveTo pos:" + command.targetOrOffsetPosition);
                 HandleMove(entities, command.targetOrOffsetPosition, command.add, false);
                 break;
             case TactCommandTypes.Follow:
@@ -419,7 +419,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
                 }
                 break;
             default:
-                Debug.Log("Unknown Command: " + command.ToString());
+                //Debug.Log("Unknown Command: " + command.ToString());
                 HandleMove(entities, command.targetOrOffsetPosition, command.add, false);
                 break;
         }

@@ -341,7 +341,7 @@ private void UpdateNonRevealerVisibility()
         // Force update visibility of all entities
         UpdateNonRevealerVisibility();
 
-        Debug.Log("Fog of War reset to initial state");
+        //Debug.Log("Fog of War reset to initial state");
     }
     void OnDisable()
     {

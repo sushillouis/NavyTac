@@ -11,13 +11,13 @@ public class CameraCollisionDetection : MonoBehaviour
         cameraMgr = CameraMgr.inst;
         if (cameraMgr == null)
         {
-            Debug.LogError("CameraMgr.inst is null. CameraCollisionDetection will not work.");
+            //Debug.LogError("CameraMgr.inst is null. CameraCollisionDetection will not work.");
             enabled = false;
             return;
         }
         if (cameraMgr.YawNode == null)
         {
-            Debug.LogError("cameraMgr.YawNode is null. CameraCollisionDetection will not work.");
+            //Debug.LogError("cameraMgr.YawNode is null. CameraCollisionDetection will not work.");
             enabled = false;
             return;
         }

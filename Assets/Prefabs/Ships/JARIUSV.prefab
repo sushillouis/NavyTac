@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6097229688535900840}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Aspects
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -48,7 +48,7 @@ GameObject:
   - component: {fileID: 1002369468358326056}
   - component: {fileID: 3807584400936363055}
   - component: {fileID: 1297454175893407341}
-  m_Layer: 5
+  m_Layer: 10
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -123,7 +123,7 @@ GameObject:
   - component: {fileID: 2515958274128569470}
   - component: {fileID: 896576496298181425}
   - component: {fileID: 8564682283110515073}
-  m_Layer: 5
+  m_Layer: 10
   m_Name: Slider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -226,7 +226,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8734266434893359784}
   - component: {fileID: 8033969680345376320}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Net
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -282,7 +282,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7917665086149703647}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: PF2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -313,7 +313,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7915464011691100080}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: LaunchLocatiom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -346,7 +346,7 @@ GameObject:
   - component: {fileID: 3389967461626569529}
   - component: {fileID: 4259365481008936470}
   - component: {fileID: 8307596921416736153}
-  m_Layer: 5
+  m_Layer: 10
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -421,7 +421,7 @@ GameObject:
   - component: {fileID: 7540985511424937849}
   - component: {fileID: 8004017952877138807}
   - component: {fileID: 3186356806588362680}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: JARIUSV
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -535,7 +535,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6329963004341523233}
   - component: {fileID: 6831809556400586563}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: UI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -583,7 +583,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2493109109943880694}
   - component: {fileID: 6744806255326542464}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Physics
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -629,7 +629,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6606151872495510065}
   - component: {fileID: 7259764052025181088}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: AI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -687,7 +687,7 @@ GameObject:
   - component: {fileID: 328999093599061382}
   - component: {fileID: 91430971095688063}
   - component: {fileID: 6594739915682717184}
-  m_Layer: 5
+  m_Layer: 10
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -760,7 +760,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7695533512358317491}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: CameraRig
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -791,7 +791,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5007951047743040960}
-  m_Layer: 5
+  m_Layer: 10
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -827,7 +827,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2933605685592859521}
-  m_Layer: 5
+  m_Layer: 10
   m_Name: Handle Slide Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -863,7 +863,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2355611783138327884}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: PF1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -895,7 +895,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1677515464488219358}
   - component: {fileID: 5293858524827188164}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: WeaponsAspect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -952,7 +952,7 @@ GameObject:
   - component: {fileID: 8735424669562603835}
   - component: {fileID: 5302389823666795049}
   - component: {fileID: 2769005698053379749}
-  m_Layer: 5
+  m_Layer: 10
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1137,6 +1137,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9183282935489160824, guid: b1b64573597ecf94e812fd9d518ac68f,
         type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 9183282935489160824, guid: b1b64573597ecf94e812fd9d518ac68f,
+        type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
@@ -1180,6 +1185,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Wake
+      objectReference: {fileID: 0}
+    - target: {fileID: 7464076882414629701, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7464182808808786061, guid: d8082e6d06ae6824bb7326e150bc83ad,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7466062079080088699, guid: d8082e6d06ae6824bb7326e150bc83ad,
         type: 3}
@@ -1342,8 +1357,18 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: aef171f6f6df5a042b8e454bd0163ee9, type: 2}
     - target: {fileID: -4237356136633922190, guid: 10c2591deefc2fe4e8959f2797e065d7,
         type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: -4237356136633922190, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
       propertyPath: m_TagString
       value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: -3040590390375829612, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: -3040590390375829612, guid: 10c2591deefc2fe4e8959f2797e065d7,
         type: 3}
@@ -1352,24 +1377,54 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -1532909518589795153, guid: 10c2591deefc2fe4e8959f2797e065d7,
         type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: -1532909518589795153, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
       propertyPath: m_TagString
       value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: 906651799823661840, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 10c2591deefc2fe4e8959f2797e065d7,
         type: 3}
       propertyPath: m_Name
       value: JARI-USV
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3187308511578761968, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 4307399880359590932, guid: 10c2591deefc2fe4e8959f2797e065d7,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: aef171f6f6df5a042b8e454bd0163ee9, type: 2}
+    - target: {fileID: 4575653076468375266, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 7768227557956780012, guid: 10c2591deefc2fe4e8959f2797e065d7,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: aef171f6f6df5a042b8e454bd0163ee9, type: 2}
+    - target: {fileID: 8042275409720694268, guid: 10c2591deefc2fe4e8959f2797e065d7,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 8042275409720694268, guid: 10c2591deefc2fe4e8959f2797e065d7,
         type: 3}
       propertyPath: m_TagString

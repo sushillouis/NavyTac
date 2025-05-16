@@ -56,7 +56,7 @@ public class WeaponsAspect : MonoBehaviour
         Entity target = FindTargetInRange();
         if (target != null)
         {
-            Debug.Log("Target found: " + target.name);
+            //Debug.Log("Target found: " + target.name);
             WeaponsMgr.inst.handleWeapon(entity,target);
         }
     }

@@ -14,7 +14,7 @@ public class HealthBarMgr : MonoBehaviour
         entity = GetComponentInParent<Entity>();
         if (slider == null)
         {
-            Debug.LogError("HealthBarMgr: Slider reference not set!");
+            //Debug.LogError("HealthBarMgr: Slider reference not set!");
             enabled = false;
         }
     }

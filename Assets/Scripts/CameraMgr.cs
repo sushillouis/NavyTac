@@ -66,7 +66,7 @@ public void SetCameraPosition()
     public float maxCameraHeight = 9600;
     public float minCameraHeight = 20;
     public float cameraTurnRate = 10;
-     public float edgeScrollMargin = 30f;
+     public float edgeScrollMargin = 100f;
      [Header("Mouse Rotation Settings")]
     public float mouseYawSensitivity = 0.1f;
     public float mousePitchSensitivity = 0.1f;

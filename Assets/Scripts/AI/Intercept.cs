@@ -14,7 +14,7 @@ public class Intercept : Follow
 
     public override void Init()
     {
-        //Debug.Log("Intercept:\t ing: " + targetEntity.gameObject.name);
+        ////Debug.Log("Intercept:\t ing: " + targetEntity.gameObject.name);
         line = LineMgr.inst.CreateInterceptLine(entity.position, targetEntity.position, targetEntity.position);
         line.gameObject.SetActive(false);
     }
@@ -22,7 +22,7 @@ public class Intercept : Follow
     public override void Tick()
     {
         //movePosition = targetEntity.transform.position;
-        float dh = ComputePredictiveDH(targetEntity.transform.position);
+        float dh = ComputePredictiveDH();
         entity.desiredHeading = dh;
         entity.desiredSpeed = entity.maxSpeed;
 

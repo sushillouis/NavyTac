@@ -95,7 +95,7 @@ public class ScoreMgr : MonoBehaviour
 
         // Calculate the score based on win status and damage ratio
         score = (float)(0.5 * (playerWon ? 1 : 0))*100 + 0.5f * (damageDealt / (damageDealt + damageTaken)) * 100;
-        Debug.Log($"Score: {score}"); // Log the calculated score
+        //Debug.Log($"Score: {score}"); // Log the calculated score
 
         LogGameData(); // Log detailed game data to CSV files
         UpdateScoreDisplay(); // Update the UI elements with score and game stats
@@ -219,7 +219,7 @@ public class ScoreMgr : MonoBehaviour
             $"PLAYER VICTORY! Damage Dealt: {damageDealt} | Taken: {damageTaken}" :
             $"AI VICTORY! Damage Dealt: {damageDealt} | Taken: {damageTaken}";
 
-        Debug.Log(message); // Log the message
+        //Debug.Log(message); // Log the message
     }
 
     /// <summary>
@@ -270,13 +270,13 @@ public class ScoreMgr : MonoBehaviour
             }
             else
             {
-            Debug.LogWarning($"Numeric part of StudentID '{numericPart}' could not be parsed. Defaulting group to 'Non-Adaptive'.");
+            //Debug.LogWarning($"Numeric part of StudentID '{numericPart}' could not be parsed. Defaulting group to 'Non-Adaptive'.");
             group = "Non-Adaptive"; 
             }
         }
         else if (studentID != "UnknownStudent") // Avoid warning for default "UnknownStudent"
         {
-            Debug.LogWarning($"StudentID '{studentID}' does not follow 'StudentX' pattern. Defaulting group to 'Non-Adaptive'.");
+            //Debug.LogWarning($"StudentID '{studentID}' does not follow 'StudentX' pattern. Defaulting group to 'Non-Adaptive'.");
         }
 
 
@@ -407,11 +407,11 @@ public class ScoreMgr : MonoBehaviour
                 }
                 writer.WriteLine(); // End the data row
             }
-             Debug.Log($"Game data logged to {csvPath}"); // Confirmation log
+             //Debug.Log($"Game data logged to {csvPath}"); // Confirmation log
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"Error writing to log file {csvPath}: {ex.Message}"); // Log any errors during file writing
+            //Debug.LogError($"Error writing to log file {csvPath}: {ex.Message}"); // Log any errors during file writing
         }
     }
 
@@ -455,7 +455,7 @@ public class ScoreMgr : MonoBehaviour
         // Null checks for required managers and lists to prevent errors
         if (GameMgr.inst == null || GameMgr.inst.entityQuantities == null || EntityMgr.inst == null || EntityMgr.inst.entities == null)
         {
-            Debug.LogError("Required managers or lists are null in GetDestroyedUnits.");
+            //Debug.LogError("Required managers or lists are null in GetDestroyedUnits.");
             return destroyed; // Return empty dictionary to prevent further errors
         }
         // Iterate through the initial entity quantities defined in GameMgr
@@ -479,7 +479,7 @@ public class ScoreMgr : MonoBehaviour
         // Null checks for EntityMgr and its entities list
         if (EntityMgr.inst == null || EntityMgr.inst.entities == null)
         {
-            Debug.LogError("EntityMgr or entities list is null in FindBasePosition.");
+            //Debug.LogError("EntityMgr or entities list is null in FindBasePosition.");
             return Vector3.zero; // Return zero vector if essential components are missing
         }
         // Find the first entity that is owned by the player and has the role of "Base"

@@ -52,7 +52,7 @@ public class PaintingManger : MonoBehaviour
                 float worldSpaceScale = terrain.terrainData.heightmapResolution/terrain.terrainData.size.x;
                 
                 
-                Debug.Log(worldSpaceScale);
+                //Debug.Log(worldSpaceScale);
                 Vector3 flatDelta = Vector3.Scale(hit.point,flat) - Vector3.Scale(mapCordsOrigin,flat);
                 float [,] paintMap = new float[brushSize,brushSize];
                 // float terrainHeight = terrain.terrainData.GetHeight((int)(hit.point.x*worldSpaceScale),(int)(hit.point.z*worldSpaceScale));
@@ -82,9 +82,9 @@ public class PaintingManger : MonoBehaviour
 
                 // terrain.terrainData.SetHeightsDelayLOD(9480,9480,funny);
                 
-                // Debug.Log(topRight);
-                // Debug.Log(bottomLeft);
-                // Debug.Log(size);
+                // //Debug.Log(topRight);
+                // //Debug.Log(bottomLeft);
+                // //Debug.Log(size);
                 // for(int y=bottomLeft.y; y<topRight.y;y++) 
                 // {
                 //     i=0;
@@ -99,7 +99,7 @@ public class PaintingManger : MonoBehaviour
                 //     }
                 //     j++;
                 // }
-                // Debug.Log(paintMap);
+                // //Debug.Log(paintMap);
                 mapGenerator.GeneratePaintMapFromArray(paintMap, paintingPlane.GetComponent<MeshFilter>());
             }
         }

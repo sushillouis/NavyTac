@@ -30,7 +30,7 @@ public class WeaponCollisionHandler : MonoBehaviour
                 !otherEntity.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase);
                 if (ScoreMgr.inst == null)
                 {
-                    Debug.LogWarning("ScoreMgr instance is null, cannot track damage.");
+                    //Debug.LogWarning("ScoreMgr instance is null, cannot track damage.");
                 }
                 else
                 {

@@ -87,7 +87,7 @@ public class WeaponsMgr : MonoBehaviour
 
         if (ownerPool[weaponType].Count > 0)
         {
-            Debug.Log("Reusing weapon from pool");
+            //Debug.Log("Reusing weapon from pool");
             return ReactivatePooledWeapon(ownerPool[weaponType], position, direction ,creatorEntity);
         }
 
@@ -232,14 +232,14 @@ public class WeaponsMgr : MonoBehaviour
             actualDistanceToTarget = Vector3.Distance(launchPos, target.transform.position);
             // Optionally, log a warning if a precise collider-based distance could not be determined:
             // if (targetCollider == null)
-            //     Debug.LogWarning($"Target {target.name} has no Collider. Using transform-based distance for range check.");
+            //     //Debug.LogWarning($"Target {target.name} has no Collider. Using transform-based distance for range check.");
             // else if (!targetCollider.enabled)
-            //     Debug.LogWarning($"Target {target.name}'s Collider is disabled. Using transform-based distance for range check.");
+            //     //Debug.LogWarning($"Target {target.name}'s Collider is disabled. Using transform-based distance for range check.");
         }
 
         if (wd.range < actualDistanceToTarget)
         {
-            Debug.Log($"Target out of range. Weapon Range: {wd.range}, Calculated Distance: {actualDistanceToTarget}");
+            //Debug.Log($"Target out of range. Weapon Range: {wd.range}, Calculated Distance: {actualDistanceToTarget}");
             return;
         }
 
@@ -257,14 +257,14 @@ public class WeaponsMgr : MonoBehaviour
         Entity ent = GetWeapon(wd.weaponEntityType, launchPos, dir, launchingEntity.owner, launchingEntity);
         if (ent == null)
         {
-            Debug.Log("No Weapon entity found or could be created/reused from pool.");
+            //Debug.Log("No Weapon entity found or could be created/reused from pool.");
             return;
         }
 
         if (!ent.gameObject.activeSelf) // Check if the retrieved/created weapon is active
         {
             // This might indicate an issue with pooling or entity creation if it occurs unexpectedly
-            Debug.LogWarning("Weapon entity is not active immediately after GetWeapon call.");
+            //Debug.LogWarning("Weapon entity is not active immediately after GetWeapon call.");
         }
 
         weapons.Add(ent);
@@ -362,7 +362,7 @@ public class WeaponsMgr : MonoBehaviour
         catch (System.Exception e)
         {
             string entityName = entity != null ? entity.name : "null";
-            Debug.LogError($"Error in DestroyEntity for entity: {entityName}. Exception: {e.Message}");
+            //Debug.LogError($"Error in DestroyEntity for entity: {entityName}. Exception: {e.Message}");
 
         }
         

@@ -12,7 +12,7 @@ public class FXMgr : MonoBehaviour
     public ExplosionSmall explosionSmallPrefab;
 
     public void CreateExplosionAt(Vector3 pos, float interval = 1) {
-        // Debug.Log("Exploding at: " + pos);
+        // //Debug.Log("Exploding at: " + pos);
         ExplosionSmall et = Instantiate(explosionSmallPrefab, pos, Quaternion.identity, transform);
         StartCoroutine(ExplodeAndDestroy(et, interval));
     }

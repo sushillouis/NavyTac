@@ -16,7 +16,7 @@ public class NetDebugConsole : MonoBehaviour
 
     public void Log(string msg) {
         console.text += msg + "\n> ";
-        Debug.Log(msg);
+        //Debug.Log(msg);
     }
 
     // Start is called before the first frame update

@@ -46,7 +46,7 @@ public class EntityMgr : MonoBehaviour
     {
         if (entityPrefabs == null || entityPrefabs.Count == 0)
         {
-            Debug.LogWarning("No entities to export!");
+            //Debug.LogWarning("No entities to export!");
             return;
         }
 
@@ -83,11 +83,11 @@ public class EntityMgr : MonoBehaviour
         try
         {
             File.WriteAllText(filePath, csvContent.ToString(), Encoding.UTF8);
-            Debug.Log($"Successfully exported {exportedCount} entities to:\n{filePath}");
+            //Debug.Log($"Successfully exported {exportedCount} entities to:\n{filePath}");
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"Export failed: {e.Message}");
+            //Debug.LogError($"Export failed: {e.Message}");
         }
     }
    [ContextMenu("Import Entities from CSV")]
@@ -97,7 +97,7 @@ public class EntityMgr : MonoBehaviour
         
         if (!File.Exists(filePath))
         {
-            Debug.LogWarning($"CSV file not found at: {filePath}");
+            //Debug.LogWarning($"CSV file not found at: {filePath}");
             return;
         }
 
@@ -106,7 +106,7 @@ public class EntityMgr : MonoBehaviour
             string[] lines = File.ReadAllLines(filePath);
             if (lines.Length < 2)
             {
-                Debug.LogWarning("CSV file is empty or contains only headers");
+                //Debug.LogWarning("CSV file is empty or contains only headers");
                 return;
             }
 
@@ -131,7 +131,7 @@ public class EntityMgr : MonoBehaviour
 
                 if (cleanedFields.Count < 14)
                 {
-                    Debug.LogWarning($"Skipping line {i + 1}: Not enough fields ({cleanedFields.Count} instead of 13)");
+                    //Debug.LogWarning($"Skipping line {i + 1}: Not enough fields ({cleanedFields.Count} instead of 13)");
                     continue;
                 }
 
@@ -142,7 +142,7 @@ public class EntityMgr : MonoBehaviour
 
                 if (entityPrefab == null)
                 {
-                    Debug.LogWarning($"Skipping line {i + 1}: Entity type '{entityTypeString}' not found in prefabs");
+                    //Debug.LogWarning($"Skipping line {i + 1}: Entity type '{entityTypeString}' not found in prefabs");
                     continue;
                 }
 
@@ -176,7 +176,7 @@ public class EntityMgr : MonoBehaviour
                 }
                 catch (FormatException e)
                 {
-                    Debug.LogError($"Failed to parse values in line {i + 1}: {e.Message}");
+                    //Debug.LogError($"Failed to parse values in line {i + 1}: {e.Message}");
                 }
             }
 
@@ -185,11 +185,11 @@ public class EntityMgr : MonoBehaviour
             AssetDatabase.SaveAssets();
             #endif
 
-            Debug.Log($"Successfully imported {importedCount} entities from {filePath}");
+            //Debug.Log($"Successfully imported {importedCount} entities from {filePath}");
         }
         catch (Exception e)
         {
-            Debug.LogError($"Import failed: {e.Message}");
+            //Debug.LogError($"Import failed: {e.Message}");
         }
     }
 

@@ -178,10 +178,10 @@ public class MinimapMgr : MonoBehaviour
         Ray topRight = Camera.main.ViewportPointToRay(new Vector3(1, 1, 0));
         Ray bottomRight = Camera.main.ViewportPointToRay(new Vector3(1, 0, 0));
 
-        Debug.Log("bottom left: " + GetPointAtHeight(bottomLeft, 0));
-        Debug.Log("bottom right: " + GetPointAtHeight(bottomRight, 0));
-        Debug.Log("top left: " + GetPointAtHeight(topLeft, 0));
-        Debug.Log("top right: " + GetPointAtHeight(topRight, 0));
+        //Debug.Log("bottom left: " + GetPointAtHeight(bottomLeft, 0));
+        //Debug.Log("bottom right: " + GetPointAtHeight(bottomRight, 0));
+        //Debug.Log("top left: " + GetPointAtHeight(topLeft, 0));
+        //Debug.Log("top right: " + GetPointAtHeight(topRight, 0));
     }
     
 

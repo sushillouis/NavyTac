@@ -85,7 +85,7 @@ public class UnitAI : MonoBehaviour
                 moves.Remove(move);
                 break;
             default:
-                Debug.LogWarning($"Unknown command type: {cmd.GetType()}");
+                //Debug.LogWarning($"Unknown command type: {cmd.GetType()}");
                 break;
         }
     }
@@ -96,7 +96,7 @@ public class UnitAI : MonoBehaviour
         {
             Command cmd =  commands.Dequeue();
             StopAndRemoveCommand(cmd);
-            // Debug.Log("Stopping and removing all commands");
+            // //Debug.Log("Stopping and removing all commands");
         }
     }
 
@@ -127,7 +127,7 @@ public class UnitAI : MonoBehaviour
                 moves.Add(move);
                 break;
             default:
-                Debug.LogWarning($"Unknown command type: {c.GetType()}");
+                //Debug.LogWarning($"Unknown command type: {c.GetType()}");
                 break;
         }
     }

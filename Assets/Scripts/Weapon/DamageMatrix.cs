@@ -10,7 +10,7 @@ public class DamageMatrix
     {
         if (weaponDamages == null || weaponDamages.Count == 0)
         {
-            Debug.LogError("WeaponDamages list is null or empty!");
+            //Debug.LogError("WeaponDamages list is null or empty!");
             damageMatrix = new Dictionary<EntityType, Dictionary<EntityType, float>>(); // Initialize empty to prevent NRE
             return;
         }
@@ -31,7 +31,7 @@ public class DamageMatrix
     {
         if (damageMatrix == null)
         {
-            Debug.LogError("DamageMatrix dictionary not initialized!");
+            //Debug.LogError("DamageMatrix dictionary not initialized!");
             return defaultDamage;
         }
 

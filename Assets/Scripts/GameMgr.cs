@@ -201,7 +201,7 @@ public class GameMgr : MonoBehaviour
                 case OpenOceanMain.TrainingState.PostTest:
                     // Example: Difficulty increases in the latter part of PostTest
                     if (OpenOceanMain.inst.gamePlayCountMAX > 0 && 
-                        OpenOceanMain.inst.gamesPlayedCount <= OpenOceanMain.inst.gamePlayCountMAX * 0.6f)
+                        OpenOceanMain.inst.gamesPlayedCount < OpenOceanMain.inst.gamePlayCountMAX * 0.6f)
                     {
                         difficultyLevel =.2f;
                     }

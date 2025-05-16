@@ -73,21 +73,21 @@ public static class WeaponCSVHandler
 
         string filePath = Application.dataPath + "/" + fileNameCSV;
         File.WriteAllText(filePath, csvContent.ToString());
-        Debug.Log("Damage matrix saved to " + filePath);
+        //Debug.Log("Damage matrix saved to " + filePath);
     }
 
     public static List<WeaponDamage> CSVToDamageMatrix(string filePath)
     {
         if (!File.Exists(filePath))
         {
-            Debug.LogError("Damage matrix CSV file not found at " + filePath);
+            //Debug.LogError("Damage matrix CSV file not found at " + filePath);
             return null;
         }
 
         string[] lines = File.ReadAllLines(filePath);
         if (lines.Length < 2)
         {
-            Debug.LogError("Damage matrix CSV file is empty or improperly formatted.");
+            //Debug.LogError("Damage matrix CSV file is empty or improperly formatted.");
             return null;
         }
 
@@ -105,7 +105,7 @@ public static class WeaponCSVHandler
             }
             catch (Exception e)
             {
-                Debug.LogError("Invalid EntityType in header: " + headers[i] + ". Error: " + e.Message);
+                //Debug.LogError("Invalid EntityType in header: " + headers[i] + ". Error: " + e.Message);
                 return null;
             }
         }
@@ -117,7 +117,7 @@ public static class WeaponCSVHandler
 
             if (values.Length != headers.Length)
             {
-                Debug.LogError("Line " + (i + 1) + " is improperly formatted.");
+                //Debug.LogError("Line " + (i + 1) + " is improperly formatted.");
                 continue;
             }
 
@@ -128,7 +128,7 @@ public static class WeaponCSVHandler
             }
             catch (Exception e)
             {
-                Debug.LogError("Invalid EntityType in weaponType at line " + (i + 1) + ": " + values[0] + ". Error: " + e.Message);
+                //Debug.LogError("Invalid EntityType in weaponType at line " + (i + 1) + ": " + values[0] + ". Error: " + e.Message);
                 continue;
             }
 
@@ -153,14 +153,14 @@ public static class WeaponCSVHandler
                 }
                 else
                 {
-                    Debug.LogError("Invalid damage value at line " + (i + 1) + ", column " + (j + 1) + ": " + values[j]);
+                    //Debug.LogError("Invalid damage value at line " + (i + 1) + ", column " + (j + 1) + ": " + values[j]);
                 }
             }
 
             weaponDamages.Add(weaponDamage);
         }
 
-        Debug.Log("Damage matrix loaded from " + filePath);
+        //Debug.Log("Damage matrix loaded from " + filePath);
         return weaponDamages;
     }
 }

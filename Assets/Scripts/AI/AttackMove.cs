@@ -223,7 +223,7 @@ public class AttackMove : Move
         if (target == null || _weaponsAspect == null || _weaponsAspect.weapon == null) return;
 
         Vector3 directionToTarget = target.position - entity.position;
-        entity.desiredHeading = Mathf.Atan2(directionToTarget.x, directionToTarget.z) * Mathf.Rad2Deg;
+        // entity.desiredHeading = Mathf.Atan2(directionToTarget.x, directionToTarget.z) * Mathf.Rad2Deg;
         WeaponsMgr.inst.handleWeapon(entity, target);
     }
 

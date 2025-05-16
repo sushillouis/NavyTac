@@ -515,7 +515,7 @@ public class UIMgr : MonoBehaviour
         int layerMask = 512; //Ocean layer = 9, 2^9 = 512
         if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
         {
-            //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
+            ////Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
             Vector3 pos = hit.point;
             pos.y = 0;
             Entity ent = FindClosestEntInRadius(pos);//, rClickRadiusSq);//
@@ -564,19 +564,19 @@ public class UIMgr : MonoBehaviour
 
     private void Attack2(InputAction.CallbackContext context)
     {
-        Debug.Log("Surface Weapon");
+        //Debug.Log("Surface Weapon");
         // WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.SurfaceInterceptor);
     }
 
     private void Attack3(InputAction.CallbackContext context)
     {
-        Debug.Log("Air Weapon");
+        //Debug.Log("Air Weapon");
         // WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.AirInterceptor);
     }
 
     private void Attack4(InputAction.CallbackContext context)
     {
-        Debug.Log("Smart Weapon");
+        //Debug.Log("Smart Weapon");
         // WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.Smart);
 
     }

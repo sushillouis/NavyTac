@@ -117,7 +117,7 @@ public class PlayerMgr : MonoBehaviour
             TactPlayer player = CreatePlayer(name, (ulong) playerCount, sides[playerCount], playerColors[playerCount]);
             AddTestPlayer1And2(player, playerCount);
             playerCount++;
-            Debug.Log("Added player: " + player.ToString());
+            //Debug.Log("Added player: " + player.ToString());
             return player;
         }
         return null;

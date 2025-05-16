@@ -65,7 +65,7 @@ public class TacticalAIMgr : MonoBehaviour
     /// <param name="posEnt"></param>
     /// <param name="tt"></param>
     public void HandleTacticalCommand(Group group, WorldPosEntity posEnt, TacticsType tt) {
-        Debug.Log("Handling command: " + tt);
+        //Debug.Log("Handling command: " + tt);
         if(currentGroup.isControl) {//if selected ents are from control group
             tacCommandGroup = currentGroup;
         } else {
@@ -77,7 +77,7 @@ public class TacticalAIMgr : MonoBehaviour
                 CreateEscortMove(tacCommandGroup, posEnt.worldPosition);
                 break;
             default:
-                Debug.Log("Not implemented yet");
+                //Debug.Log("Not implemented yet");
                 break;
         }
 

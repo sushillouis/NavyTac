@@ -53,7 +53,7 @@ public class LineMgr : MonoBehaviour
     public LineRenderer CreatePotentialLine(Vector3 p1)
     {if (isDebug)
         {
-            Debug.Log("Creating potential line");
+            //Debug.Log("Creating potential line");
             LineRenderer lr = Instantiate<LineRenderer>(PotentialPrefab, transform);
         lr.SetPosition(0, p1);
         lr.SetPosition(1, Vector3.zero);

@@ -113,7 +113,7 @@ public class GroupUIMgr : MonoBehaviour
 
     void HandleButton(TacticsType tt)
     {
-        Debug.Log("handling button: " + tt);
+        //Debug.Log("handling button: " + tt);
         TacticalAIMgr.inst.HandleTacticalCommand(commandableGroup, worldPosAndEntity, tt);
         TacticalCommandsPanel.isVisible = false;
         TacticalCommandsPanel.StopAllCoroutines();
@@ -126,7 +126,7 @@ public class GroupUIMgr : MonoBehaviour
         {
             if (tt != TacticsType.None)
             {
-                //Debug.Log("Button: " + tt);
+                ////Debug.Log("Button: " + tt);
                 Button tb = tacticsButtonsList[(int)tt];
                 tb.GetComponentInChildren<TextMeshProUGUI>().text = Utils.SplitCamelCase(tt.ToString());
                 tacticsButtonsList[(int)tt].onClick.AddListener(() => HandleButton(tt));
@@ -274,7 +274,7 @@ public void ShowEntityControlPanel(Vector2 mousePos) {
             case TacticsType.AtkDistract:
             case TacticsType.Pincer:
             case TacticsType.AtkMove:
-                Debug.Log("Not implemented yet");
+                //Debug.Log("Not implemented yet");
                 break;
             default:
                 break;
@@ -311,9 +311,9 @@ public void ShowEntityControlPanel(Vector2 mousePos) {
          UIMgr.inst.ActivateEntityCommands(false);
 
          Vector2 mousePos = groupInputs.Tactical.CursorPosition.ReadValue<Vector2>();
-         //Debug.Log("ctx: " + context);  Debug.Log("mpos: " + mousePos);
+         ////Debug.Log("ctx: " + context);  //Debug.Log("mpos: " + mousePos);
          worldPosAndEntity = UIMgr.inst.MousePosToWorldPosEntity(mousePos);
-         //Debug.Log(worldPosAndEntity);
+         ////Debug.Log(worldPosAndEntity);
 
          Vector2 localPoint = new Vector2(0, 0);
          RectTransformUtility.ScreenPointToLocalPointInRectangle(mainCanvas, mousePos, null, out localPoint);
