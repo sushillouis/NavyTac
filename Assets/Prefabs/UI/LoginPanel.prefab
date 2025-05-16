@@ -116,16 +116,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 421616263120374092}
-  m_LocalRotation: {x: 0.005230054, y: 0.1814614, z: 0.034531873, w: 0.9827777}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -462}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6867430089204699319}
-  m_LocalEulerAnglesHint: {x: -0.129, y: 20.918, z: 4.001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1004, y: -515}
+  m_AnchoredPosition: {x: 800, y: -800}
   m_SizeDelta: {x: 500, y: 135}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2429970462118468368
@@ -184,10 +184,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36.05
-  m_fontSizeBase: 36
+  m_fontSize: 80
+  m_fontSizeBase: 80
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 100
   m_fontStyle: 1
@@ -1854,16 +1854,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8115932314129351265}
-  m_LocalRotation: {x: 0.005230054, y: 0.1814614, z: 0.034531873, w: 0.9827777}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -462}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6867430089204699319}
-  m_LocalEulerAnglesHint: {x: -0.129, y: 20.918, z: 4.001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1004, y: -515}
+  m_AnchoredPosition: {x: 800, y: -800}
   m_SizeDelta: {x: 500, y: 135}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5062653757964984870
@@ -1922,10 +1922,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 28.9
-  m_fontSizeBase: 36
+  m_fontSize: 80
+  m_fontSizeBase: 80
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 100
   m_fontStyle: 1
@@ -2086,8 +2086,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3608046056183681599, guid: 364057f89cdf3134f82026eb3fd91614,
         type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 11500000, guid: eaea28c609606d5418aa98acc45d2fe6,
+        type: 3}
+    - target: {fileID: 3608046056183681599, guid: 364057f89cdf3134f82026eb3fd91614,
+        type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnLogin
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 3608046056183681599, guid: 364057f89cdf3134f82026eb3fd91614,
         type: 3}
