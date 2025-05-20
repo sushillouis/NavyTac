@@ -113,30 +113,12 @@ public class OpenOceanMain : MonoBehaviour
     private List<Button> menuButtons;
 
 
-    public enum LobbyState
-    {
-        None = 0,
-        SingleMultiPlayer,
-        Login,
-        MapSelect,
-        HostOrJoin,
-        Play,
-        Done,
-        ScorePanel,
-        GamePaused
-    }
+    
     [Header("Lobby State and the rest")]
 
     [SerializeField]
     private LobbyState _lobbyState = LobbyState.None;
-    public enum TrainingState
-    {
-        None,
-        PreTest,
-        PostTest,
-        Adaptive,
-        NonAdaptive
-    }
+    
     public TrainingState currentTrainingState = TrainingState.None;
     [SerializeField]
     private GameObject NetworkManagerGo;

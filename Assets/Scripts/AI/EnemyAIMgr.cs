@@ -428,22 +428,6 @@ public class EnemyAIMgr : MonoBehaviour
         if(opponentBase == null) return;
         AIMgr.inst.HandleAttackMove(attackers, globalTargetOpponentBase.position, globalTargetOpponentBase, false, acquireTarget: true);
     }
-
-    private int GetTargetPriority(Entity target)
-    {
-        if (target == null || GameMgr.inst == null || GameMgr.inst.priorityList == null) return 0; 
-
-        EntityType targetType = target.entityType; 
-
-        int index = GameMgr.inst.priorityList.IndexOf(targetType);
-
-        if (index != -1)
-        {
-            return GameMgr.inst.priorityList.Count - index;
-        }
-
-        return 1; 
-    }
     
     private List<Entity> FindAllEnemyTargets()
     {

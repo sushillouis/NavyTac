@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(GameMgr))]
+[CustomEditor(typeof(ResetScene))]
 public class CustomInspector : Editor
 {
     public override void OnInspectorGUI()
@@ -10,10 +10,10 @@ public class CustomInspector : Editor
 
         DrawDefaultInspector();
         // // Add a button to trigger some action
-        GameMgr gameMgr = (GameMgr)target;
-        if (GUILayout.Button("Do Something"))
+        ResetScene resetScene = (ResetScene)target;
+        if (GUILayout.Button("Reset Scene"))
         {
-            gameMgr.ReloadScene();
+            resetScene.ReloadScene();
         }
 
 

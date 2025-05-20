@@ -144,3 +144,34 @@ public enum FormationType
     Vee,
     InvertedVee
 }
+
+public enum Difficulty { Easy, Medium, Hard }
+
+public enum LobbyState
+    {
+        None = 0,
+        SingleMultiPlayer,
+        Login,
+        MapSelect,
+        HostOrJoin,
+        Play,
+        Done,
+        ScorePanel,
+        GamePaused
+    }
+    public enum TrainingState
+    {
+        None,
+        PreTest,
+        PostTest,
+        Adaptive,
+        NonAdaptive
+    }
+
+    public enum PathfindingState
+        {
+            RequestingPath,
+            FollowingPath,
+            PotentialFieldsOnly,
+            Finished
+        }

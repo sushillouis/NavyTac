@@ -486,7 +486,7 @@ public class UIMgr : MonoBehaviour
 
     private void Create100(InputAction.CallbackContext context)
     {
-        GameMgr.inst.Create100();
+        // GameMgr.inst.Create100();
     }
 
 

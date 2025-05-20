@@ -7,13 +7,7 @@
     public class Move : Command
     {
         // Pathfinding State Enum
-        public enum PathfindingState
-        {
-            RequestingPath,
-            FollowingPath,
-            PotentialFieldsOnly,
-            Finished
-        }
+        
         private PathfindingState currentState = PathfindingState.RequestingPath;
 
         // Existing potential field variables
@@ -558,26 +552,33 @@
         }
 
         public override void Stop()
-        {
-            if (entity != null) { 
-                 entity.desiredSpeed = 0;
+            {
+                if (entity != null) {
+                // Make the entity face the movePosition
+                Vector3 directionToTarget = movePosition - entity.position;
+                if (directionToTarget.sqrMagnitude > 0.001f) // Check to avoid issues if already at the target
+                {
+                    float desiredHeadingDegrees = Utils.Degrees360(Mathf.Atan2(directionToTarget.x, directionToTarget.z) * Mathf.Rad2Deg);
+                    entity.desiredHeading = desiredHeadingDegrees;
+                }
+                entity.desiredSpeed = 0;
+                }
+
+                if (line != null) LineMgr.inst.DestroyLR(line);
+                if (potentialLine != null) LineMgr.inst.DestroyLR(potentialLine);
+                line = null;
+                potentialLine = null;
+                
+                pathWaypoints.Clear();
+                currentWaypointIndex = 0;
+                lastPathUpdateTime = -Mathf.Infinity; 
+                stuckFrames = 0;
+                previousDistanceToWaypoint = Mathf.Infinity;
+                currentState = PathfindingState.Finished;
+                previousPotentialSum = Vector3.zero; 
+
+                base.Stop(); 
             }
-
-            if (line != null) LineMgr.inst.DestroyLR(line);
-            if (potentialLine != null) LineMgr.inst.DestroyLR(potentialLine);
-            line = null;
-            potentialLine = null;
-            
-            pathWaypoints.Clear();
-            currentWaypointIndex = 0;
-            lastPathUpdateTime = -Mathf.Infinity; 
-            stuckFrames = 0;
-            previousDistanceToWaypoint = Mathf.Infinity;
-            currentState = PathfindingState.Finished;
-            previousPotentialSum = Vector3.zero; 
-
-            base.Stop(); 
-        }
     }
     
      
