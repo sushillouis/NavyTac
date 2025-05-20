@@ -556,22 +556,3 @@ public class DistanceMgr : MonoBehaviour
         return null;
     }
 }
-
-// Assumed definitions (place these in appropriate files or context)
-// public enum EntityClass { Missile, Other }
-// public class Entity : MonoBehaviour {
-//     public Vector3 position { get { return transform.position; } } // Example
-//     public Vector3 velocity; // Example
-//     public float heading;    // Example
-//     public EntityClass entityClass; // Example
-//     public AIComponent ai; // Example, where AIComponent has pfList
-// }
-// public class AIComponent { public List<Transform> pfList; } // Example
-// public static class Utils { // Example
-//     public const float EPSILON = 0.0001f;
-//     public static float Degrees360(float angle) { /* ... */ return 0; }
-//     public static float VectorToHeadingDegrees(Vector3 vec) { /* ... */ return 0; }
-//     public static float AngleDiffPosNeg(float angle1, float angle2) { /* ... */ return 0; }
-// }
-// public static class EntityMgr { public static EntityMgr inst; public List<Entity> entities; } // Example
-// public static class SelectionMgr { public static SelectionMgr inst; public Entity selectedEntity; } // Example

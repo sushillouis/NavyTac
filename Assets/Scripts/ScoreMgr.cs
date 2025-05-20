@@ -2,7 +2,9 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using System.IO; // Added for Path and Directory operations
+using System.IO;
+using UnityEngine.Networking;
+using System.Collections;// Added for Path and Directory operations
 
 /// <summary>
 /// Manages the game score, victory conditions, and logging of game data.
@@ -94,14 +96,14 @@ public class ScoreMgr : MonoBehaviour
         OpenOceanMain.inst.lobbyState = OpenOceanMain.LobbyState.ScorePanel;
 
         // Calculate the score based on win status and damage ratio
-        score = (float)(0.5 * (playerWon ? 1 : 0))*100 + 0.5f * (damageDealt / (damageDealt + damageTaken)) * 100;
+        score = (float)(0.5 * (playerWon ? 1 : 0)) * 100 + 0.5f * (damageDealt / (damageDealt + damageTaken)) * 100;
         //Debug.Log($"Score: {score}"); // Log the calculated score
 
         LogGameData(); // Log detailed game data to CSV files
         UpdateScoreDisplay(); // Update the UI elements with score and game stats
         LogVictoryMessage(); // Log a simple victory/defeat message to the console
         FXMgr.inst.ResetEffects(); // Reset any visual effects
-        
+
     }
 
     /// <summary>
@@ -152,7 +154,7 @@ public class ScoreMgr : MonoBehaviour
                     {
                         selectedFeedbacks.Add("Avoid direct fights with JARI USVs — they’re scouts, not tanks.");
                         selectedFeedbacks.Add("Flank with JARI USVs while heavier ships press forward.");
-                        if (winReason.Contains("allDestroyed")) 
+                        if (winReason.Contains("allDestroyed"))
                             selectedFeedbacks.Add("Next time, see if you can do this while taking even less damage.");
                     }
                     else if (score >= 70)
@@ -170,28 +172,28 @@ public class ScoreMgr : MonoBehaviour
                 {
                     selectedFeedbacks.Add("Avoid moving DDG51s without a scout — they’re not expendable.");
                     selectedFeedbacks.Add("Use terrain and spacing to avoid ambushes.");
-                    selectedFeedbacks.Add("Don’t clump Destroyers — it makes them vulnerable to area attacks."); 
-                    selectedFeedbacks.Add("Send scouts before committing large units."); 
+                    selectedFeedbacks.Add("Don’t clump Destroyers — it makes them vulnerable to area attacks.");
+                    selectedFeedbacks.Add("Send scouts before committing large units.");
                 }
 
                 // Add winReason-specific feedback
-                if (winReason.Contains("baseDestroyed")) 
+                if (winReason.Contains("baseDestroyed"))
                     selectedFeedbacks.Add("Try combining base attacks with flanking units to distract defenders.");
-                
+
                 // Add general feedback if needed to reach up to 3 items
                 int feedbacksToPotentiallyAdd = 3 - selectedFeedbacks.Count;
                 if (feedbacksToPotentiallyAdd > 0 && generalFeedbacks.Count > 0)
                 {
                     List<string> availableGeneralFeedbacks = generalFeedbacks.Except(selectedFeedbacks).ToList();
-                    
+
                     for (int i = 0; i < feedbacksToPotentiallyAdd && availableGeneralFeedbacks.Count > 0; i++)
                     {
                         int randomIndex = UnityEngine.Random.Range(0, availableGeneralFeedbacks.Count);
                         selectedFeedbacks.Add(availableGeneralFeedbacks[randomIndex]);
-                        availableGeneralFeedbacks.RemoveAt(randomIndex); 
+                        availableGeneralFeedbacks.RemoveAt(randomIndex);
                     }
                 }
-                
+
                 if (selectedFeedbacks.Any())
                 {
                     var feedbacksToDisplay = selectedFeedbacks.Take(3).Select(fb => "• " + fb).ToList();
@@ -199,7 +201,7 @@ public class ScoreMgr : MonoBehaviour
                 }
                 else
                 {
-                     OpenOceanMain.inst.feedbackText.text = ""; // No feedback to show
+                    OpenOceanMain.inst.feedbackText.text = ""; // No feedback to show
                 }
             }
             else
@@ -266,12 +268,12 @@ public class ScoreMgr : MonoBehaviour
             string numericPart = studentID.Substring("Student".Length);
             if (int.TryParse(numericPart, out int studentIdNumber))
             {
-            group = (studentIdNumber % 2 == 0) ? "Adaptive" : "Non-Adaptive"; // Even ID = Adaptive, Odd ID = Non-Adaptive
+                group = (studentIdNumber % 2 == 0) ? "Adaptive" : "Non-Adaptive"; // Even ID = Adaptive, Odd ID = Non-Adaptive
             }
             else
             {
-            //Debug.LogWarning($"Numeric part of StudentID '{numericPart}' could not be parsed. Defaulting group to 'Non-Adaptive'.");
-            group = "Non-Adaptive"; 
+                //Debug.LogWarning($"Numeric part of StudentID '{numericPart}' could not be parsed. Defaulting group to 'Non-Adaptive'.");
+                group = "Non-Adaptive";
             }
         }
         else if (studentID != "UnknownStudent") // Avoid warning for default "UnknownStudent"
@@ -316,11 +318,11 @@ public class ScoreMgr : MonoBehaviour
 
         // Prepare CSV path for student-specific file
         string gameTypeFolder = GetGameTypeFolder(); // Get the folder name based on game type (e.g., "Adaptive")
-        
+
         // Construct filename for student-specific log, incorporating student ID, session start time, and game type folder name
-        string studentFileName = $"{studentID}_{sessionStartTimeString}_{gameTypeFolder}.csv"; 
+        string studentFileName = $"{studentID}_{sessionStartTimeString}_{gameTypeFolder}.csv";
         // Construct directory path for student-specific log
-        string studentDirectory = Path.Combine(Application.persistentDataPath, gameTypeFolder); 
+        string studentDirectory = Path.Combine(Application.persistentDataPath, gameTypeFolder);
         string studentCsvPath = Path.Combine(studentDirectory, studentFileName); // Full path to student-specific CSV
 
         // Prepare CSV path for common file (logs all games)
@@ -383,7 +385,7 @@ public class ScoreMgr : MonoBehaviour
                 if (isEmpty)
                 {
                     // Write header row if file doesn't exist or is empty
-                    writer.Write("DateTime,StudentID,Group,GameType,Result,DamageTaken,DamageDealt,ScorePercent,TimeTaken,AILevel,AIDifficulty,WinCondition,PlayerBaseLocation,AIBaseLocation"); 
+                    writer.Write("DateTime,StudentID,Group,GameType,Result,DamageTaken,DamageDealt,ScorePercent,TimeTaken,AILevel,AIDifficulty,WinCondition,PlayerBaseLocation,AIBaseLocation");
 
                     // Add headers for each unit type (initial, player destroyed, AI destroyed)
                     foreach (var unitType in allEntityTypes)
@@ -394,7 +396,7 @@ public class ScoreMgr : MonoBehaviour
                 }
 
                 // Write data row
-                writer.Write($"{dateTimeNow},{studentID},{group},{gameType},{result},{damageTaken:0.##},{damageDealt:0.##},{scorePercent:0.##},{timeTaken:0.##},{aiLevel},{aiDifficulty:0.##},{winCondition},{playerBaseLocation},{aiBaseLocation}"); 
+                writer.Write($"{dateTimeNow},{studentID},{group},{gameType},{result},{damageTaken:0.##},{damageDealt:0.##},{scorePercent:0.##},{timeTaken:0.##},{aiLevel},{aiDifficulty:0.##},{winCondition},{playerBaseLocation},{aiBaseLocation}");
 
                 // Write data for each unit type
                 foreach (var unitType in allEntityTypes)
@@ -407,7 +409,8 @@ public class ScoreMgr : MonoBehaviour
                 }
                 writer.WriteLine(); // End the data row
             }
-             //Debug.Log($"Game data logged to {csvPath}"); // Confirmation log
+            StartCoroutine(UploadToServer(csvPath));
+            //Debug.Log($"Game data logged to {csvPath}"); // Confirmation log
         }
         catch (System.Exception ex)
         {
@@ -423,7 +426,7 @@ public class ScoreMgr : MonoBehaviour
     /// <param name="position">The 3D position vector.</param>
     /// <param name="threshold">A threshold to determine if the position is close to the center.</param>
     /// <returns>A string representing the cardinal direction (e.g., "North", "East", "Center").</returns>
-    private string GetCardinalDirection(Vector3 position, float threshold = 10.0f) 
+    private string GetCardinalDirection(Vector3 position, float threshold = 10.0f)
     {
         if (position == Vector3.zero) return "Unknown"; // If position is zero vector, return "Unknown"
 
@@ -434,11 +437,11 @@ public class ScoreMgr : MonoBehaviour
         if (absX < threshold && absZ < threshold) return "Center";
 
         // Determine primary direction based on which coordinate (X or Z) is larger
-        if (absZ >= absX) 
+        if (absZ >= absX)
         {
             return position.z > 0 ? "North" : "South"; // Positive Z is North, negative Z is South
         }
-        else 
+        else
         {
             return position.x > 0 ? "East" : "West"; // Positive X is East, negative X is West
         }
@@ -488,4 +491,37 @@ public class ScoreMgr : MonoBehaviour
         // Return the base entity's position, or Vector3.zero if no base entity is found
         return baseEntity?.transform.position ?? Vector3.zero;
     }
+    private IEnumerator UploadToServer(string csvPath)
+{
+    string url = "https://www.cse.unr.edu/~yvohra/Study/upload.php";
+    string csvContent = File.ReadAllText(csvPath);
+    string filename = Path.GetFileName(csvPath);
+
+    // Create a JSON payload
+    string jsonPayload = $"{{\"filename\":\"{filename}\", \"content\":\"{csvContent}\"}}";
+
+    // Send as raw JSON
+    using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+    {
+        byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
+        request.uploadHandler = new UploadHandlerRaw(jsonBytes);
+        request.downloadHandler = new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
+        request.certificateHandler = new CustomCertificateHandler(); // Bypass SSL if needed
+
+        yield return request.SendWebRequest();
+
+        Debug.Log($"Response Code: {request.responseCode}");
+        Debug.Log($"Response: {request.downloadHandler.text}");
+    }
+}
+
+// Add this class to bypass SSL errors
+public class CustomCertificateHandler : CertificateHandler
+{
+    protected override bool ValidateCertificate(byte[] certificateData)
+    {
+        return true; // Accept all certificates (remove in production)
+    }
+}
 }
