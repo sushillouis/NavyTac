@@ -4887,6 +4887,7 @@ GameObject:
   - component: {fileID: 1129782061}
   - component: {fileID: 1129782062}
   - component: {fileID: 1129782063}
+  - component: {fileID: 1129782064}
   m_Layer: 0
   m_Name: GameMgr
   m_TagString: Untagged
@@ -4949,7 +4950,6 @@ MonoBehaviour:
   posPlayer2: {x: 0, y: 0, z: 7000}
   headingPlayer2: 180
   difficultyLevel: 0.362
-  priorityList: 100000000d0000000e000000000000000a000000090000000400000002000000050000000b000000010000000300000007000000080000000c000000
 --- !u!114 &1129782063
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4962,8 +4962,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90bd2332251a444379a2dd886040fc13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  reloadCount: 0
-  simSpeedButtonText: {fileID: 0}
+--- !u!114 &1129782064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1129782060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74d71dcfc13484d4ba4657bf92f34981, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  priorityList: 100000000d0000000e000000000000000a000000090000000400000002000000050000000b000000010000000300000007000000080000000c000000
 --- !u!1 &1142393662
 GameObject:
   m_ObjectHideFlags: 0
@@ -7568,12 +7579,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 11500000, guid: 90bd2332251a444379a2dd886040fc13,
+      objectReference: {fileID: 1129782063}
+    - target: {fileID: 1082504684061945802, guid: 80bce631b4c42184898a37f5096c046b,
         type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1082504684061945802, guid: 80bce631b4c42184898a37f5096c046b,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: 
+      value: ReloadScene
+      objectReference: {fileID: 0}
+    - target: {fileID: 1082504684061945802, guid: 80bce631b4c42184898a37f5096c046b,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ResetScene, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 1359011053237525302, guid: 80bce631b4c42184898a37f5096c046b,
         type: 3}
