@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -56,6 +57,9 @@ public class GameMgr : MonoBehaviour
     [Tooltip("Seed for the NonAdaptive training state.")]
     [SerializeField] public int seedNonAdaptive = 40;
 
+    public int min = 0;
+    public int max = 16;
+
     /// <summary>
     /// Gets the random seed based on the current training state from OpenOceanMain.
     /// </summary>
@@ -80,7 +84,7 @@ public class GameMgr : MonoBehaviour
                     selectedSeed = seedNonAdaptive;
                     break;
                 default:
-                    selectedSeed = seedPreTest; 
+                    selectedSeed = seedPreTest;
                     break;
             }
         }
@@ -173,60 +177,70 @@ public class GameMgr : MonoBehaviour
     /// Adjusts the game's time scale.
     /// </summary>
     /// <param name="delta">The amount to change the time scale by.</param>
-    public void DeltaScale(float delta)
+    public void DeltaScale(float delta = 0)
     {
         float newTimeScale = Time.timeScale + delta;
-        // Clamp time scale between 0 and 16 (or a configurable max)
-        Time.timeScale = Mathf.Clamp(newTimeScale, 0, 16); 
+        Time.timeScale = Mathf.Clamp(newTimeScale, min, max); 
         if (simSpeedButtonText != null)
-            simSpeedButtonText.text = Time.timeScale.ToString("0");
+        {
+            float displayedSpeedValue = Time.timeScale - min + 1;
+            simSpeedButtonText.text = displayedSpeedValue.ToString("0");
+        }
     }
+
 
     /// <summary>
     /// Determines and sets the game's difficulty level based on the current training state.
     /// </summary>
     void DetermineDifficulty()
+{
+    if (OpenOceanMain.inst == null)
     {
-        if (OpenOceanMain.inst == null)
-        {
-            difficultyLevel = difficultyRanges["easy"]; // Default to easy
-        }
-        else
-        {
-            switch (OpenOceanMain.inst.currentTrainingState)
-            {
-                case OpenOceanMain.TrainingState.PreTest:
-                    difficultyLevel = .2f;
-                    break;
-                case OpenOceanMain.TrainingState.PostTest:
-                    // Example: Difficulty increases in the latter part of PostTest
-                    if (OpenOceanMain.inst.gamePlayCountMAX > 0 && 
-                        OpenOceanMain.inst.gamesPlayedCount < OpenOceanMain.inst.gamePlayCountMAX * 0.6f)
-                    {
-                        difficultyLevel =.2f;
-                    }
-                    else
-                    {
-                        difficultyLevel = 0.5f;
-                    }
-                    break;
-                case OpenOceanMain.TrainingState.Adaptive:
-                    difficultyLevel = ComputeAdaptiveDifficulty(); // Custom logic for adaptive difficulty
-                    break;
-                case OpenOceanMain.TrainingState.NonAdaptive:
-                    difficultyLevel = .2f; // Or specific logic for NonAdaptive
-                    break;
-                default:
-                    difficultyLevel = .2f;
-                    break;
-            }
-        }
-
-        // Convert the float difficultyLevel to the Difficulty enum
-        if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
-        else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
-        else currentDifficulty = Difficulty.Hard;
+        difficultyLevel = difficultyRanges["easy"]; // Default to easy
     }
+    else
+    {
+        switch (OpenOceanMain.inst.currentTrainingState)
+        {
+            case OpenOceanMain.TrainingState.PreTest:
+                if (OpenOceanMain.inst.gamePlayCountMAX > 0)
+                {
+                    float preProgress = (float)OpenOceanMain.inst.gamesPlayedCount / OpenOceanMain.inst.gamePlayCountMAX;
+                    difficultyLevel = preProgress < 0.6f ? 0.2f : 0.5f;
+                }
+                else
+                {
+                    difficultyLevel = 0.2f;
+                }
+                break;
+            case OpenOceanMain.TrainingState.PostTest:
+                if (OpenOceanMain.inst.gamePlayCountMAX > 0)
+                {
+                    float postProgress = (float)OpenOceanMain.inst.gamesPlayedCount / OpenOceanMain.inst.gamePlayCountMAX;
+                    difficultyLevel = postProgress < 0.6f ? 0.2f : 0.5f;
+                }
+                else
+                {
+                    difficultyLevel = 0.2f;
+                }
+                break;
+            case OpenOceanMain.TrainingState.Adaptive:
+                difficultyLevel = ComputeAdaptiveDifficulty();
+                break;
+            case OpenOceanMain.TrainingState.NonAdaptive:
+                difficultyLevel = .2f;
+                break;
+            default:
+                difficultyLevel = .2f;
+                break;
+        }
+    }
+
+    // Convert the float difficultyLevel to the Difficulty enum
+    if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
+    else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
+    else currentDifficulty = Difficulty.Hard;
+}
 
     /// <summary>
     /// Computes difficulty adaptively, for example, based on player score.
@@ -390,7 +404,30 @@ public class GameMgr : MonoBehaviour
             else if (currentDifficulty == Difficulty.Hard)
                 EnemyAIMgr.inst.currentLevel = 3;
         }
-        
+            switch (currentDifficulty)
+        {
+            case Difficulty.Easy:
+                min = 2;
+                max = 6;
+                DeltaScale(min-1);
+                Debug.Log("Easy difficulty: Time scale set to " + Time.timeScale);
+                break;
+            case Difficulty.Medium:
+                min = 3;
+                max = 6;
+                 DeltaScale(min-1);
+                Debug.Log("Medium difficulty: Time scale set to " + Time.timeScale);
+                break;
+            case Difficulty.Hard:
+                min = 4;
+                max = 6; 
+                DeltaScale(min-1);
+                Debug.Log("Hard difficulty: Time scale set to " + Time.timeScale);
+                break;
+            default:
+                Time.timeScale = 1f;
+                break;
+        }
         AdjustUnitCounts(); // Adjust entity counts based on difficulty
     }
 

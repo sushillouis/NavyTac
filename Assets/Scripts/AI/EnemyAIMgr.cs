@@ -260,7 +260,7 @@ public class EnemyAIMgr : MonoBehaviour
     private void HandleLevel2CombatBehavior(List<Entity> aiEntities)
     {
         if (opponentBase == null) return; 
-        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, null, false,false);
+        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, opponentBase, false,acquireTarget:true);
     }
 
     private void HandleLevel3CombatBehavior(List<Entity> aiEntities)

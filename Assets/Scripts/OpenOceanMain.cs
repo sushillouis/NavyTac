@@ -5,8 +5,6 @@ using UnityEngine.UI;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using TMPro;
-using Unity.Networking.Transport;
-using System.Net.NetworkInformation;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -22,6 +20,8 @@ public class OpenOceanMain : MonoBehaviour
     public bool IsDebugging = false;
     public bool IsNetDebugging = false;
     public bool isSinglePlayer = true;
+    private float savedTimeScale = 1f;
+    private float totalPlayTime = 0f;
 
     [SerializeField]
     private ushort port = 7777;
@@ -73,7 +73,7 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField]
     private Button loginButton;
     [SerializeField]
-    private Button  LoginQuitButton;
+    private Button LoginQuitButton;
 
     [Header("Map Select Screen")]
     [SerializeField]
@@ -81,7 +81,7 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField]
     public TMP_Text mapDescriptionText;
     [SerializeField]
-    private Button startButton; // Added SerializeField and declaration
+    private Button startButton;
     [Header("Score Panel")]
 
     [SerializeField] public TMP_Text damageDealtText;
@@ -101,7 +101,7 @@ public class OpenOceanMain : MonoBehaviour
     private const string EXIT_BUTTON_TEXT = "Exit";
 
     // Variables for play session timing
-    private float playSessionStartTime;
+    private float playSessionStartTime; // This variable is still present from previous logic, but totalPlayTime is now the primary tracker
     public float playSessionDuration { get; private set; }
 
     [Header("Game Pause Panel")]
@@ -111,7 +111,7 @@ public class OpenOceanMain : MonoBehaviour
     private Button quitButton;
     [SerializeField]
     private List<Button> menuButtons;
-    
+
 
     public enum LobbyState
     {
@@ -183,25 +183,31 @@ public class OpenOceanMain : MonoBehaviour
             button.onClick.AddListener(OnMenuButton);
         }
 
-        if (startButton != null) // Ensure startButton is assigned in Inspector
+        if (startButton != null)
         {
             startButton.onClick.RemoveAllListeners();
             startButton.onClick.AddListener(OnMapSelected);
         }
         else
         {
-            //Debug.LogError("StartButton is not assigned in the Inspector.");
+            Debug.LogError("StartButton is not assigned in the Inspector.", this);
         }
-        
+
         nextGameButton.onClick.RemoveAllListeners();
         nextGameButton.onClick.AddListener(OnNextGameOrExitClicked);
     }
 
     void SetupIPAddressAndPort()
     {
+        if (ipAddressInputField == null)
+        {
+            Debug.LogError("ipAddressInputField is not assigned.", this);
+            NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, port); // Use default
+            return;
+        }
         string tmp = ipAddressInputField.text.Trim();
         int count = tmp.Count(x => x == '.');
-        if (count == 3)
+        if (count == 3) // Basic validation
             ipAddress = tmp;
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(ipAddress, port);
     }
@@ -216,23 +222,19 @@ public class OpenOceanMain : MonoBehaviour
     {
         if (loginNameInputField == null || loginCodeInputField == null)
         {
-            //Debug.LogError("Login input fields are not assigned.");
+            Debug.LogError("Login input fields are not assigned.", this);
             return false;
         }
 
         playerName = loginNameInputField.text.Trim();
         playerCode = loginCodeInputField.text.Trim();
-        
-        //Debug.Log($"Attempting login for Player Name: {playerName}, Code: {playerCode}");
 
-        // Hide previous error messages
         if (WrongNameText != null) WrongNameText.gameObject.SetActive(false);
         if (WrongCodeText != null) WrongCodeText.gameObject.SetActive(false);
 
         Regex nameRegex = new Regex(@"^Student\s*\d+$");
         if (!nameRegex.IsMatch(playerName))
         {
-            //Debug.LogWarning($"Invalid player name format: '{playerName}'. Expected 'Student <number>'.");
             if (WrongNameText != null)
             {
                 WrongNameText.text = "Invalid name format. Expected 'Student <number>'.";
@@ -243,28 +245,23 @@ public class OpenOceanMain : MonoBehaviour
 
         if (playerCode == "AAA")
         {
-            //Debug.Log("Code: AAA (Adaptive session type)");
             currentTrainingState = TrainingState.Adaptive;
             if (GameMgr.inst != null) GameMgr.inst.difficultyLevel = 0.2f;
         }
         else if (playerCode == "BBB")
         {
-            //Debug.Log("Code: BBB (Non-Adaptive session type)");
             currentTrainingState = TrainingState.NonAdaptive;
         }
         else if (playerCode == "ABC")
         {
-            //Debug.Log("Code: ABC (Pre-test session type)");
             currentTrainingState = TrainingState.PreTest;
         }
         else if (playerCode == "XYZ")
         {
-            //Debug.Log("Code: XYZ (Post-test session type)");
             currentTrainingState = TrainingState.PostTest;
         }
         else
         {
-            //Debug.LogWarning($"Invalid player code: '{playerCode}'.");
             if (WrongCodeText != null)
             {
                 WrongCodeText.text = "Invalid login code.";
@@ -278,31 +275,27 @@ public class OpenOceanMain : MonoBehaviour
         {
             if (!int.TryParse(numberMatch.Value, out playerNo))
             {
-                //Debug.LogWarning($"Could not parse player number from name: '{playerName}'.");
-                playerNo = 0; // Default or handle as error
+                if (IsDebugging) Debug.LogWarning($"Could not parse player number from name: '{playerName}'. Defaulting to 0.", this);
+                playerNo = 0;
             }
         }
         else
         {
-            //Debug.LogWarning($"No number found at the end of player name: '{playerName}'.");
-            playerNo = 0; // Default or handle as error
+            if (IsDebugging) Debug.LogWarning($"No number found at the end of player name: '{playerName}'. Defaulting to 0.", this);
+            playerNo = 0;
         }
-        
-        // Set seed for GameMgr based on the currentTrainingState
+
         if (GameMgr.inst != null)
         {
-            // Assuming GameMgr.GetSelectedSeed() is a public method in GameMgr
-            // and GameMgr.CurrentSeed is a public field/property in GameMgr.
-            // The GetSelectedSeed() method (defined in GameMgr) uses OpenOceanMain.inst.currentTrainingState.
-            Random.InitState( GameMgr.inst.GetSelectedSeed()); 
-            // //Debug.Log($"Player No set to: {playerNo}. Training State: {currentTrainingState}. GameMgr seed set to: {GameMgr.inst.GetSelectedSeed()}");
+            Random.InitState(GameMgr.inst.GetSelectedSeed());
+            if (IsDebugging) Debug.Log($"Player No set to: {playerNo}. Training State: {currentTrainingState}. GameMgr seed set to: {GameMgr.inst.GetSelectedSeed()}", this);
         }
         else
         {
-            //Debug.LogWarning("GameMgr.inst is null. Cannot set seed.");
-            //Debug.Log($"Player No set to: {playerNo}. Training State: {currentTrainingState}. GameMgr seed NOT set.");
+            Debug.LogWarning("GameMgr.inst is null. Cannot set seed.", this);
+            if (IsDebugging) Debug.Log($"Player No set to: {playerNo}. Training State: {currentTrainingState}. GameMgr seed NOT set.", this);
         }
-        
+
         return true;
     }
 
@@ -311,70 +304,50 @@ public class OpenOceanMain : MonoBehaviour
         if (textElement != null)
         {
             textElement.gameObject.SetActive(true);
-            yield return new WaitForSecondsRealtime(duration); // Use WaitForSecondsRealtime as Time.timeScale might be 0
+            yield return new WaitForSecondsRealtime(duration);
             textElement.gameObject.SetActive(false);
         }
     }
 
-    // Overload for custom messages
-
     private void Start()
     {
-        if (IsDebugging)
+        loginButton.onClick.RemoveAllListeners();
+        loginButton.onClick.AddListener(() =>
         {
-            // Time.timeScale = 0f; // Time.timeScale is handled by lobbyState setter
-            lobbyState = LobbyState.Login; // Start at login for //Debug
-            loginButton.onClick.RemoveAllListeners();
-            loginButton.onClick.AddListener(() =>
+            if (IsDebugging) Debug.Log("Login button pressed.", this);
+            if (ProcessLogin())
             {
-                //Debug.Log("Login button pressed (//Debug Mode)");
-                if (ProcessLogin())
+                lobbyState = LobbyState.MapSelect;
+                if (isSinglePlayer)
                 {
-                    lobbyState = LobbyState.MapSelect;
-                    SinglePlayerSetup(); // //Debug mode defaults to single player setup after login
+                    SinglePlayerSetup();
                 }
                 else
                 {
-                    //Debug.LogError("Login failed in //Debug mode. Check input fields or logs.");
-                    // Optionally, show an error message on the UI
+                    NetPlayersSetup();
                 }
-            });
+            }
+            else
+            {
+                Debug.LogError("Login failed. Check input fields or logs.", this);
+            }
+        });
+
+        if (IsDebugging)
+        {
+            lobbyState = LobbyState.Login;
+            // isSinglePlayer defaults to true, so SinglePlayerSetup will be called after login if ProcessLogin is successful.
         }
         else
         {
             lobbyState = LobbyState.SingleMultiPlayer;
-            loginButton.onClick.RemoveAllListeners();
-            loginButton.onClick.AddListener(() =>
-            {
-                //Debug.Log("Login button pressed (Normal Mode)");
-                if (ProcessLogin())
-                {
-                    lobbyState = LobbyState.MapSelect;
-                    if (isSinglePlayer)
-                    {
-                        SinglePlayerSetup();
-                    }
-                    else
-                    {
-                        // For multiplayer, NetPlayersSetup might need to happen after network connection
-                        // or ensure local player data is ready for map selection logic.
-                        // Current ProcessLogin sets local playerNo and currentTrainingState.
-                        NetPlayersSetup();
-                    }
-                }
-                else
-                {
-                     //Debug.LogError("Login failed. Check input fields or logs.");
-                    // Optionally, show an error message on the UI
-                }
-            });
         }
     }
 
 
     void NetPlayersSetup()
     {
-        //Debug.Log("Setting up network multiplayer ...");
+        if (IsDebugging) Debug.Log("Setting up network multiplayer ...", this);
         foreach (NetSetup ns in FindObjectsOfType<NetSetup>())
         {
             NetworkObject tmp = ns.GetComponent<NetworkObject>();
@@ -397,18 +370,18 @@ public class OpenOceanMain : MonoBehaviour
 
     void SinglePlayerSetup()
     {
-        // //Debug.Log("Setting up single player ...");
+        if (IsDebugging) Debug.Log("Setting up single player ...", this);
         TactPlayer tmp = PlayerMgr.inst.CreateSinglePlayer(playerName);
         PlayerMgr.inst.AddPlayer(tmp);
         PlayerMgr.inst.localPlayer = tmp;
 
         PlayerMgr.inst.AddPlayer(PlayerMgr.inst.CreateSinglePlayer("Ai"));
     }
-    
+
     private void UpdateMapSelectionUI()
     {
-        string name = "Default Map"; // Fallback name
-        string description = "Default description."; // Fallback description
+        string name = "Default Map";
+        string description = "Default description.";
 
         switch (currentTrainingState)
         {
@@ -420,59 +393,29 @@ public class OpenOceanMain : MonoBehaviour
                 name = "Post Test";
                 description = "This is a post-test session.";
                 break;
-            case TrainingState.Adaptive: // Player is configured for an Adaptive type session
-                // playerNo % 2 == 0 suggests player is from "Adaptive Group" (even ID)
-                // playerNo % 2 != 0 suggests player is from "Non-Adaptive Group" (odd ID)
-                if (playerNo % 2 == 0) // Player from "Adaptive Group" doing Adaptive session
-                {
-                    name = "Training";
-                    description = "This is a training session.";
-                }
-                else // Player from "Non-Adaptive Group" doing Adaptive session
-                {
-                    name = "Alternate Training";
-                    description = "This is an alternate training session.";
-                }
+            case TrainingState.Adaptive:
+                name = (playerNo % 2 == 0) ? "Training" : "Alternate Training";
+                description = (playerNo % 2 == 0) ? "This is a training session." : "This is an alternate training session.";
                 break;
-            case TrainingState.NonAdaptive: // Player is configured for a Non-Adaptive type session
-                if (playerNo % 2 != 0) // Player from "Non-Adaptive Group" doing Non-Adaptive session
-                {
-                    name = "Training";
-                    description = "This is a training session.";
-                }
-                else // Player from "Adaptive Group" doing Non-Adaptive session
-                {
-                    name = "Alternate Training";
-                    description = "This is an alternate training session.";
-                }
+            case TrainingState.NonAdaptive:
+                name = (playerNo % 2 != 0) ? "Training" : "Alternate Training";
+                description = (playerNo % 2 != 0) ? "This is a training session." : "This is an alternate training session.";
                 break;
             case TrainingState.None:
                 name = "Map Selection Pending";
                 description = "Please complete login to determine training type.";
-                //Debug.LogWarning("UpdateMapSelectionUI called with TrainingState.None. Login might not be complete or code is invalid.");
+                Debug.LogWarning("UpdateMapSelectionUI called with TrainingState.None. Login might not be complete or code is invalid.", this);
                 break;
         }
 
-        if (mapNameText != null)
-        {
-            mapNameText.text = name;
-        }
-       
-
-        if (mapDescriptionText != null)
-        {
-            mapDescriptionText.text = description;
-        }
-        
+        if (mapNameText != null) mapNameText.text = name;
+        if (mapDescriptionText != null) mapDescriptionText.text = description;
     }
 
 
     public LobbyState lobbyState
     {
-        get
-        {
-            return _lobbyState;
-        }
+        get => _lobbyState;
         set
         {
             LobbyState previousState = _lobbyState;
@@ -487,67 +430,94 @@ public class OpenOceanMain : MonoBehaviour
             ScorePanel.isVisible = (value == LobbyState.ScorePanel);
             GamePausePanel.isVisible = (value == LobbyState.GamePaused);
 
-           
+
             if (value == LobbyState.MapSelect)
             {
-                UpdateMapSelectionUI(); // Update map name and description
+                UpdateMapSelectionUI();
             }
-            
+
+            // Time scale management
             if (value == LobbyState.Play)
             {
-                playSessionStartTime = Time.realtimeSinceStartup;
-                //Debug.Log($"Play session started. Start time: {playSessionStartTime}");
+                if (previousState == LobbyState.GamePaused)
+                {
+                    // Restore saved time scale
+                    Time.timeScale = savedTimeScale;
+                }
+                else if (previousState != LobbyState.Play) // Started playing (not from pause)
+                {
+                      // Ensure time scale is 1 when starting play
+                     // playSessionStartTime = Time.realtimeSinceStartup; // This line is from old logic, totalPlayTime handles this now
+                     if (IsDebugging) Debug.Log($"Play session started. Total playtime reset/started.", this);
+                }
             }
-            
-            if (value == LobbyState.ScorePanel)
+            else // Not in Play state
             {
                 if (previousState == LobbyState.Play)
                 {
-                    playSessionDuration = Time.realtimeSinceStartup - playSessionStartTime;
-                    //Debug.Log($"Play session ended. Duration: {playSessionDuration:F2} seconds.");
+                    // Save current time scale if we were playing
+                    savedTimeScale = Time.timeScale;
                 }
+                Time.timeScale = 0f; // Pause the game
+            }
+
+
+            // Update total playtime when entering score panel
+            if (value == LobbyState.ScorePanel && previousState == LobbyState.Play)
+            {
+                playSessionDuration = totalPlayTime; // Store the accumulated playtime
+                if (IsDebugging) Debug.Log($"Play session ended. Duration: {playSessionDuration:F2} seconds (from totalPlayTime).", this);
+                totalPlayTime = 0f; // Reset for the next session
 
                 gamesPlayedCount++;
                 TMP_Text buttonTextComponent = nextGameButton.GetComponentInChildren<TMP_Text>();
                 if (buttonTextComponent != null)
                 {
-                    if (gamesPlayedCount >= gamePlayCountMAX)
-                    {
-                        buttonTextComponent.text = EXIT_BUTTON_TEXT;
-                    }
-                    else
-                    {
-                        buttonTextComponent.text = NEXT_GAME_BUTTON_TEXT;
-                    }
+                    buttonTextComponent.text = (gamesPlayedCount >= gamePlayCountMAX) ? EXIT_BUTTON_TEXT : NEXT_GAME_BUTTON_TEXT;
                 }
             }
-            if (value == LobbyState.GamePaused)
-            {
-                // Pause the game
-                Time.timeScale = 0f;
-            }
-            else
-            {
-                // Resume the game
-                Time.timeScale = 1f;
-            }
             
-            Time.timeScale = (value == LobbyState.Play) ? 1f : 0f;
-            if (UIMgr.inst != null)  UIMgr.inst.gameObject.SetActive(value == LobbyState.Play);
+            if (UIMgr.inst != null) UIMgr.inst.gameObject.SetActive(value == LobbyState.Play);
             if (GroupUIMgr.inst != null) GroupUIMgr.inst.gameObject.SetActive(value == LobbyState.Play);
-            
         }
     }
 
+    void Update()
+    {
+        if (lobbyState == LobbyState.Play)
+        {
+            totalPlayTime += Time.unscaledDeltaTime; // Use unscaledDeltaTime to track time even if Time.timeScale is modified (e.g. slow-mo effects)
+        }
+        // ... existing update code ...
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (lobbyState == LobbyState.Play)
+            {
+                lobbyState = LobbyState.GamePaused;
+            }
+            else if (lobbyState == LobbyState.GamePaused)
+            {
+                lobbyState = LobbyState.Play;
+            }
+        }
+    }
+
+
     public void OnMapSelected()
     {
+        totalPlayTime = 0f; // Reset playtime when starting a new game
         if (isSinglePlayer)
+        {
             GameMgr.inst.OpenOcean1x1();
-        else if (localNetSetup != null) // Ensure localNetSetup is initialized for multiplayer
+        }
+        else if (localNetSetup != null)
+        {
             localNetSetup.OnStartButton();
+        }
         else
-            //Debug.LogError("localNetSetup is null. Cannot start multiplayer map selection.");
-            
+        {
+            Debug.LogError("localNetSetup is null. Cannot start multiplayer map selection.", this);
+        }
         lobbyState = LobbyState.Play;
     }
 
@@ -564,7 +534,7 @@ public class OpenOceanMain : MonoBehaviour
 
     public void OnQuitButton()
     {
-        //Debug.Log("Shutting down TactNetMgr and quitting");
+        if (IsDebugging) Debug.Log("Shutting down TactNetMgr and quitting application.", this);
         if (TactNetMgr.inst != null)
         {
             TactNetMgr.inst.TactNetShutdown();
@@ -573,7 +543,7 @@ public class OpenOceanMain : MonoBehaviour
         {
             NetworkManager.Singleton.Shutdown();
         }
-        
+
         if (Application.isEditor)
         {
 #if UNITY_EDITOR
@@ -587,7 +557,6 @@ public class OpenOceanMain : MonoBehaviour
     }
     public void OnResumeButton()
     {
-        
         lobbyState = LobbyState.Play;
     }
     public void OnMenuButton()
@@ -596,26 +565,20 @@ public class OpenOceanMain : MonoBehaviour
     }
     public void ResetGameState()
     {
-        // This method might need more logic to truly reset the game for a new session
-        // For now, it just sets the lobby state.
         // Consider resetting player scores, map states, etc.
-        lobbyState = LobbyState.Play; // Or LobbyState.Login / SingleMultiPlayer depending on desired flow
+        lobbyState = LobbyState.Play; // Or LobbyState.Login / SingleMultiPlayer
     }
 
     public void OnNextGameOrExitClicked()
     {
-        if (gamesPlayedCount >= gamePlayCountMAX) // Use gamePlayCountMAX
+        if (gamesPlayedCount >= gamePlayCountMAX)
         {
             OnQuitButton();
         }
-        else 
+        else
         {
-            // Logic for "Next Game"
-            // This could mean going back to map select, or login, or single/multi selection
-            // For now, let's assume going back to map select if another game is to be played.
-            // You might need to reset other game-specific states here.
-            //Debug.Log("Next game selected.");
-            lobbyState = LobbyState.Play; // Or another appropriate state like Login or SingleMultiPlayer
+            if (IsDebugging) Debug.Log("Next game selected.", this);
+            lobbyState = LobbyState.Play; 
         }
     }
 }
