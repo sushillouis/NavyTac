@@ -1,9 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 [System.Serializable]
@@ -35,12 +32,12 @@ public class GameMgr : MonoBehaviour
     [Tooltip("Seed for the NonAdaptive training state.")]
     [SerializeField] public int seedNonAdaptive = 40;
 
-    public int min = 0;
-    public int max = 16;
+    public float min = 0;
+    public float max = 16;
 
     public int GetSelectedSeed()
     {
-        int selectedSeed = seedPreTest; 
+        int selectedSeed = seedPreTest;
         if (OpenOceanMain.inst != null)
         {
             switch (OpenOceanMain.inst.currentTrainingState)
@@ -77,7 +74,7 @@ public class GameMgr : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        
+
         BuildEntityDictionary();
     }
 
@@ -85,25 +82,25 @@ public class GameMgr : MonoBehaviour
     [SerializeField] private Button plusButton;
     [SerializeField] private Button minusButton;
     [SerializeField] private TextMeshProUGUI simSpeedButtonText;
-    
-    public float timeScale = 1; 
+
+    public float timeScale = 1;
 
     [Header("Entity Spawning Parameters (Legacy/Test)")]
     [Tooltip("Base position for spawning entities in Create100.")]
     public Vector3 position;
     [Tooltip("Spread between entities in Create100.")]
     public float spread = 20;
-    private float initZ; 
+    private float initZ;
 
     [Header("Scenario Entity Configuration")]
     [Tooltip("List of entity types and their quantities to spawn in scenarios.")]
     [SerializeField] public List<EntityQuantity> entityQuantities = new List<EntityQuantity>();
-    public Dictionary<EntityType, int> entityDict; 
+    public Dictionary<EntityType, int> entityDict;
 
     [Header("Player Configuration")]
     [Range(1, 4)]
-    [SerializeField] public int players = 2; 
-    [SerializeField] public bool sameEnityForAll = false; 
+    [SerializeField] public int players = 2;
+    [SerializeField] public bool sameEnityForAll = false;
 
     void Start()
     {
@@ -115,28 +112,28 @@ public class GameMgr : MonoBehaviour
 
         if (plusButton != null)
         {
-            plusButton.onClick.RemoveAllListeners(); 
+            plusButton.onClick.RemoveAllListeners();
             plusButton.onClick.AddListener(() => DeltaScale(1));
         }
         if (minusButton != null)
         {
-            minusButton.onClick.RemoveAllListeners(); 
+            minusButton.onClick.RemoveAllListeners();
             minusButton.onClick.AddListener(() => DeltaScale(-1));
         }
     }
 
     void Update()
     {
-        if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus)) 
+        if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus))
             DeltaScale(1);
-        if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus)) 
+        if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus))
             DeltaScale(-1);
     }
 
     public void DeltaScale(float delta = 0)
     {
         float newTimeScale = Time.timeScale + delta;
-        Time.timeScale = Mathf.Clamp(newTimeScale, min, max); 
+        Time.timeScale = Mathf.Clamp(newTimeScale, min, max);
         if (simSpeedButtonText != null)
         {
             float displayedSpeedValue = Time.timeScale - min + 1;
@@ -146,53 +143,53 @@ public class GameMgr : MonoBehaviour
 
 
     void DetermineDifficulty()
-{
-    if (OpenOceanMain.inst == null)
     {
-        difficultyLevel = difficultyRanges["easy"]; 
-    }
-    else
-    {
-        switch (OpenOceanMain.inst.currentTrainingState)
+        if (OpenOceanMain.inst == null)
         {
-            case TrainingState.PreTest:
-                if (OpenOceanMain.inst.gamePlayCountMAX > 0)
-                {
-                    float preProgress = (float)OpenOceanMain.inst.gamesPlayedCount / OpenOceanMain.inst.gamePlayCountMAX;
-                    difficultyLevel = preProgress < 0.6f ? 0.2f : 0.5f;
-                }
-                else
-                {
-                    difficultyLevel = 0.2f;
-                }
-                break;
-            case TrainingState.PostTest:
-                if (OpenOceanMain.inst.gamePlayCountMAX > 0)
-                {
-                    float postProgress = (float)OpenOceanMain.inst.gamesPlayedCount / OpenOceanMain.inst.gamePlayCountMAX;
-                    difficultyLevel = postProgress < 0.6f ? 0.2f : 0.5f;
-                }
-                else
-                {
-                    difficultyLevel = 0.2f;
-                }
-                break;
-            case TrainingState.Adaptive:
-                difficultyLevel = ComputeAdaptiveDifficulty();
-                break;
-            case TrainingState.NonAdaptive:
-                difficultyLevel = 0.2f;
-                break;
-            default:
-                difficultyLevel = 0.2f;
-                break;
+            difficultyLevel = difficultyRanges["easy"];
         }
-    }
+        else
+        {
+            switch (OpenOceanMain.inst.currentTrainingState)
+            {
+                case TrainingState.PreTest:
+                    if (OpenOceanMain.inst.gamePlayCountMAX > 0)
+                    {
+                        float preProgress = (float)OpenOceanMain.inst.gamesPlayedCount / OpenOceanMain.inst.gamePlayCountMAX;
+                        difficultyLevel = preProgress < 0.6f ? 0.2f : 0.5f;
+                    }
+                    else
+                    {
+                        difficultyLevel = 0.2f;
+                    }
+                    break;
+                case TrainingState.PostTest:
+                    if (OpenOceanMain.inst.gamePlayCountMAX > 0)
+                    {
+                        float postProgress = (float)OpenOceanMain.inst.gamesPlayedCount / OpenOceanMain.inst.gamePlayCountMAX;
+                        difficultyLevel = postProgress < 0.6f ? 0.2f : 0.5f;
+                    }
+                    else
+                    {
+                        difficultyLevel = 0.2f;
+                    }
+                    break;
+                case TrainingState.Adaptive:
+                    difficultyLevel = ComputeAdaptiveDifficulty();
+                    break;
+                case TrainingState.NonAdaptive:
+                    difficultyLevel = 0.2f;
+                    break;
+                default:
+                    difficultyLevel = 0.2f;
+                    break;
+            }
+        }
 
-    if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
-    else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
-    else currentDifficulty = Difficulty.Hard;
-}
+        if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
+        else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
+        else currentDifficulty = Difficulty.Hard;
+    }
 
     float ComputeAdaptiveDifficulty()
     {
@@ -200,201 +197,168 @@ public class GameMgr : MonoBehaviour
         {
             difficultyLevel = difficultyLevel + 0.05f * ScoreMgr.inst.score / 100;
         }
-        float clampedDifficulty = Mathf.Clamp(difficultyLevel, 0f, 1f); 
-        return clampedDifficulty; 
+        float clampedDifficulty = Mathf.Clamp(difficultyLevel, 0f, 1f);
+        return clampedDifficulty;
     }
 
-    public void Create100()
-    {
-        initZ = position.z; 
-        for (int i = 0; i < 10; i++) 
-        {
-            for (int j = 0; j < 10; j++) 
-            {
-                EntityMgr.inst.CreateEntity(EntityType.PilotVessel, position, Vector3.zero);
-                position.z += spread; 
-            }
-            position.x += spread; 
-            position.z = initZ;   
-        }
-        if (DistanceMgr.inst != null) DistanceMgr.inst.Initialize(); 
-    }
-
-    public void InitMapMenu()
-    {
-        List<Entity> allEntities = new List<Entity>();
-        Vector3 pos = Vector3.zero;
-        Vector3 offset = new Vector3(100, 0, -50); 
-
-        foreach (GameObject go in EntityMgr.inst.entityPrefabs)
-        {
-            Entity prefabComponent = go.GetComponent<Entity>();
-            if (prefabComponent != null)
-            {
-                Entity ent = EntityMgr.inst.CreateEntity(prefabComponent.entityType, pos + offset, new Vector3(0, 270, 0)); 
-                allEntities.Add(ent);
-                pos.x += 400; 
-            }
-        }
-
-        Vector3 movePos = new Vector3(-3000, 0, 0);
-        StartCoroutine(AddMoveCommandsToEnt(allEntities, movePos, false, 270)); 
-        movePos.x = 3000;
-        StartCoroutine(AddMoveCommandsToEnt(allEntities, movePos, true)); 
-    }
-
-    IEnumerator AddMoveCommandsToEnt(List<Entity> entities, Vector3 targetPos, bool shouldAdd, float heading = -1)
-    {
-        yield return new WaitForSeconds(0.1f); 
-        foreach (Entity ent in entities)
-        {
-            if (ent != null && heading != -1) 
-            {
-                ent.heading = heading;
-            }
-        }
-        if (AIMgr.inst != null) AIMgr.inst.HandleMove(entities, targetPos, shouldAdd);
-    }
-
-    public void MakeMapEntities()
-    {
-        Vector3 pos = Vector3.zero;
-        Entity ent;
-        foreach (TactPlayer player in PlayerMgr.inst.players)
-        {
-            for (int i = 0; i < 5; i++) 
-            {
-                ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, Vector3.zero, player);
-                pos.x += 50; 
-            }
-            pos.z += 100; 
-            pos.x = 0;    
-        }
-    }
 
     [Header("Player Start Positions")]
-    public Vector3 posPlayer1 = new Vector3(0, 0, -7000);
-    public float headingPlayer1 = 0;
-    public Vector3 posPlayer2 = new Vector3(0, 0, 10000); 
-    public float headingPlayer2 = 180;
-
-    [Header("Difficulty Settings")]
+    public Vector3 posPlayer1;
+    public float headingPlayer1;
+    public Vector3 posPlayer2;
+    public float headingPlayer2;
     [Range(0f, 1f)]
-    [Tooltip("Current difficulty level (0=Easy, 1=Hard). Can be set by DetermineDifficulty.")]
-    public float difficultyLevel = 0.2f; 
-    [Tooltip("Defines the thresholds for Easy, Medium, and Hard difficulty levels.")]
+
+    public float difficultyLevel = 0.2f;
     public Dictionary<string, float> difficultyRanges = new Dictionary<string, float>()
     {
-        {"easy", 0.33f},
+        {"easy", 0.333f},
         {"medium", 0.667f},
-        {"hard", 1f}
+        {"hard", 1.00f}
     };
-    private Difficulty currentDifficulty; 
+    private Difficulty currentDifficulty;
 
     private int[,] positionRelations = new int[4, 3] {
-        {1, 3, 2},  
-        {0, 2, 3},  
-        {3, 0, 1},  
-        {2, 1, 0}   
+        {1, 3, 2},
+        {0, 2, 3},
+        {3, 0, 1},
+        {2, 1, 0}
     };
 
     public void OpenOcean1x1()
     {
-        InitializeScenario(); 
-        SpawnEntities();      
-        if (CameraMgr.inst != null) CameraMgr.inst.SetCameraPosition(); 
+        InitializeScenario();
+        SpawnEntities();
+        if (CameraMgr.inst != null) CameraMgr.inst.SetCameraPosition();
     }
 
     void InitializeScenario()
     {
-                
-        DetermineDifficulty(); 
+
+        DetermineDifficulty();
 
         if (EnemyAIMgr.inst != null)
         {
-            if(currentDifficulty == Difficulty.Easy)
+            if (currentDifficulty == Difficulty.Easy)
                 EnemyAIMgr.inst.currentLevel = 1;
             else if (currentDifficulty == Difficulty.Medium)
                 EnemyAIMgr.inst.currentLevel = 2;
             else if (currentDifficulty == Difficulty.Hard)
                 EnemyAIMgr.inst.currentLevel = 3;
         }
-            switch (currentDifficulty)
+        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
+        {
+            AdjustAdaptiveTimeScale();
+            AdjustAdaptiveUnitCounts();
+        }
+        else
+        {
+
+            AdjustNonAdaptiveTimeScale();
+
+            AdjustNonAdaptiveUnitCounts();
+        }
+        
+    }
+
+    void AdjustAdaptiveUnitCounts()
+    {
+        foreach (EntityQuantity eq in entityQuantities)
+        {
+            if (eq.entityType == EntityType.Rig_Balder)
+            {
+                eq.unitCount = 1;
+                continue;
+            }
+
+            eq.unitCount = 3  + Mathf.RoundToInt(difficultyLevel * 17);
+        }
+        BuildEntityDictionary();
+    }
+    void AdjustAdaptiveTimeScale()
+    {
+        
+                min = 2 + difficultyLevel * 2 ;
+        max = 6;
+               DeltaScale(min - 1);
+            
+    }
+    void AdjustNonAdaptiveTimeScale()
+    {
+        switch (currentDifficulty)
         {
             case Difficulty.Easy:
                 min = 2;
                 max = 6;
-                DeltaScale(min-1);
+                DeltaScale(min - 1);
                 Debug.Log("Easy difficulty: Time scale set to " + Time.timeScale);
                 break;
             case Difficulty.Medium:
                 min = 3;
                 max = 6;
-                 DeltaScale(min-1);
+                DeltaScale(min - 1);
                 Debug.Log("Medium difficulty: Time scale set to " + Time.timeScale);
                 break;
             case Difficulty.Hard:
                 min = 4;
-                max = 6; 
-                DeltaScale(min-1);
+                max = 6;
+                DeltaScale(min - 1);
                 Debug.Log("Hard difficulty: Time scale set to " + Time.timeScale);
                 break;
             default:
                 Time.timeScale = 1f;
                 break;
         }
-        AdjustUnitCounts(); 
     }
-
-    void AdjustUnitCounts()
+    void AdjustNonAdaptiveUnitCounts()
     {
         foreach (EntityQuantity eq in entityQuantities)
         {
             if (eq.entityType == EntityType.Rig_Balder)
             {
-                eq.unitCount = 1; 
-                continue; 
+                eq.unitCount = 1;
+                continue;
             }
 
             eq.unitCount = currentDifficulty switch
             {
-                Difficulty.Easy   => Random.Range(3, 6),    
-                Difficulty.Medium => Random.Range(6, 11),   
-                Difficulty.Hard   => Random.Range(11, 21),  
-                _                 => eq.unitCount           
+                Difficulty.Easy => Random.Range(3, 6),
+                Difficulty.Medium => Random.Range(6, 11),
+                Difficulty.Hard => Random.Range(11, 21),
+                _ => eq.unitCount
             };
         }
-        BuildEntityDictionary(); 
+        BuildEntityDictionary();
     }
 
     void SpawnEntities()
     {
         StartingPosition[] allPositions = new StartingPosition[]
         {
-            new() { position = new(0, 0, -7000), heading = 0 },    
-            new() { position = new(0, 0, 7000),  heading = 180 },  
-            new() { position = new(-7000, 0, 0), heading = 90 },   
-            new() { position = new(7000, 0, 0),  heading = 270 }   
+            new() { position = new(0, 0, -7000), heading = 0 },
+            new() { position = new(0, 0, 7000),  heading = 180 },
+            new() { position = new(-7000, 0, 0), heading = 90 },
+            new() { position = new(7000, 0, 0),  heading = 270 }
         };
 
         int player1Index = Random.Range(0, allPositions.Length);
         StartingPosition p1StartPos = allPositions[player1Index];
-        posPlayer1 = p1StartPos.position; 
+        posPlayer1 = p1StartPos.position;
         headingPlayer1 = p1StartPos.heading;
 
         List<int> player2ValidIndices = GetValidPlayer2Positions(player1Index);
-        int player2AssignedIndex = player1Index; 
+        int player2AssignedIndex = player1Index;
         if (player2ValidIndices.Count > 0)
         {
             player2AssignedIndex = player2ValidIndices[Random.Range(0, player2ValidIndices.Count)];
         }
         else
         {
-            for(int i=0; i < allPositions.Length; ++i) { if (i != player1Index) { player2AssignedIndex = i; break; } }
+            for (int i = 0; i < allPositions.Length; ++i) { if (i != player1Index) { player2AssignedIndex = i; break; } }
         }
-        
+
         StartingPosition p2StartPos = allPositions[player2AssignedIndex];
-        posPlayer2 = p2StartPos.position; 
+        posPlayer2 = p2StartPos.position;
         headingPlayer2 = p2StartPos.heading;
 
         if (PlayerMgr.inst != null)
@@ -407,17 +371,17 @@ public class GameMgr : MonoBehaviour
     List<int> GetValidPlayer2Positions(int player1Index)
     {
         List<int> validPositions = new();
-        switch (currentDifficulty) 
+        switch (currentDifficulty)
         {
             case Difficulty.Easy:
-                validPositions.Add(positionRelations[player1Index, 0]); 
+                validPositions.Add(positionRelations[player1Index, 0]);
                 break;
             case Difficulty.Medium:
-                validPositions.Add(positionRelations[player1Index, 0]); 
-                validPositions.Add(positionRelations[player1Index, 1]); 
+                validPositions.Add(positionRelations[player1Index, 0]);
+                validPositions.Add(positionRelations[player1Index, 1]);
                 break;
             case Difficulty.Hard:
-                for (int i = 0; i < 4; i++) 
+                for (int i = 0; i < 4; i++)
                     if (i != player1Index) validPositions.Add(i);
                 break;
         }
@@ -431,8 +395,8 @@ public class GameMgr : MonoBehaviour
         {
             if (eq.entityType == EntityType.Rig_Balder)
             {
-                entityDict[eq.entityType] = Mathf.Min(eq.unitCount, 1); 
-                continue; 
+                entityDict[eq.entityType] = Mathf.Min(eq.unitCount, 1);
+                continue;
             }
 
             if (entityDict.ContainsKey(eq.entityType))
@@ -441,7 +405,74 @@ public class GameMgr : MonoBehaviour
                 entityDict.Add(eq.entityType, eq.unitCount);
         }
     }
-
-    
-    
+    public void Create100()
+    { }
 }
+
+    // public void Create100()
+    // {
+    //     initZ = position.z; 
+    //     for (int i = 0; i < 10; i++) 
+    //     {
+    //         for (int j = 0; j < 10; j++) 
+    //         {
+    //             EntityMgr.inst.CreateEntity(EntityType.PilotVessel, position, Vector3.zero);
+    //             position.z += spread; 
+    //         }
+    //         position.x += spread; 
+    //         position.z = initZ;   
+    //     }
+    //     if (DistanceMgr.inst != null) DistanceMgr.inst.Initialize(); 
+    // }
+
+    // public void InitMapMenu()
+    // {
+    //     List<Entity> allEntities = new List<Entity>();
+    //     Vector3 pos = Vector3.zero;
+    //     Vector3 offset = new Vector3(100, 0, -50); 
+
+    //     foreach (GameObject go in EntityMgr.inst.entityPrefabs)
+    //     {
+    //         Entity prefabComponent = go.GetComponent<Entity>();
+    //         if (prefabComponent != null)
+    //         {
+    //             Entity ent = EntityMgr.inst.CreateEntity(prefabComponent.entityType, pos + offset, new Vector3(0, 270, 0)); 
+    //             allEntities.Add(ent);
+    //             pos.x += 400; 
+    //         }
+    //     }
+
+    //     Vector3 movePos = new Vector3(-3000, 0, 0);
+    //     StartCoroutine(AddMoveCommandsToEnt(allEntities, movePos, false, 270)); 
+    //     movePos.x = 3000;
+    //     StartCoroutine(AddMoveCommandsToEnt(allEntities, movePos, true)); 
+    // }
+
+    // IEnumerator AddMoveCommandsToEnt(List<Entity> entities, Vector3 targetPos, bool shouldAdd, float heading = -1)
+    // {
+    //     yield return new WaitForSeconds(0.1f); 
+    //     foreach (Entity ent in entities)
+    //     {
+    //         if (ent != null && heading != -1) 
+    //         {
+    //             ent.heading = heading;
+    //         }
+    //     }
+    //     if (AIMgr.inst != null) AIMgr.inst.HandleMove(entities, targetPos, shouldAdd);
+    // }
+
+    // public void MakeMapEntities()
+    // {
+    //     Vector3 pos = Vector3.zero;
+    //     Entity ent;
+    //     foreach (TactPlayer player in PlayerMgr.inst.players)
+    //     {
+    //         for (int i = 0; i < 5; i++) 
+    //         {
+    //             ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, Vector3.zero, player);
+    //             pos.x += 50; 
+    //         }
+    //         pos.z += 100; 
+    //         pos.x = 0;    
+    //     }
+    // }

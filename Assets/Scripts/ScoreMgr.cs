@@ -409,8 +409,8 @@ public class ScoreMgr : MonoBehaviour
                 }
                 writer.WriteLine(); // End the data row
             }
-            StartCoroutine(UploadToServer(csvPath));
-            //Debug.Log($"Game data logged to {csvPath}"); // Confirmation log
+            // StartCoroutine(UploadToServer(csvPath));
+            Debug.Log($"Game data logged to {csvPath}"); // Confirmation log
         }
         catch (System.Exception ex)
         {
