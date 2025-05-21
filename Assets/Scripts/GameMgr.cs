@@ -271,16 +271,16 @@ public class GameMgr : MonoBehaviour
                 continue;
             }
 
-            eq.unitCount = 3  + Mathf.RoundToInt(difficultyLevel * 17);
+            eq.unitCount = Mathf.RoundToInt(21.25f * difficultyLevel - 1.25f);
         }
         BuildEntityDictionary();
     }
     void AdjustAdaptiveTimeScale()
     {
         
-                min = 2 + difficultyLevel * 2 ;
+        min = 1f + (difficultyLevel * 3) ;
         max = 6;
-               DeltaScale(min - 1);
+        DeltaScale(min - 1);
             
     }
     void AdjustNonAdaptiveTimeScale()
