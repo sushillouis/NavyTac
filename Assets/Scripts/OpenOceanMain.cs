@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,6 +28,8 @@ public class OpenOceanMain : MonoBehaviour
     private ushort port = 7777;
 
     public int gamePlayCountMAX = 5;
+    public float totalTrainingTime = 0f;
+    public float nonAdaptiveTrainingTime = 15f;
     [Header("Panels")]
     [SerializeField]
     private PanelPlus loginPanel;
@@ -448,12 +451,17 @@ public class OpenOceanMain : MonoBehaviour
             if (value == LobbyState.ScorePanel && previousState == LobbyState.Play)
             {
                 playSessionDuration = totalPlayTime; // Store the accumulated playtime
+                totalTrainingTime += playSessionDuration; // Add to total training time
                 if (IsDebugging) Debug.Log($"Play session ended. Duration: {playSessionDuration:F2} seconds (from totalPlayTime).", this);
                 totalPlayTime = 0f; // Reset for the next session
 
                 gamesPlayedCount++;
                 TMP_Text buttonTextComponent = nextGameButton.GetComponentInChildren<TMP_Text>();
-                if (buttonTextComponent != null)
+                if (currentTrainingState == TrainingState.NonAdaptive)
+                {
+                    buttonTextComponent.text = (totalTrainingTime >= nonAdaptiveTrainingTime*60f) ? EXIT_BUTTON_TEXT : NEXT_GAME_BUTTON_TEXT;
+                }
+                else
                 {
                     buttonTextComponent.text = (gamesPlayedCount >= gamePlayCountMAX) ? EXIT_BUTTON_TEXT : NEXT_GAME_BUTTON_TEXT;
                 }
@@ -468,7 +476,8 @@ public class OpenOceanMain : MonoBehaviour
     {
         if (lobbyState == LobbyState.Play)
         {
-            totalPlayTime += Time.unscaledDeltaTime; // Use unscaledDeltaTime to track time even if Time.timeScale is modified (e.g. slow-mo effects)
+            totalPlayTime += Time.unscaledDeltaTime;
+            totalTrainingTime += Time.unscaledDeltaTime; // Use unscaledDeltaTime to track time even if Time.timeScale is modified (e.g. slow-mo effects)
         }
         // ... existing update code ...
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -553,6 +562,20 @@ public class OpenOceanMain : MonoBehaviour
 
     public void OnNextGameOrExitClicked()
     {
+        if(currentTrainingState == TrainingState.NonAdaptive)
+        {
+            if(totalTrainingTime > nonAdaptiveTrainingTime*60f)
+            {
+              OnQuitButton();
+            }
+            else
+        {
+            if (IsDebugging) Debug.Log("Next game selected.", this);
+            lobbyState = LobbyState.Play; 
+        }
+        }
+        else
+        {
         if (gamesPlayedCount >= gamePlayCountMAX)
         {
             OnQuitButton();
@@ -561,6 +584,6 @@ public class OpenOceanMain : MonoBehaviour
         {
             if (IsDebugging) Debug.Log("Next game selected.", this);
             lobbyState = LobbyState.Play; 
-        }
+        }}
     }
 }

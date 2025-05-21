@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq; 
 using UnityEngine;
+using System.Collections;
 
 public class EnemyAIMgr : MonoBehaviour
 {
@@ -193,11 +195,11 @@ public class EnemyAIMgr : MonoBehaviour
 
         if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
         {
-            HandleLevel1CombatNonAdaptiveBehavior(aiEntities);
+            HandleLevel1CombatAdaptiveBehavior(aiEntities);
         }
         else
         {
-            HandleLevel1CombatAdaptiveBehavior(aiEntities);
+            HandleLevel1CombatNonAdaptiveBehavior(aiEntities);
         }
     }
     private void HandleLevel1CombatAdaptiveBehavior(List<Entity> aiEntities)
@@ -205,14 +207,14 @@ public class EnemyAIMgr : MonoBehaviour
     if (opponentBase == null) return;
     Vector3 opponentPos = opponentBase.position;
 
-    float diff = Mathf.Clamp01(GameMgr.inst.difficultyLevel / 3.33f); // Normalize difficulty (0 to 1)
+    float diff = GameMgr.inst.difficultyLevel ;
 
     // Adaptive values
     float adaptiveInitialStopDistance = Mathf.Lerp(11000f, 6000f, diff);
     float adaptiveWeaponRangeFallback = Mathf.Lerp(800f, 400f, diff);
     float adaptiveCooldown = Mathf.Lerp(1f, 0.25f, diff);
     float adaptiveInitialBuffer = Mathf.Lerp(100f, 25f, diff);
-    float adaptiveWeaponRangeMultiplier = Mathf.Lerp(4f, 1f, diff); // NEW: Weapon range scaling
+    float adaptiveWeaponRangeMultiplier = Mathf.Lerp(.25f, 2f, diff); // NEW: Weapon range scaling
 
     for (int i = aiEntities.Count - 1; i >= 0; i--)
     {
@@ -226,8 +228,8 @@ public class EnemyAIMgr : MonoBehaviour
             ? weaponAspect.weapon.range
             : adaptiveWeaponRangeFallback;
 
-        float weaponRange = baseRange / adaptiveWeaponRangeMultiplier;
-
+        float weaponRange = baseRange * adaptiveWeaponRangeMultiplier;
+        
         // Initialize cooldown if not already done
         if (!entityCooldowns.ContainsKey(aiEntity))
         {
@@ -345,10 +347,22 @@ public class EnemyAIMgr : MonoBehaviour
         }
     }
     private void HandleLevel2AdaptiveCombatBehavior(List<Entity> aiEntities)
-    {
-        if (opponentBase == null) return;
-        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, opponentBase, false, acquireTarget: true);
-    }
+{
+    if (opponentBase == null) return;
+
+    float diff = GameMgr.inst.difficultyLevel;
+    float time = Mathf.Lerp(5f, 0f, diff);
+
+    StartCoroutine(DelayedAttackMove(aiEntities, opponentBase.position, opponentBase, time));
+}
+
+private IEnumerator DelayedAttackMove(List<Entity> aiEntities, Vector3 position, Entity targetBase, float time)
+{
+    yield return new WaitForSeconds(time);
+    AIMgr.inst.HandleAttackMove(aiEntities, position, targetBase, false, acquireTarget: true);
+}
+
+
     private void HandleLevel2NonAdaptiveCombatBehavior(List<Entity> aiEntities)
     {
         if (opponentBase == null) return;
