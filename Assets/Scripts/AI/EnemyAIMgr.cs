@@ -185,113 +185,207 @@ public class EnemyAIMgr : MonoBehaviour
                 break;
         }
     }
-
+    
     private void HandleLevel1CombatBehavior(List<Entity> aiEntities)
     {
-        if (opponentBase == null) return; // opponentBase should be valid due to checks in Update()
-        Vector3 opponentPos = opponentBase.position; // Position of the opponent's base.
+        if (opponentBase == null) return; 
+        if (aiEntities.Count == 0) return; 
 
-        // Iterate backwards to safely handle potential removal or modification of the list during iteration (though not done here).
+        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
+        {
+            HandleLevel1CombatNonAdaptiveBehavior(aiEntities);
+        }
+        else
+        {
+            HandleLevel1CombatAdaptiveBehavior(aiEntities);
+        }
+    }
+    private void HandleLevel1CombatAdaptiveBehavior(List<Entity> aiEntities)
+{
+    if (opponentBase == null) return;
+    Vector3 opponentPos = opponentBase.position;
+
+    float diff = Mathf.Clamp01(GameMgr.inst.difficultyLevel / 3.33f); // Normalize difficulty (0 to 1)
+
+    // Adaptive values
+    float adaptiveInitialStopDistance = Mathf.Lerp(11000f, 6000f, diff);
+    float adaptiveWeaponRangeFallback = Mathf.Lerp(800f, 400f, diff);
+    float adaptiveCooldown = Mathf.Lerp(1f, 0.25f, diff);
+    float adaptiveInitialBuffer = Mathf.Lerp(100f, 25f, diff);
+    float adaptiveWeaponRangeMultiplier = Mathf.Lerp(4f, 1f, diff); // NEW: Weapon range scaling
+
+    for (int i = aiEntities.Count - 1; i >= 0; i--)
+    {
+        Entity aiEntity = aiEntities[i];
+        if (aiEntity == null) continue;
+
+        WeaponsAspect weaponAspect = aiEntity.GetComponentInChildren<WeaponsAspect>();
+        UnitAI unitAIComponent = aiEntity.GetComponentInChildren<UnitAI>();
+
+        float baseRange = weaponAspect != null && weaponAspect.weapon != null
+            ? weaponAspect.weapon.range
+            : adaptiveWeaponRangeFallback;
+
+        float weaponRange = baseRange / adaptiveWeaponRangeMultiplier;
+
+        // Initialize cooldown if not already done
+        if (!entityCooldowns.ContainsKey(aiEntity))
+        {
+            entityCooldowns[aiEntity] = FirstMoveSentinel;
+        }
+
+        float currentDistance = Vector3.Distance(aiEntity.position, opponentPos);
+        float targetDistance;
+
+        bool isInitialMovePhase = entityCooldowns[aiEntity] == FirstMoveSentinel;
+
+        if (isInitialMovePhase)
+        {
+            targetDistance = adaptiveInitialStopDistance;
+
+            if (currentDistance <= adaptiveInitialStopDistance + adaptiveInitialBuffer)
+            {
+                entityCooldowns[aiEntity] = Time.time + adaptiveCooldown;
+            }
+        }
+        else
+        {
+            if (Time.time < entityCooldowns[aiEntity])
+            {
+                continue;
+            }
+
+            Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange);
+            if (nearestEnemy != null)
+            {
+                unitAIComponent?.StopAndRemoveAllCommands();
+                entityCooldowns[aiEntity] = Time.time + adaptiveCooldown;
+                continue;
+            }
+            else
+            {
+                targetDistance = CalculateDynamicTargetDistance(aiEntity, weaponRange, currentDistance);
+                entityCooldowns[aiEntity] = Time.time + adaptiveCooldown;
+            }
+        }
+
+        AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false, doneDistanceSq: targetDistance * targetDistance);
+    }
+}
+
+    private void HandleLevel1CombatNonAdaptiveBehavior(List<Entity> aiEntities)
+    {
+        if (opponentBase == null) return;
+        Vector3 opponentPos = opponentBase.position;
+
         for (int i = aiEntities.Count - 1; i >= 0; i--)
         {
             Entity aiEntity = aiEntities[i];
-            if (aiEntity == null) continue; // Skip null entities.
+            if (aiEntity == null) continue;
 
             WeaponsAspect weaponAspect = aiEntity.GetComponentInChildren<WeaponsAspect>();
             UnitAI unitAIComponent = aiEntity.GetComponentInChildren<UnitAI>();
-            
-            // Determine the weapon range, using a fallback if necessary.
+
             float weaponRange = weaponAspect != null && weaponAspect.weapon != null ? weaponAspect.weapon.range : DefaultWeaponRangeFallback;
 
-            // Initialize cooldown if this entity is new to the system.
             if (!entityCooldowns.ContainsKey(aiEntity))
             {
-                entityCooldowns[aiEntity] = FirstMoveSentinel; // Mark for initial move phase.
+                entityCooldowns[aiEntity] = FirstMoveSentinel;
             }
 
             float currentDistance = Vector3.Distance(aiEntity.position, opponentPos);
-            float targetDistance; // The distance the AI unit will try to maintain from the target.
+            float targetDistance;
 
             bool isInitialMovePhase = entityCooldowns[aiEntity] == FirstMoveSentinel;
 
             if (isInitialMovePhase)
             {
-                targetDistance = initialStopDistance; // Target the initial stopping distance.
-                // If close enough to the initial stop distance, transition out of the initial move phase.
+                targetDistance = initialStopDistance;
                 if (currentDistance <= initialStopDistance + InitialMoveTargetBuffer)
                 {
                     entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
                 }
             }
-            else 
-        {
-                // If on cooldown, skip this entity for this update.
-                if (Time.time < entityCooldowns[aiEntity]) 
+            else
+            {
+                if (Time.time < entityCooldowns[aiEntity])
                 {
-                    continue; 
+                    continue;
                 }
 
-                // Check for nearby enemies within weapon range.
                 Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange);
                 if (nearestEnemy != null)
                 {
-                    // If an enemy is found, stop and clear commands (to allow default attack behavior).
-                    unitAIComponent?.StopAndRemoveAllCommands(); 
-                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration; // Set cooldown.
-                    continue; 
-        }
-        else
-        {
-                    // No enemy nearby, calculate a new target distance to advance.
+                    unitAIComponent?.StopAndRemoveAllCommands();
+                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
+                    continue;
+                }
+                else
+                {
                     targetDistance = CalculateDynamicTargetDistance(aiEntity, weaponRange, currentDistance);
-                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration; // Set cooldown.
+                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
                 }
             }
-            // Issue a move command towards the opponent's base, stopping at the target distance.
             AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false, doneDistanceSq: targetDistance * targetDistance);
         }
     }
 
-    /// <summary>
-    /// Handles combat behavior for Level 2 AI.
-    /// Level 2 AI units perform an attack-move towards the opponent's base.
-    /// </summary>
-    /// <param name="aiEntities">The list of AI-controlled entities.</param>
     private void HandleLevel2CombatBehavior(List<Entity> aiEntities)
     {
-        if (opponentBase == null) return; 
-        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, opponentBase, false,acquireTarget:true);
+        if (opponentBase == null) return;
+        if (aiEntities.Count == 0) return;
+
+        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
+        {
+            HandleLevel2AdaptiveCombatBehavior(aiEntities);
+        }
+        else
+        {
+            HandleLevel2NonAdaptiveCombatBehavior(aiEntities);
+        }
     }
+    private void HandleLevel2AdaptiveCombatBehavior(List<Entity> aiEntities)
+    {
+        if (opponentBase == null) return;
+        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, opponentBase, false, acquireTarget: true);
+    }
+    private void HandleLevel2NonAdaptiveCombatBehavior(List<Entity> aiEntities)
+    {
+        if (opponentBase == null) return;
+        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, opponentBase, false, acquireTarget: true);
+    }
+    
+
 
     private void HandleLevel3CombatBehavior(List<Entity> aiEntities)
     {
-        if (opponentBase == null && !(aiBases.Count > 0 && aiEntities.Any(e => e != null))) 
+        if (opponentBase == null && !(aiBases.Count > 0 && aiEntities.Any(e => e != null)))
         {
-             if (aiBases.Count == 0) return; 
+            if (aiBases.Count == 0) return;
         }
 
 
         _reusableDefendersList.Clear();
         _reusableAttackersList.Clear();
-        HashSet<Entity> assignedDefenders = new HashSet<Entity>(); 
+        HashSet<Entity> assignedDefenders = new HashSet<Entity>();
 
         Entity primaryAiBase = null;
         if (aiBases.Count > 0)
         {
-            primaryAiBase = aiBases[0]; 
+            primaryAiBase = aiBases[0];
         }
 
         if (primaryAiBase != null && aiEntities.Count > 0)
         {
             var defenderTypeConfigs = new Dictionary<EntityType, float>
             {
-                { EntityType.DDG51, 0.1f },    
-                { EntityType.JARIUSV, 0.1f },  
-                { EntityType.SeaHunter, 0.1f } 
+                { EntityType.DDG51, 0.1f },
+                { EntityType.JARIUSV, 0.1f },
+                { EntityType.SeaHunter, 0.1f }
             };
 
             var entitiesByType = aiEntities
-                .Where(e => e != null && e.entityType != default(EntityType)) 
+                .Where(e => e != null && e.entityType != default(EntityType))
                 .GroupBy(e => e.entityType)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
@@ -311,7 +405,7 @@ public class EnemyAIMgr : MonoBehaviour
                     }
                     else
                     {
-                        numToDefend = 0; 
+                        numToDefend = 0;
                     }
 
                     for (int i = 0; i < numToDefend; i++)
@@ -334,16 +428,16 @@ public class EnemyAIMgr : MonoBehaviour
                 _reusableAttackersList.Add(entity);
             }
         }
-        
+
         if (primaryAiBase != null)
         {
             HandleDefenderLogicLevel3(_reusableDefendersList, primaryAiBase);
         }
 
-        if (opponentBase != null) 
+        if (opponentBase != null)
         {
             HandleAttackerLogicLevel3(_reusableAttackersList, opponentBase);
-        } 
+        }
         else if (_reusableAttackersList.Count > 0 && primaryAiBase == null)
         {
         }

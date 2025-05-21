@@ -148,16 +148,17 @@ public enum FormationType
 public enum Difficulty { Easy, Medium, Hard }
 
 public enum LobbyState
-    {
-        None = 0,
-        SingleMultiPlayer,
-        Login,
-        MapSelect,
-        HostOrJoin,
-        Play,
-        Done,
-        ScorePanel,
-        GamePaused
+{
+    None = 0,
+    SingleMultiPlayer,
+    Login,
+    MapSelect,
+    HostOrJoin,
+    Play,
+    Done,
+    ScorePanel,
+    GamePaused,
+    Replay,
     }
     public enum TrainingState
     {
