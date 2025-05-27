@@ -195,37 +195,54 @@ public class EntityMgr : MonoBehaviour
 
     
 
-    public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles, TactPlayer player) {
+    // In EntityMgr.cs, within CreateEntity method
+public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles, TactPlayer player)
+{
     Entity entity = null;
     GameObject entityPrefab = entityPrefabs.Find(x => (x.GetComponent<Entity>().entityType == et));
-    if(entityPrefab != null) {
+    if (entityPrefab != null)
+    {
         GameObject entityGo = Instantiate(entityPrefab, position, Quaternion.Euler(eulerAngles), entitiesRoot.transform);
-        if(entityGo != null) {
+        if (entityGo != null)
+        {
             entity = entityGo.GetComponent<Entity>();
             entity.entityId = entityId;
             entityGo.name = et.ToString() + entityId++;
             entity.owner = player;
             entity.heading = entity.desiredHeading = eulerAngles.y;
-            
-            // AlwaentityGo.SetActive(true);ys activate the root object
-            
 
-            // Let FogWarMgr handle visibility of the model
-            if(FogWarMgr.inst != null && FogWarMgr.inst.FOW && entity.entityClass != EntityClass.Missile) {
-                // Default to hidden, FogWar will reveal when appropriate
+            if (FogWarMgr.inst != null && FogWarMgr.inst.FOW && entity.entityClass != EntityClass.Missile)
+            {
                 entity.isVisible = false;
             }
-            else {
-                // Show immediately if no fog of war
+            else
+            {
                 entity.isVisible = true;
             }
 
             entities.Add(entity);
             entitiesDict.Add(entity.entityId, entity);
+
+            // Record creation event
+            if (ReplayMgr.inst != null)
+            {
+                var creationData = new EntityCreationData
+                {
+                    entityType = et,
+                    entityId = entity.entityId,
+                    position = position,
+                    rotation = Quaternion.Euler(eulerAngles),
+                    velocity = Vector3.zero,
+                    health = entity.health,
+                    fuel = entity.fuel,
+                    ownerId = player != null ? player.playerId : 0
+                };
+                string eventDataJson = JsonUtility.ToJson(creationData);
+                ReplayMgr.inst.RecordEvent(Time.time, "create", eventDataJson);
+            }
         }
     }
     DistanceMgr.inst.Initialize();
-
     return entity;
 }
 

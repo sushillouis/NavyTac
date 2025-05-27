@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 using Unity.Netcode;
 using UnityEngine;
@@ -114,49 +115,60 @@ public class AIMgr : NetworkBehaviour
     //I need to be entity owner to command entities.
     //If I select a number of entities, I will only command the entities I own
     // Does not yet handle AI players
-    public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, bool add)
+    // In AIMgr.cs
+public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, bool add)
+{
+    selectedEntities = SelectionMgr.inst.selectedEntities;
+    if (selectedEntities.Count > 0)
     {
-        
-        
-        selectedEntities = SelectionMgr.inst.selectedEntities;
-        if(selectedEntities.Count > 0) {
-            foreach(Entity ent in selectedEntities) {
-                if (ent.entityType == EntityType.Rig_Balder|| ent.entityClass == EntityClass.Missile) return; // Ignore this entity
+        foreach (Entity ent in selectedEntities)
+        {
+            if (ent.entityType == EntityType.Rig_Balder || ent.entityClass == EntityClass.Missile) return;
+        }
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
+        {
+            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Terrain"))
+            {
+                return;
             }
-            if(Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask)) {
-                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Terrain"))
-                    {
-                        return; // Ignore this hit
-                    }
-                
-                //Debug.DrawLine(Camera.main.transform.position, hit.point, UnityEngine.Color.yellow, 2); //for debugging
-                Vector3 pos = hit.point;
-                pos.y = 0;
-                Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
-                if (ent != null && !ent.isVisible &&ent.entityClass == EntityClass.Missile) ent = null; // Ignore missiles
-                if(ent == null) {
-                    if (attackMove)
-                        HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, null, add);
-                    else
-                        HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
-                    
-                }
-                else{
-                    if(attackMove)
-                    
-                    HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, ent , add);
 
-                    else
-                    {
-                        HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
-                    }
-                }
-                
-            } else {
-                ////Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.TransformDirection(Vector3.forward) * 1000, Color.white, 2);
+            Vector3 pos = hit.point;
+            pos.y = 0;
+            Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
+            if (ent != null && !ent.isVisible && ent.entityClass == EntityClass.Missile) ent = null;
+
+            // Record command event
+            if (ReplayMgr.inst != null)
+            {
+                var commandData = new
+                {
+                    commandType = intercept ? "intercept" : (attackMove ? "attackMove" : "move"),
+                    entityIds = selectedEntities.Select(e => e.entityId).ToArray(),
+                    targetPosition = pos,
+                    targetEntityId = ent != null ? ent.entityId : -1,
+                    add = add
+                };
+                string eventDataJson = JsonUtility.ToJson(commandData);
+                ReplayMgr.inst.RecordEvent(Time.time, "command", eventDataJson);
+            }
+
+            if (ent == null)
+            {
+                if (attackMove)
+                    HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, null, add);
+                else
+                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
+            }
+            else
+            {
+                if (attackMove)
+                    HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, ent, add);
+                else
+                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
             }
         }
     }
+}
 
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)

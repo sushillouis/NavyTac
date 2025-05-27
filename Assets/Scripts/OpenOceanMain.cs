@@ -547,23 +547,21 @@ public class OpenOceanMain : MonoBehaviour
     }
 
 
-    public void OnMapSelected()
+   public void OnMapSelected()
+{
+    totalPlayTime = 0f;
+    string replayFileName = "replay_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".json";
+    ReplayMgr.inst.StartRecording(replayFileName);
+    if (isSinglePlayer)
     {
-        totalPlayTime = 0f; // Reset playtime when starting a new game
-        if (isSinglePlayer)
-        {
-            GameMgr.inst.OpenOcean1x1();
-        }
-        else if (localNetSetup != null)
-        {
-            localNetSetup.OnStartButton();
-        }
-        else
-        {
-            Debug.LogError("localNetSetup is null. Cannot start multiplayer map selection.", this);
-        }
-        lobbyState = LobbyState.Play;
+        GameMgr.inst.OpenOcean1x1();
     }
+    else if (localNetSetup != null)
+    {
+        localNetSetup.OnStartButton();
+    }
+    lobbyState = LobbyState.Play;
+}
 
     public void OnSinglePlayer()
     {
@@ -578,6 +576,7 @@ public class OpenOceanMain : MonoBehaviour
 
     public void OnQuitButton()
     {
+        ReplayMgr.inst.StopRecording();
         if (IsDebugging) Debug.Log("Shutting down TactNetMgr and quitting application.", this);
         if (TactNetMgr.inst != null)
         {

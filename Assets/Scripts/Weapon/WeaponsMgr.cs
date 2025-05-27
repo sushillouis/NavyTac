@@ -276,7 +276,12 @@ public class WeaponsMgr : MonoBehaviour
 
     public void DestroyEntity(Entity entity)
     {
-
+        if (ReplayMgr.inst != null)
+    {
+        var destructionData = new { entityId = entity.entityId };
+        string eventDataJson = JsonUtility.ToJson(destructionData);
+        ReplayMgr.inst.RecordEvent(Time.time, "destroy", eventDataJson);
+    }
         try
         {
             if (CameraMgr.inst != null)
