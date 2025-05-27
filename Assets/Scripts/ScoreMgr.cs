@@ -97,8 +97,35 @@ public class ScoreMgr : MonoBehaviour
 
         // Calculate the score based on win status and damage ratio
         score = (float)(0.5 * (playerWon ? 1 : 0)) * 100 + 0.5f * (damageDealt / (damageDealt + damageTaken)) * 100;
-        //Debug.Log($"Score: {score}"); // Log the calculated score
+        
+        ScenarioDataMgr.ScenarioData data = new ScenarioDataMgr.ScenarioData();
+        data.scenarioNumber = OpenOceanMain.inst.gamesPlayedCount ;
+        data.totalUnits = GameMgr.inst.entityQuantities.Sum(eq => eq.unitCount); // Total units at start of game
+        // Get initial unit counts
+        var initialCounts = GameMgr.inst.entityQuantities.ToDictionary(eq => eq.entityType, eq => eq.unitCount);
+        data.totalJARI = initialCounts.GetValueOrDefault(EntityType.JARIUSV, 0);
+        data.totalSeaHunter = initialCounts.GetValueOrDefault(EntityType.SeaHunter, 0);
+        data.totalDDG51 = initialCounts.GetValueOrDefault(EntityType.DDG51, 0);
 
+        // Get destroyed units
+        var destroyedPlayer = GetDestroyedUnits(PlayerMgr.inst.localPlayer);
+        var destroyedAI = GetDestroyedUnits(PlayerMgr.inst.players.Find(p => p.name == "Ai"));
+        data.ourUnitsDestroyed = destroyedPlayer.Values.Sum(); // Total destroyed by player
+        data.ourDestroyedJARI = destroyedPlayer.GetValueOrDefault(EntityType.JARIUSV, 0);
+        data.ourDestroyedSeaHunter = destroyedPlayer.GetValueOrDefault(EntityType.SeaHunter, 0);
+        data.ourDestroyedDDG51 = destroyedPlayer.GetValueOrDefault(EntityType.DDG51, 0);
+        data.enemyUnitsDestroyed = destroyedAI.Values.Sum(); // Total destroyed by AI
+        data.enemyDestroyedJARI = destroyedAI.GetValueOrDefault(EntityType.JARIUSV, 0);
+        data.enemyDestroyedSeaHunter = destroyedAI.GetValueOrDefault(EntityType.SeaHunter, 0);
+        data.enemyDestroyedDDG51 = destroyedAI.GetValueOrDefault(EntityType.DDG51, 0);
+
+        data.damageTaken = damageTaken;
+        data.damageDealt = damageDealt;
+        data.winLoss = playerWon;
+        data.score = score;
+
+        ScenarioDataMgr.inst.scenarioDataList.Add(data);
+        Debug.Log($"Game data for scenario {data.scenarioNumber} logged successfully.");
         LogGameData(); // Log detailed game data to CSV files
         UpdateScoreDisplay(); // Update the UI elements with score and game stats
         LogVictoryMessage(); // Log a simple victory/defeat message to the console

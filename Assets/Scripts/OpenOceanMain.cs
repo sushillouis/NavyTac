@@ -47,6 +47,8 @@ public class OpenOceanMain : MonoBehaviour
     private RectTransform NetDebugConsolePanel;
     [SerializeField]
     private PanelPlus GamePausePanel;
+    [SerializeField]
+    private PanelPlus MultiScorePanel;
 
     [Header("Single / Multi player Screen")]
     [SerializeField]
@@ -95,12 +97,35 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField] public TMP_Text enemyUnitsDestroyedText;
     [SerializeField] public TMP_Text feedbackText;
     [SerializeField] public TMP_Text playerNameText;
-
     [SerializeField] public Button nextGameButton;
     [SerializeField] public TMP_Text winConditionText;
 
+    [Header("MultiScorePanel")]
+    [SerializeField] public GameObject MultiScoreList;
+    [SerializeField] public GameObject Score;
+
+    [SerializeField] public TMP_Text scenarioNumberText;
+    [SerializeField] public TMP_Text totalUnitsText;
+    [SerializeField] public TMP_Text totalUnitXText;
+    [SerializeField] public TMP_Text totalSeaHunterText;
+    [SerializeField] public TMP_Text totalDDG51Text;
+    [SerializeField] public TMP_Text ourUnitsDestroyedTextMulti;
+    [SerializeField] public TMP_Text ourDestroyedUnitXText;
+    [SerializeField] public TMP_Text ourDestroyedSeaHunterText;
+    [SerializeField] public TMP_Text ourDestroyedDDG51Text;
+    [SerializeField] public TMP_Text enemyUnitsDestroyedTextMulti;
+    [SerializeField] public TMP_Text enemyDestroyedUnitXText;
+    [SerializeField] public TMP_Text enemyDestroyedSeaHunterText;
+    [SerializeField] public TMP_Text enemyDestroyedDDG51Text;
+    [SerializeField] public TMP_Text damageTakenTextMulti;
+    [SerializeField] public TMP_Text damageDealtTextMulti;
+    [SerializeField] public TMP_Text winLossTextMulti;
+    [SerializeField] public TMP_Text scoreTextMulti;
+    [SerializeField] public Button nextGameOrExitButton;
+
     public int gamesPlayedCount = 0;
-    private const string NEXT_GAME_BUTTON_TEXT = "Next Game";
+    private const string Score_PANEL_TEXT = "Score List";
+    private const string NEXT_GAME_BUTTON_TEXT = "Next";
     private const string EXIT_BUTTON_TEXT = "Exit";
 
     // Variables for play session timing
@@ -116,12 +141,12 @@ public class OpenOceanMain : MonoBehaviour
     private List<Button> menuButtons;
 
 
-    
+
     [Header("Lobby State and the rest")]
 
     [SerializeField]
     private LobbyState _lobbyState = LobbyState.None;
-    
+
     public TrainingState currentTrainingState = TrainingState.None;
     [SerializeField]
     private GameObject NetworkManagerGo;
@@ -180,6 +205,8 @@ public class OpenOceanMain : MonoBehaviour
 
         nextGameButton.onClick.RemoveAllListeners();
         nextGameButton.onClick.AddListener(OnNextGameOrExitClicked);
+        nextGameOrExitButton.onClick.RemoveAllListeners();
+        nextGameOrExitButton.onClick.AddListener(OnNextClicked);
     }
 
     void SetupIPAddressAndPort()
@@ -272,7 +299,7 @@ public class OpenOceanMain : MonoBehaviour
 
         if (GameMgr.inst != null)
         {
-            Random.InitState(GameMgr.inst.GetSelectedSeed());
+            UnityEngine.Random.InitState(GameMgr.inst.GetSelectedSeed());
             if (IsDebugging) Debug.Log($"Player No set to: {playerNo}. Training State: {currentTrainingState}. GameMgr seed set to: {GameMgr.inst.GetSelectedSeed()}", this);
         }
         else
@@ -414,6 +441,7 @@ public class OpenOceanMain : MonoBehaviour
             SingleMultiplayerPanel.isVisible = (value == LobbyState.SingleMultiPlayer);
             ScorePanel.isVisible = (value == LobbyState.ScorePanel);
             GamePausePanel.isVisible = (value == LobbyState.GamePaused);
+            MultiScorePanel.isVisible = (value == LobbyState.MultiScorePanel);
 
 
             if (value == LobbyState.MapSelect)
@@ -431,9 +459,9 @@ public class OpenOceanMain : MonoBehaviour
                 }
                 else if (previousState != LobbyState.Play) // Started playing (not from pause)
                 {
-                      // Ensure time scale is 1 when starting play
-                     // playSessionStartTime = Time.realtimeSinceStartup; // This line is from old logic, totalPlayTime handles this now
-                     if (IsDebugging) Debug.Log($"Play session started. Total playtime reset/started.", this);
+                    // Ensure time scale is 1 when starting play
+                    // playSessionStartTime = Time.realtimeSinceStartup; // This line is from old logic, totalPlayTime handles this now
+                    if (IsDebugging) Debug.Log($"Play session started. Total playtime reset/started.", this);
                 }
             }
             else // Not in Play state
@@ -456,19 +484,44 @@ public class OpenOceanMain : MonoBehaviour
                 totalPlayTime = 0f; // Reset for the next session
 
                 gamesPlayedCount++;
-                TMP_Text buttonTextComponent = nextGameButton.GetComponentInChildren<TMP_Text>();
-                if (currentTrainingState == TrainingState.NonAdaptive)
+                TMP_Text buttonTextComponentMultiScore = nextGameOrExitButton.GetComponentInChildren<TMP_Text>();
+                if (buttonTextComponentMultiScore != null)
                 {
-                    buttonTextComponent.text = (totalTrainingTime >= nonAdaptiveTrainingTime*60f) ? EXIT_BUTTON_TEXT : NEXT_GAME_BUTTON_TEXT;
+                    if (currentTrainingState == TrainingState.NonAdaptive)
+                    {
+                        buttonTextComponentMultiScore.text = (totalTrainingTime >= nonAdaptiveTrainingTime * 60f) ? EXIT_BUTTON_TEXT : NEXT_GAME_BUTTON_TEXT;
+                    }
+                    else
+                    {
+                        buttonTextComponentMultiScore.text = (gamesPlayedCount >= gamePlayCountMAX) ? EXIT_BUTTON_TEXT : NEXT_GAME_BUTTON_TEXT;
+                    }
                 }
-                else
+
+                TMP_Text buttonTextComponent = nextGameButton.GetComponentInChildren<TMP_Text>();
+                if (buttonTextComponent != null)
                 {
-                    buttonTextComponent.text = (gamesPlayedCount >= gamePlayCountMAX) ? EXIT_BUTTON_TEXT : NEXT_GAME_BUTTON_TEXT;
+                    if (currentTrainingState == TrainingState.Adaptive)
+                    {
+                        buttonTextComponent.text = Score_PANEL_TEXT;
+                    }
+                    else if (currentTrainingState == TrainingState.NonAdaptive)
+                    {
+                        buttonTextComponent.text = (totalTrainingTime >= nonAdaptiveTrainingTime * 60f) ? Score_PANEL_TEXT : NEXT_GAME_BUTTON_TEXT;
+                    }
+                    else // PreTest, PostTest, None
+                    {
+                        buttonTextComponent.text = (gamesPlayedCount >= gamePlayCountMAX) ? Score_PANEL_TEXT : NEXT_GAME_BUTTON_TEXT;
+                    }
                 }
             }
-            
+
+
             if (UIMgr.inst != null) UIMgr.inst.gameObject.SetActive(value == LobbyState.Play);
             if (GroupUIMgr.inst != null) GroupUIMgr.inst.gameObject.SetActive(value == LobbyState.Play);
+            if (value == LobbyState.MultiScorePanel)
+            {
+                UpdateMultiScoreDisplay();
+            }
         }
     }
 
@@ -562,28 +615,202 @@ public class OpenOceanMain : MonoBehaviour
 
     public void OnNextGameOrExitClicked()
     {
-        if(currentTrainingState == TrainingState.NonAdaptive)
+        // Note: This implementation assumes a LobbyState.MultiScorePanel enum value exists
+        // and that the MultiScorePanel UI visibility is handled in the lobbyState setter.
+
+        if (currentTrainingState == TrainingState.Adaptive)
         {
-            if(totalTrainingTime > nonAdaptiveTrainingTime*60f)
+            // In Adaptive mode, after every game's score screen, proceed to a multi-game score screen.
+            if (IsDebugging) Debug.Log("Adaptive mode: Next button clicked on score panel. Proceeding to MultiScorePanel.", this);
+            lobbyState = LobbyState.MultiScorePanel;
+        }
+        else if (currentTrainingState == TrainingState.NonAdaptive)
+        {
+            if (totalTrainingTime >= nonAdaptiveTrainingTime * 60f) // nonAdaptiveTrainingTime is in minutes
             {
-              OnQuitButton();
+                if (IsDebugging) Debug.Log($"Non-Adaptive mode, training time {totalTrainingTime / 60f:F2}m / {nonAdaptiveTrainingTime}m. Proceeding to MultiScorePanel.", this);
+                lobbyState = LobbyState.MultiScorePanel;
             }
             else
-        {
-            if (IsDebugging) Debug.Log("Next game selected.", this);
-            lobbyState = LobbyState.Play; 
+            {
+                if (IsDebugging) Debug.Log($"Non-Adaptive mode, training time {totalTrainingTime / 60f:F2}m / {nonAdaptiveTrainingTime}m. Starting next game.", this);
+                lobbyState = LobbyState.Play;
+            }
         }
+        else // For PreTest, PostTest, or None training states
+        {
+            if (gamesPlayedCount >= gamePlayCountMAX)
+            {
+                // In other cases (PreTest, PostTest), after the max number of games, go to the multi-game score screen.
+                if (IsDebugging) Debug.Log($"Other mode ({currentTrainingState}), {gamesPlayedCount}/{gamePlayCountMAX} games played. Proceeding to MultiScorePanel.", this);
+                lobbyState = LobbyState.MultiScorePanel;
+            }
+            else
+            {
+                // In other cases (PreTest, PostTest), if more games are to be played, start the next game.
+                if (IsDebugging) Debug.Log($"Other mode ({currentTrainingState}), {gamesPlayedCount}/{gamePlayCountMAX} games played. Starting next game.", this);
+                lobbyState = LobbyState.Play;
+            }
         }
-        else
-        {
-        if (gamesPlayedCount >= gamePlayCountMAX)
-        {
-            OnQuitButton();
-        }
-        else
-        {
-            if (IsDebugging) Debug.Log("Next game selected.", this);
-            lobbyState = LobbyState.Play; 
-        }}
     }
+
+    public void OnNextClicked()
+    {
+        if (currentTrainingState == TrainingState.NonAdaptive)
+        {
+            if (totalTrainingTime >= nonAdaptiveTrainingTime * 60f) // nonAdaptiveTrainingTime is in minutes
+            {
+                if (IsDebugging) Debug.Log($"Non-Adaptive mode on MultiScorePanel: Training time limit reached ({totalTrainingTime / 60f:F2}m / {nonAdaptiveTrainingTime}m). Exiting.", this);
+                OnQuitButton();
+            }
+            else
+            {
+                if (IsDebugging) Debug.Log($"Non-Adaptive mode on MultiScorePanel: Training time {totalTrainingTime / 60f:F2}m / {nonAdaptiveTrainingTime}m. Proceeding to next game.", this);
+                lobbyState = LobbyState.Play;
+            }
+        }
+        else // For Adaptive, PreTest, PostTest, or None training states
+        {
+            if (gamesPlayedCount >= gamePlayCountMAX)
+            {
+                if (IsDebugging) Debug.Log($"Other mode ({currentTrainingState}) on MultiScorePanel: Max games played ({gamesPlayedCount}/{gamePlayCountMAX}). Exiting.", this);
+                OnQuitButton();
+            }
+            else
+            {
+                if (IsDebugging) Debug.Log($"Other mode ({currentTrainingState}) on MultiScorePanel: {gamesPlayedCount}/{gamePlayCountMAX} games played. Proceeding to next game.", this);
+                lobbyState = LobbyState.Play;
+            }
+        }
+    }
+   private void UpdateMultiScoreDisplay()
+{
+    if (MultiScoreList == null)
+    {
+        Debug.LogError("MultiScoreList GameObject (the container for score entries) is not assigned in the Inspector.");
+        return;
+    }
+    if (Score == null)
+    {
+        Debug.LogError("Score prefab/template is not assigned in the Inspector.");
+        return;
+    }
+
+    // Clear previously instantiated items from MultiScoreList
+    foreach (Transform child in MultiScoreList.transform)
+    {
+        child.gameObject.SetActive(false);
+    }
+
+    if (ScenarioDataMgr.inst == null || ScenarioDataMgr.inst.scenarioDataList == null)
+    {
+        Debug.LogWarning("ScenarioDataMgr instance or scenarioDataList is null. Cannot display multi-score data.");
+        if (scenarioNumberText != null) scenarioNumberText.text = "0";
+        if (totalUnitsText != null) totalUnitsText.text = "N/A";
+        // Clear other summary fields
+        if (totalUnitXText != null) totalUnitXText.text = "0";
+        if (totalSeaHunterText != null) totalSeaHunterText.text = "0";
+        if (totalDDG51Text != null) totalDDG51Text.text = "0";
+        if (ourUnitsDestroyedTextMulti != null) ourUnitsDestroyedTextMulti.text = "0";
+        if (ourDestroyedUnitXText != null) ourDestroyedUnitXText.text = "0";
+        if (ourDestroyedSeaHunterText != null) ourDestroyedSeaHunterText.text = "0";
+        if (ourDestroyedDDG51Text != null) ourDestroyedDDG51Text.text = "0";
+        if (enemyUnitsDestroyedTextMulti != null) enemyUnitsDestroyedTextMulti.text = "0";
+        if (enemyDestroyedUnitXText != null) enemyDestroyedUnitXText.text = "0";
+        if (enemyDestroyedSeaHunterText != null) enemyDestroyedSeaHunterText.text = "0";
+        if (enemyDestroyedDDG51Text != null) enemyDestroyedDDG51Text.text = "0";
+        if (damageDealtTextMulti != null) damageDealtTextMulti.text = "0";
+        if (damageTakenTextMulti != null) damageTakenTextMulti.text = "0";
+        if (winLossTextMulti != null) winLossTextMulti.text = "N/A";
+        if (scoreTextMulti != null) scoreTextMulti.text = "0";
+        return;
+    }
+
+    // Initialize accumulators for grand totals
+    float currentYOffset = 0f;
+    const float yDecrement = -100f;
+
+    foreach (ScenarioDataMgr.ScenarioData scenarioData in ScenarioDataMgr.inst.scenarioDataList)
+    {
+        if (scenarioData == null)
+        {
+            Debug.LogWarning("Encountered a null scenarioData in the list. Skipping.");
+            continue;
+        }
+
+        GameObject entryInstance = Instantiate(Score, MultiScoreList.transform);
+        entryInstance.SetActive(true);
+        entryInstance.name = $"ScenarioEntry_{scenarioData.scenarioNumber}";
+
+        // Position entry
+        RectTransform entryRect = entryInstance.GetComponent<RectTransform>();
+        if (entryRect != null)
+        {
+            entryRect.anchoredPosition = new Vector2(entryRect.anchoredPosition.x, currentYOffset);
+        }
+        currentYOffset += yDecrement;
+
+        // Accumulate data
+        
+
+        // Populate entry UI
+    SetTextOnChild(entryInstance.transform, "EntryScenarioTitleText", $"Scenario {scenarioData.scenarioNumber}");
+    SetTextOnChild(entryInstance.transform, "EntryTotalUnitsText", scenarioData.totalUnits.ToString());
+    SetTextOnChild(entryInstance.transform, "EntryTotalUnitXText", scenarioData.totalJARI.ToString());
+    SetTextOnChild(entryInstance.transform, "EntryTotalSeaHunterText", scenarioData.totalSeaHunter.ToString());
+    SetTextOnChild(entryInstance.transform, "EntryTotalDDG51Text", scenarioData.totalDDG51.ToString());
+    
+    SetTextOnChild(entryInstance.transform, "EntryOurUnitsDestroyedText", 
+        (scenarioData.ourDestroyedJARI + scenarioData.ourDestroyedSeaHunter + scenarioData.ourDestroyedDDG51).ToString());
+    SetTextOnChild(entryInstance.transform, "EntryOurUnitXText", scenarioData.ourDestroyedJARI.ToString());
+    SetTextOnChild(entryInstance.transform, "EntryOurSeaHunterText", scenarioData.ourDestroyedSeaHunter.ToString());
+    SetTextOnChild(entryInstance.transform, "EntryOurDDG51Text", scenarioData.ourDestroyedDDG51.ToString());
+    
+    SetTextOnChild(entryInstance.transform, "EntryEnemyUnitsDestroyedText", (scenarioData.enemyDestroyedJARI + scenarioData.enemyDestroyedSeaHunter + scenarioData.enemyDestroyedDDG51).ToString());
+    SetTextOnChild(entryInstance.transform, "EntryEnemyUnitXText", scenarioData.enemyDestroyedJARI.ToString());
+    SetTextOnChild(entryInstance.transform, "EntryEnemySeaHunterText", scenarioData.enemyDestroyedSeaHunter.ToString());
+    SetTextOnChild(entryInstance.transform, "EntryEnemyDDG51Text", scenarioData.enemyDestroyedDDG51.ToString());
+    
+    SetTextOnChild(entryInstance.transform, "EntryDamageDealtText", scenarioData.damageDealt.ToString("F0"));
+    SetTextOnChild(entryInstance.transform, "EntryDamageTakenText", scenarioData.damageTaken.ToString("F0"));
+    SetTextOnChild(entryInstance.transform, "EntryWinLossText", scenarioData.winLoss ? "Win" : "Loss");
+    SetTextOnChild(entryInstance.transform, "EntryScoreText", scenarioData.score.ToString("F0"));
+
+    }
+
+   
+}
+
+    private void SetTextOnChild(Transform parent, string childName, string textValue)
+    {
+        if (parent == null)
+        {
+            Debug.LogWarning("Parent transform is null.");
+            return;
+        }
+
+        // Find child by name (supports nested/inactive children)
+        Transform child = FindDeepChild(parent, childName);
+
+        if (child != null && child.TryGetComponent<TMP_Text>(out var tmpText))
+        {
+            tmpText.text = textValue;
+            if (!child.gameObject.activeSelf)
+                child.gameObject.SetActive(true); // Activate if hidden
+        }
+        else
+        {
+            Debug.LogWarning($"Child '{childName}' not found or missing TMP_Text.");
+        }
+    }
+private Transform FindDeepChild(Transform parent, string childName)
+{
+    // Search all children (active and inactive)
+    foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
+    {
+        if (child.name == childName)
+            return child;
+    }
+    return null;
+}   
 }
