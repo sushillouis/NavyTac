@@ -442,6 +442,7 @@ public class OpenOceanMain : MonoBehaviour
             ScorePanel.isVisible = (value == LobbyState.ScorePanel);
             GamePausePanel.isVisible = (value == LobbyState.GamePaused);
             MultiScorePanel.isVisible = (value == LobbyState.MultiScorePanel);
+            
 
 
             if (value == LobbyState.MapSelect)
@@ -522,6 +523,20 @@ public class OpenOceanMain : MonoBehaviour
             {
                 UpdateMultiScoreDisplay();
             }
+           // Add to the lobbyState setter
+        if (value == LobbyState.Replay) {
+            Time.timeScale = 1f; 
+            // Load last scenario
+                ScenarioData lastScenario = GameMgr.inst.GetLastScenario();
+            if(lastScenario != null) {
+                FogWarMgr.inst.FOW = false; // Disable FOW
+                GameMgr.inst.InitializeScenarioFromData(lastScenario);
+                CameraMgr.inst.SetReplayCameraPosition(); // New camera method
+            }
+            else Debug.LogWarning("No scenario data available for replay");
+        }
+
+            if (IsDebugging) Debug.Log($"Lobby state changed from {previousState} to {value}.", this);
         }
     }
 
@@ -547,19 +562,22 @@ public class OpenOceanMain : MonoBehaviour
     }
 
 
-   public void OnMapSelected()
+  // In OpenOceanMain.cs
+public void OnMapSelected()
 {
     totalPlayTime = 0f;
-    string replayFileName = "replay_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".json";
-    ReplayMgr.inst.StartRecording(replayFileName);
-    if (isSinglePlayer)
-    {
-        GameMgr.inst.OpenOcean1x1();
-    }
-    else if (localNetSetup != null)
-    {
-        localNetSetup.OnStartButton();
-    }
+    int scenarioNumber = gamesPlayedCount + 1; 
+    
+    // Then spawn entities
+        if (isSinglePlayer)
+        {
+            GameMgr.inst.OpenOcean1x1();
+        }
+        else if (localNetSetup != null)
+        {
+            localNetSetup.OnStartButton();
+        }
+    GameMgr.inst.StoreCurrentScenario();
     lobbyState = LobbyState.Play;
 }
 

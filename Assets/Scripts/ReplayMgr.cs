@@ -13,22 +13,33 @@ public class ReplayMgr : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log("ReplayMgr Awake called.");
         if (inst == null)
         {
             inst = this;
+            Debug.Log("ReplayMgr instance set.");
         }
         else
         {
+            Debug.LogWarning("ReplayMgr instance already exists, destroying duplicate.");
             Destroy(gameObject);
         }
     }
 
-    public void StartRecording(string fileName)
+   // In ReplayMgr.cs
+    public void StartRecording(string filename)
     {
-        filePath = Path.Combine(Application.persistentDataPath, fileName);
-        writer = new StreamWriter(filePath, false);
-        lastSnapshotTime = Time.time;
-        Debug.Log($"Replay recording started: {filePath}");
+        try
+        {
+            string filePath = Path.Combine(Application.persistentDataPath, filename);
+            writer = new StreamWriter(filePath);
+            Debug.Log($"Recording started: {filePath}");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to start recording: {e.Message}");
+            writer = null; // Ensure writer is null if initialization fails
+        }
     }
 
     public void StopRecording()
@@ -40,14 +51,23 @@ public class ReplayMgr : MonoBehaviour
             writer = null;
             Debug.Log($"Replay recording stopped: {filePath}");
         }
+        else
+        {
+            Debug.LogWarning("StopRecording called but writer was null.");
+        }
     }
 
     private void FixedUpdate()
     {
-        if (writer == null) return;
+        if (writer == null)
+        {
+            //Debug.Log("FixedUpdate: writer is null, not recording.");
+            return;
+        }
         float currentTime = Time.time;
         if (currentTime - lastSnapshotTime >= snapshotInterval)
         {
+            Debug.Log($"FixedUpdate: Capturing snapshot at {currentTime} (interval: {snapshotInterval})");
             CaptureSnapshot(currentTime);
             lastSnapshotTime = currentTime;
         }
@@ -55,9 +75,11 @@ public class ReplayMgr : MonoBehaviour
 
     private void CaptureSnapshot(float timestamp)
     {
+        Debug.Log($"CaptureSnapshot called at timestamp {timestamp}");
         List<EntityState> entityStates = new List<EntityState>();
         foreach (Entity ent in EntityMgr.inst.entities)
         {
+            Debug.Log($"Capturing entity {ent.entityId} at position {ent.position}");
             entityStates.Add(new EntityState
             {
                 id = ent.entityId,
@@ -84,12 +106,18 @@ public class ReplayMgr : MonoBehaviour
             entities = entityStates
         });
 
+        Debug.Log($"Writing snapshot JSON: {json}");
         writer.WriteLine(json);
     }
 
     public void RecordEvent(float timestamp, string eventType, string eventDataJson)
     {
-        if (writer == null) return;
+        if (writer == null)
+        {
+            Debug.LogWarning("RecordEvent called but writer is null.");
+            return;
+        }
+        Debug.Log($"Recording event: {eventType} at {timestamp} with data: {eventDataJson}");
         string json = JsonUtility.ToJson(new ReplayEvent
         {
             type = "event",
@@ -97,6 +125,7 @@ public class ReplayMgr : MonoBehaviour
             eventType = eventType,
             data = eventDataJson
         });
+        Debug.Log($"Writing event JSON: {json}");
         writer.WriteLine(json);
     }
 }

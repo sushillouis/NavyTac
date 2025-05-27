@@ -17,6 +17,18 @@ public struct StartingPosition
     public float heading;
 }
 
+[System.Serializable]
+public class ScenarioData {
+    public int scenarioNumber;
+    public List<EntityQuantity> entityQuantities;
+    public Vector3 posPlayer1;
+    public float headingPlayer1;
+    public Vector3 posPlayer2;
+    public float headingPlayer2;
+    public float difficultyLevel;
+    public string timestamp;
+}
+
 public class GameMgr : MonoBehaviour
 {
     public static int reloadCount = 0;
@@ -258,7 +270,7 @@ public class GameMgr : MonoBehaviour
 
             AdjustNonAdaptiveUnitCounts();
         }
-        
+
     }
 
     void AdjustAdaptiveUnitCounts()
@@ -277,11 +289,11 @@ public class GameMgr : MonoBehaviour
     }
     void AdjustAdaptiveTimeScale()
     {
-        
-        min = 1f + (difficultyLevel * 3) ;
+
+        min = 1f + (difficultyLevel * 3);
         max = 6;
         DeltaScale(min - 1);
-            
+
     }
     void AdjustNonAdaptiveTimeScale()
     {
@@ -407,6 +419,46 @@ public class GameMgr : MonoBehaviour
     }
     public void Create100()
     { }
+
+    public List<ScenarioData> scenarioHistory = new List<ScenarioData>();
+
+    public void StoreCurrentScenario()
+    {
+        ScenarioData data = new ScenarioData
+        {
+            scenarioNumber = scenarioHistory.Count + 1,
+            entityQuantities = new List<EntityQuantity>(entityQuantities),
+            posPlayer1 = posPlayer1,
+            headingPlayer1 = headingPlayer1,
+            posPlayer2 = posPlayer2,
+            headingPlayer2 = headingPlayer2,
+            difficultyLevel = difficultyLevel,
+            timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+        };
+        scenarioHistory.Add(data);
+    }
+
+    public void InitializeScenarioFromData(ScenarioData data)
+    {
+        // Reset game state
+        
+
+        // Apply stored scenario data
+        entityQuantities = new List<EntityQuantity>(data.entityQuantities);
+        posPlayer1 = data.posPlayer1;
+        headingPlayer1 = data.headingPlayer1;
+        posPlayer2 = data.posPlayer2;
+        headingPlayer2 = data.headingPlayer2;
+        difficultyLevel = data.difficultyLevel;
+
+        // Initialize with stored data
+        InitializeScenario();
+        SpawnEntities();
+    }
+    public ScenarioData GetLastScenario() {
+        if(scenarioHistory.Count == 0) return null;
+        return scenarioHistory[scenarioHistory.Count - 1];
+    }
 }
 
     // public void Create100()

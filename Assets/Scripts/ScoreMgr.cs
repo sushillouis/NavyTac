@@ -93,7 +93,7 @@ public class ScoreMgr : MonoBehaviour
         if (!playerWon && !aiWon) return;
 
         // Set the lobby state to show the score panel
-        OpenOceanMain.inst.lobbyState = LobbyState.ScorePanel;
+        OpenOceanMain.inst.lobbyState = LobbyState.Replay;
 
         // Calculate the score based on win status and damage ratio
         score = (float)(0.5 * (playerWon ? 1 : 0)) * 100 + 0.5f * (damageDealt / (damageDealt + damageTaken)) * 100;
