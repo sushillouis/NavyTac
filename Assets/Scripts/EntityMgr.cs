@@ -18,10 +18,7 @@ public class EntityMgr : MonoBehaviour
     {
         inst = this;
         entities = new List<Entity>();
-        entitiesDict = new Dictionary<int, Entity> ();
-        //foreach(Entity ent in movableEntitiesRoot.GetComponentsInChildren<Entity>()) {
-        //    entities.Add(ent);
-        //}
+        entitiesDict = new Dictionary<int, Entity>();
     }
    
    void Update(){
@@ -37,6 +34,20 @@ public class EntityMgr : MonoBehaviour
 
     
     public int entityId = 0;
+
+    public void Reset()
+    {
+        foreach (Entity entity in entities)
+        {
+            if (entity != null)
+            {
+                Destroy(entity.gameObject);
+            }
+        }
+        entities.Clear();
+        entitiesDict.Clear();
+        entityId = 0;
+    }
 
     public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles) {
         return CreateEntity(et, position, eulerAngles, PlayerMgr.inst.player1);
@@ -163,7 +174,6 @@ public class EntityMgr : MonoBehaviour
                     entity.maxFuel = float.Parse(cleanedFields[10], CultureInfo.InvariantCulture);
                     entity.maxRange = float.Parse(cleanedFields[11], CultureInfo.InvariantCulture);
                     entity.maxHealth = float.Parse(cleanedFields[13], CultureInfo.InvariantCulture);
-                    
                     // Fix for EntityClass conversion
                     entity.entityClass = (EntityClass)Enum.Parse(typeof(EntityClass), cleanedFields[12]);
 
@@ -224,22 +234,7 @@ public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles,
             entitiesDict.Add(entity.entityId, entity);
 
             // Record creation event
-            if (ReplayMgr.inst != null)
-            {
-                var creationData = new EntityCreationData
-                {
-                    entityType = et,
-                    entityId = entity.entityId,
-                    position = position,
-                    rotation = Quaternion.Euler(eulerAngles),
-                    velocity = Vector3.zero,
-                    health = entity.health,
-                    fuel = entity.fuel,
-                    ownerId = player != null ? player.playerId : 0
-                };
-                string eventDataJson = JsonUtility.ToJson(creationData);
-                ReplayMgr.inst.RecordEvent(Time.time, "create", eventDataJson);
-            }
+            
         }
     }
     DistanceMgr.inst.Initialize();

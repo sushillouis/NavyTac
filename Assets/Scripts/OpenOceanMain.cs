@@ -49,6 +49,8 @@ public class OpenOceanMain : MonoBehaviour
     private PanelPlus GamePausePanel;
     [SerializeField]
     private PanelPlus MultiScorePanel;
+    [SerializeField]
+    private PanelPlus ReplayPanel;
 
     [Header("Single / Multi player Screen")]
     [SerializeField]
@@ -122,9 +124,10 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField] public TMP_Text winLossTextMulti;
     [SerializeField] public TMP_Text scoreTextMulti;
     [SerializeField] public Button nextGameOrExitButton;
+    [SerializeField] public Button backButton;
 
     public int gamesPlayedCount = 0;
-    private const string Score_PANEL_TEXT = "Score List";
+    private const string Score_PANEL_TEXT = "Feedback";
     private const string NEXT_GAME_BUTTON_TEXT = "Next";
     private const string EXIT_BUTTON_TEXT = "Exit";
 
@@ -139,6 +142,11 @@ public class OpenOceanMain : MonoBehaviour
     private Button quitButton;
     [SerializeField]
     private List<Button> menuButtons;
+
+    [Header("Replay Panel")]
+
+    [SerializeField]
+    private Button replayExitButton;
 
 
 
@@ -207,6 +215,10 @@ public class OpenOceanMain : MonoBehaviour
         nextGameButton.onClick.AddListener(OnNextGameOrExitClicked);
         nextGameOrExitButton.onClick.RemoveAllListeners();
         nextGameOrExitButton.onClick.AddListener(OnNextClicked);
+        replayExitButton.onClick.RemoveAllListeners();
+        replayExitButton.onClick.AddListener(OnScoreListClicked);
+        backButton.onClick.RemoveAllListeners();
+        backButton.onClick.AddListener(BackButton);
     }
 
     void SetupIPAddressAndPort()
@@ -442,47 +454,39 @@ public class OpenOceanMain : MonoBehaviour
             ScorePanel.isVisible = (value == LobbyState.ScorePanel);
             GamePausePanel.isVisible = (value == LobbyState.GamePaused);
             MultiScorePanel.isVisible = (value == LobbyState.MultiScorePanel);
-            
-
+            ReplayPanel.isVisible = (value == LobbyState.Replay);
 
             if (value == LobbyState.MapSelect)
             {
                 UpdateMapSelectionUI();
             }
 
-            // Time scale management
             if (value == LobbyState.Play)
             {
                 if (previousState == LobbyState.GamePaused)
                 {
-                    // Restore saved time scale
                     Time.timeScale = savedTimeScale;
                 }
-                else if (previousState != LobbyState.Play) // Started playing (not from pause)
+                else if (previousState != LobbyState.Play)
                 {
-                    // Ensure time scale is 1 when starting play
-                    // playSessionStartTime = Time.realtimeSinceStartup; // This line is from old logic, totalPlayTime handles this now
                     if (IsDebugging) Debug.Log($"Play session started. Total playtime reset/started.", this);
                 }
             }
-            else // Not in Play state
+            else
             {
                 if (previousState == LobbyState.Play)
                 {
-                    // Save current time scale if we were playing
                     savedTimeScale = Time.timeScale;
                 }
-                Time.timeScale = 0f; // Pause the game
+                Time.timeScale = 0f;
             }
 
-
-            // Update total playtime when entering score panel
             if (value == LobbyState.ScorePanel && previousState == LobbyState.Play)
             {
-                playSessionDuration = totalPlayTime; // Store the accumulated playtime
-                totalTrainingTime += playSessionDuration; // Add to total training time
+                playSessionDuration = totalPlayTime;
+                totalTrainingTime += playSessionDuration;
                 if (IsDebugging) Debug.Log($"Play session ended. Duration: {playSessionDuration:F2} seconds (from totalPlayTime).", this);
-                totalPlayTime = 0f; // Reset for the next session
+                totalPlayTime = 0f;
 
                 gamesPlayedCount++;
                 TMP_Text buttonTextComponentMultiScore = nextGameOrExitButton.GetComponentInChildren<TMP_Text>();
@@ -494,7 +498,16 @@ public class OpenOceanMain : MonoBehaviour
                     }
                     else
                     {
-                        buttonTextComponentMultiScore.text = (gamesPlayedCount >= gamePlayCountMAX) ? EXIT_BUTTON_TEXT : NEXT_GAME_BUTTON_TEXT;
+                        if (currentTrainingState == TrainingState.Adaptive)
+                        {
+
+                            buttonTextComponentMultiScore.text = (gamesPlayedCount >= gamePlayCountMAX) ? EXIT_BUTTON_TEXT : NEXT_GAME_BUTTON_TEXT;
+                        }
+                        else // PreTest, PostTest, None
+                        {
+                            buttonTextComponentMultiScore.text = (gamesPlayedCount >= gamePlayCountMAX) ? EXIT_BUTTON_TEXT : NEXT_GAME_BUTTON_TEXT;
+                        }
+
                     }
                 }
 
@@ -516,25 +529,29 @@ public class OpenOceanMain : MonoBehaviour
                 }
             }
 
-
             if (UIMgr.inst != null) UIMgr.inst.gameObject.SetActive(value == LobbyState.Play);
             if (GroupUIMgr.inst != null) GroupUIMgr.inst.gameObject.SetActive(value == LobbyState.Play);
             if (value == LobbyState.MultiScorePanel)
             {
-                UpdateMultiScoreDisplay();
+                if (previousState != LobbyState.Replay)
+                {
+                    UpdateMultiScoreDisplay();
+                }
+
             }
-           // Add to the lobbyState setter
-        if (value == LobbyState.Replay) {
-            Time.timeScale = 1f; 
-            // Load last scenario
-                ScenarioData lastScenario = GameMgr.inst.GetLastScenario();
-            if(lastScenario != null) {
-                FogWarMgr.inst.FOW = false; // Disable FOW
-                GameMgr.inst.InitializeScenarioFromData(lastScenario);
-                CameraMgr.inst.SetReplayCameraPosition(); // New camera method
+
+            if (value == LobbyState.Replay)
+            {
+                Time.timeScale = 1f;
+                if (ReplayMgr.inst != null)
+                {
+                    ReplayMgr.inst.StartReplay();
+                }
+                else
+                {
+                    Debug.LogError("ReplayMgr instance is null.");
+                }
             }
-            else Debug.LogWarning("No scenario data available for replay");
-        }
 
             if (IsDebugging) Debug.Log($"Lobby state changed from {previousState} to {value}.", this);
         }
@@ -562,13 +579,13 @@ public class OpenOceanMain : MonoBehaviour
     }
 
 
-  // In OpenOceanMain.cs
-public void OnMapSelected()
-{
-    totalPlayTime = 0f;
-    int scenarioNumber = gamesPlayedCount + 1; 
-    
-    // Then spawn entities
+    // In OpenOceanMain.cs
+    public void OnMapSelected()
+    {
+        totalPlayTime = 0f;
+        int scenarioNumber = gamesPlayedCount + 1;
+
+        // Then spawn entities
         if (isSinglePlayer)
         {
             GameMgr.inst.OpenOcean1x1();
@@ -577,9 +594,9 @@ public void OnMapSelected()
         {
             localNetSetup.OnStartButton();
         }
-    GameMgr.inst.StoreCurrentScenario();
-    lobbyState = LobbyState.Play;
-}
+
+        lobbyState = LobbyState.Play;
+    }
 
     public void OnSinglePlayer()
     {
@@ -594,7 +611,6 @@ public void OnMapSelected()
 
     public void OnQuitButton()
     {
-        ReplayMgr.inst.StopRecording();
         if (IsDebugging) Debug.Log("Shutting down TactNetMgr and quitting application.", this);
         if (TactNetMgr.inst != null)
         {
@@ -632,8 +648,7 @@ public void OnMapSelected()
 
     public void OnNextGameOrExitClicked()
     {
-        // Note: This implementation assumes a LobbyState.MultiScorePanel enum value exists
-        // and that the MultiScorePanel UI visibility is handled in the lobbyState setter.
+
 
         if (currentTrainingState == TrainingState.Adaptive)
         {
@@ -700,103 +715,102 @@ public void OnMapSelected()
             }
         }
     }
-   private void UpdateMultiScoreDisplay()
-{
-    if (MultiScoreList == null)
+    private void UpdateMultiScoreDisplay()
     {
-        Debug.LogError("MultiScoreList GameObject (the container for score entries) is not assigned in the Inspector.");
-        return;
-    }
-    if (Score == null)
-    {
-        Debug.LogError("Score prefab/template is not assigned in the Inspector.");
-        return;
-    }
-
-    // Clear previously instantiated items from MultiScoreList
-    foreach (Transform child in MultiScoreList.transform)
-    {
-        child.gameObject.SetActive(false);
-    }
-
-    if (ScenarioDataMgr.inst == null || ScenarioDataMgr.inst.scenarioDataList == null)
-    {
-        Debug.LogWarning("ScenarioDataMgr instance or scenarioDataList is null. Cannot display multi-score data.");
-        if (scenarioNumberText != null) scenarioNumberText.text = "0";
-        if (totalUnitsText != null) totalUnitsText.text = "N/A";
-        // Clear other summary fields
-        if (totalUnitXText != null) totalUnitXText.text = "0";
-        if (totalSeaHunterText != null) totalSeaHunterText.text = "0";
-        if (totalDDG51Text != null) totalDDG51Text.text = "0";
-        if (ourUnitsDestroyedTextMulti != null) ourUnitsDestroyedTextMulti.text = "0";
-        if (ourDestroyedUnitXText != null) ourDestroyedUnitXText.text = "0";
-        if (ourDestroyedSeaHunterText != null) ourDestroyedSeaHunterText.text = "0";
-        if (ourDestroyedDDG51Text != null) ourDestroyedDDG51Text.text = "0";
-        if (enemyUnitsDestroyedTextMulti != null) enemyUnitsDestroyedTextMulti.text = "0";
-        if (enemyDestroyedUnitXText != null) enemyDestroyedUnitXText.text = "0";
-        if (enemyDestroyedSeaHunterText != null) enemyDestroyedSeaHunterText.text = "0";
-        if (enemyDestroyedDDG51Text != null) enemyDestroyedDDG51Text.text = "0";
-        if (damageDealtTextMulti != null) damageDealtTextMulti.text = "0";
-        if (damageTakenTextMulti != null) damageTakenTextMulti.text = "0";
-        if (winLossTextMulti != null) winLossTextMulti.text = "N/A";
-        if (scoreTextMulti != null) scoreTextMulti.text = "0";
-        return;
-    }
-
-    // Initialize accumulators for grand totals
-    float currentYOffset = 0f;
-    const float yDecrement = -100f;
-
-    foreach (ScenarioDataMgr.ScenarioData scenarioData in ScenarioDataMgr.inst.scenarioDataList)
-    {
-        if (scenarioData == null)
+        if (MultiScoreList == null)
         {
-            Debug.LogWarning("Encountered a null scenarioData in the list. Skipping.");
-            continue;
+            Debug.LogError("MultiScoreList GameObject (the container for score entries) is not assigned in the Inspector.");
+            return;
+        }
+        if (Score == null)
+        {
+            Debug.LogError("Score prefab/template is not assigned in the Inspector.");
+            return;
         }
 
-        GameObject entryInstance = Instantiate(Score, MultiScoreList.transform);
-        entryInstance.SetActive(true);
-        entryInstance.name = $"ScenarioEntry_{scenarioData.scenarioNumber}";
-
-        // Position entry
-        RectTransform entryRect = entryInstance.GetComponent<RectTransform>();
-        if (entryRect != null)
+        // Clear previously instantiated items from MultiScoreList
+        foreach (Transform child in MultiScoreList.transform)
         {
-            entryRect.anchoredPosition = new Vector2(entryRect.anchoredPosition.x, currentYOffset);
+            child.gameObject.SetActive(false);
         }
-        currentYOffset += yDecrement;
 
-        // Accumulate data
-        
+        if (ScenarioDataMgr.inst == null || ScenarioDataMgr.inst.scenarioDataList == null)
+        {
+            Debug.LogWarning("ScenarioDataMgr instance or scenarioDataList is null. Cannot display multi-score data.");
+            if (scenarioNumberText != null) scenarioNumberText.text = "0";
+            if (totalUnitsText != null) totalUnitsText.text = "N/A";
+            // Clear other summary fields
+            if (totalUnitXText != null) totalUnitXText.text = "0";
+            if (totalSeaHunterText != null) totalSeaHunterText.text = "0";
+            if (totalDDG51Text != null) totalDDG51Text.text = "0";
+            if (ourUnitsDestroyedTextMulti != null) ourUnitsDestroyedTextMulti.text = "0";
+            if (ourDestroyedUnitXText != null) ourDestroyedUnitXText.text = "0";
+            if (ourDestroyedSeaHunterText != null) ourDestroyedSeaHunterText.text = "0";
+            if (ourDestroyedDDG51Text != null) ourDestroyedDDG51Text.text = "0";
+            if (enemyUnitsDestroyedTextMulti != null) enemyUnitsDestroyedTextMulti.text = "0";
+            if (enemyDestroyedUnitXText != null) enemyDestroyedUnitXText.text = "0";
+            if (enemyDestroyedSeaHunterText != null) enemyDestroyedSeaHunterText.text = "0";
+            if (enemyDestroyedDDG51Text != null) enemyDestroyedDDG51Text.text = "0";
+            if (damageDealtTextMulti != null) damageDealtTextMulti.text = "0";
+            if (damageTakenTextMulti != null) damageTakenTextMulti.text = "0";
+            if (winLossTextMulti != null) winLossTextMulti.text = "N/A";
+            if (scoreTextMulti != null) scoreTextMulti.text = "0";
+            return;
+        }
 
-        // Populate entry UI
-    SetTextOnChild(entryInstance.transform, "EntryScenarioTitleText", $"Scenario {scenarioData.scenarioNumber}");
-    SetTextOnChild(entryInstance.transform, "EntryTotalUnitsText", scenarioData.totalUnits.ToString());
-    SetTextOnChild(entryInstance.transform, "EntryTotalUnitXText", scenarioData.totalJARI.ToString());
-    SetTextOnChild(entryInstance.transform, "EntryTotalSeaHunterText", scenarioData.totalSeaHunter.ToString());
-    SetTextOnChild(entryInstance.transform, "EntryTotalDDG51Text", scenarioData.totalDDG51.ToString());
-    
-    SetTextOnChild(entryInstance.transform, "EntryOurUnitsDestroyedText", 
-        (scenarioData.ourDestroyedJARI + scenarioData.ourDestroyedSeaHunter + scenarioData.ourDestroyedDDG51).ToString());
-    SetTextOnChild(entryInstance.transform, "EntryOurUnitXText", scenarioData.ourDestroyedJARI.ToString());
-    SetTextOnChild(entryInstance.transform, "EntryOurSeaHunterText", scenarioData.ourDestroyedSeaHunter.ToString());
-    SetTextOnChild(entryInstance.transform, "EntryOurDDG51Text", scenarioData.ourDestroyedDDG51.ToString());
-    
-    SetTextOnChild(entryInstance.transform, "EntryEnemyUnitsDestroyedText", (scenarioData.enemyDestroyedJARI + scenarioData.enemyDestroyedSeaHunter + scenarioData.enemyDestroyedDDG51).ToString());
-    SetTextOnChild(entryInstance.transform, "EntryEnemyUnitXText", scenarioData.enemyDestroyedJARI.ToString());
-    SetTextOnChild(entryInstance.transform, "EntryEnemySeaHunterText", scenarioData.enemyDestroyedSeaHunter.ToString());
-    SetTextOnChild(entryInstance.transform, "EntryEnemyDDG51Text", scenarioData.enemyDestroyedDDG51.ToString());
-    
-    SetTextOnChild(entryInstance.transform, "EntryDamageDealtText", scenarioData.damageDealt.ToString("F0"));
-    SetTextOnChild(entryInstance.transform, "EntryDamageTakenText", scenarioData.damageTaken.ToString("F0"));
-    SetTextOnChild(entryInstance.transform, "EntryWinLossText", scenarioData.winLoss ? "Win" : "Loss");
-    SetTextOnChild(entryInstance.transform, "EntryScoreText", scenarioData.score.ToString("F0"));
+        // Initialize accumulators for grand totals
+        float currentYOffset = -50f;
+        const float yDecrement = -200f;
+
+        foreach (ScenarioDataMgr.ScenarioData scenarioData in ScenarioDataMgr.inst.scenarioDataList)
+        {
+            if (scenarioData == null)
+            {
+                Debug.LogWarning("Encountered a null scenarioData in the list. Skipping.");
+                continue;
+            }
+
+            GameObject entryInstance = Instantiate(Score, MultiScoreList.transform);
+            entryInstance.SetActive(true);
+            entryInstance.name = $"ScenarioEntry_{scenarioData.scenarioNumber}";
+
+            // Position entry
+            RectTransform entryRect = entryInstance.GetComponent<RectTransform>();
+            if (entryRect != null)
+            {
+                entryRect.anchoredPosition = new Vector2(entryRect.anchoredPosition.x, currentYOffset);
+            }
+            currentYOffset += yDecrement;
+            // Ensure the entry is active
+            Transform buttonTransform = FindDeepChild(entryInstance.transform, "EntryScenarioTitleButton");
+            buttonTransform.GetComponentInChildren<ScenarioButton>().scenarioNumber = scenarioData.scenarioNumber;
+            // Populate entry UI
+            SetTextOnChild(entryInstance.transform, "EntryScenarioTitleText", $"Scenario {scenarioData.scenarioNumber}");
+            SetTextOnChild(entryInstance.transform, "EntryTotalUnitsText", scenarioData.totalUnits.ToString());
+            SetTextOnChild(entryInstance.transform, "EntryTotalUnitXText", scenarioData.totalJARI.ToString());
+            SetTextOnChild(entryInstance.transform, "EntryTotalSeaHunterText", scenarioData.totalSeaHunter.ToString());
+            SetTextOnChild(entryInstance.transform, "EntryTotalDDG51Text", scenarioData.totalDDG51.ToString());
+
+            SetTextOnChild(entryInstance.transform, "EntryOurUnitsDestroyedText",
+                (scenarioData.ourDestroyedJARI + scenarioData.ourDestroyedSeaHunter + scenarioData.ourDestroyedDDG51).ToString());
+            SetTextOnChild(entryInstance.transform, "EntryOurUnitXText", scenarioData.ourDestroyedJARI.ToString());
+            SetTextOnChild(entryInstance.transform, "EntryOurSeaHunterText", scenarioData.ourDestroyedSeaHunter.ToString());
+            SetTextOnChild(entryInstance.transform, "EntryOurDDG51Text", scenarioData.ourDestroyedDDG51.ToString());
+
+            SetTextOnChild(entryInstance.transform, "EntryEnemyUnitsDestroyedText", (scenarioData.enemyDestroyedJARI + scenarioData.enemyDestroyedSeaHunter + scenarioData.enemyDestroyedDDG51).ToString());
+            SetTextOnChild(entryInstance.transform, "EntryEnemyUnitXText", scenarioData.enemyDestroyedJARI.ToString());
+            SetTextOnChild(entryInstance.transform, "EntryEnemySeaHunterText", scenarioData.enemyDestroyedSeaHunter.ToString());
+            SetTextOnChild(entryInstance.transform, "EntryEnemyDDG51Text", scenarioData.enemyDestroyedDDG51.ToString());
+
+            SetTextOnChild(entryInstance.transform, "EntryDamageDealtText", scenarioData.damageDealt.ToString("F0"));
+            SetTextOnChild(entryInstance.transform, "EntryDamageTakenText", scenarioData.damageTaken.ToString("F0"));
+            SetTextOnChild(entryInstance.transform, "EntryWinLossText", scenarioData.winLoss ? "Win" : "Loss");
+            SetTextOnChild(entryInstance.transform, "EntryScoreText", scenarioData.score.ToString("F0"));
+            SetTextOnChild(entryInstance.transform, "FeedbackText", scenarioData.feedback);
+        }
+
 
     }
-
-   
-}
 
     private void SetTextOnChild(Transform parent, string childName, string textValue)
     {
@@ -820,14 +834,22 @@ public void OnMapSelected()
             Debug.LogWarning($"Child '{childName}' not found or missing TMP_Text.");
         }
     }
-private Transform FindDeepChild(Transform parent, string childName)
-{
-    // Search all children (active and inactive)
-    foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
+    private Transform FindDeepChild(Transform parent, string childName)
     {
-        if (child.name == childName)
-            return child;
+        // Search all children (active and inactive)
+        foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
+        {
+            if (child.name == childName)
+                return child;
+        }
+        return null;
     }
-    return null;
-}   
+    public void OnScoreListClicked()
+    {
+        lobbyState = LobbyState.MultiScorePanel;
+    }
+    public void BackButton()
+    {
+            lobbyState = LobbyState.ScorePanel;
+    }
 }

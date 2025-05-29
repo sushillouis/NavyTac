@@ -21,10 +21,11 @@ public class ScenarioDataMgr : MonoBehaviour
         public int enemyDestroyedJARI;
         public int enemyDestroyedSeaHunter;
         public int enemyDestroyedDDG51;
-        public float damageTaken;   
+        public float damageTaken;
         public float damageDealt;
         public bool winLoss;
         public float score;
+        public string feedback;
     }
 
     public static ScenarioDataMgr inst;

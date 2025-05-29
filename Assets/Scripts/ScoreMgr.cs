@@ -89,15 +89,18 @@ public class ScoreMgr : MonoBehaviour
     /// </summary>
     public void CheckVictory()
     {
+        if (OpenOceanMain.inst.lobbyState == LobbyState.Replay) 
+        return; 
         // If neither player nor AI has won, do nothing
         if (!playerWon && !aiWon) return;
 
         // Set the lobby state to show the score panel
-        OpenOceanMain.inst.lobbyState = LobbyState.Replay;
+        OpenOceanMain.inst.lobbyState = LobbyState.ScorePanel;
 
         // Calculate the score based on win status and damage ratio
         score = (float)(0.5 * (playerWon ? 1 : 0)) * 100 + 0.5f * (damageDealt / (damageDealt + damageTaken)) * 100;
-        
+        if (OpenOceanMain.inst.lobbyState != LobbyState.Replay)
+        {
         ScenarioDataMgr.ScenarioData data = new ScenarioDataMgr.ScenarioData();
         data.scenarioNumber = OpenOceanMain.inst.gamesPlayedCount ;
         data.totalUnits = GameMgr.inst.entityQuantities.Sum(eq => eq.unitCount); // Total units at start of game
@@ -123,13 +126,17 @@ public class ScoreMgr : MonoBehaviour
         data.damageDealt = damageDealt;
         data.winLoss = playerWon;
         data.score = score;
-
+            data.feedback = GetFeedback(); // Get feedback based on game performance
+        
+        
         ScenarioDataMgr.inst.scenarioDataList.Add(data);
         Debug.Log($"Game data for scenario {data.scenarioNumber} logged successfully.");
         LogGameData(); // Log detailed game data to CSV files
         UpdateScoreDisplay(); // Update the UI elements with score and game stats
         LogVictoryMessage(); // Log a simple victory/defeat message to the console
-        FXMgr.inst.ResetEffects(); // Reset any visual effects
+        FXMgr.inst.ResetEffects();
+        }
+ // Reset any visual effects
 
     }
 
@@ -148,7 +155,18 @@ public class ScoreMgr : MonoBehaviour
 
         // Update winner text
         if (OpenOceanMain.inst.winnerText != null)
-            OpenOceanMain.inst.winnerText.text = playerWon ? "Player Victory!" : "AI Victory!";
+        {
+            if (playerWon)
+            {
+            OpenOceanMain.inst.winnerText.text = "Victory!";
+            OpenOceanMain.inst.winnerText.color = Color.green;
+            }
+            else
+            {
+            OpenOceanMain.inst.winnerText.text = "Defeat!";
+            OpenOceanMain.inst.winnerText.color = Color.red;
+            }
+        }
 
         // Update score text
         if (OpenOceanMain.inst.scoreText != null)
@@ -169,72 +187,76 @@ public class ScoreMgr : MonoBehaviour
         // Update feedback text (Adaptive mode only)
         if (OpenOceanMain.inst.feedbackText != null)
         {
-            bool isAdaptive = GetGameTypeFolder() == "Adaptive";
-            List<string> selectedFeedbacks = new();
 
-            if (isAdaptive)
+            OpenOceanMain.inst.feedbackText.text = ""; // Hide feedback for non-adaptive
+        }
+    }
+
+    public string GetFeedback()
+    {
+        // Select specific feedback based on score and win condition
+        List<string> selectedFeedbacks = new();
+        if (playerWon)
+        {
+            if (score >= 85)
             {
-                // Select specific feedback based on score and win condition
-                if (playerWon)
-                {
-                    if (score >= 85)
-                    {
-                        selectedFeedbacks.Add("Avoid direct fights with JARI USVs — they’re scouts, not tanks.");
-                        selectedFeedbacks.Add("Flank with JARI USVs while heavier ships press forward.");
-                        if (winReason.Contains("allDestroyed"))
-                            selectedFeedbacks.Add("Next time, see if you can do this while taking even less damage.");
-                    }
-                    else if (score >= 70)
-                    {
-                        selectedFeedbacks.Add("Use DDG51s for decisive strikes, not continuous harassment.");
-                        selectedFeedbacks.Add("Spread out your DDG51s to avoid splash damage.");
-                    }
-                    else // 50-70 (Note: score for win is >= 50)
-                    {
-                        selectedFeedbacks.Add("Retreat and regroup instead of losing all at once.");
-                        selectedFeedbacks.Add("Keep Destroyers protected behind lighter units.");
-                    }
-                }
-                else // Loss (score for loss will be < 50)
-                {
-                    selectedFeedbacks.Add("Avoid moving DDG51s without a scout — they’re not expendable.");
-                    selectedFeedbacks.Add("Use terrain and spacing to avoid ambushes.");
-                    selectedFeedbacks.Add("Don’t clump Destroyers — it makes them vulnerable to area attacks.");
-                    selectedFeedbacks.Add("Send scouts before committing large units.");
-                }
-
-                // Add winReason-specific feedback
-                if (winReason.Contains("baseDestroyed"))
-                    selectedFeedbacks.Add("Try combining base attacks with flanking units to distract defenders.");
-
-                // Add general feedback if needed to reach up to 3 items
-                int feedbacksToPotentiallyAdd = 3 - selectedFeedbacks.Count;
-                if (feedbacksToPotentiallyAdd > 0 && generalFeedbacks.Count > 0)
-                {
-                    List<string> availableGeneralFeedbacks = generalFeedbacks.Except(selectedFeedbacks).ToList();
-
-                    for (int i = 0; i < feedbacksToPotentiallyAdd && availableGeneralFeedbacks.Count > 0; i++)
-                    {
-                        int randomIndex = UnityEngine.Random.Range(0, availableGeneralFeedbacks.Count);
-                        selectedFeedbacks.Add(availableGeneralFeedbacks[randomIndex]);
-                        availableGeneralFeedbacks.RemoveAt(randomIndex);
-                    }
-                }
-
-                if (selectedFeedbacks.Any())
-                {
-                    var feedbacksToDisplay = selectedFeedbacks.Take(3).Select(fb => "• " + fb).ToList();
-                    OpenOceanMain.inst.feedbackText.text = "Feedback\n" + string.Join("\n", feedbacksToDisplay);
-                }
-                else
-                {
-                    OpenOceanMain.inst.feedbackText.text = ""; // No feedback to show
-                }
+                selectedFeedbacks.Add("Avoid direct fights with JARI USVs — they’re scouts, not tanks.");
+                selectedFeedbacks.Add("Flank with JARI USVs while heavier ships press forward.");
+                if (winReason.Contains("allDestroyed"))
+                    selectedFeedbacks.Add("Next time, see if you can do this while taking even less damage.");
             }
-            else
+            else if (score >= 70)
             {
-                OpenOceanMain.inst.feedbackText.text = ""; // Hide feedback for non-adaptive
+                selectedFeedbacks.Add("Use DDG51s for decisive strikes, not continuous harassment.");
+                selectedFeedbacks.Add("Spread out your DDG51s to avoid splash damage.");
             }
+            else // 50-70 (Note: score for win is >= 50)
+            {
+                selectedFeedbacks.Add("Retreat and regroup instead of losing all at once.");
+                selectedFeedbacks.Add("Keep Destroyers protected behind lighter units.");
+            }
+        }
+        else // Loss (score for loss will be < 50)
+        {
+            selectedFeedbacks.Add("Avoid moving DDG51s without a scout — they’re not expendable.");
+            selectedFeedbacks.Add("Use terrain and spacing to avoid ambushes.");
+            selectedFeedbacks.Add("Don’t clump Destroyers — it makes them vulnerable to area attacks.");
+            selectedFeedbacks.Add("Send scouts before committing large units.");
+        }
+
+        // Add winReason-specific feedback
+        if (winReason.Contains("baseDestroyed"))
+            selectedFeedbacks.Add("Try combining base attacks with flanking units to distract defenders.");
+
+        // Add general feedback if needed to reach up to 3 items
+        int feedbacksToPotentiallyAdd = 3 - selectedFeedbacks.Count;
+        if (feedbacksToPotentiallyAdd > 0 && generalFeedbacks.Count > 0)
+        {
+            List<string> availableGeneralFeedbacks = generalFeedbacks.Except(selectedFeedbacks).ToList();
+
+            for (int i = 0; i < feedbacksToPotentiallyAdd && availableGeneralFeedbacks.Count > 0; i++)
+            {
+                int randomIndex = UnityEngine.Random.Range(0, availableGeneralFeedbacks.Count);
+                selectedFeedbacks.Add(availableGeneralFeedbacks[randomIndex]);
+                availableGeneralFeedbacks.RemoveAt(randomIndex);
+            }
+        }
+
+        if (selectedFeedbacks.Any())
+        {
+            var feedbacksToDisplay = selectedFeedbacks.Take(3);
+            System.Text.StringBuilder feedbackString = new System.Text.StringBuilder();
+            int index = 1;
+            foreach (var fb in feedbacksToDisplay)
+            {
+                feedbackString.AppendLine($"{index}. {fb}");
+                index++;
+            }
+            return feedbackString.ToString();
+        }
+        else
+        {
+            return string.Empty; // No feedback to show
         }
     }
 

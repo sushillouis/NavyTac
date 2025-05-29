@@ -137,19 +137,31 @@ public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, boo
             Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
             if (ent != null && !ent.isVisible && ent.entityClass == EntityClass.Missile) ent = null;
 
-            // Record command event
+            // Record command
             if (ReplayMgr.inst != null)
             {
-                var commandData = new
+                string commandType;
+                int targetEntityId = -1;
+                if (attackMove)
                 {
-                    commandType = intercept ? "intercept" : (attackMove ? "attackMove" : "move"),
+                    commandType = ent != null ? "AttackMoveToEntity" : "AttackMoveToPosition";
+                    if (ent != null) targetEntityId = ent.entityId;
+                }
+                else
+                {
+                    commandType = "Move";
+                }
+
+                ReplayCommand cmd = new ReplayCommand
+                {
+                    timestamp = Time.time,
+                    commandType = commandType,
                     entityIds = selectedEntities.Select(e => e.entityId).ToArray(),
                     targetPosition = pos,
-                    targetEntityId = ent != null ? ent.entityId : -1,
+                    targetEntityId = targetEntityId,
                     add = add
                 };
-                string eventDataJson = JsonUtility.ToJson(commandData);
-                ReplayMgr.inst.RecordEvent(Time.time, "command", eventDataJson);
+                ReplayMgr.inst.RecordCommand(cmd);
             }
 
             if (ent == null)

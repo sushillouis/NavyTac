@@ -4,23 +4,41 @@ using TMPro;
 
 public class ResetScene : MonoBehaviour
 {
+    
+    public static ResetScene inst;
+
+    private void Awake()
+    {
+        if (inst == null)
+        {
+            inst = this;
+        }
+        else
+        {
+            Debug.LogWarning("Multiple instances of ResetScene detected. Destroying duplicate.");
+            Destroy(gameObject);
+        }
+    }
     public void ReloadScene()
     {
 
+
+        ClearAllEntities();
+        ResetGameState();
         
-        ClearAllEntities(); 
-        ResetGameState();   
+            GameMgr.inst.OpenOcean1x1();
         
-        GameMgr.inst.OpenOcean1x1(); // Ensure this method is defined below or accessible.
+        
+         // Ensure this method is defined below or accessible.
     }
 
     // Your existing ClearAllEntities method.
-    private void ClearAllEntities()
+    public void ClearAllEntities()
     {
         if (WeaponsMgr.inst != null)
         {
-            WeaponsMgr.inst.StopAllWeapons(); 
-            var weaponsCopy = new List<Entity>(WeaponsMgr.inst.weapons); 
+            WeaponsMgr.inst.StopAllWeapons();
+            var weaponsCopy = new List<Entity>(WeaponsMgr.inst.weapons);
             foreach (Entity weapon in weaponsCopy)
             {
                 if (weapon != null && weapon.gameObject != null)
@@ -29,18 +47,18 @@ public class ResetScene : MonoBehaviour
                     {
                         unitAI.StopAndRemoveAllCommands();
                     }
-                    if (weapon.gameObject != null) 
+                    if (weapon.gameObject != null)
                     {
-                        DestroyImmediate(weapon.gameObject); 
+                        DestroyImmediate(weapon.gameObject);
                     }
                 }
             }
-            WeaponsMgr.inst.weapons.Clear(); 
+            WeaponsMgr.inst.weapons.Clear();
         }
 
         if (EntityMgr.inst != null)
         {
-            var entitiesCopy = new List<Entity>(EntityMgr.inst.entities); 
+            var entitiesCopy = new List<Entity>(EntityMgr.inst.entities);
             foreach (Entity entity in entitiesCopy)
             {
                 if (entity != null && entity.gameObject != null)
@@ -49,13 +67,13 @@ public class ResetScene : MonoBehaviour
                     {
                         unitAI.StopAndRemoveAllCommands();
                     }
-                     if (entity.gameObject != null) 
+                    if (entity.gameObject != null)
                     {
-                        DestroyImmediate(entity.gameObject); 
+                        DestroyImmediate(entity.gameObject);
                     }
                 }
             }
-            EntityMgr.inst.entities.Clear(); 
+            EntityMgr.inst.entities.Clear();
         }
 
         if (SelectionMgr.inst != null)
@@ -69,22 +87,25 @@ public class ResetScene : MonoBehaviour
         System.GC.Collect();
         Resources.UnloadUnusedAssets();
         Physics.SyncTransforms(); 
+        
     }
 
     // Your existing ResetGameState method.
-    private void ResetGameState()
+    public void ResetGameState()
     {
         Time.timeScale = 1f;
         GameMgr.inst.BuildEntityDictionary(); // Ensure this method is defined below or accessible.
-        if (AIMgr.inst != null) AIMgr.inst.StopAllCoroutines(); 
-        if (DistanceMgr.inst != null) DistanceMgr.inst.Initialize(); 
-        if (FogWarMgr.inst != null) FogWarMgr.inst.ResetFog(); 
-        if (CameraMgr.inst != null) CameraMgr.inst.ResetCamera(); 
-        if (ScoreMgr.inst != null) ScoreMgr.inst.ResetScores(); 
-        if (OpenOceanMain.inst != null) OpenOceanMain.inst.ResetGameState(); 
-        if (MinimapMgr.inst != null) MinimapMgr.inst.ResetMinimap(); 
-        if (LineMgr.inst != null) LineMgr.inst.DestroyAllLines(); 
-        if (WeaponsMgr.inst != null) WeaponsMgr.inst.DestroyAllWeaponsImmediately(); 
+        if (AIMgr.inst != null) AIMgr.inst.StopAllCoroutines();
+        if (DistanceMgr.inst != null) DistanceMgr.inst.Initialize();
+        if (FogWarMgr.inst != null) FogWarMgr.inst.ResetFog();
+        if (CameraMgr.inst != null) CameraMgr.inst.ResetCamera();
+        if (ScoreMgr.inst != null) ScoreMgr.inst.ResetScores();
+        if (OpenOceanMain.inst != null) OpenOceanMain.inst.ResetGameState();
+        if (MinimapMgr.inst != null) MinimapMgr.inst.ResetMinimap();
+        if (LineMgr.inst != null) LineMgr.inst.DestroyAllLines();
+        if (WeaponsMgr.inst != null) WeaponsMgr.inst.DestroyAllWeaponsImmediately();
         if (FXMgr.inst != null) FXMgr.inst.ResetEffects(); 
+        if (EntityMgr.inst != null) EntityMgr.inst.Reset();
+        
     }
 }

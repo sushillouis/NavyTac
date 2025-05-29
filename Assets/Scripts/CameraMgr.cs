@@ -242,14 +242,14 @@ public class CameraMgr : MonoBehaviour
             PitchNode.transform.localEulerAngles = new Vector3(currentPitch, 0f, 0f);
         }
     }
-    public void SetReplayCameraPosition() {
-    // Position at (0, 1500, 0) looking straight down
-    RTSCameraRig.transform.position = new Vector3(0, 1500, 0);
-    YawNode.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-    PitchNode.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-    
-    // Optional: Lock camera controls during replay
-    isRTSMode = false;
-}
+
+    public void ReplayCamera()
+    {
+        RTSCameraRig.transform.position = Vector3.zero;
+        YawNode.transform.localPosition = new Vector3(0f, 16000f, 0f);
+        YawNode.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+        PitchNode.transform.localPosition = Vector3.zero;
+        PitchNode.transform.localRotation = Quaternion.Euler(0f, 0f, 0f); 
+    }
 
 }

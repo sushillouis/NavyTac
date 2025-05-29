@@ -18,7 +18,8 @@ public struct StartingPosition
 }
 
 [System.Serializable]
-public class ScenarioData {
+public class ScenarioData
+{
     public int scenarioNumber;
     public List<EntityQuantity> entityQuantities;
     public Vector3 posPlayer1;
@@ -27,6 +28,9 @@ public class ScenarioData {
     public float headingPlayer2;
     public float difficultyLevel;
     public string timestamp;
+    public bool winLoss;
+    public string winReason; // Add this field
+    public float score;
 }
 
 public class GameMgr : MonoBehaviour
@@ -240,6 +244,7 @@ public class GameMgr : MonoBehaviour
     public void OpenOcean1x1()
     {
         InitializeScenario();
+        StoreCurrentScenario();
         SpawnEntities();
         if (CameraMgr.inst != null) CameraMgr.inst.SetCameraPosition();
     }
@@ -424,6 +429,7 @@ public class GameMgr : MonoBehaviour
 
     public void StoreCurrentScenario()
     {
+        if (ReplayMgr.inst.isReplaying) return;
         ScenarioData data = new ScenarioData
         {
             scenarioNumber = scenarioHistory.Count + 1,
@@ -433,6 +439,11 @@ public class GameMgr : MonoBehaviour
             posPlayer2 = posPlayer2,
             headingPlayer2 = headingPlayer2,
             difficultyLevel = difficultyLevel,
+            winLoss = ScoreMgr.inst != null && ScoreMgr.inst.playerWon,
+            winReason = ScoreMgr.inst != null ? ScoreMgr.inst.winReason : "Unknown",
+            score = ScoreMgr.inst != null ? ScoreMgr.inst.score : 0f,
+
+
             timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
         };
         scenarioHistory.Add(data);
@@ -440,11 +451,8 @@ public class GameMgr : MonoBehaviour
 
     public void InitializeScenarioFromData(ScenarioData data)
     {
-        // Reset game state
-        
-
-        // Apply stored scenario data
         entityQuantities = new List<EntityQuantity>(data.entityQuantities);
+        // Correctly assign positions without swapping
         posPlayer1 = data.posPlayer1;
         headingPlayer1 = data.headingPlayer1;
         posPlayer2 = data.posPlayer2;
@@ -453,12 +461,40 @@ public class GameMgr : MonoBehaviour
 
         // Initialize with stored data
         InitializeScenario();
-        SpawnEntities();
+        SpawnWithExistingPositions();
     }
-    public ScenarioData GetLastScenario() {
-        if(scenarioHistory.Count == 0) return null;
+    public void SpawnWithExistingPositions()
+    {
+        if (PlayerMgr.inst != null)
+        {
+            SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(
+                posPlayer1,
+                headingPlayer1,
+                PlayerMgr.inst.player1
+            );
+            SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(
+                posPlayer2,
+                headingPlayer2,
+                PlayerMgr.inst.player2
+            );
+        }
+    }
+    public ScenarioData GetLastScenario()
+    {
+        if (scenarioHistory.Count == 0) return null;
         return scenarioHistory[scenarioHistory.Count - 1];
     }
+    private List<ScenarioData> allScenarios = new List<ScenarioData>();
+
+public void SaveScenario(ScenarioData data)
+{
+    allScenarios.Add(data);
+}
+
+public ScenarioData GetScenario(int scenarioNumber)
+{
+    return allScenarios.Find(s => s.scenarioNumber == scenarioNumber);
+}
 }
 
     // public void Create100()
@@ -468,22 +504,7 @@ public class GameMgr : MonoBehaviour
     //     {
     //         for (int j = 0; j < 10; j++) 
     //         {
-    //             EntityMgr.inst.CreateEntity(EntityType.PilotVessel, position, Vector3.zero);
-    //             position.z += spread; 
-    //         }
-    //         position.x += spread; 
-    //         position.z = initZ;   
-    //     }
-    //     if (DistanceMgr.inst != null) DistanceMgr.inst.Initialize(); 
-    // }
-
-    // public void InitMapMenu()
-    // {
-    //     List<Entity> allEntities = new List<Entity>();
-    //     Vector3 pos = Vector3.zero;
-    //     Vector3 offset = new Vector3(100, 0, -50); 
-
-    //     foreach (GameObject go in EntityMgr.inst.entityPrefabs)
+    //        position.z += spr//     foreach (GameObject go in EntityMgr.inst.entityPrefabs)
     //     {
     //         Entity prefabComponent = go.GetComponent<Entity>();
     //         if (prefabComponent != null)

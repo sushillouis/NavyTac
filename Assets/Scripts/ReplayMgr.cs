@@ -1,180 +1,189 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
+
+[Serializable]
+public class ReplayCommand
+{
+    public float timestamp;
+    public string commandType; // e.g., "Move", "AttackMoveToPosition", "AttackMoveToEntity"
+    public int[] entityIds;
+    public Vector3 targetPosition;
+    public int targetEntityId; // -1 if not applicable
+    public bool add;
+}
 
 public class ReplayMgr : MonoBehaviour
 {
     public static ReplayMgr inst;
-    private StreamWriter writer;
-    private string filePath;
-    private float snapshotInterval = 0.1f; // Capture snapshots every 0.1 seconds
-    private float lastSnapshotTime = 0f;
+    private List<ReplayCommand> recordedCommands = new List<ReplayCommand>();
+    public bool isReplaying = false;
+    private float replayStartTime;
+    private int nextCommandIndex = 0;
+    private bool replayFinished = false;
+    
+    // Store actual win condition from scenario data
+    public bool actualPlayerWon;
+    public string actualWinReason;
 
     private void Awake()
     {
-        Debug.Log("ReplayMgr Awake called.");
         if (inst == null)
         {
             inst = this;
-            Debug.Log("ReplayMgr instance set.");
         }
         else
         {
-            Debug.LogWarning("ReplayMgr instance already exists, destroying duplicate.");
             Destroy(gameObject);
         }
     }
 
-   // In ReplayMgr.cs
-    public void StartRecording(string filename)
+    public void RecordCommand(ReplayCommand cmd)
     {
-        try
-        {
-            string filePath = Path.Combine(Application.persistentDataPath, filename);
-            writer = new StreamWriter(filePath);
-            Debug.Log($"Recording started: {filePath}");
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"Failed to start recording: {e.Message}");
-            writer = null; // Ensure writer is null if initialization fails
-        }
+        recordedCommands.Add(cmd);
     }
 
-    public void StopRecording()
+    public void LogButtonPressed()
     {
-        if (writer != null)
+        if (OpenOceanMain.inst != null)
         {
-            writer.Flush();
-            writer.Close();
-            writer = null;
-            Debug.Log($"Replay recording stopped: {filePath}");
+            
+            OpenOceanMain.inst.lobbyState = LobbyState.Replay;
+
         }
         else
         {
-            Debug.LogWarning("StopRecording called but writer was null.");
+            Debug.LogWarning("OpenOceanMain instance not found. Cannot set lobby state to Replay.");
         }
     }
 
-    private void FixedUpdate()
+    public void StartReplay()
     {
-        if (writer == null)
+        if(OpenOceanMain.inst == null || OpenOceanMain.inst.lobbyState != LobbyState.Replay)
         {
-            //Debug.Log("FixedUpdate: writer is null, not recording.");
+            Debug.LogWarning("Cannot start replay - OpenOceanMain or lobby state is not set correctly");
             return;
         }
-        float currentTime = Time.time;
-        if (currentTime - lastSnapshotTime >= snapshotInterval)
+        replayFinished = false;
+        Time.timeScale = 1f;
+        GameMgr.inst.BuildEntityDictionary();
+
+        // Stop AI and reset systems
+        if (AIMgr.inst != null) AIMgr.inst.StopAllCoroutines();
+        if (DistanceMgr.inst != null) DistanceMgr.inst.Initialize();
+        if (FogWarMgr.inst != null) FogWarMgr.inst.ResetFog();
+        if (CameraMgr.inst != null) CameraMgr.inst.ResetCamera();
+        if (ScoreMgr.inst != null) ScoreMgr.inst.ResetScores();
+        if (MinimapMgr.inst != null) MinimapMgr.inst.ResetMinimap();
+        if (LineMgr.inst != null) LineMgr.inst.DestroyAllLines();
+        if (WeaponsMgr.inst != null) WeaponsMgr.inst.DestroyAllWeaponsImmediately();
+        if (FXMgr.inst != null) FXMgr.inst.ResetEffects();
+        if (EntityMgr.inst != null) EntityMgr.inst.Reset();
+        ResetScene.inst.ClearAllEntities();
+
+        // Disable fog of war for replay
+        FogWarMgr.inst.FOW = false;
+
+        // Load last scenario
+        ScenarioData lastScenario = GameMgr.inst.GetLastScenario();
+        if (lastScenario != null)
         {
-            Debug.Log($"FixedUpdate: Capturing snapshot at {currentTime} (interval: {snapshotInterval})");
-            CaptureSnapshot(currentTime);
-            lastSnapshotTime = currentTime;
+            // Capture actual win condition
+            actualPlayerWon = lastScenario.winLoss;
+            actualWinReason = lastScenario.winReason;
+
+            GameMgr.inst.InitializeScenarioFromData(lastScenario);
         }
+        else
+        {
+            Debug.LogWarning("No scenario data available for replay");
+            return;
+        }
+
+        // Start replay
+        isReplaying = true;
+        replayStartTime = Time.time;
+        nextCommandIndex = 0;
+        CameraMgr.inst.ReplayCamera();
     }
 
-    private void CaptureSnapshot(float timestamp)
+    private void Update()
     {
-        Debug.Log($"CaptureSnapshot called at timestamp {timestamp}");
-        List<EntityState> entityStates = new List<EntityState>();
-        foreach (Entity ent in EntityMgr.inst.entities)
+        if (isReplaying && !replayFinished)
         {
-            Debug.Log($"Capturing entity {ent.entityId} at position {ent.position}");
-            entityStates.Add(new EntityState
+            float currentReplayTime = Time.time - replayStartTime;
+            
+            // Execute commands based on their timestamps
+            while (nextCommandIndex < recordedCommands.Count && 
+                   recordedCommands[nextCommandIndex].timestamp <= currentReplayTime)
             {
-                id = ent.entityId,
-                position = ent.position,
-                rotation = ent.transform.rotation,
-                velocity = ent.velocity,
-                speed = ent.speed,
-                heading = ent.heading,
-                desiredSpeed = ent.desiredSpeed,
-                desiredHeading = ent.desiredHeading,
-                health = ent.health,
-                fuel = ent.fuel,
-                range = ent.range,
-                entityType = ent.entityType,
-                entityClass = ent.entityClass,
-                ownerId = ent.owner != null ? ent.owner.playerId : 0
-            });
+                ExecuteCommand(recordedCommands[nextCommandIndex]);
+                nextCommandIndex++;
+            }
+
+            // Check if win condition matches actual scenario
+            if (CheckWinConditionMatchesActual())
+            {
+                Debug.Log("Replay win condition matches actual - stopping replay");
+                StopReplayAndShowScores();
+                return;
+            }
+
+            
         }
-
-        string json = JsonUtility.ToJson(new Snapshot
-        {
-            type = "snapshot",
-            timestamp = timestamp,
-            entities = entityStates
-        });
-
-        Debug.Log($"Writing snapshot JSON: {json}");
-        writer.WriteLine(json);
     }
 
-    public void RecordEvent(float timestamp, string eventType, string eventDataJson)
+    private bool CheckWinConditionMatchesActual()
     {
-        if (writer == null)
+        // Make sure ScoreMgr is available
+        if (ScoreMgr.inst == null) return false;
+        
+        // Check if either side has won in the replay
+        if (ScoreMgr.inst.playerWon || ScoreMgr.inst.aiWon)
         {
-            Debug.LogWarning("RecordEvent called but writer is null.");
-            return;
+            // Compare with actual recorded win condition
+            return ScoreMgr.inst.playerWon == actualPlayerWon && 
+                   ScoreMgr.inst.winReason == actualWinReason;
         }
-        Debug.Log($"Recording event: {eventType} at {timestamp} with data: {eventDataJson}");
-        string json = JsonUtility.ToJson(new ReplayEvent
-        {
-            type = "event",
-            timestamp = timestamp,
-            eventType = eventType,
-            data = eventDataJson
-        });
-        Debug.Log($"Writing event JSON: {json}");
-        writer.WriteLine(json);
+        
+        return false;
     }
-}
 
-[Serializable]
-public class Snapshot
-{
-    public string type;
-    public float timestamp;
-    public List<EntityState> entities;
-}
+    private void StopReplayAndShowScores()
+    {
+        isReplaying = false;
+        replayFinished = true;
+        OpenOceanMain.inst.lobbyState = LobbyState.MultiScorePanel;
+    }
 
-[Serializable]
-public class ReplayEvent
-{
-    public string type;
-    public float timestamp;
-    public string eventType;
-    public string data;
-}
+    private void ExecuteCommand(ReplayCommand cmd)
+    {
+        List<Entity> entities = new List<Entity>();
+        foreach (int id in cmd.entityIds)
+        {
+            if (EntityMgr.inst.entitiesDict.TryGetValue(id, out Entity ent))
+            {
+                entities.Add(ent);
+            }
+        }
 
-[Serializable]
-public class EntityState
-{
-    public int id;
-    public Vector3 position;
-    public Quaternion rotation;
-    public Vector3 velocity;
-    public float speed;
-    public float heading;
-    public float desiredSpeed;
-    public float desiredHeading;
-    public float health;
-    public float fuel;
-    public float range;
-    public EntityType entityType;
-    public EntityClass entityClass;
-    public ulong ownerId;
-}
+        if (entities.Count == 0) return;
 
-[Serializable]
-public class EntityCreationData
-{
-    public EntityType entityType;
-    public int entityId;
-    public Vector3 position;
-    public Quaternion rotation;
-    public Vector3 velocity;
-    public float health;
-    public float fuel;
-    public ulong ownerId;
+        switch (cmd.commandType)
+        {
+            case "Move":
+                AIMgr.inst.HandleMove(entities, cmd.targetPosition, cmd.add, isLocalCommand: false);
+                break;
+            case "AttackMoveToPosition":
+                AIMgr.inst.HandleAttackMove(entities, cmd.targetPosition, null, cmd.add, isLocalCommand: false);
+                break;
+            case "AttackMoveToEntity":
+                Entity targetEnt = EntityMgr.inst.entitiesDict.TryGetValue(cmd.targetEntityId, out Entity tEnt) ? tEnt : null;
+                if (targetEnt != null)
+                {
+                    AIMgr.inst.HandleAttackMove(entities, cmd.targetPosition, targetEnt, cmd.add, isLocalCommand: false);
+                }
+                break;
+        }
+    }
 }

@@ -276,14 +276,10 @@ public class WeaponsMgr : MonoBehaviour
 
     public void DestroyEntity(Entity entity)
     {
-        if (ReplayMgr.inst != null)
-    {
-        var destructionData = new { entityId = entity.entityId };
-        string eventDataJson = JsonUtility.ToJson(destructionData);
-        ReplayMgr.inst.RecordEvent(Time.time, "destroy", eventDataJson);
-    }
+        
         try
         {
+            EntityMgr.inst.entitiesDict.Remove(entity.entityId);
             if (CameraMgr.inst != null)
             {
                 if (!CameraMgr.inst.isRTSMode && CameraMgr.inst.YawNode.transform.parent.parent.name == entity.name)
@@ -325,12 +321,12 @@ public class WeaponsMgr : MonoBehaviour
                     if (wasAIBase)
             {
                 ScoreMgr.inst.playerWon = true;
-                ScoreMgr.inst.winReason = "AI Base Destroyed"; // Set win reason
+                ScoreMgr.inst.winReason = "Opponent Base Destroyed"; // Set win reason
             }
             else
             {
                 ScoreMgr.inst.aiWon = true;
-                ScoreMgr.inst.winReason = "Player Base Destroyed";
+                ScoreMgr.inst.winReason = "Your Base Destroyed";
             }
             ScoreMgr.inst.CheckVictory();
             }
@@ -351,12 +347,12 @@ public class WeaponsMgr : MonoBehaviour
                         if (owner == PlayerMgr.inst.localPlayer)
                         {
                             ScoreMgr.inst.aiWon = true;
-                            ScoreMgr.inst.winReason = "Player Lost All Combat Entities";
+                            ScoreMgr.inst.winReason = "Lost All Friendly Combat Entities";
                         }
                         else if (owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase))
                         {
                             ScoreMgr.inst.playerWon = true;
-                            ScoreMgr.inst.winReason = "AI Lost All Combat Entities";
+                            ScoreMgr.inst.winReason = "Opponent Lost All Combat Entities";
                         }
                         ScoreMgr.inst.CheckVictory();
                     }
