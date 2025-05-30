@@ -25,27 +25,36 @@ public class CameraCollisionDetection : MonoBehaviour
 
     void LateUpdate()
     {
-        Vector3 cameraWorldPos = transform.position;
-        Terrain terrain = FindTerrainAtPosition(cameraWorldPos);
-        
-        if (terrain == null) return; // Exit if no terrain is found
-
-        float terrainHeight = terrain.SampleHeight(cameraWorldPos);
-        float requiredCameraY = terrainHeight + collisionRadius;
-
-        // Calculate the camera's local offset relative to YawNode
-        Vector3 cameraLocalPos = cameraMgr.YawNode.transform.InverseTransformPoint(cameraWorldPos);
-        float localCameraY = cameraLocalPos.y;
-
-        // Required YawNode Y to keep camera above terrain
-        float requiredYawY = requiredCameraY - localCameraY;
-
-        // Apply clamping with epsilon to prevent micro-adjustments
-        Vector3 yawNodePos = cameraMgr.YawNode.transform.position;
-        if (yawNodePos.y < requiredYawY - epsilon)
+        try
         {
-            yawNodePos.y = requiredYawY;
-            cameraMgr.YawNode.transform.position = yawNodePos;
+            Vector3 cameraWorldPos = transform.position;
+            Terrain terrain = FindTerrainAtPosition(cameraWorldPos);
+            
+            if (terrain == null) return; // Exit if no terrain is found
+
+            float terrainHeight = terrain.SampleHeight(cameraWorldPos);
+            float requiredCameraY = terrainHeight + collisionRadius;
+
+            // Calculate the camera's local offset relative to YawNode
+            Vector3 cameraLocalPos = cameraMgr.YawNode.transform.InverseTransformPoint(cameraWorldPos);
+            float localCameraY = cameraLocalPos.y;
+
+            // Required YawNode Y to keep camera above terrain
+            float requiredYawY = requiredCameraY - localCameraY;
+
+            // Apply clamping with epsilon to prevent micro-adjustments
+            Vector3 yawNodePos = cameraMgr.YawNode.transform.position;
+            if (yawNodePos.y < requiredYawY - epsilon)
+            {
+                yawNodePos.y = requiredYawY;
+                cameraMgr.YawNode.transform.position = yawNodePos;
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"An error occurred in CameraCollisionDetection.LateUpdate: {ex.Message}\n{ex.StackTrace}");
+            // Optionally, disable the component to prevent further errors
+            // enabled = false; 
         }
     }
 

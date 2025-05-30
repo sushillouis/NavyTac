@@ -25,6 +25,7 @@ public class ScenarioDataMgr : MonoBehaviour
         public float damageDealt;
         public bool winLoss;
         public float score;
+        public string winReason;
         public string feedback;
     }
 
@@ -33,15 +34,26 @@ public class ScenarioDataMgr : MonoBehaviour
     public void Awake()
     {
         inst = this;
+        scenarioDataList = new List<ScenarioData>();
         // OpenOceanMain.inst.MultiScoreList.SetActive(false);
     }
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
+    }
+    public ScenarioData GetScenarioData(int scenarioNumber)
+    {
+        var data = scenarioDataList.Find(s => s.scenarioNumber == scenarioNumber);
+        if (data == null)
+        {
+            data = new ScenarioData { scenarioNumber = scenarioNumber };
+            scenarioDataList.Add(data);
+        }
+        return data;
     }
 }

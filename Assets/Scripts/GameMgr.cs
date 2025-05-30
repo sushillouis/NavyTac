@@ -29,8 +29,16 @@ public class ScenarioData
     public float difficultyLevel;
     public string timestamp;
     public bool winLoss;
-    public string winReason; // Add this field
+    public string winReason;
     public float score;
+
+    // The implicit operator below might cause issues if ScenarioDataMgr.ScenarioData is not defined
+    // or if it's not intended for direct serialization.
+    // For showing data in the inspector, it's generally not needed.
+    // public static implicit operator ScenarioData(ScenarioDataMgr.ScenarioData v)
+    // {
+    //     throw new System.NotImplementedException();
+    // }
 }
 
 public class GameMgr : MonoBehaviour
@@ -97,7 +105,7 @@ public class GameMgr : MonoBehaviour
     [Header("Time Control UI")]
     [SerializeField] private Button plusButton;
     [SerializeField] private Button minusButton;
-    [SerializeField] private TextMeshProUGUI simSpeedButtonText;
+    [SerializeField] private List <TextMeshProUGUI> simSpeedButtonText;
 
     public float timeScale = 1;
 
@@ -137,7 +145,14 @@ public class GameMgr : MonoBehaviour
             minusButton.onClick.AddListener(() => DeltaScale(-1));
         }
     }
-
+   public void PlusButtonClicked()
+    {
+        DeltaScale(1);
+    }
+    public void MinusButtonClicked()
+     {
+          DeltaScale(-1);
+     }
     void Update()
     {
         if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus))
@@ -153,13 +168,17 @@ public class GameMgr : MonoBehaviour
         if (simSpeedButtonText != null)
         {
             float displayedSpeedValue = Time.timeScale - min + 1;
-            simSpeedButtonText.text = displayedSpeedValue.ToString("0");
+            foreach (TextMeshProUGUI text in simSpeedButtonText)
+            {
+                text.text = displayedSpeedValue.ToString("0");
+            }
         }
     }
 
 
     void DetermineDifficulty()
     {
+        
         if (OpenOceanMain.inst == null)
         {
             difficultyLevel = difficultyRanges["easy"];
@@ -244,15 +263,25 @@ public class GameMgr : MonoBehaviour
     public void OpenOcean1x1()
     {
         InitializeScenario();
-        StoreCurrentScenario();
+
+
         SpawnEntities();
         if (CameraMgr.inst != null) CameraMgr.inst.SetCameraPosition();
+        
+        if (ReplayMgr.inst != null)
+        {
+            ReplayMgr.inst.StartNewScenario();
+        }
     }
 
     void InitializeScenario()
     {
+        if (!ReplayMgr.inst.isReplaying)
+        {
+            DetermineDifficulty();
+        }
 
-        DetermineDifficulty();
+        
 
         if (EnemyAIMgr.inst != null)
         {
@@ -429,10 +458,11 @@ public class GameMgr : MonoBehaviour
 
     public void StoreCurrentScenario()
     {
-        if (ReplayMgr.inst.isReplaying) return;
+        if (ReplayMgr.inst != null && ReplayMgr.inst.isReplaying) return;
+       
         ScenarioData data = new ScenarioData
         {
-            scenarioNumber = scenarioHistory.Count + 1,
+            scenarioNumber = allScenarios.Count + 1,
             entityQuantities = new List<EntityQuantity>(entityQuantities),
             posPlayer1 = posPlayer1,
             headingPlayer1 = headingPlayer1,
@@ -446,11 +476,13 @@ public class GameMgr : MonoBehaviour
 
             timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
         };
-        scenarioHistory.Add(data);
+        
+        SaveScenario(data);
     }
 
     public void InitializeScenarioFromData(ScenarioData data)
     {
+        
         entityQuantities = new List<EntityQuantity>(data.entityQuantities);
         // Correctly assign positions without swapping
         posPlayer1 = data.posPlayer1;
@@ -484,17 +516,17 @@ public class GameMgr : MonoBehaviour
         if (scenarioHistory.Count == 0) return null;
         return scenarioHistory[scenarioHistory.Count - 1];
     }
-    private List<ScenarioData> allScenarios = new List<ScenarioData>();
+    public List<ScenarioData> allScenarios = new List<ScenarioData>();
 
-public void SaveScenario(ScenarioData data)
-{
-    allScenarios.Add(data);
-}
+    public void SaveScenario(ScenarioData data)
+    {
+        allScenarios.Add(data);
+    }
 
-public ScenarioData GetScenario(int scenarioNumber)
-{
-    return allScenarios.Find(s => s.scenarioNumber == scenarioNumber);
-}
+    public ScenarioData GetScenario(int scenarioNumber)
+    {
+        return allScenarios.Find(s => s.scenarioNumber == scenarioNumber);
+    }
 }
 
     // public void Create100()

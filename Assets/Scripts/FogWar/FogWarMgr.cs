@@ -111,8 +111,13 @@ public class FogWarMgr : MonoBehaviour
     void Update()
     {
 
-        if (OpenOceanMain.inst.lobbyState == LobbyState.Replay && FOW) {
+        if (ReplayMgr.inst != null && ReplayMgr.inst.isReplaying)
+        {
             FOW = false;
+        }
+        else
+        {
+            FOW = true;
         }
         // Handle runtime changes of the FOW flag
         if (FOW != lastFOWState)

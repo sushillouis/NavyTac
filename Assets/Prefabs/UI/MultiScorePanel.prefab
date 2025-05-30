@@ -804,7 +804,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6729362625217574971}
   m_HandleRect: {fileID: 2576317505240213592}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -3126,6 +3126,7 @@ GameObject:
   - component: {fileID: 6699560560408819247}
   - component: {fileID: 3107477533513550983}
   - component: {fileID: 6055720778906794582}
+  - component: {fileID: 2299994981624342504}
   m_Layer: 5
   m_Name: EntryScenarioTitleButton
   m_TagString: Untagged
@@ -3235,19 +3236,20 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3107477533513550983}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: ResetScene, Assembly-CSharp
-        m_MethodName: ReloadScene
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
+      m_Calls: []
+--- !u!114 &2299994981624342504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3598408100891887163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 655d23f02908b4804ac2097328afd3a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scenarioNumber: 0
 --- !u!1 &3776085312822948475
 GameObject:
   m_ObjectHideFlags: 0
@@ -4220,7 +4222,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Replay
+  m_text: Back
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 06c44d93c488a354aa0d7ff058e9ddad, type: 2}
   m_sharedMaterial: {fileID: 6643591532545578594, guid: 06c44d93c488a354aa0d7ff058e9ddad,
@@ -5304,12 +5306,12 @@ GameObject:
   - component: {fileID: 4582964253836522408}
   - component: {fileID: 3092284006920143067}
   m_Layer: 5
-  m_Name: ReplayButton
+  m_Name: BackButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3564887466967726644
 RectTransform:
   m_ObjectHideFlags: 0

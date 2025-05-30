@@ -161,6 +161,8 @@ public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, boo
                     targetEntityId = targetEntityId,
                     add = add
                 };
+                Debug.Log($"Recording command: {cmd.commandType} at {cmd.targetPosition} for entities: {string.Join(", ", cmd.entityIds)}");
+                
                 ReplayMgr.inst.RecordCommand(cmd);
             }
 

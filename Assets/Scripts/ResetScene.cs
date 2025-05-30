@@ -21,15 +21,11 @@ public class ResetScene : MonoBehaviour
     }
     public void ReloadScene()
     {
-
+        
 
         ClearAllEntities();
         ResetGameState();
-        
-            GameMgr.inst.OpenOcean1x1();
-        
-        
-         // Ensure this method is defined below or accessible.
+        GameMgr.inst.OpenOcean1x1();
     }
 
     // Your existing ClearAllEntities method.

@@ -540,18 +540,7 @@ public class OpenOceanMain : MonoBehaviour
 
             }
 
-            if (value == LobbyState.Replay)
-            {
-                Time.timeScale = 1f;
-                if (ReplayMgr.inst != null)
-                {
-                    ReplayMgr.inst.StartReplay();
-                }
-                else
-                {
-                    Debug.LogError("ReplayMgr instance is null.");
-                }
-            }
+            
 
             if (IsDebugging) Debug.Log($"Lobby state changed from {previousState} to {value}.", this);
         }
@@ -584,6 +573,7 @@ public class OpenOceanMain : MonoBehaviour
     {
         totalPlayTime = 0f;
         int scenarioNumber = gamesPlayedCount + 1;
+        
 
         // Then spawn entities
         if (isSinglePlayer)
@@ -648,7 +638,10 @@ public class OpenOceanMain : MonoBehaviour
 
     public void OnNextGameOrExitClicked()
     {
-
+        if (ReplayMgr.inst != null)
+        {
+            ReplayMgr.inst.CompleteScenario();
+        }
 
         if (currentTrainingState == TrainingState.Adaptive)
         {
@@ -666,6 +659,7 @@ public class OpenOceanMain : MonoBehaviour
             else
             {
                 if (IsDebugging) Debug.Log($"Non-Adaptive mode, training time {totalTrainingTime / 60f:F2}m / {nonAdaptiveTrainingTime}m. Starting next game.", this);
+                ResetScene.inst.ReloadScene();
                 lobbyState = LobbyState.Play;
             }
         }
@@ -681,6 +675,7 @@ public class OpenOceanMain : MonoBehaviour
             {
                 // In other cases (PreTest, PostTest), if more games are to be played, start the next game.
                 if (IsDebugging) Debug.Log($"Other mode ({currentTrainingState}), {gamesPlayedCount}/{gamePlayCountMAX} games played. Starting next game.", this);
+                ResetScene.inst.ReloadScene();
                 lobbyState = LobbyState.Play;
             }
         }
@@ -698,6 +693,7 @@ public class OpenOceanMain : MonoBehaviour
             else
             {
                 if (IsDebugging) Debug.Log($"Non-Adaptive mode on MultiScorePanel: Training time {totalTrainingTime / 60f:F2}m / {nonAdaptiveTrainingTime}m. Proceeding to next game.", this);
+                ResetScene.inst.ReloadScene();
                 lobbyState = LobbyState.Play;
             }
         }
@@ -711,6 +707,7 @@ public class OpenOceanMain : MonoBehaviour
             else
             {
                 if (IsDebugging) Debug.Log($"Other mode ({currentTrainingState}) on MultiScorePanel: {gamesPlayedCount}/{gamePlayCountMAX} games played. Proceeding to next game.", this);
+                ResetScene.inst.ReloadScene();
                 lobbyState = LobbyState.Play;
             }
         }
@@ -850,6 +847,15 @@ public class OpenOceanMain : MonoBehaviour
     }
     public void BackButton()
     {
-            lobbyState = LobbyState.ScorePanel;
+        lobbyState = LobbyState.ScorePanel;
+    }
+        public void OnScenarioSelected(int scenarioNumber)
+    {
+        if (ReplayMgr.inst != null)
+        {
+            lobbyState = LobbyState.Replay;
+            ReplayMgr.inst.StartReplay(scenarioNumber);
+            
+        }
     }
 }
