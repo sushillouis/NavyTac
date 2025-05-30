@@ -31,6 +31,7 @@ public class ScenarioData
     public bool winLoss;
     public string winReason;
     public float score;
+    public float totalTime;
 
     // The implicit operator below might cause issues if ScenarioDataMgr.ScenarioData is not defined
     // or if it's not intended for direct serialization.
@@ -178,7 +179,10 @@ public class GameMgr : MonoBehaviour
 
     void DetermineDifficulty()
     {
-        
+        if (OpenOceanMain.inst.lobbyState == LobbyState.Replay)
+        {
+            return;
+        }
         if (OpenOceanMain.inst == null)
         {
             difficultyLevel = difficultyRanges["easy"];
@@ -230,7 +234,12 @@ public class GameMgr : MonoBehaviour
     {
         if (ScoreMgr.inst != null)
         {
-            difficultyLevel = difficultyLevel + 0.05f * ScoreMgr.inst.score / 100;
+            if (ScoreMgr.inst.playerScores.Count == 0)
+            {
+                difficultyLevel = 0.2f; // Default value if no scores are available
+                return difficultyLevel;
+            }
+            difficultyLevel = difficultyLevel + 0.05f * ScoreMgr.inst.playerScores[ScoreMgr.inst.playerScores.Count - 1] / 100f;
         }
         float clampedDifficulty = Mathf.Clamp(difficultyLevel, 0f, 1f);
         return clampedDifficulty;
@@ -276,13 +285,9 @@ public class GameMgr : MonoBehaviour
 
     void InitializeScenario()
     {
-        if (!ReplayMgr.inst.isReplaying)
-        {
-            DetermineDifficulty();
-        }
 
-        
 
+        DetermineDifficulty();
         if (EnemyAIMgr.inst != null)
         {
             if (currentDifficulty == Difficulty.Easy)
@@ -472,8 +477,7 @@ public class GameMgr : MonoBehaviour
             winLoss = ScoreMgr.inst != null && ScoreMgr.inst.playerWon,
             winReason = ScoreMgr.inst != null ? ScoreMgr.inst.winReason : "Unknown",
             score = ScoreMgr.inst != null ? ScoreMgr.inst.score : 0f,
-
-
+            totalTime =  OpenOceanMain.inst.playSessionDuration,
             timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
         };
         

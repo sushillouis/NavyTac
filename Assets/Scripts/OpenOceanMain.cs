@@ -802,7 +802,7 @@ public class OpenOceanMain : MonoBehaviour
             SetTextOnChild(entryInstance.transform, "EntryDamageDealtText", scenarioData.damageDealt.ToString("F0"));
             SetTextOnChild(entryInstance.transform, "EntryDamageTakenText", scenarioData.damageTaken.ToString("F0"));
             SetTextOnChild(entryInstance.transform, "EntryWinLossText", scenarioData.winLoss ? "Win" : "Loss");
-            SetTextOnChild(entryInstance.transform, "EntryScoreText", scenarioData.score.ToString("F0"));
+            SetTextOnChild(entryInstance.transform, "EntryScoreText", scenarioData.score.ToString("F0")+"%");
             SetTextOnChild(entryInstance.transform, "FeedbackText", scenarioData.feedback);
         }
 

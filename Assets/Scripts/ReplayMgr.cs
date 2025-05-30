@@ -36,6 +36,7 @@ public class ReplayMgr : MonoBehaviour
 
     public bool actualPlayerWon;
     public string actualWinReason;
+    public float actualTimeTaken;
 
     private void Awake()
     {
@@ -166,6 +167,7 @@ public class ReplayMgr : MonoBehaviour
         {
             actualPlayerWon = scenario.winLoss;
             actualWinReason = scenario.winReason;
+            actualTimeTaken = scenario.totalTime;
             Debug.Log($"ReplayMgr: Captured actual win condition for scenario {scenarioNumber}: PlayerWon={actualPlayerWon}, WinReason='{actualWinReason}'");
 
             GameMgr.inst.InitializeScenarioFromData(scenario);
@@ -178,22 +180,31 @@ public class ReplayMgr : MonoBehaviour
         }
 
         isReplaying = true;
-        replayStartTime = Time.time;
+
         nextCommandIndex = 0;
         Debug.Log($"ReplayMgr: Replay started. isReplaying={isReplaying}, replayStartTime={replayStartTime}, nextCommandIndex={nextCommandIndex}");
         if (CameraMgr.inst != null) CameraMgr.inst.ReplayCamera(); else Debug.LogWarning("ReplayMgr: CameraMgr.inst is null, cannot set replay camera.");
+        replayStartTime = Time.unscaledTime;
     }
 
     private void Update()
     {
         if (isReplaying && !replayFinished && currentReplayCommands != null)
         {
-            float currentReplayTime = Time.time - replayStartTime;
+            float currentReplayTime = Time.unscaledTime - replayStartTime;
+            if (currentReplayTime > actualTimeTaken + 10f)
+            {
+                Debug.LogWarning($"ReplayMgr: Current replay time {currentReplayTime:F2} exceeds actual time taken {actualTimeTaken:F2}. Stopping replay.");
+                StopReplayAndShowScores();
+                return;
+            }
             // ADDED: General status log at the beginning of Update when replaying
-            Debug.Log($"ReplayMgr Update: IsReplaying={isReplaying}, ReplayFinished={replayFinished}, CurrentReplayTime={currentReplayTime:F2}, NextCmdIndex={nextCommandIndex}, TotalCmds={(currentReplayCommands != null ? currentReplayCommands.Count : 0)}");
+            float effectiveReplayLoopTime = currentReplayTime * Time.timeScale;
+
+            Debug.Log($"ReplayMgr Update: IsReplaying={isReplaying}, ReplayFinished={replayFinished}, EffectiveReplayTime={effectiveReplayLoopTime:F2} (UnscaledTime={currentReplayTime:F2}, TimeScale={Time.timeScale:F2}), NextCmdIndex={nextCommandIndex}, TotalCmds={(currentReplayCommands != null ? currentReplayCommands.Count : 0)}");
 
             while (nextCommandIndex < currentReplayCommands.Count &&
-                   currentReplayCommands[nextCommandIndex].timestamp <= currentReplayTime)
+                   currentReplayCommands[nextCommandIndex].timestamp <= effectiveReplayLoopTime)
             {
                 ReplayCommand commandToExecute = currentReplayCommands[nextCommandIndex];
                 // MODIFIED: Added command type to the existing log for better context

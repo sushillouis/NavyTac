@@ -18,6 +18,7 @@ public class ScoreMgr : MonoBehaviour
     public float score; // Calculated score for the game
     public bool aiWon; // Flag indicating if the AI won
     public String winReason; // Reason for winning (e.g., "All enemy units destroyed")
+    public List <float> playerScores = new List<float>(); // List to store scores for each player in the game
 
     private string sessionStartTimeString; // To store session start time, used in log filenames
     private const string CommonLogFileName = "AllGamesLog.csv"; // Name for the common log file for all games
@@ -99,6 +100,10 @@ public class ScoreMgr : MonoBehaviour
 
         // Calculate the score based on win status and damage ratio
         score = (float)(0.5 * (playerWon ? 1 : 0)) * 100 + 0.5f * (damageDealt / (damageDealt + damageTaken)) * 100;
+        if(ReplayMgr.inst != null && ReplayMgr.inst.isRecording)
+        {
+            playerScores.Add(score); // Add score to the list for replay recording
+        }
         if (OpenOceanMain.inst.lobbyState != LobbyState.Replay)
         {
             ScenarioDataMgr.ScenarioData data = new ScenarioDataMgr.ScenarioData();
@@ -285,6 +290,8 @@ public class ScoreMgr : MonoBehaviour
         damageTaken = 0;
         playerWon = false;
         aiWon = false;
+        score = 0;
+        winReason = string.Empty; // Reset win reason
     }
 
     /// <summary>

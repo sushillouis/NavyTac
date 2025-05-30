@@ -10,7 +10,9 @@ public class MinimapMgr : MonoBehaviour
     public static MinimapMgr inst;
 
     [Header("Map Parameters")]
+    public RectTransform minimapImageNonReplay;
     public RectTransform minimapImage;
+    public RectTransform minimapImageReplay;
     public Vector2 worldSize;
 
     [Header("Parameters for Size Toggling")]
@@ -50,7 +52,10 @@ public class MinimapMgr : MonoBehaviour
 
     // Update is called once per frame
     void Update() {
-        
+        if (ReplayMgr.inst.isReplaying)
+            minimapImage = minimapImageReplay;
+        else
+            minimapImage = minimapImageNonReplay;
         UpdateMinimap();
     }
 

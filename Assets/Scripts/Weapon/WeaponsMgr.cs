@@ -326,7 +326,7 @@ public class WeaponsMgr : MonoBehaviour
             else
             {
                 ScoreMgr.inst.aiWon = true;
-                ScoreMgr.inst.winReason = "Your Base Destroyed";
+                ScoreMgr.inst.winReason = "Your Base Was Destroyed";
             }
             ScoreMgr.inst.CheckVictory();
             }
