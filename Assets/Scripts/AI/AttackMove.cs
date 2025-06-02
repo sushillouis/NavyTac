@@ -4,39 +4,37 @@
 public class AttackMove : Move
 {
     private Entity explicitTarget;
-    private bool hasExplicitTarget; // True if currently pursuing a specific target
-    private Entity commandedTarget; // The original entity target provided in the constructor
-    private Vector3 lastKnownCommandedTargetPosition; // Last known position of the commandedTarget
-    private bool isAcquiredTarget; // True if explicitTarget is an acquired target along the way
-    private bool acquireTargetsOnWay; // True if unit should acquire targets along the path
+    private bool hasExplicitTarget;
+    private Entity commandedTarget;
+    private Vector3 lastKnownCommandedTargetPosition;
+    private bool isAcquiredTarget;
+    private bool acquireTargetsOnWay;
 
-    // Fields for original command type
-    private Vector3 originalDestinationForAttackMove; // Stores the original destination for an attack-move to a point
-    private bool wasOriginallyAttackMoveToPosition;   // True if the command was an attack-move to a point
+    private Vector3 originalDestinationForAttackMove;
+    private bool wasOriginallyAttackMoveToPosition;
 
     private float basePathUpdateCooldown;
-    private Vector3 lastKnownTargetPosition; // Last known position of an 'explicitTarget'
+    private Vector3 lastKnownTargetPosition;
     private WeaponsAspect _weaponsAspect;
 
     private const float DefaultPathUpdateCooldown = 0.3f;
     private const float MovingTargetPathUpdateCooldown = 0.2f;
     private const float TargetMovingSpeedThreshold = 1.0f;
     
+    // Optimization fields
+    private float threatCheckCooldown = 0.5f;
+    private float timeSinceLastThreatCheck = 0f;
+    private float timeSinceLastPathUpdate = 0f;
+    private const float SignificantMovementThresholdSq = 1.0f; // 1 unit squared
 
-    // Constructor for attack-move to a position
     public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, pos, maxSpeed, doneDistanceSq)
     {
-        _weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-        if (_weaponsAspect == null)
-        {
-            Debug.LogError("WeaponsAspect not found on entity: " + ent.name);
-            return;
-        }
+        InitializeWeaponsAspect(ent);
         hasExplicitTarget = false;
         explicitTarget = null;
         commandedTarget = null;
         isAcquiredTarget = false;
-        acquireTargetsOnWay = false; // Default for position constructor
+        acquireTargetsOnWay = false;
         pathUpdateCooldown = DefaultPathUpdateCooldown;
         basePathUpdateCooldown = DefaultPathUpdateCooldown;
         this.originalDestinationForAttackMove = pos;
@@ -45,15 +43,9 @@ public class AttackMove : Move
         lastKnownCommandedTargetPosition = pos;
     }
 
-    // Constructor for attacking a specific entity
     public AttackMove(Entity ent, Entity target, bool acquireTargetsOnWay = false, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, target.position, maxSpeed, doneDistanceSq)
     {
-        _weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-        if (_weaponsAspect == null)
-        {
-            Debug.LogError("WeaponsAspect not found on entity: " + ent.name);
-            return;
-        }
+        InitializeWeaponsAspect(ent);
         explicitTarget = target;
         hasExplicitTarget = true;
         commandedTarget = target;
@@ -74,6 +66,15 @@ public class AttackMove : Move
         this.wasOriginallyAttackMoveToPosition = false;
     }
 
+    private void InitializeWeaponsAspect(Entity ent)
+    {
+        _weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+        if (_weaponsAspect == null)
+        {
+            Debug.LogError("WeaponsAspect not found on entity: " + ent.name);
+        }
+    }
+
     public override void Init()
     {
         base.Init();
@@ -88,23 +89,26 @@ public class AttackMove : Move
 
     public override void Tick()
     {
-        // Update last known positions
-        if (commandedTarget != null && _weaponsAspect.IsTargetValid(commandedTarget))
+        // Update timers
+        timeSinceLastThreatCheck += Time.deltaTime;
+        timeSinceLastPathUpdate += Time.deltaTime;
+
+        // Update last known positions - cheap operation
+        if (commandedTarget != null && _weaponsAspect != null && _weaponsAspect.IsTargetValid(commandedTarget))
         {
             lastKnownCommandedTargetPosition = commandedTarget.position;
         }
-        if (hasExplicitTarget && explicitTarget != null && _weaponsAspect.IsTargetValid(explicitTarget))
+        if (hasExplicitTarget && explicitTarget != null && _weaponsAspect != null && _weaponsAspect.IsTargetValid(explicitTarget))
         {
             lastKnownTargetPosition = explicitTarget.position;
         }
 
         // Handle explicitTarget becoming invalid
-        if (hasExplicitTarget && (explicitTarget == null || !_weaponsAspect.IsTargetValid(explicitTarget)))
+        if (hasExplicitTarget && (explicitTarget == null || (_weaponsAspect != null && !_weaponsAspect.IsTargetValid(explicitTarget))))
         {
             if (isAcquiredTarget)
             {
-                // Acquired target destroyed, revert to commandedTarget
-                if (commandedTarget != null && _weaponsAspect.IsTargetValid(commandedTarget))
+                if (commandedTarget != null && _weaponsAspect != null && _weaponsAspect.IsTargetValid(commandedTarget))
                 {
                     explicitTarget = commandedTarget;
                     isAcquiredTarget = false;
@@ -117,14 +121,13 @@ public class AttackMove : Move
             }
             else
             {
-                // Commanded target destroyed, move to its LKP
                 hasExplicitTarget = false;
                 movePosition = lastKnownTargetPosition;
             }
         }
 
-        // Check for threats if acquireTargetsOnWay is enabled
-        if (acquireTargetsOnWay)
+        // Threat detection with cooldown
+        if (acquireTargetsOnWay && timeSinceLastThreatCheck >= threatCheckCooldown && _weaponsAspect != null)
         {
             Entity threat = _weaponsAspect.FindImmediateThreatInRange();
             if (threat != null && threat != explicitTarget)
@@ -133,25 +136,48 @@ public class AttackMove : Move
                 isAcquiredTarget = true;
                 hasExplicitTarget = true;
             }
+            timeSinceLastThreatCheck = 0f;
         }
 
-        // Determine movePosition
-        if (hasExplicitTarget)
+        // Determine if we need to update path
+        bool needsPathUpdate = timeSinceLastPathUpdate >= pathUpdateCooldown;
+        bool targetMovedSignificantly = false;
+
+        if (hasExplicitTarget && explicitTarget != null)
         {
-            movePosition = explicitTarget.position;
-            pathUpdateCooldown = explicitTarget.speed > TargetMovingSpeedThreshold ? MovingTargetPathUpdateCooldown : basePathUpdateCooldown;
+            // Check if target has moved significantly since last path update
+            float moveDistanceSq = (explicitTarget.position - movePosition).sqrMagnitude;
+            targetMovedSignificantly = moveDistanceSq > SignificantMovementThresholdSq;
         }
-        else
+
+        // Update destination only when needed
+        if (needsPathUpdate || targetMovedSignificantly)
         {
-            if (wasOriginallyAttackMoveToPosition)
+            if (hasExplicitTarget && explicitTarget != null)
             {
-                movePosition = originalDestinationForAttackMove;
+                movePosition = explicitTarget.position;
+                if (explicitTarget.speed > TargetMovingSpeedThreshold)
+                {
+                    pathUpdateCooldown = MovingTargetPathUpdateCooldown;
+                }
+                else
+                {
+                    pathUpdateCooldown = basePathUpdateCooldown;
+                }
             }
             else
             {
-                movePosition = lastKnownCommandedTargetPosition;
+                if (wasOriginallyAttackMoveToPosition)
+                {
+                    movePosition = originalDestinationForAttackMove;
+                }
+                else
+                {
+                    movePosition = lastKnownCommandedTargetPosition;
+                }
+                pathUpdateCooldown = basePathUpdateCooldown;
             }
-            pathUpdateCooldown = basePathUpdateCooldown;
+            timeSinceLastPathUpdate = 0f;
         }
 
         // Engagement Logic
@@ -170,7 +196,11 @@ public class AttackMove : Move
             }
             else
             {
-                targetToEngage = _weaponsAspect.FindImmediateThreatInRange();
+                // Only check for immediate threats if not in cooldown
+                if (timeSinceLastThreatCheck >= threatCheckCooldown * 0.5f)
+                {
+                    targetToEngage = _weaponsAspect.FindImmediateThreatInRange();
+                }
             }
         }
 
@@ -181,7 +211,6 @@ public class AttackMove : Move
 
             if (hasExplicitTarget && targetToEngage == explicitTarget)
             {
-                
                 base.Tick();
                 entity.desiredSpeed = targetToEngage.speed;
             }
@@ -202,19 +231,21 @@ public class AttackMove : Move
     {
         if (line != null && !FogWarMgr.inst.nonRevelers.Contains(entity))
         {
-            line.gameObject.SetActive(entity.isSelected);
-            line.positionCount = 2;
-            line.SetPosition(0, entity.position);
-            line.SetPosition(1, movePosition);
+            bool shouldShow = entity.isSelected && (hasExplicitTarget || !IsDone());
+            line.gameObject.SetActive(shouldShow);
+            
+            if (shouldShow)
+            {
+                line.positionCount = 2;
+                line.SetPosition(0, entity.position);
+                line.SetPosition(1, movePosition);
+            }
         }
     }
 
     private void AimAndFireAtTarget(Entity target)
     {
         if (target == null || _weaponsAspect == null || _weaponsAspect.weapon == null) return;
-
-        Vector3 directionToTarget = target.position - entity.position;
-        // entity.desiredHeading = Mathf.Atan2(directionToTarget.x, directionToTarget.z) * Mathf.Rad2Deg;
         WeaponsMgr.inst.handleWeapon(entity, target);
     }
 
@@ -224,22 +255,19 @@ public class AttackMove : Move
         {
             return false;
         }
-        else
+        
+        if (_weaponsAspect != null && _weaponsAspect.weapon != null)
         {
-            bool canEngageNow = _weaponsAspect != null && _weaponsAspect.weapon != null;
-            if (canEngageNow)
+            // Only check for threats periodically
+            if (timeSinceLastThreatCheck >= threatCheckCooldown * 0.7f)
             {
                 Entity threatInRange = _weaponsAspect.FindImmediateThreatInRange();
-                if (threatInRange != null)
-                {
-                    return false;
-                }
+                if (threatInRange != null) return false;
             }
-            return base.IsDone();
         }
+        
+        return base.IsDone();
     }
-
-    
 
     public override void Stop()
     {

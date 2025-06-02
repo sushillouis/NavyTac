@@ -61,58 +61,94 @@ public class WeaponsAspect : MonoBehaviour
         }
     }
 
-    public Entity FindImmediateThreatInRange()
+   public Entity FindImmediateThreatInRange()
+{
+    Vector3 entityPos = entity.position;
+    float rangeSq = weapon.range * weapon.range;
+    Entity bestThreat = null;
+    float bestDistanceSq = float.MaxValue;
+
+    bool isAI = entity.owner != null && entity.owner.name.Equals("Ai", StringComparison.OrdinalIgnoreCase);
+    
+    // For AI: Precompute priority dictionary
+    Dictionary<EntityType, int> priorityDict = null;
+    if (isAI)
     {
-        float rangeSq = weapon.range * weapon.range;
-        Entity bestThreat = null;
-        float bestDistanceSq = float.MaxValue;
-
-        bool isAI = entity.owner != null && entity.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase);
-        // Assume GameMgr.inst.priorityList is a List<EntityClass> defining global priority order
+        priorityDict = new Dictionary<EntityType, int>();
         var priorityList = SpawnEntityMgr.inst.priorityList;
-
-        foreach (Entity potential in EntityMgr.inst.entities)
+        for (int i = 0; i < priorityList.Count; i++)
         {
-            if (potential == entity ||
-                potential.owner == entity.owner ||
-                !IsTargetValid(potential))
-                continue;
+            priorityDict[priorityList[i]] = i;
+        }
+    }
 
-            float distSq = (potential.position - entity.position).sqrMagnitude;
-            if (distSq > rangeSq) continue;
+    // For AI: Track best priority/health state
+    int bestPriorityIndex = int.MaxValue;
+    float bestHealth = float.MaxValue;
 
-            if (isAI)
+    foreach (Entity potential in EntityMgr.inst.entities)
+    {
+        // Fast rejection checks
+        if (potential == entity || 
+            potential.owner == entity.owner || 
+            !IsTargetValid(potential)) 
+            continue;
+
+        // Distance check
+        float distSq = (potential.position - entityPos).sqrMagnitude;
+        if (distSq > rangeSq) continue;
+
+        if (isAI)
+        {
+            // Get priority (default to MaxValue if not found)
+            int currentPriority = priorityDict.TryGetValue(potential.entityType, out int idx) 
+                ? idx 
+                : int.MaxValue;
+            
+            // Selection logic with priority order:
+            // 1. Higher priority (lower index)
+            // 2. Lower health
+            // 3. Closer distance
+            if (bestThreat == null)
             {
-                // Determine priority index (lower index = higher priority)
-                int potIdx = priorityList.IndexOf(potential.entityType);
-                if (potIdx < 0) potIdx = int.MaxValue;
-
-                int bestIdx = bestThreat != null
-                    ? priorityList.IndexOf(bestThreat.entityType)
-                    : int.MaxValue;
-
-                if (bestThreat == null
-                    || potIdx < bestIdx
-                    || (potIdx == bestIdx && potential.health < bestThreat.health)
-                    || (potIdx == bestIdx && potential.health == bestThreat.health && distSq < bestDistanceSq))
+                UpdateBest();
+            }
+            else if (currentPriority < bestPriorityIndex)
+            {
+                UpdateBest();
+            }
+            else if (currentPriority == bestPriorityIndex)
+            {
+                if (potential.health < bestHealth)
                 {
-                    bestThreat = potential;
-                    bestDistanceSq = distSq;
+                    UpdateBest();
+                }
+                else if (potential.health == bestHealth && distSq < bestDistanceSq)
+                {
+                    UpdateBest();
                 }
             }
-            else
+
+            void UpdateBest()
             {
-                // Non‐AI: pick closest
-                if (distSq < bestDistanceSq)
-                {
-                    bestThreat = potential;
-                    bestDistanceSq = distSq;
-                }
+                bestThreat = potential;
+                bestDistanceSq = distSq;
+                bestPriorityIndex = currentPriority;
+                bestHealth = potential.health;
             }
         }
-
-        return bestThreat;
+        else // Non-AI logic
+        {
+            if (distSq < bestDistanceSq)
+            {
+                bestThreat = potential;
+                bestDistanceSq = distSq;
+            }
+        }
     }
+
+    return bestThreat;
+}
     
     public bool IsTargetValid(Entity target)
     {

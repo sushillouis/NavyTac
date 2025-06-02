@@ -391,7 +391,7 @@ private void HandleLevel2CombatBehavior(List<Entity> aiEntities)
             // Linear interpolation: Mathf.Lerp(from, to, t)
             // If diff=0 means easier, delay should be longer (66f).
             // If diff=1 means harder, delay should be shorter (15f).
-            BatchDelay = Mathf.Lerp(20f, 60f, (diff - 0.33f) / (0.66f - 0.33f));
+            BatchDelay = Mathf.Lerp(60f, 20f, (diff - 0.33f) / (0.66f - 0.33f));
         }
        
 

@@ -553,11 +553,7 @@
                 if (entity != null) {
                 // Make the entity face the movePosition
                 Vector3 directionToTarget = movePosition - entity.position;
-                if (directionToTarget.sqrMagnitude > 0.001f) // Check to avoid issues if already at the target
-                {
-                    float desiredHeadingDegrees = Utils.Degrees360(Mathf.Atan2(directionToTarget.x, directionToTarget.z) * Mathf.Rad2Deg);
-                    entity.desiredHeading = desiredHeadingDegrees;
-                }
+                
                 entity.desiredSpeed = 0;
                 }
 

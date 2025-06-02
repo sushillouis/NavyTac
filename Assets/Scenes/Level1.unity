@@ -315,8 +315,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 3000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!4 &57805744
 Transform:
   m_ObjectHideFlags: 0
@@ -632,8 +632,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 1500
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!1 &224765858
 GameObject:
   m_ObjectHideFlags: 0
@@ -744,8 +744,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 1500
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!1 &228707287
 GameObject:
   m_ObjectHideFlags: 0
@@ -1094,8 +1094,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 4000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!114 &272299435 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7992747285043202366, guid: b89ba6f4b759a464da93e95fbafe480f,
@@ -1153,8 +1153,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 1500
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!1001 &295357075
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1187,21 +1187,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3922448631972919876, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
-        type: 3}
-      propertyPath: originalMaxSpeed
-      value: 130
-      objectReference: {fileID: 0}
-    - target: {fileID: 3922448631972919876, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
-        type: 3}
-      propertyPath: originalTurnRate
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 3922448631972919876, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
-        type: 3}
-      propertyPath: originalAcceleration
-      value: 35
       objectReference: {fileID: 0}
     - target: {fileID: 7187487557739430685, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
         type: 3}
@@ -1303,8 +1288,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 4000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!4 &328336173
 Transform:
   m_ObjectHideFlags: 0
@@ -1487,8 +1472,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 4000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!4 &387582371
 Transform:
   m_ObjectHideFlags: 0
@@ -3154,8 +3139,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 2500
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!4 &641959633
 Transform:
   m_ObjectHideFlags: 0
@@ -3454,8 +3439,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 2800
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!114 &772865853 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5230200808471013758, guid: 3769d37cb4868da47b56c4040c02c3a9,
@@ -3671,8 +3656,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 2000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!1001 &836140739
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3786,8 +3771,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 1500
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!1 &850741341
 GameObject:
   m_ObjectHideFlags: 0
@@ -3833,8 +3818,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 1500
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!1 &885140571
 GameObject:
   m_ObjectHideFlags: 0
@@ -3880,8 +3865,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 10000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!850595691 &886595368
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -4009,8 +3994,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 1500
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!1 &948085070
 GameObject:
   m_ObjectHideFlags: 0
@@ -4041,8 +4026,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 3300
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!4 &948085072
 Transform:
   m_ObjectHideFlags: 0
@@ -4504,8 +4489,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 2200
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!4 &999004833
 Transform:
   m_ObjectHideFlags: 0
@@ -4566,8 +4551,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 10000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!114 &1013935664 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7203265176799761052, guid: b89ba6f4b759a464da93e95fbafe480f,
@@ -4825,8 +4810,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 1500
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!1 &1107700853 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8511844707428212669, guid: b89ba6f4b759a464da93e95fbafe480f,
@@ -5225,6 +5210,38 @@ Transform:
   - {fileID: 1735050322}
   m_Father: {fileID: 1708907977}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1275557917 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7653935596134569129, guid: b89ba6f4b759a464da93e95fbafe480f,
+    type: 3}
+  m_PrefabInstance: {fileID: 2494237939926309687}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1275557919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1275557917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: -50
+    m_Right: 0
+    m_Top: 50
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_Spacing: 0
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 1
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
 --- !u!1 &1302052643
 GameObject:
   m_ObjectHideFlags: 0
@@ -6276,8 +6293,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 1500
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!4 &1478840848 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7190143859791935741, guid: 3dd31307ffa781d46836e177b9b0ac7d,
@@ -6541,8 +6558,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 4000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!4 &1550387678
 Transform:
   m_ObjectHideFlags: 0
@@ -6647,8 +6664,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 2000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!1 &1576919499
 GameObject:
   m_ObjectHideFlags: 0
@@ -6833,8 +6850,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 10000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!4 &1633039278 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4785934218609609843, guid: 6f05e3291ed3b374e83bc5165bcb3f8d,
@@ -7477,8 +7494,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 1500
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!1 &1852731777
 GameObject:
   m_ObjectHideFlags: 0
@@ -7709,8 +7726,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 10000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!114 &1878534764 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3092284006920143067, guid: b89ba6f4b759a464da93e95fbafe480f,
@@ -7897,8 +7914,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 2200
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!1001 &1890727503
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8047,8 +8064,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 4000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!4 &1895626497
 Transform:
   m_ObjectHideFlags: 0
@@ -8340,8 +8357,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 1500
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!4 &1996769223
 Transform:
   m_ObjectHideFlags: 0
@@ -8782,8 +8799,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 4000
-  repulsionStrength: 10000
-  repulsionRadius: 1000
+  repulsionStrength: 1000
+  repulsionRadius: 500
 --- !u!114 &2108933782 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4992333878655647106, guid: 25a77a5a7d309544b9cdd76bf96382f5,
@@ -8893,26 +8910,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8004017952877138807, guid: d51d8d0dda5552c478afc7674abdd037,
-        type: 3}
-      propertyPath: mass
-      value: 1000
-      objectReference: {fileID: 0}
-    - target: {fileID: 8004017952877138807, guid: d51d8d0dda5552c478afc7674abdd037,
-        type: 3}
-      propertyPath: originalMaxSpeed
-      value: 155
-      objectReference: {fileID: 0}
-    - target: {fileID: 8004017952877138807, guid: d51d8d0dda5552c478afc7674abdd037,
-        type: 3}
-      propertyPath: originalTurnRate
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 8004017952877138807, guid: d51d8d0dda5552c478afc7674abdd037,
-        type: 3}
-      propertyPath: originalAcceleration
-      value: 50
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -9432,21 +9429,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: DDG51
       objectReference: {fileID: 0}
-    - target: {fileID: 2020023502598012843, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: originalMaxSpeed
-      value: 112
-      objectReference: {fileID: 0}
-    - target: {fileID: 2020023502598012843, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: originalTurnRate
-      value: 35
-      objectReference: {fileID: 0}
-    - target: {fileID: 2020023502598012843, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: originalAcceleration
-      value: 30
-      objectReference: {fileID: 0}
     - target: {fileID: 3922861415598738677, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -9638,6 +9620,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1491763689}
     m_Modifications:
+    - target: {fileID: 1563362635113455688, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 76.085
+      objectReference: {fileID: 0}
+    - target: {fileID: 1563362635113455688, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 23.3881
+      objectReference: {fileID: 0}
+    - target: {fileID: 1563362635113455688, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -111.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1563362635113455688, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 411.9
+      objectReference: {fileID: 0}
     - target: {fileID: 2576317505240213592, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -9647,6 +9649,56 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2576317505240213592, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4556064537169487735, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4556064537169487735, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4556064537169487735, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4556064537169487735, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4556064537169487735, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4556064537169487735, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4883500247948357232, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_MovementType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5452693900314548864, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 34.33496
+      objectReference: {fileID: 0}
+    - target: {fileID: 5452693900314548864, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -7.644043
       objectReference: {fileID: 0}
     - target: {fileID: 5863179367802377115, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
@@ -9755,8 +9807,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8654361994499445350, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8654361994499445350, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 4000
+      objectReference: {fileID: 0}
+    - target: {fileID: 8654361994499445350, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00003015995
+      value: 0.000061035156
       objectReference: {fileID: 0}
     - target: {fileID: 9027428336187089416, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
@@ -9776,7 +9838,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7653935596134569129, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1275557919}
   m_SourcePrefab: {fileID: 100100000, guid: b89ba6f4b759a464da93e95fbafe480f, type: 3}
 --- !u!1001 &2565046882654747935
 PrefabInstance:
@@ -9916,38 +9982,8 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
         type: 3}
-      propertyPath: mass
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
-        type: 3}
-      propertyPath: maxFuel
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
-        type: 3}
-      propertyPath: cruiseSpeed
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
-        type: 3}
-      propertyPath: originalMaxSpeed
-      value: 1000
-      objectReference: {fileID: 0}
-    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
-        type: 3}
-      propertyPath: originalTurnRate
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
-        type: 3}
       propertyPath: terrainMask.m_Bits
       value: 64
-      objectReference: {fileID: 0}
-    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
-        type: 3}
-      propertyPath: originalAcceleration
-      value: 500
       objectReference: {fileID: 0}
     - target: {fileID: 7937593839646341501, guid: 8e5a241efd26c114ca69ba5949ed5da0,
         type: 3}
