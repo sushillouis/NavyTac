@@ -436,9 +436,11 @@ public class OpenOceanMain : MonoBehaviour
             if (value == LobbyState.MultiScorePanel && previousState != LobbyState.Replay)
             {
                 UpdateMultiScoreDisplay();
+                
             }
 
             if (IsDebugging) Debug.Log($"Lobby state changed from {previousState} to {value}.", this);
+            
         }
     }
 

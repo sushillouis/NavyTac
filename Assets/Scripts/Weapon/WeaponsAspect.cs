@@ -37,9 +37,9 @@ public class WeaponsAspect : MonoBehaviour
     {
         if (entity == null || weapon == null) return;
         UnitAI unitAI = entity.GetComponentInChildren<UnitAI>();
-        if(unitAI == null) return;
-        if (unitAI.commands.Count > 0 && unitAI.commands.Peek() != null){
-            if (unitAI.commands.Peek().GetType() == typeof(Move)||
+        if (unitAI == null) return;
+        if (unitAI.commands.Count > 0 && unitAI.commands.Peek() != null) {
+            if (unitAI.commands.Peek().GetType() == typeof(Move) ||
                 unitAI.commands.Peek().GetType() == typeof(AttackMove) ||
                 // unitAI.commands.Peek().GetType() == typeof(Follow) ||
                 unitAI.commands.Peek().GetType() == typeof(Intercept) ||
@@ -49,54 +49,77 @@ public class WeaponsAspect : MonoBehaviour
                 return;
             }
         }
-        
+
         bool isAmmoDepleted = (weapon.ammoCount != -1 && weapon.ammoCount <= 0);
-        if (Time.time - weapon.lastShotTime < weapon.cooldown || isAmmoDepleted )
+        if (Time.time - weapon.lastShotTime < weapon.cooldown || isAmmoDepleted)
             return;
-        Entity target = FindTargetInRange();
+        Entity target = FindImmediateThreatInRange();
         if (target != null)
         {
             //Debug.Log("Target found: " + target.name);
-            WeaponsMgr.inst.handleWeapon(entity,target);
+            WeaponsMgr.inst.handleWeapon(entity, target);
         }
     }
 
-    private Entity FindTargetInRange()
+    public Entity FindImmediateThreatInRange()
     {
-        if (entity == null || weapon == null) return null;
+        float rangeSq = weapon.range * weapon.range;
+        Entity bestThreat = null;
+        float bestDistanceSq = float.MaxValue;
 
-        Vector3 currentPosition = entity.position;
-        Entity nearestEnemy = null;
-        float nearestDistSq = float.MaxValue;
-        float currentWeaponRange = weapon.range;
+        bool isAI = entity.owner != null && entity.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase);
+        // Assume GameMgr.inst.priorityList is a List<EntityClass> defining global priority order
+        var priorityList = SpawnEntityMgr.inst.priorityList;
 
-        // Use Physics.OverlapSphere to find colliders within the specified range.
-        // Consider adding a LayerMask if entities are on specific layers for optimization.
-        Collider[] hitColliders = Physics.OverlapSphere(currentPosition, currentWeaponRange); 
-
-        foreach (Collider hitCollider in hitColliders)
+        foreach (Entity potential in EntityMgr.inst.entities)
         {
-            // Attempt to get the Entity component from the collider's game object or its parent.
-            Entity potentialEnemy = hitCollider.GetComponentInParent<Entity>();
-
-            if (potentialEnemy == null || 
-                potentialEnemy == entity || // Don't target self
-                potentialEnemy.owner == entity.owner || // Don't target own units
-                potentialEnemy.entityClass == EntityClass.Missile || // Don't target missiles
-                !potentialEnemy.gameObject.activeSelf) 
-            {
+            if (potential == entity ||
+                potential.owner == entity.owner ||
+                !IsTargetValid(potential))
                 continue;
-            }
 
-            float distSq = (potentialEnemy.position - currentPosition).sqrMagnitude;
-            // OverlapSphere ensures entities are within 'range', but we still need the *closest* one.
-            if (distSq < nearestDistSq)
+            float distSq = (potential.position - entity.position).sqrMagnitude;
+            if (distSq > rangeSq) continue;
+
+            if (isAI)
             {
-                nearestEnemy = potentialEnemy;
-                nearestDistSq = distSq;
+                // Determine priority index (lower index = higher priority)
+                int potIdx = priorityList.IndexOf(potential.entityType);
+                if (potIdx < 0) potIdx = int.MaxValue;
+
+                int bestIdx = bestThreat != null
+                    ? priorityList.IndexOf(bestThreat.entityType)
+                    : int.MaxValue;
+
+                if (bestThreat == null
+                    || potIdx < bestIdx
+                    || (potIdx == bestIdx && potential.health < bestThreat.health)
+                    || (potIdx == bestIdx && potential.health == bestThreat.health && distSq < bestDistanceSq))
+                {
+                    bestThreat = potential;
+                    bestDistanceSq = distSq;
+                }
+            }
+            else
+            {
+                // Non‐AI: pick closest
+                if (distSq < bestDistanceSq)
+                {
+                    bestThreat = potential;
+                    bestDistanceSq = distSq;
+                }
             }
         }
 
-        return nearestEnemy;
+        return bestThreat;
     }
+    
+    public bool IsTargetValid(Entity target)
+    {
+        return target != null &&
+               target.isVisible &&
+               target.gameObject.activeSelf &&
+               target.entityClass != EntityClass.Missile;
+    }
+
 }

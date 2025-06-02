@@ -19,7 +19,7 @@ public class WeaponCollisionHandler : MonoBehaviour
         }
 
         if (otherEntity != null && otherEntity != entity.creatorsEntity && 
-            otherEntity.owner != entity.owner && otherEntity.entityType != entity.entityType) {
+            otherEntity.owner != entity.owner && otherEntity.entityType != entity.entityType && otherEntity.isVisible) {
             
             float damage = WeaponsMgr.inst.damageMatrix.GetDamage(entity.entityType, otherEntity.entityType);
             

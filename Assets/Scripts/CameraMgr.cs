@@ -103,7 +103,15 @@ public class CameraMgr : MonoBehaviour
     {
         Vector3 moveVector = Vector3.zero;
         moveVector.x += moveValue.x * moveCoefficent;
-        moveVector.z += moveValue.y * moveCoefficent;
+        if (ReplayMgr.inst.isReplaying)
+        {
+            moveVector.y += moveValue.y * moveCoefficent;
+        }
+        else
+        {
+           moveVector.z += moveValue.y * moveCoefficent; 
+        }
+        
         YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
     }
 
@@ -179,38 +187,28 @@ public class CameraMgr : MonoBehaviour
         if (!isRTSMode) return;
 
         Vector2 mousePosition = Mouse.current.position.ReadValue();
-        // Ignore mouse if it's outside the screen
-        if (mousePosition.x < 0 || mousePosition.x > Screen.width || mousePosition.y < 0 || mousePosition.y > Screen.height) return;
-
         Vector2 moveInput = Vector2.zero;
 
-        // Left edge
+        // Constant speed scrolling when within edge margins
         if (mousePosition.x <= edgeScrollMargin)
         {
-            float distanceFromEdge = mousePosition.x;
-            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
-            moveInput.x -= factor;
+            moveInput.x = -1f;
         }
-        // Right edge
-        if (mousePosition.x >= Screen.width - edgeScrollMargin)
+        else if (mousePosition.x >= Screen.width - edgeScrollMargin)
         {
-            float distanceFromEdge = Screen.width - mousePosition.x;
-            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
-            moveInput.x += factor;
+            moveInput.x = 1f;
         }
-        // Bottom edge
+        if (ReplayMgr.inst.isReplaying)
+        {
+            
+        }
         if (mousePosition.y <= edgeScrollMargin)
         {
-            float distanceFromEdge = mousePosition.y;
-            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
-            moveInput.y -= factor;
+            moveInput.y = -1f;
         }
-        // Top edge
-        if (mousePosition.y >= Screen.height - edgeScrollMargin)
+        else if (mousePosition.y >= Screen.height - edgeScrollMargin)
         {
-            float distanceFromEdge = Screen.height - mousePosition.y;
-            float factor = 1 - (distanceFromEdge / edgeScrollMargin);
-            moveInput.y += factor;
+            moveInput.y = 1f;
         }
 
         if (moveInput != Vector2.zero)
@@ -246,7 +244,7 @@ public class CameraMgr : MonoBehaviour
     public void ReplayCamera()
     {
         RTSCameraRig.transform.position = Vector3.zero;
-        YawNode.transform.localPosition = new Vector3(0f, 16000f, 0f);
+        YawNode.transform.localPosition = new Vector3(0f, 14000f, 0f);
         YawNode.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
         PitchNode.transform.localPosition = Vector3.zero;
         PitchNode.transform.localRotation = Quaternion.Euler(0f, 0f, 0f); 

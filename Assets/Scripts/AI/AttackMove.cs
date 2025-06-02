@@ -21,10 +21,17 @@ public class AttackMove : Move
     private const float DefaultPathUpdateCooldown = 0.3f;
     private const float MovingTargetPathUpdateCooldown = 0.2f;
     private const float TargetMovingSpeedThreshold = 1.0f;
+    
 
     // Constructor for attack-move to a position
     public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, pos, maxSpeed, doneDistanceSq)
     {
+        _weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+        if (_weaponsAspect == null)
+        {
+            Debug.LogError("WeaponsAspect not found on entity: " + ent.name);
+            return;
+        }
         hasExplicitTarget = false;
         explicitTarget = null;
         commandedTarget = null;
@@ -41,6 +48,12 @@ public class AttackMove : Move
     // Constructor for attacking a specific entity
     public AttackMove(Entity ent, Entity target, bool acquireTargetsOnWay = false, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, target.position, maxSpeed, doneDistanceSq)
     {
+        _weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+        if (_weaponsAspect == null)
+        {
+            Debug.LogError("WeaponsAspect not found on entity: " + ent.name);
+            return;
+        }
         explicitTarget = target;
         hasExplicitTarget = true;
         commandedTarget = target;
@@ -49,7 +62,7 @@ public class AttackMove : Move
         lastKnownTargetPosition = target != null ? target.position : ent.position;
         lastKnownCommandedTargetPosition = target != null ? target.position : ent.position;
 
-        if (target != null && IsTargetValid(target))
+        if (target != null && _weaponsAspect.IsTargetValid(target))
         {
             pathUpdateCooldown = target.speed > TargetMovingSpeedThreshold ? MovingTargetPathUpdateCooldown : DefaultPathUpdateCooldown;
         }
@@ -64,7 +77,7 @@ public class AttackMove : Move
     public override void Init()
     {
         base.Init();
-        _weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+        
 
         if (!FogWarMgr.inst.nonRevelers.Contains(entity))
         {
@@ -76,22 +89,22 @@ public class AttackMove : Move
     public override void Tick()
     {
         // Update last known positions
-        if (commandedTarget != null && IsTargetValid(commandedTarget))
+        if (commandedTarget != null && _weaponsAspect.IsTargetValid(commandedTarget))
         {
             lastKnownCommandedTargetPosition = commandedTarget.position;
         }
-        if (hasExplicitTarget && explicitTarget != null && IsTargetValid(explicitTarget))
+        if (hasExplicitTarget && explicitTarget != null && _weaponsAspect.IsTargetValid(explicitTarget))
         {
             lastKnownTargetPosition = explicitTarget.position;
         }
 
         // Handle explicitTarget becoming invalid
-        if (hasExplicitTarget && (explicitTarget == null || !IsTargetValid(explicitTarget)))
+        if (hasExplicitTarget && (explicitTarget == null || !_weaponsAspect.IsTargetValid(explicitTarget)))
         {
             if (isAcquiredTarget)
             {
                 // Acquired target destroyed, revert to commandedTarget
-                if (commandedTarget != null && IsTargetValid(commandedTarget))
+                if (commandedTarget != null && _weaponsAspect.IsTargetValid(commandedTarget))
                 {
                     explicitTarget = commandedTarget;
                     isAcquiredTarget = false;
@@ -113,7 +126,7 @@ public class AttackMove : Move
         // Check for threats if acquireTargetsOnWay is enabled
         if (acquireTargetsOnWay)
         {
-            Entity threat = FindImmediateThreatInRange();
+            Entity threat = _weaponsAspect.FindImmediateThreatInRange();
             if (threat != null && threat != explicitTarget)
             {
                 explicitTarget = threat;
@@ -147,7 +160,7 @@ public class AttackMove : Move
 
         if (canEngage)
         {
-            if (hasExplicitTarget && explicitTarget != null && IsTargetValid(explicitTarget))
+            if (hasExplicitTarget && explicitTarget != null && _weaponsAspect.IsTargetValid(explicitTarget))
             {
                 float rangeSq = _weaponsAspect.weapon.range * _weaponsAspect.weapon.range;
                 if ((explicitTarget.position - entity.position).sqrMagnitude <= rangeSq)
@@ -157,7 +170,7 @@ public class AttackMove : Move
             }
             else
             {
-                targetToEngage = FindImmediateThreatInRange();
+                targetToEngage = _weaponsAspect.FindImmediateThreatInRange();
             }
         }
 
@@ -196,28 +209,6 @@ public class AttackMove : Move
         }
     }
 
-    private Entity FindImmediateThreatInRange()
-    {
-        if (_weaponsAspect == null || _weaponsAspect.weapon == null) return null;
-
-        float rangeSq = _weaponsAspect.weapon.range * _weaponsAspect.weapon.range;
-        Entity closestThreat = null;
-        float minDistanceSq = float.MaxValue;
-
-        foreach (Entity potentialTarget in EntityMgr.inst.entities)
-        {
-            if (potentialTarget == entity || potentialTarget.owner == entity.owner || !IsTargetValid(potentialTarget)) continue;
-
-            float distanceSq = (potentialTarget.position - entity.position).sqrMagnitude;
-            if (distanceSq <= rangeSq && distanceSq < minDistanceSq)
-            {
-                minDistanceSq = distanceSq;
-                closestThreat = potentialTarget;
-            }
-        }
-        return closestThreat;
-    }
-
     private void AimAndFireAtTarget(Entity target)
     {
         if (target == null || _weaponsAspect == null || _weaponsAspect.weapon == null) return;
@@ -238,7 +229,7 @@ public class AttackMove : Move
             bool canEngageNow = _weaponsAspect != null && _weaponsAspect.weapon != null;
             if (canEngageNow)
             {
-                Entity threatInRange = FindImmediateThreatInRange();
+                Entity threatInRange = _weaponsAspect.FindImmediateThreatInRange();
                 if (threatInRange != null)
                 {
                     return false;
@@ -248,13 +239,7 @@ public class AttackMove : Move
         }
     }
 
-    private bool IsTargetValid(Entity target)
-    {
-        return target != null &&
-               target.isVisible &&
-               target.gameObject.activeSelf &&
-               target.entityClass != EntityClass.Missile;
-    }
+    
 
     public override void Stop()
     {

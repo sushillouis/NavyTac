@@ -216,8 +216,7 @@ public class WeaponsMgr : MonoBehaviour
         Vector3 launchPos = wd.launchPoint.position; // Define launch position early
         float actualDistanceToTarget;
 
-        // Get the target's collider. GetComponentInChildren is used assuming colliders might be on child objects.
-        // If colliders are always on the same GameObject as the Entity script, target.GetComponent<Collider>() can be used.
+
         Collider targetCollider = target.GetComponentInChildren<Collider>();
 
         if (targetCollider != null && targetCollider.enabled)
@@ -228,7 +227,7 @@ public class WeaponsMgr : MonoBehaviour
         }
         else
         {
-            // Fallback to using the target's transform position if no enabled collider is found
+
             actualDistanceToTarget = Vector3.Distance(launchPos, target.transform.position);
             // Optionally, log a warning if a precise collider-based distance could not be determined:
             // if (targetCollider == null)
@@ -451,19 +450,16 @@ public void DestroyAllWeaponsImmediately(bool includePooled = true)
                     Entity pooledWeapon = typePool.Value.Dequeue();
                     if (pooledWeapon != null && pooledWeapon.gameObject != null)
                     {
-                        // Clean up pooled instance
-                        MinimapMgr.inst.RemoveMinimapIcon(pooledWeapon); // Ensure minimap icons for pooled items are handled if they were ever created
+
+                        MinimapMgr.inst.RemoveMinimapIcon(pooledWeapon); 
                         GameObject.Destroy(pooledWeapon.gameObject);
                     }
                 }
-                // typePool.Value.Clear(); // Already cleared by Dequeue loop
-            }
-            // playerEntry.Value.Clear(); // Dictionaries of queues will be empty
-        }
-        weaponPools.Clear(); // Clear the main dictionary
-    }
 
-    // Reinitialize distance manager if it depends on active entities
+            }
+        }
+        weaponPools.Clear(); 
+    }
     if (DistanceMgr.inst != null)
     {
         DistanceMgr.inst.Initialize();

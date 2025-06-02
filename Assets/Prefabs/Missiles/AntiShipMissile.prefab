@@ -984,18 +984,23 @@ MonoBehaviour:
   fuelBurnRate: 0
   entityRole: 2
   acceleration: 500
+  originalAcceleration: 500
   turnRate: 1
+  originalTurnRate: 1
   maxSpeed: 1000
+  originalMaxSpeed: 1000
   minSpeed: 0
-  cruiseSpeed: 1000
-  mass: 690
+  cruiseSpeed: 0
+  mass: 0
   length: 5
   width: 1
   height: 1
   maxHealth: 100
   minHealth: 0
+  isVisible: 1
   maxFuel: 100
   maxRange: 1000
+  entityCollisionRadius: 1
   entityType: 15
   entityClass: 13
   cameraRig: {fileID: 9145676869908812067}

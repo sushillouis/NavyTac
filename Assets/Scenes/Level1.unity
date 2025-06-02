@@ -1188,6 +1188,21 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3922448631972919876, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
+        type: 3}
+      propertyPath: originalMaxSpeed
+      value: 130
+      objectReference: {fileID: 0}
+    - target: {fileID: 3922448631972919876, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
+        type: 3}
+      propertyPath: originalTurnRate
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 3922448631972919876, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
+        type: 3}
+      propertyPath: originalAcceleration
+      value: 35
+      objectReference: {fileID: 0}
     - target: {fileID: 7187487557739430685, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -5054,7 +5069,6 @@ MonoBehaviour:
   posPlayer2: {x: 0, y: 0, z: 7000}
   headingPlayer2: 180
   difficultyLevel: 0.362
-  scenarioHistory: []
   allScenarios: []
 --- !u!114 &1129782063
 MonoBehaviour:
@@ -8885,6 +8899,21 @@ PrefabInstance:
       propertyPath: mass
       value: 1000
       objectReference: {fileID: 0}
+    - target: {fileID: 8004017952877138807, guid: d51d8d0dda5552c478afc7674abdd037,
+        type: 3}
+      propertyPath: originalMaxSpeed
+      value: 155
+      objectReference: {fileID: 0}
+    - target: {fileID: 8004017952877138807, guid: d51d8d0dda5552c478afc7674abdd037,
+        type: 3}
+      propertyPath: originalTurnRate
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8004017952877138807, guid: d51d8d0dda5552c478afc7674abdd037,
+        type: 3}
+      propertyPath: originalAcceleration
+      value: 50
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -9403,6 +9432,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: DDG51
       objectReference: {fileID: 0}
+    - target: {fileID: 2020023502598012843, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: originalMaxSpeed
+      value: 112
+      objectReference: {fileID: 0}
+    - target: {fileID: 2020023502598012843, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: originalTurnRate
+      value: 35
+      objectReference: {fileID: 0}
+    - target: {fileID: 2020023502598012843, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+        type: 3}
+      propertyPath: originalAcceleration
+      value: 30
+      objectReference: {fileID: 0}
     - target: {fileID: 3922861415598738677, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -9712,7 +9756,7 @@ PrefabInstance:
     - target: {fileID: 8654361994499445350, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 29.465841
+      value: 0.00003015995
       objectReference: {fileID: 0}
     - target: {fileID: 9027428336187089416, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
@@ -9872,13 +9916,38 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
         type: 3}
+      propertyPath: mass
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
+        type: 3}
       propertyPath: maxFuel
       value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
         type: 3}
+      propertyPath: cruiseSpeed
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
+        type: 3}
+      propertyPath: originalMaxSpeed
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
+        type: 3}
+      propertyPath: originalTurnRate
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
+        type: 3}
       propertyPath: terrainMask.m_Bits
       value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
+        type: 3}
+      propertyPath: originalAcceleration
+      value: 500
       objectReference: {fileID: 0}
     - target: {fileID: 7937593839646341501, guid: 8e5a241efd26c114ca69ba5949ed5da0,
         type: 3}

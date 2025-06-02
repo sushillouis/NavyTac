@@ -203,42 +203,61 @@ public class EntityMgr : MonoBehaviour
         }
     }
 
-    
+
 
     // In EntityMgr.cs, within CreateEntity method
-public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles, TactPlayer player)
-{
-    Entity entity = null;
-    GameObject entityPrefab = entityPrefabs.Find(x => (x.GetComponent<Entity>().entityType == et));
-    if (entityPrefab != null)
+    public Entity CreateEntity(EntityType et, Vector3 position, Vector3 eulerAngles, TactPlayer player)
     {
-        GameObject entityGo = Instantiate(entityPrefab, position, Quaternion.Euler(eulerAngles), entitiesRoot.transform);
-        if (entityGo != null)
+        Entity entity = null;
+        GameObject entityPrefab = entityPrefabs.Find(x => (x.GetComponent<Entity>().entityType == et));
+        if (entityPrefab != null)
         {
-            entity = entityGo.GetComponent<Entity>();
-            entity.entityId = entityId;
-            entityGo.name = et.ToString() + entityId++;
-            entity.owner = player;
-            entity.heading = entity.desiredHeading = eulerAngles.y;
-
-            if (FogWarMgr.inst != null && FogWarMgr.inst.FOW && entity.entityClass != EntityClass.Missile)
+            GameObject entityGo = Instantiate(entityPrefab, position, Quaternion.Euler(eulerAngles), entitiesRoot.transform);
+            if (entityGo != null)
             {
-                entity.isVisible = false;
-            }
-            else
-            {
-                entity.isVisible = true;
-            }
+                entity = entityGo.GetComponent<Entity>();
+                entity.entityId = entityId;
+                entityGo.name = et.ToString() + entityId++;
+                entity.owner = player;
+                entity.heading = entity.desiredHeading = eulerAngles.y;
 
-            entities.Add(entity);
-            entitiesDict.Add(entity.entityId, entity);
+                if (FogWarMgr.inst != null && FogWarMgr.inst.FOW && entity.entityClass != EntityClass.Missile)
+                {
+                    entity.isVisible = false;
+                }
+                else
+                {
+                    entity.isVisible = true;
+                }
 
-            // Record creation event
-            
+                entities.Add(entity);
+                entitiesDict.Add(entity.entityId, entity);
+
+                // Record creation event
+
+            }
+        }
+        DistanceMgr.inst.Initialize();
+        return entity;
+    }
+    public Entity GetEntityPrefab(EntityType et)
+    {
+        if (entityPrefabs == null || entityPrefabs.Count == 0)
+        {
+            //Debug.LogWarning("No entity prefabs available.");
+            return null;
+        }
+
+        GameObject prefab = entityPrefabs.Find(x => x.GetComponent<Entity>().entityType == et);
+        if (prefab != null)
+        {
+            return prefab.GetComponent<Entity>();
+        }
+        else
+        {
+            //Debug.LogWarning($"Entity prefab for {et} not found.");
+            return null;
         }
     }
-    DistanceMgr.inst.Initialize();
-    return entity;
-}
 
 }

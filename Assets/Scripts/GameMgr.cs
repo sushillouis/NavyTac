@@ -32,14 +32,6 @@ public class ScenarioData
     public string winReason;
     public float score;
     public float totalTime;
-
-    // The implicit operator below might cause issues if ScenarioDataMgr.ScenarioData is not defined
-    // or if it's not intended for direct serialization.
-    // For showing data in the inspector, it's generally not needed.
-    // public static implicit operator ScenarioData(ScenarioDataMgr.ScenarioData v)
-    // {
-    //     throw new System.NotImplementedException();
-    // }
 }
 
 public class GameMgr : MonoBehaviour
@@ -285,12 +277,12 @@ public class GameMgr : MonoBehaviour
         }
         if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
         {
-            AdjustAdaptiveTimeScale();
+            AdjustAdaptiveEntitySpeed();
             AdjustAdaptiveUnitCounts();
         }
         else
         {
-            AdjustNonAdaptiveTimeScale();
+            AdjustNonAdaptiveEntitySpeed();
             AdjustNonAdaptiveUnitCounts();
         }
 
@@ -310,41 +302,55 @@ public class GameMgr : MonoBehaviour
         }
         BuildEntityDictionary();
     }
-    void AdjustAdaptiveTimeScale()
-    {
 
-        min = 1f + (difficultyLevel * 3);
-        max = 6;
-        DeltaScale(min - 1);
+        // store the original stats so we only ever mutate from these values
+        
 
-    }
-    void AdjustNonAdaptiveTimeScale()
-    {
-        switch (currentDifficulty)
+        // call once (e.g. in Awake) to capture the prefab defaults
+        void AdjustAdaptiveEntitySpeed()
         {
-            case Difficulty.Easy:
-                min = 2;
-                max = 6;
-                DeltaScale(min - 1);
-                Debug.Log("Easy difficulty: Time scale set to " + Time.timeScale);
-                break;
-            case Difficulty.Medium:
-                min = 3;
-                max = 6;
-                DeltaScale(min - 1);
-                Debug.Log("Medium difficulty: Time scale set to " + Time.timeScale);
-                break;
-            case Difficulty.Hard:
-                min = 4;
-                max = 6;
-                DeltaScale(min - 1);
-                Debug.Log("Hard difficulty: Time scale set to " + Time.timeScale);
-                break;
-            default:
-                Time.timeScale = 1f;
-                break;
+    
+            float range = 2f;
+            float speedRange    = 1f;
+            float speedFactor    = 1f + difficultyLevel * speedRange;
+            float accelFactor    = 1f + difficultyLevel * range;
+            float turnRateFactor = 1f + difficultyLevel * range;
+
+            foreach (GameObject prefabGo in EntityMgr.inst.entityPrefabs)
+            {
+                var prefab = prefabGo.GetComponent<Entity>();
+                if (prefab == null || prefab.entityType == EntityType.Rig_Balder) continue;
+
+               
+                    prefab.maxSpeed     = prefab.originalMaxSpeed     * speedFactor;
+                    prefab.acceleration = prefab.originalAcceleration * accelFactor;
+                    prefab.turnRate     = prefab.originalTurnRate     * turnRateFactor;
+                    Debug.Log($"Adaptive {prefab.entityType}: speed×{speedFactor:0.00}, accel×{accelFactor:0.00}, turn×{turnRateFactor:0.00}");
+            }
         }
-    }
+
+        void AdjustNonAdaptiveEntitySpeed()
+        {
+            
+
+            float baseFactor = currentDifficulty switch
+            {
+                Difficulty.Easy   => 1f,
+                Difficulty.Medium => 2f,
+                Difficulty.Hard   => 3f,
+                _                 => 1f
+            };
+
+            foreach (GameObject prefabGo in EntityMgr.inst.entityPrefabs)
+            {
+                var prefab = prefabGo.GetComponent<Entity>();
+                if (prefab == null || prefab.entityType == EntityType.Rig_Balder) continue;
+                    prefab.maxSpeed     = prefab.originalMaxSpeed     * baseFactor;
+                    prefab.acceleration = prefab.originalAcceleration * baseFactor;
+                    prefab.turnRate     = prefab.originalTurnRate     * baseFactor;
+                    Debug.Log($"NonAdaptive {prefab.entityType}: speed×{baseFactor:0.00}, accel×{baseFactor:0.00}, turn×{baseFactor:0.00}");
+            }
+        }
     void AdjustNonAdaptiveUnitCounts()
     {
         foreach (EntityQuantity eq in entityQuantities)

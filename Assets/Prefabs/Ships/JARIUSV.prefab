@@ -472,15 +472,18 @@ MonoBehaviour:
   range: 0
   fuelBurnRate: 0
   entityRole: 5
-  acceleration: 70
-  turnRate: 100
-  maxSpeed: 155
+  acceleration: 0
+  originalAcceleration: 50
+  turnRate: 0
+  originalTurnRate: 100
+  maxSpeed: 0
+  originalMaxSpeed: 155
   minSpeed: 0
   cruiseSpeed: 15
   mass: 1000
-  length: 60
-  width: 20
-  height: 28
+  length: 15
+  width: 5
+  height: 7
   maxHealth: 45
   minHealth: 0
   isVisible: 1

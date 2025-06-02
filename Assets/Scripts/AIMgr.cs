@@ -200,11 +200,20 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
 
         if (target != null)
         {
-            // Use weapon range squared if available
-            WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-            doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null) 
-                ? weaponsAspect.weapon.range * weaponsAspect.weapon.range 
-                : 100000f; // Fallback
+                // Use weapon range squared if available
+            if (entity == null || entity.GetComponentInChildren<WeaponsAspect>() == null)
+            {
+                doneDistanceSq = 100000f; // Fallback
+            }
+            else
+            {
+                // Get weapon range squared from WeaponsAspect
+                WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+                doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null) 
+                    ? weaponsAspect.weapon.range * weaponsAspect.weapon.range 
+                    : 100000f; // Fallback
+            }
+            
         }
         else
         {

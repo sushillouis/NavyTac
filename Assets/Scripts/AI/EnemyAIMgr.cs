@@ -391,7 +391,7 @@ private void HandleLevel2CombatBehavior(List<Entity> aiEntities)
             // Linear interpolation: Mathf.Lerp(from, to, t)
             // If diff=0 means easier, delay should be longer (66f).
             // If diff=1 means harder, delay should be shorter (15f).
-            BatchDelay = Mathf.Lerp(66f, 15f, (diff - 0.33f) / (0.66f - 0.33f));
+            BatchDelay = Mathf.Lerp(20f, 60f, (diff - 0.33f) / (0.66f - 0.33f));
         }
        
 
@@ -433,33 +433,37 @@ private void SplitEntitiesByType(EntityType type, List<Entity> allEntities)
     _batch3.AddRange(entities.Skip(batchSize * 2).Take(count - batchSize * 2));
 }
 
-private IEnumerator RunLevel2CommandSequence()
-{
-    // Phase 1: T=0 seconds
-    IssueDirectCommand(_batch1, opponentBase.position, true);  // Attack immediately
-    IssueDirectCommand(_batch2, GetStagingPosition2(), true,false);  // Move to staging near AI base
-    IssueDirectCommand(_batch3, GetStagingPosition(), false); // Move to staging near opponent base
+    private IEnumerator RunLevel2CommandSequence()
+    {
+        // Phase 1: T=0 seconds
+        IssueDirectCommand(_batch1, opponentBase.position, true);  // Attack immediately
+        IssueDirectCommand(_batch2, GetStagingPosition(4000f), true, false);  
+        IssueDirectCommand(_batch3, GetStagingPosition(1000f), true, false);
 
-    // Phase 2: T=45 seconds
-    yield return new WaitForSecondsRealtime(BatchDelay);
-    IssueDirectCommand(_batch2, opponentBase.position, true);  // Attack
-    IssueDirectCommand(_batch3, GetStagingPosition2(), true,false);   // Move closer to AI base
+        // Phase 2: T=45 seconds
+        yield return new WaitForSecondsRealtime(BatchDelay);
+        IssueDirectCommand(_batch2, GetStagingPosition2(), true);  // Attack
+        IssueDirectCommand(_batch3, GetStagingPosition(4000f), true, false);   // Move closer to AI base
 
-    // Phase 3: T=90 seconds
-    yield return new WaitForSecondsRealtime(BatchDelay);
-    IssueDirectCommand(_batch3, opponentBase.position, true);   // Final attack
-}
+        // Phase 3: T=90 seconds
+        yield return new WaitForSecondsRealtime(BatchDelay);
+        IssueDirectCommand(_batch2, opponentBase.position, true);
+        IssueDirectCommand(_batch3, GetStagingPosition2(), true,false);
 
-private Vector3 GetStagingPosition()
+        yield return new WaitForSecondsRealtime(BatchDelay);
+        IssueDirectCommand(_batch3, opponentBase.position, true);    // Final attack
+    }
+
+private Vector3 GetStagingPosition(float position)
 {
     // Fallback position if base position isn't set
     if (_aiBasePosition == Vector3.zero)
     {
-        return new Vector3(4000f, 0f, 4000f);
+        return new Vector3(position, 0f, position);
     }
     
     Vector3 stagingDir = (Vector3.zero - _aiBasePosition).normalized;
-    Vector3 stagingPos = _aiBasePosition + stagingDir * 4000f;
+    Vector3 stagingPos = _aiBasePosition + stagingDir * position;
     
     
     

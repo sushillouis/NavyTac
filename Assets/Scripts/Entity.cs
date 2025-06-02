@@ -31,8 +31,11 @@ public class Entity : MonoBehaviour
     // values that do not change
     //------------------------------
     public float acceleration;
+    public float originalAcceleration; // Used to reset acceleration after boost
     public float turnRate;
+    public float originalTurnRate; // Used to reset turn rate after boost
     public float maxSpeed;
+    public float originalMaxSpeed; // Used to reset max speed after boost
     public float minSpeed;
     public float cruiseSpeed;
     public float mass;

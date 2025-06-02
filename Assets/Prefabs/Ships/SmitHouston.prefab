@@ -104,8 +104,10 @@ MonoBehaviour:
   height: 32.5
   maxHealth: 100
   minHealth: 0
+  isVisible: 1
   maxFuel: 0
   maxRange: 0
+  entityCollisionRadius: 1
   entityType: 6
   entityClass: 9
   cameraRig: {fileID: 1680915430}
