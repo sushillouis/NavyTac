@@ -306,92 +306,89 @@
         }
 
         public virtual DHDS ComputePotentialDHDS(Vector3 targetPosition)
-        {
-            diffToMovePosition = targetPosition - entity.position;
-            
-            Vector3 currentEntityRepulsion = Vector3.zero;
-
-            float entityDetectionRadius = AIMgr.inst.potentialDistanceThreshold;
-            // OverlapSphereNonAlloc now only for entities
-            int numFoundEntities = Physics.OverlapSphereNonAlloc(entity.position, entityDetectionRadius, combinedQueryResults, entityLayerMask, QueryTriggerInteraction.Ignore);
-
-            for (int i = 0; i < numFoundEntities; i++)
             {
+                float jitterStrength = 50.0f; 
+                Vector3 jitterOffset = new Vector3(
+                Random.Range(-jitterStrength, jitterStrength),
+                0f, 
+                Random.Range(-jitterStrength, jitterStrength)
+                );
+                targetPosition += jitterOffset;
+                
+                diffToMovePosition = targetPosition - entity.position;      
+                Vector3 currentEntityRepulsion = Vector3.zero;
+
+                float entityDetectionRadius = AIMgr.inst.potentialDistanceThreshold;
+                int numFoundEntities = Physics.OverlapSphereNonAlloc(entity.position, entityDetectionRadius, combinedQueryResults, entityLayerMask, QueryTriggerInteraction.Ignore);
+
+                for (int i = 0; i < numFoundEntities; i++)
+                {
                 Collider col = combinedQueryResults[i];
-                // Entity Repulsion (already filtered by entityLayerMask in OverlapSphereNonAlloc)
                 Vector3 diffToOtherEntity = col.transform.position - entity.position; 
                 float sqrDistToOtherEntity = diffToOtherEntity.sqrMagnitude;
-                // No need to check radius again if OverlapSphere used entityDetectionRadius, but good for safety if radius logic changes
-                // float entityDetectionRadiusSq = entityDetectionRadius * entityDetectionRadius; 
 
-                if (sqrDistToOtherEntity > 0.0001f) // Check sqrDistToOtherEntity < entityDetectionRadiusSq if OverlapSphere radius was larger
+                if (sqrDistToOtherEntity > 0.0001f) 
                 {
                     Entity ent = col.GetComponent<Entity>();
                     if (ent == null || ent == entity || ent.entityClass == EntityClass.Missile) continue;
                     
-                    // Assuming DistanceMgr.inst.GetPotential and other parameters are correctly set up
                     Potential p = DistanceMgr.inst.GetPotential(entity, ent); 
-                    if (p == null || p.distance > AIMgr.inst.potentialDistanceThreshold) continue; // p.distance is linear, threshold is linear
+                    if (p == null || p.distance > AIMgr.inst.potentialDistanceThreshold) continue; 
 
-                    float distToEnt = Mathf.Sqrt(sqrDistToOtherEntity); // Sqrt needed for Pow and normalization
-                    // Vector3 dirToEnt = diffToOtherEntity / distToEnt; // p.direction should already be normalized vector from entity to otherEnt
+                    float distToEnt = Mathf.Sqrt(sqrDistToOtherEntity); 
                     
                     currentEntityRepulsion += -p.direction * ent.mass *
-                        AIMgr.inst.repulsiveCoefficient *
-                        Mathf.Pow(distToEnt, AIMgr.inst.repulsiveExponent);
+                    AIMgr.inst.repulsiveCoefficient *
+                    Mathf.Pow(distToEnt, AIMgr.inst.repulsiveExponent);
                 }
-            }
-            
-            // Terrain Repulsion using the new method
-            Vector3 currentTerrainRepulsion = ComputeTerrainRepulsion(entity.position);
+                }
+                
+                Vector3 currentTerrainRepulsion = ComputeTerrainRepulsion(entity.position);
 
-            repulsivePotential = currentEntityRepulsion + currentTerrainRepulsion;
+                repulsivePotential = currentEntityRepulsion + currentTerrainRepulsion;
 
-            // No-Go Zone repulsion
-            foreach (NoGoZoneBounds zone in NoGoZoneManager.Zones)
-            {
+                foreach (NoGoZoneBounds zone in NoGoZoneManager.Zones)
+                {
                 repulsivePotential += ComputeNoGoZoneContribution(zone, entity.position);
-            }
+                }
 
-            // Clamp total repulsivePotential
-            if (repulsivePotential.sqrMagnitude > MaxTotalRepulsiveForceMagnitude * MaxTotalRepulsiveForceMagnitude)
-            {
+                if (repulsivePotential.sqrMagnitude > MaxTotalRepulsiveForceMagnitude * MaxTotalRepulsiveForceMagnitude)
+                {
                 repulsivePotential = repulsivePotential.normalized * MaxTotalRepulsiveForceMagnitude;
-            }
+                }
 
-            // Attraction to target
-            Vector3 rawAttraction = targetPosition - entity.position;
-            float distToTarget = rawAttraction.magnitude; // Sqrt needed for Pow and normalization
-            if (distToTarget > 0.001f)
-            {
+                Vector3 rawAttraction = targetPosition - entity.position;
+                float distToTarget = rawAttraction.magnitude; 
+                if (distToTarget > 0.001f)
+                {
                 attractivePotential = (rawAttraction / distToTarget) *
                     AIMgr.inst.attractionCoefficient *
                     Mathf.Pow(distToTarget, AIMgr.inst.attractiveExponent);
-            }
-            else
-            {
+                }
+                else
+                {
                 attractivePotential = Vector3.zero;
-            }
+                }
 
-            Vector3 currentFramePotentialSum = attractivePotential + repulsivePotential;
-            potentialSum = Vector3.Lerp(previousPotentialSum, currentFramePotentialSum, PotentialSumDampingFactor);
-            previousPotentialSum = potentialSum;
+                Vector3 currentFramePotentialSum = attractivePotential + repulsivePotential;
+                potentialSum = Vector3.Lerp(previousPotentialSum, currentFramePotentialSum, PotentialSumDampingFactor);
+                previousPotentialSum = potentialSum;
 
-            dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
-            angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
-            cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
-            ds = entity.maxSpeed * cosValue;
+                dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
+                angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
+                cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
+                ds = entity.maxSpeed * cosValue;
 
-            if (potentialLine != null && potentialLine.gameObject.activeInHierarchy)
-            {
+                if (potentialLine != null && potentialLine.gameObject.activeInHierarchy)
+                {
                 potentialLine.SetPosition(0, entity.position);
                 potentialLine.SetPosition(1, entity.position + potentialSum.normalized * 100f); 
+                }
+
+                return new DHDS(dh, ds);
             }
 
-            return new DHDS(dh, ds);
-        }
-
-        private Vector3 ComputeTerrainRepulsion(Vector3 shipPosition)
+                private Vector3 ComputeTerrainRepulsion(Vector3 shipPosition)
         {
             Vector3 totalRepulsion = Vector3.zero;
             float detectionRadius = AIMgr.inst.terrainDetectionRadius;

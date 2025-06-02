@@ -331,44 +331,217 @@ public class EnemyAIMgr : MonoBehaviour
             AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false, doneDistanceSq: targetDistance * targetDistance);
         }
     }
+private bool _level2CommandsStarted = false;
+private float BatchDelay = 45f;
+private Vector3 _aiBasePosition;
+private List<Entity> _batch1 = new List<Entity>();
+private List<Entity> _batch2 = new List<Entity>();
+private List<Entity> _batch3 = new List<Entity>();
+private Coroutine _level2Coroutine;
 
-    private void HandleLevel2CombatBehavior(List<Entity> aiEntities)
+public void ResetLevel2State()
+{
+    _level2CommandsStarted = false;
+    _aiBasePosition = Vector3.zero;
+
+    _batch1.Clear();
+    _batch2.Clear();
+    _batch3.Clear();
+
+    if (_level2Coroutine != null)
     {
-        if (opponentBase == null) return;
-        if (aiEntities.Count == 0) return;
+        StopCoroutine(_level2Coroutine);
+        _level2Coroutine = null;
+    }
+}
 
+private void HandleLevel2CombatBehavior(List<Entity> aiEntities)
+{
+    if (opponentBase == null) return;
+    if (aiEntities.Count == 0) return;
+    
+    // Initialize only once
+    if (!_level2CommandsStarted && aiBases.Count > 0)
+    {
+        // Critical: Set position FIRST
+        // Ensure aiBases[0] is valid if accessed directly. The check aiBases.Count > 0 helps.
+        _aiBasePosition = aiBases[0].position; 
+        _level2CommandsStarted = true;
+        
+        // Filter valid entities
+        var validTypes = new HashSet<EntityType> 
+        { 
+            EntityType.DDG51, 
+            EntityType.JARIUSV, 
+            EntityType.SeaHunter 
+        };
+        
+        var filteredEntities = aiEntities
+            .Where(e => e != null && validTypes.Contains(e.entityType))
+            .ToList();
+            
+        CreateBatches(filteredEntities);
+        
+        
         if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
         {
-            HandleLevel2AdaptiveCombatBehavior(aiEntities);
+            float diff = GameMgr.inst.difficultyLevel; // Assuming diff is normalized between 0 (easy) and 1 (hard)
+            // Adaptive delay: 66f for easiest (diff=0), 15f for hardest (diff=1)
+            // User specified: "batchdelay will be 45f at .334 diff and range between .66f 15f"
+            // Linear interpolation: Mathf.Lerp(from, to, t)
+            // If diff=0 means easier, delay should be longer (66f).
+            // If diff=1 means harder, delay should be shorter (15f).
+            BatchDelay = Mathf.Lerp(66f, 15f, (diff - 0.33f) / (0.66f - 0.33f));
+        }
+       
+
+        // Start the command sequence
+        if (_level2Coroutine != null) 
+        {
+            StopCoroutine(_level2Coroutine);
+        }
+        // Note: The RunLevel2CommandSequence method signature will need to be updated 
+        // to accept a float parameter for the batch delay.
+        // e.g., private IEnumerator RunLevel2CommandSequence(float currentBatchDelay)
+        _level2Coroutine = StartCoroutine(RunLevel2CommandSequence()); 
+    }
+}
+
+private void CreateBatches(List<Entity> allEntities)
+{
+    _batch1.Clear();
+    _batch2.Clear();
+    _batch3.Clear();
+
+    // Split each entity type into 3 batches
+    SplitEntitiesByType(EntityType.DDG51, allEntities);
+    SplitEntitiesByType(EntityType.JARIUSV, allEntities);
+    SplitEntitiesByType(EntityType.SeaHunter, allEntities);
+}
+
+private void SplitEntitiesByType(EntityType type, List<Entity> allEntities)
+{
+    var entities = allEntities.Where(e => e.entityType == type).ToList();
+    int count = entities.Count;
+    
+    if (count == 0) return;
+    
+    int batchSize = Mathf.CeilToInt(count / 3f);
+
+    _batch1.AddRange(entities.Take(batchSize));
+    _batch2.AddRange(entities.Skip(batchSize).Take(batchSize));
+    _batch3.AddRange(entities.Skip(batchSize * 2).Take(count - batchSize * 2));
+}
+
+private IEnumerator RunLevel2CommandSequence()
+{
+    // Phase 1: T=0 seconds
+    IssueDirectCommand(_batch1, opponentBase.position, true);  // Attack immediately
+    IssueDirectCommand(_batch2, GetStagingPosition2(), true,false);  // Move to staging near AI base
+    IssueDirectCommand(_batch3, GetStagingPosition(), false); // Move to staging near opponent base
+
+    // Phase 2: T=45 seconds
+    yield return new WaitForSecondsRealtime(BatchDelay);
+    IssueDirectCommand(_batch2, opponentBase.position, true);  // Attack
+    IssueDirectCommand(_batch3, GetStagingPosition2(), true,false);   // Move closer to AI base
+
+    // Phase 3: T=90 seconds
+    yield return new WaitForSecondsRealtime(BatchDelay);
+    IssueDirectCommand(_batch3, opponentBase.position, true);   // Final attack
+}
+
+private Vector3 GetStagingPosition()
+{
+    // Fallback position if base position isn't set
+    if (_aiBasePosition == Vector3.zero)
+    {
+        return new Vector3(4000f, 0f, 4000f);
+    }
+    
+    Vector3 stagingDir = (Vector3.zero - _aiBasePosition).normalized;
+    Vector3 stagingPos = _aiBasePosition + stagingDir * 4000f;
+    
+    
+    
+    return stagingPos ;
+}
+
+private Vector3 GetStagingPosition2()
+{
+    // Fallback position if opponent base isn't set
+    if (opponentBase == null)
+    {
+        return new Vector3(4000f, 0f, 4000f);
+    }
+    
+    Vector3 opponentPos = opponentBase.position;
+    
+    // Calculate direction from opponent base to center
+    Vector3 centerDir = (Vector3.zero - opponentPos).normalized;
+    
+    // Position 4000 units from opponent base toward center
+    Vector3 stagingPos = opponentPos + centerDir * 4000f;
+
+
+
+        return stagingPos;
+}
+
+private void IssueDirectCommand(List<Entity> entities, Vector3 position, bool isAttackMove, bool towardOpponentBase = true)
+{
+    if (entities.Count == 0) return;
+
+    if (isAttackMove)
+    {
+        if (towardOpponentBase && opponentBase != null)
+        {
+            AIMgr.inst.HandleAttackMove(entities, position, opponentBase, false, acquireTarget: true);
         }
         else
         {
-            HandleLevel2NonAdaptiveCombatBehavior(aiEntities);
+            // If not attacking the opponent base, or opponent base is null, attack move to position
+            foreach (Entity entity in entities)
+            {
+                if (entity == null) continue;
+
+                // Add jitter to the target position for each individual unit
+                float minAbsJitter = 0f; 
+                float maxAbsJitter = 500f;
+
+                float randomMagnitudeX = Random.Range(minAbsJitter, maxAbsJitter);
+                float offsetX = (Random.value < 0.5f) ? -randomMagnitudeX : randomMagnitudeX;
+
+                float randomMagnitudeZ = Random.Range(minAbsJitter, maxAbsJitter);
+                float offsetZ = (Random.value < 0.5f) ? -randomMagnitudeZ : randomMagnitudeZ;
+                        
+                Vector3 jitteredPosition = position + new Vector3(offsetX, 0, offsetZ);
+                        
+                AIMgr.inst.HandleAttackMove(new List<Entity> { entity }, jitteredPosition, null, false, acquireTarget: true);
+            }
         }
     }
-    private void HandleLevel2AdaptiveCombatBehavior(List<Entity> aiEntities)
-{
-    if (opponentBase == null) return;
-
-    float diff = GameMgr.inst.difficultyLevel;
-    float time = Mathf.Lerp(5f, 0f, diff);
-
-    StartCoroutine(DelayedAttackMove(aiEntities, opponentBase.position, opponentBase, time));
-}
-
-private IEnumerator DelayedAttackMove(List<Entity> aiEntities, Vector3 position, Entity targetBase, float time)
-{
-    yield return new WaitForSeconds(time);
-    AIMgr.inst.HandleAttackMove(aiEntities, position, targetBase, false, acquireTarget: true);
-}
-
-
-    private void HandleLevel2NonAdaptiveCombatBehavior(List<Entity> aiEntities)
+    else // This is a move command, likely to a staging position
     {
-        if (opponentBase == null) return;
-        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, opponentBase, false, acquireTarget: true);
+        foreach (Entity entity in entities)
+        {
+            if (entity == null) continue;
+
+            // Add jitter to the staging position for each individual unit
+            float minAbsJitter = 0f;
+            float maxAbsJitter = 500f;
+
+            float randomMagnitudeX = Random.Range(minAbsJitter, maxAbsJitter);
+            float offsetX = (Random.value < 0.5f) ? -randomMagnitudeX : randomMagnitudeX;
+
+            float randomMagnitudeZ = Random.Range(minAbsJitter, maxAbsJitter);
+            float offsetZ = (Random.value < 0.5f) ? -randomMagnitudeZ : randomMagnitudeZ;
+            
+            Vector3 jitteredPosition = position + new Vector3(offsetX, 0, offsetZ);
+            
+            AIMgr.inst.HandleMove(new List<Entity> { entity }, jitteredPosition, false);
+        }
     }
-    
+}
 
 
     private void HandleLevel3CombatBehavior(List<Entity> aiEntities)

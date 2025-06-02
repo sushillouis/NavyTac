@@ -106,7 +106,7 @@ public class GameMgr : MonoBehaviour
     [Header("Time Control UI")]
     [SerializeField] private Button plusButton;
     [SerializeField] private Button minusButton;
-    [SerializeField] private List <TextMeshProUGUI> simSpeedButtonText;
+    [SerializeField] private List<TextMeshProUGUI> simSpeedButtonText;
 
     public float timeScale = 1;
 
@@ -146,14 +146,14 @@ public class GameMgr : MonoBehaviour
             minusButton.onClick.AddListener(() => DeltaScale(-1));
         }
     }
-   public void PlusButtonClicked()
+    public void PlusButtonClicked()
     {
         DeltaScale(1);
     }
     public void MinusButtonClicked()
-     {
-          DeltaScale(-1);
-     }
+    {
+        DeltaScale(-1);
+    }
     void Update()
     {
         if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus))
@@ -175,54 +175,42 @@ public class GameMgr : MonoBehaviour
             }
         }
     }
-
-
     void DetermineDifficulty()
     {
-        if (OpenOceanMain.inst.lobbyState == LobbyState.Replay)
-        {
-            return;
-        }
         if (OpenOceanMain.inst == null)
         {
             difficultyLevel = difficultyRanges["easy"];
+            currentDifficulty = Difficulty.Easy;
+            return;
         }
-        else
+        if (OpenOceanMain.inst.lobbyState == LobbyState.Replay)
         {
-            switch (OpenOceanMain.inst.currentTrainingState)
-            {
-                case TrainingState.PreTest:
-                    if (OpenOceanMain.inst.gamePlayCountMAX > 0)
-                    {
-                        float preProgress = (float)OpenOceanMain.inst.gamesPlayedCount / OpenOceanMain.inst.gamePlayCountMAX;
-                        difficultyLevel = preProgress < 0.6f ? 0.2f : 0.5f;
-                    }
-                    else
-                    {
-                        difficultyLevel = 0.2f;
-                    }
-                    break;
-                case TrainingState.PostTest:
-                    if (OpenOceanMain.inst.gamePlayCountMAX > 0)
-                    {
-                        float postProgress = (float)OpenOceanMain.inst.gamesPlayedCount / OpenOceanMain.inst.gamePlayCountMAX;
-                        difficultyLevel = postProgress < 0.6f ? 0.2f : 0.5f;
-                    }
-                    else
-                    {
-                        difficultyLevel = 0.2f;
-                    }
-                    break;
-                case TrainingState.Adaptive:
-                    difficultyLevel = ComputeAdaptiveDifficulty();
-                    break;
-                case TrainingState.NonAdaptive:
+            if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
+            else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
+            else currentDifficulty = Difficulty.Hard;
+            return;
+        }
+        switch (OpenOceanMain.inst.currentTrainingState)
+        {
+            case TrainingState.PreTest:
+            case TrainingState.PostTest:
+                if (OpenOceanMain.inst.gamePlayCountMAX > 0)
+                {
+                    float progress = (float)OpenOceanMain.inst.gamesPlayedCount / OpenOceanMain.inst.gamePlayCountMAX;
+                    difficultyLevel = progress < 0.6f ? 0.2f : 0.5f;
+                }
+                else
+                {
                     difficultyLevel = 0.2f;
-                    break;
-                default:
-                    difficultyLevel = 0.2f;
-                    break;
-            }
+                }
+                break;
+            case TrainingState.Adaptive:
+                difficultyLevel = ComputeAdaptiveDifficulty();
+                break;
+            case TrainingState.NonAdaptive:
+            default:
+                difficultyLevel = 0.2f;
+                break;
         }
 
         if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
@@ -236,7 +224,7 @@ public class GameMgr : MonoBehaviour
         {
             if (ScoreMgr.inst.playerScores.Count == 0)
             {
-                difficultyLevel = 0.2f; // Default value if no scores are available
+                difficultyLevel = 0.6f; // Default value if no scores are available
                 return difficultyLevel;
             }
             difficultyLevel = difficultyLevel + 0.05f * ScoreMgr.inst.playerScores[ScoreMgr.inst.playerScores.Count - 1] / 100f;
@@ -276,7 +264,7 @@ public class GameMgr : MonoBehaviour
 
         SpawnEntities();
         if (CameraMgr.inst != null) CameraMgr.inst.SetCameraPosition();
-        
+
         if (ReplayMgr.inst != null)
         {
             ReplayMgr.inst.StartNewScenario();
@@ -285,8 +273,6 @@ public class GameMgr : MonoBehaviour
 
     void InitializeScenario()
     {
-
-
         DetermineDifficulty();
         if (EnemyAIMgr.inst != null)
         {
@@ -304,9 +290,7 @@ public class GameMgr : MonoBehaviour
         }
         else
         {
-
             AdjustNonAdaptiveTimeScale();
-
             AdjustNonAdaptiveUnitCounts();
         }
 
@@ -449,22 +433,17 @@ public class GameMgr : MonoBehaviour
                 entityDict[eq.entityType] = Mathf.Min(eq.unitCount, 1);
                 continue;
             }
-
             if (entityDict.ContainsKey(eq.entityType))
                 entityDict[eq.entityType] += eq.unitCount;
             else
                 entityDict.Add(eq.entityType, eq.unitCount);
         }
     }
-    public void Create100()
-    { }
-
-    public List<ScenarioData> scenarioHistory = new List<ScenarioData>();
 
     public void StoreCurrentScenario()
     {
         if (ReplayMgr.inst != null && ReplayMgr.inst.isReplaying) return;
-       
+
         ScenarioData data = new ScenarioData
         {
             scenarioNumber = allScenarios.Count + 1,
@@ -477,16 +456,15 @@ public class GameMgr : MonoBehaviour
             winLoss = ScoreMgr.inst != null && ScoreMgr.inst.playerWon,
             winReason = ScoreMgr.inst != null ? ScoreMgr.inst.winReason : "Unknown",
             score = ScoreMgr.inst != null ? ScoreMgr.inst.score : 0f,
-            totalTime =  OpenOceanMain.inst.playSessionDuration,
+            totalTime = OpenOceanMain.inst.playSessionDuration,
             timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
         };
-        
+
         SaveScenario(data);
     }
 
     public void InitializeScenarioFromData(ScenarioData data)
     {
-        
         entityQuantities = new List<EntityQuantity>(data.entityQuantities);
         // Correctly assign positions without swapping
         posPlayer1 = data.posPlayer1;
@@ -494,7 +472,6 @@ public class GameMgr : MonoBehaviour
         posPlayer2 = data.posPlayer2;
         headingPlayer2 = data.headingPlayer2;
         difficultyLevel = data.difficultyLevel;
-
         // Initialize with stored data
         InitializeScenario();
         SpawnWithExistingPositions();
@@ -515,11 +492,7 @@ public class GameMgr : MonoBehaviour
             );
         }
     }
-    public ScenarioData GetLastScenario()
-    {
-        if (scenarioHistory.Count == 0) return null;
-        return scenarioHistory[scenarioHistory.Count - 1];
-    }
+
     public List<ScenarioData> allScenarios = new List<ScenarioData>();
 
     public void SaveScenario(ScenarioData data)
@@ -531,6 +504,9 @@ public class GameMgr : MonoBehaviour
     {
         return allScenarios.Find(s => s.scenarioNumber == scenarioNumber);
     }
+    
+    public void Create100()
+    { }
 }
 
     // public void Create100()

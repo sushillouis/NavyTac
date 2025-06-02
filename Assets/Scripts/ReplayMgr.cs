@@ -157,6 +157,11 @@ public class ReplayMgr : MonoBehaviour
         if (FXMgr.inst != null) FXMgr.inst.ResetEffects();
         if (EntityMgr.inst != null) EntityMgr.inst.Reset();
         if (ResetScene.inst != null) ResetScene.inst.ClearAllEntities(); else Debug.LogWarning("ReplayMgr: ResetScene.inst is null.");
+        if(EnemyAIMgr.inst != null) 
+        {
+            
+            EnemyAIMgr.inst.ResetLevel2State();
+        }
         isRecording = false;
 
         ScenarioData scenario = GameMgr.inst.GetScenario(scenarioNumber);
