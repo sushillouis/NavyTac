@@ -282,7 +282,11 @@ public class EnemyAIMgr : MonoBehaviour
             WeaponsAspect weaponAspect = aiEntity.GetComponentInChildren<WeaponsAspect>();
             UnitAI unitAIComponent = aiEntity.GetComponentInChildren<UnitAI>();
 
-            float weaponRange =  weaponAspect.weapon.range - 100f ;
+            float weaponRange = DefaultWeaponRangeFallback; // Default value
+            if (weaponAspect != null && weaponAspect.weapon != null)
+            {
+                weaponRange = weaponAspect.weapon.range;
+            }
 
             if (!entityCooldowns.ContainsKey(aiEntity))
             {
@@ -290,13 +294,13 @@ public class EnemyAIMgr : MonoBehaviour
             }
 
             float currentDistance = Vector3.Distance(aiEntity.position, opponentPos);
-            float targetDistance;
+            // targetDistance variable was unused in this path for HandleMove, so it's removed.
 
             bool isInitialMovePhase = entityCooldowns[aiEntity] == FirstMoveSentinel;
 
             if (isInitialMovePhase)
             {
-                targetDistance = initialStopDistance;
+                // The logic here is to determine when to transition out of the initial phase.
                 if (currentDistance <= initialStopDistance - InitialMoveTargetBuffer)
                 {
                     entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
@@ -304,24 +308,29 @@ public class EnemyAIMgr : MonoBehaviour
             }
             else
             {
-                if (Time.time < entityCooldowns[aiEntity])
+                if (Time.time < entityCooldowns[aiEntity]) // Check cooldown
                 {
-                    continue;
+                    continue; // Still on cooldown
                 }
 
-                Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange- 100f);
-                if (nearestEnemy != null)
+                // Cooldown passed, check for enemies
+                Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange - 100f);
+                if (nearestEnemy != null) // Enemy found
                 {
-                    unitAIComponent?.StopAndRemoveAllCommands();
-                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
-                    continue;
+                    if (unitAIComponent != null) // Explicit null check
+                    {
+                        unitAIComponent.StopAndRemoveAllCommands();
+                    }
+                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration; // Set cooldown
+                    continue; // Do not issue a move command to base, engage/stop for enemy
                 }
-                else
+                else // No enemy found
                 {
-                    
+                    // Set cooldown for the next check. Entity will continue moving towards base via HandleMove below.
                     entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
                 }
             }
+            // If not continued (due to cooldown or finding an enemy), move towards the opponent base.
             AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false);
         }
     }

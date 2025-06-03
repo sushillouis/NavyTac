@@ -198,7 +198,7 @@ public static class CPAJobHelper // Made static class for helper methods
 {
     public static CPAJobOutputData CalculateCPA(Vector3 osPos, Vector3 osVel, float osHeading,
                                              Vector3 tgtPos, Vector3 tgtVel, float tgtHeading,
-                                             Vector3 precomputedPosDiff)
+                                             Vector3 precomputedPosDiff, float epsilon) // Added epsilon parameter
     {
         CPAJobOutputData output = new();
         output.relativeVelocity = tgtVel - osVel;
@@ -206,7 +206,7 @@ public static class CPAJobHelper // Made static class for helper methods
         Vector3 _velDiff = osVel - tgtVel;
         float _relSpeedSquared = _velDiff.sqrMagnitude;
 
-        if (_relSpeedSquared < Utils.EPSILON * 10) // Assuming Utils.EPSILON is a const float
+        if (_relSpeedSquared < epsilon * 10) // Use passed epsilon
             output.time = 0;
         else
             output.time = -Vector3.Dot(precomputedPosDiff, _velDiff) / _relSpeedSquared;
@@ -289,6 +289,7 @@ public struct ProcessPotentialsJob : IJobParallelFor
 {
     [ReadOnly] public NativeArray<PotentialPairJobInput> PotentialPairInputs;
     [ReadOnly] public NativeArray<SubPotentialJobInput> AllSubPotentialInputs;
+    [ReadOnly] public float Epsilon; // Added Epsilon field
 
     [WriteOnly] public NativeArray<PotentialPairJobOutput> PotentialPairOutputs;
     [WriteOnly, NativeDisableParallelForRestriction] public NativeArray<SubPotentialJobOutput> AllSubPotentialOutputs;
@@ -300,14 +301,15 @@ public struct ProcessPotentialsJob : IJobParallelFor
 
         // --- Process P1 (potentialToUpdateP1) ---
         jobOutputData.frameCountP1 = jobInputData.frameCount;
-        jobOutputData.diffP1 = jobInputData.diffP1_mainThread; // Added missing assignment
+        jobOutputData.diffP1 = jobInputData.diffP1_mainThread; 
         jobOutputData.directionP1 = jobInputData.directionP1_mainThread;
         jobOutputData.distanceP1 = jobInputData.precalculatedDistanceP1_mainThread;
 
         CPAJobOutputData cpaP1 = CPAJobHelper.CalculateCPA(
             jobInputData.ownshipPositionP1, jobInputData.ownshipVelocityP1, jobInputData.ownshipHeadingP1,
             jobInputData.targetPositionP1, jobInputData.targetVelocityP1, jobInputData.targetHeadingP1,
-            jobInputData.cpaP1_posDiff_mainThread
+            jobInputData.cpaP1_posDiff_mainThread,
+            Epsilon // Pass Epsilon to CPAJobHelper
         );
         jobOutputData.relativeVelocityP1 = cpaP1.relativeVelocity;
         jobOutputData.cpaTimeP1 = cpaP1.time;
@@ -321,16 +323,16 @@ public struct ProcessPotentialsJob : IJobParallelFor
         for (int i = 0; i < jobInputData.subPotentialsP1_Count; i++)
         {
             int subInputIndex = jobInputData.subPotentialsP1_StartIndex + i;
-            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialInputs.Length) continue; // Bounds check
+            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialInputs.Length) continue; 
 
             SubPotentialJobInput subInput = AllSubPotentialInputs[subInputIndex];
             SubPotentialJobOutput subOutput = new()
             {
                 diff = subInput.diff_mainThread,
                 direction = subInput.direction_mainThread,
-                distance = subInput.precalculatedDistance_mainThread // Added missing assignment
+                distance = subInput.precalculatedDistance_mainThread 
             };
-            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialOutputs.Length) continue; // Bounds check
+            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialOutputs.Length) continue; 
             AllSubPotentialOutputs[subInputIndex] = subOutput;
         }
 
@@ -343,7 +345,8 @@ public struct ProcessPotentialsJob : IJobParallelFor
         CPAJobOutputData cpaP2 = CPAJobHelper.CalculateCPA(
             jobInputData.ownshipPositionP2, jobInputData.ownshipVelocityP2, jobInputData.ownshipHeadingP2,
             jobInputData.targetPositionP2, jobInputData.targetVelocityP2, jobInputData.targetHeadingP2,
-            jobInputData.cpaP2_posDiff_mainThread
+            jobInputData.cpaP2_posDiff_mainThread,
+            Epsilon // Pass Epsilon to CPAJobHelper
         );
         jobOutputData.relativeVelocityP2 = cpaP2.relativeVelocity;
         jobOutputData.cpaTimeP2 = cpaP2.time;
@@ -357,16 +360,16 @@ public struct ProcessPotentialsJob : IJobParallelFor
         for (int i = 0; i < jobInputData.subPotentialsP2_Count; i++)
         {
             int subInputIndex = jobInputData.subPotentialsP2_StartIndex + i;
-            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialInputs.Length) continue; // Bounds check
+            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialInputs.Length) continue; 
 
             SubPotentialJobInput subInput = AllSubPotentialInputs[subInputIndex];
             SubPotentialJobOutput subOutput = new()
             {
                 diff = subInput.diff_mainThread,
                 direction = subInput.direction_mainThread,
-                distance = subInput.precalculatedDistance_mainThread // Added missing assignment
+                distance = subInput.precalculatedDistance_mainThread
             };
-            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialOutputs.Length) continue; // Bounds check
+            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialOutputs.Length) continue; 
             AllSubPotentialOutputs[subInputIndex] = subOutput;
         }
         
@@ -659,7 +662,8 @@ public class DistanceMgr : MonoBehaviour
             PotentialPairInputs = potentialPairInputsNat,
             AllSubPotentialInputs = allSubPotentialInputsNat,
             PotentialPairOutputs = potentialPairOutputsNat,
-            AllSubPotentialOutputs = allSubPotentialOutputsNat
+            AllSubPotentialOutputs = allSubPotentialOutputsNat,
+            Epsilon = Utils.EPSILON // Set Epsilon for the job
         };
         
         JobHandle jobHandle = job.Schedule(_tempPotentialPairJobInputs.Count, 32); // Adjust batch count as needed
