@@ -31,10 +31,15 @@ public class CameraMgr : MonoBehaviour
     private Vector3 baseYawLocalPosition;
     private Quaternion baseYawLocalRotation;
 
+    private Vector3 basePitchLocalPosition;
+    private Quaternion basePitchLocalRotation;
+    private Vector3 baseRollLocalPosition;
+    private Quaternion baseRollLocalRotation;
+
     public void SetCameraPosition()
     {
         // Position camera 1500 units above and 2000 units behind Player 1
-        Vector3 baseOffset = new Vector3(0, 1500, -2000);
+        Vector3 baseOffset = new Vector3(0, 2000, -3000);
         Quaternion headingRotation = Quaternion.Euler(0, GameMgr.inst.headingPlayer1, 0);
         Vector3 cameraPosition = GameMgr.inst.posPlayer1 + headingRotation * baseOffset;
 
@@ -48,6 +53,10 @@ public class CameraMgr : MonoBehaviour
         // Store the base transform values
         baseYawLocalPosition = YawNode.transform.localPosition;
         baseYawLocalRotation = YawNode.transform.localRotation;
+        basePitchLocalPosition = PitchNode.transform.localPosition;
+        basePitchLocalRotation = PitchNode.transform.localRotation;
+        baseRollLocalPosition = RollNode.transform.localPosition;
+        baseRollLocalRotation = RollNode.transform.localRotation;
     }
 
     public GameObject RTSCameraRig;
@@ -85,6 +94,7 @@ public class CameraMgr : MonoBehaviour
         moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);
         HandleEdgeScrolling();
         HandleMiddleMouseDrag();
+        HandleReplayScrollWheelHeight();
 
     }
 
@@ -98,7 +108,34 @@ public class CameraMgr : MonoBehaviour
         float newY = Mathf.Clamp(YawNode.transform.position.y, minCameraHeight, maxCameraHeight);
         YawNode.transform.position = new(YawNode.transform.position.x, newY, YawNode.transform.position.z);
     }
+    // This field can be adjusted in the Inspector to change scroll sensitivity during replay.
+    public float replayScrollFactor = 5.0f; // Example: A factor of 5 means one scroll notch might feel like a moderate joystick push.
 
+    /// <summary>
+    /// Handles camera height adjustment using the mouse scroll wheel during replay mode.
+    /// This method should be called from Update().
+    /// </summary>
+    private void HandleReplayScrollWheelHeight()
+    {
+        if (ReplayMgr.inst.isReplaying)
+        {
+            // Read the scroll wheel's vertical movement delta for this frame.
+            float scrollInputY = Mouse.current.scroll.ReadValue().y;
+
+            if (scrollInputY != 0)
+            {
+                // Normalize the scroll input. Mouse scroll delta is often in multiples of 120.
+                // Dividing by 120f gives a value like +1.0 or -1.0 per notch.
+                float normalizedScroll = scrollInputY / 120f;
+                
+                // Determine the amount to move. Positive scroll (wheel forward/up) should increase height.
+                // MoveCameraY expects a positive value to move up.
+                float moveAmount = normalizedScroll * replayScrollFactor;
+                
+                MoveCameraY(moveAmount);
+            }
+        }
+    }
     public void MoveCameraXZ(Vector2 moveValue)
     {
         Vector3 moveVector = Vector3.zero;
@@ -145,7 +182,13 @@ public class CameraMgr : MonoBehaviour
     {
         YawNode.transform.SetParent(RTSCameraRig.transform);
         YawNode.transform.localPosition = baseYawLocalPosition; // Restore saved position
-        YawNode.transform.localRotation = baseYawLocalRotation;
+        YawNode.transform.localRotation = baseYawLocalRotation; // Restore saved rotation
+
+        PitchNode.transform.localPosition = basePitchLocalPosition; // Restore saved position
+        PitchNode.transform.localRotation = basePitchLocalRotation; // Restore saved rotation
+
+        RollNode.transform.localPosition = baseRollLocalPosition; // Restore saved position
+        RollNode.transform.localRotation = baseRollLocalRotation; // Restore saved rotation
         // if (isRTSMode)
         // {
         //     if (SelectionMgr.inst.selectedEntity != null) 
@@ -186,8 +229,10 @@ public class CameraMgr : MonoBehaviour
     {
         if (!isRTSMode) return;
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        if (mousePos.x < 0 || mousePos.x > Screen.width || mousePos.y < 0 || mousePos.y > Screen.height)
-            return;
+        #if UNITY_EDITOR
+            if (mousePos.x < 0 || mousePos.x > Screen.width || mousePos.y < 0 || mousePos.y > Screen.height)
+                return;
+        #endif
 
         Vector2 mousePosition = Mouse.current.position.ReadValue();
         Vector2 moveInput = Vector2.zero;
@@ -221,6 +266,7 @@ public class CameraMgr : MonoBehaviour
     }
     private void HandleMiddleMouseDrag()
     {
+        if (ReplayMgr.inst.isReplaying) return;
         if (Mouse.current.middleButton.isPressed)
         {
             Vector2 mouseDelta = Mouse.current.delta.ReadValue();

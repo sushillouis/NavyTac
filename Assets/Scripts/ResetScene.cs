@@ -11,6 +11,10 @@ public class ResetScene : MonoBehaviour
     {
         ClearAllEntities();
         ResetGameState();
+        if (FogWarMgr.inst != null)
+        {
+            FogWarMgr.inst.FOW = true;
+        }
         GameMgr.inst.OpenOcean1x1();
     }
     public void ClearAllEntities()

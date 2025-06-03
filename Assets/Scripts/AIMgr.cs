@@ -159,6 +159,8 @@ public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, boo
                     entityIds = selectedEntities.Select(e => e.entityId).ToArray(),
                     targetPosition = pos,
                     targetEntityId = targetEntityId,
+                    targetEntityName = targetEntityId != -1 ? EntityMgr.inst.entitiesDict[targetEntityId]?.name : null,
+                    targetOwnerName = targetEntityId != -1 ? EntityMgr.inst.entitiesDict[targetEntityId]?.owner.name : null,
                     add = add
                 };
                 Debug.Log($"Recording command: {cmd.commandType} at {cmd.targetPosition} for entities: {string.Join(", ", cmd.entityIds)}");

@@ -146,26 +146,38 @@ public class GameMgr : MonoBehaviour
     {
         DeltaScale(-1);
     }
+    float lastDisplayedSpeedValue = 1f;
     void Update()
     {
         if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus))
             DeltaScale(1);
         if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus))
             DeltaScale(-1);
+        float displayedSpeedValue = Time.timeScale;
+        if (displayedSpeedValue != lastDisplayedSpeedValue)
+        {
+            lastDisplayedSpeedValue = displayedSpeedValue;
+            foreach (TextMeshProUGUI text in simSpeedButtonText)
+        {
+            text.text = displayedSpeedValue.ToString("0");
+        }
+        }
+
+        
     }
 
     public void DeltaScale(float delta = 0)
     {
         float newTimeScale = Time.timeScale + delta;
         Time.timeScale = Mathf.Clamp(newTimeScale, min, max);
-        if (simSpeedButtonText != null)
-        {
-            float displayedSpeedValue = Time.timeScale;
-            foreach (TextMeshProUGUI text in simSpeedButtonText)
-            {
-                text.text = displayedSpeedValue.ToString("0");
-            }
-        }
+        // if (simSpeedButtonText != null)
+        // {
+        //     float displayedSpeedValue = Time.timeScale;
+        //     foreach (TextMeshProUGUI text in simSpeedButtonText)
+        //     {
+        //         text.text = displayedSpeedValue.ToString("0");
+        //     }
+        // }
     }
     void DetermineDifficulty()
     {
@@ -216,7 +228,7 @@ public class GameMgr : MonoBehaviour
         {
             if (ScoreMgr.inst.playerScores.Count == 0)
             {
-                difficultyLevel = 0.12f; 
+                difficultyLevel = 0.2f; 
                 return difficultyLevel;
             }
             difficultyLevel = difficultyLevel + 0.05f * ScoreMgr.inst.playerScores[ScoreMgr.inst.playerScores.Count - 1] / 100f;

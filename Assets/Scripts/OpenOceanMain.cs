@@ -204,7 +204,7 @@ public class OpenOceanMain : MonoBehaviour
         nextGameOrExitButton.onClick.AddListener(OnMultiScorePanelNextOrExitClicked);
 
         replayExitButton.onClick.RemoveAllListeners();
-        replayExitButton.onClick.AddListener(OnScoreListClicked);
+        replayExitButton.onClick.AddListener(OnReplayExitClicked);
 
         backButton.onClick.RemoveAllListeners();
         backButton.onClick.AddListener(BackButton);
@@ -810,7 +810,19 @@ public class OpenOceanMain : MonoBehaviour
         return null;
     }
 
-    public void OnScoreListClicked() => lobbyState = LobbyState.MultiScorePanel;
+    public void OnReplayExitClicked()
+    {
+        if (ReplayMgr.inst != null)
+        {
+            ReplayMgr.inst.StopReplay();
+            
+        }
+        else
+        {
+            Debug.LogError("ReplayMgr.inst is null. Cannot stop replay.", this);
+            lobbyState = LobbyState.MultiScorePanel;
+        }
+    }
     public void BackButton() => lobbyState = LobbyState.ScorePanel;
 
     public void OnScenarioSelected(int scenarioNumber)

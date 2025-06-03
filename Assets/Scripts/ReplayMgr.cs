@@ -11,6 +11,8 @@ public class ReplayCommand
     public int[] entityIds;
     public Vector3 targetPosition;
     public int targetEntityId;
+    public string targetEntityName;
+    public string targetOwnerName;
     public bool add;
 }
 
@@ -380,15 +382,30 @@ public class ReplayMgr : MonoBehaviour
     Debug.Log($"Saved scenario {scenarioNumber} commands to {filePath}");
 }
 
-// Reuse ScoreMgr's folder naming logic
-private string GetGameTypeFolder()
-{
-    string playerCode = OpenOceanMain.inst.playerCode;
-    if (playerCode == "AAA") return "Adaptive";
-    if (playerCode == "BBB") return "Non-Adaptive";
-    if (playerCode == "ABC") return "Pre-Test";
-    if (playerCode == "XYZ") return "Post-Test";
-    return "UnknownGameType";
-}
+    // Reuse ScoreMgr's folder naming logic
+    private string GetGameTypeFolder()
+    {
+        string playerCode = OpenOceanMain.inst.playerCode;
+        if (playerCode == "AAA") return "Adaptive";
+        if (playerCode == "BBB") return "Non-Adaptive";
+        if (playerCode == "ABC") return "Pre-Test";
+        if (playerCode == "XYZ") return "Post-Test";
+        return "UnknownGameType";
+    }
+    public void StopReplay()
+    {
+        Debug.Log("ReplayMgr: StopReplay called.");
+        isReplaying = false;
+        replayFinished = true;
+        if (OpenOceanMain.inst != null)
+        {
+            OpenOceanMain.inst.lobbyState = LobbyState.MultiScorePanel;
+            Debug.Log("ReplayMgr: Set OpenOceanMain lobby state to MultiScorePanel.");
+        }
+        else
+        {
+            Debug.LogWarning("ReplayMgr: OpenOceanMain.inst is null. Cannot set lobby state.");
+        }
+    }
 }
 
