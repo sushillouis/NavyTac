@@ -313,6 +313,24 @@ public class ScoreMgr : MonoBehaviour
     /// Gathers all relevant game data and logs it to CSV files.
     /// Logs to both a student-specific file and a common log file.
     /// </summary>
+    public (string studentCsvPath, string studentDirectory, string commonCsvPath) GenerateLogPaths(string studentID, string sessionStartTimeString, string gameTypeFolder)
+    {
+        // Construct filename for student-specific log, incorporating student ID, session start time, and game type folder name
+        string studentFileName = $"{studentID}_{sessionStartTimeString}_{gameTypeFolder}.csv";
+        // Construct directory path for student-specific log
+        string studentDirectory = Path.Combine(
+        Application.persistentDataPath, 
+        studentID, 
+        gameTypeFolder
+        );
+        string studentCsvPath = Path.Combine(studentDirectory, studentFileName); // Full path to student-specific CSV
+
+        // Prepare CSV path for common file (logs all games)
+        string commonCsvPath = Path.Combine(Application.persistentDataPath, CommonLogFileName);
+
+        return (studentCsvPath, studentDirectory, commonCsvPath);
+    }
+
     public void LogGameData()
     {
         // 0. Date & Time
@@ -327,7 +345,7 @@ public class ScoreMgr : MonoBehaviour
             string numericPart = studentID.Substring("Student".Length);
             if (int.TryParse(numericPart, out int studentIdNumber))
             {
-                group = (studentIdNumber % 2 == 0) ? "Adaptive" : "Non-Adaptive"; // Even ID = Adaptive, Odd ID = Non-Adaptive
+                group = (studentIdNumber % 2 == 0) ? "Adaptive" : "Non-Adaptive";
             }
             else
             {
@@ -378,14 +396,7 @@ public class ScoreMgr : MonoBehaviour
         // Prepare CSV path for student-specific file
         string gameTypeFolder = GetGameTypeFolder(); // Get the folder name based on game type (e.g., "Adaptive")
 
-        // Construct filename for student-specific log, incorporating student ID, session start time, and game type folder name
-        string studentFileName = $"{studentID}_{sessionStartTimeString}_{gameTypeFolder}.csv";
-        // Construct directory path for student-specific log
-        string studentDirectory = Path.Combine(Application.persistentDataPath, gameTypeFolder);
-        string studentCsvPath = Path.Combine(studentDirectory, studentFileName); // Full path to student-specific CSV
-
-        // Prepare CSV path for common file (logs all games)
-        string commonCsvPath = Path.Combine(Application.persistentDataPath, CommonLogFileName);
+        var (studentCsvPath, studentDirectory, commonCsvPath) = GenerateLogPaths(studentID, sessionStartTimeString, gameTypeFolder);
 
         // Log to student-specific file
         WriteToCsv(studentCsvPath, studentDirectory, dateTimeNow, studentID, group, gameType, result, damageTaken, damageDealt, scorePercent, timeTaken, aiLevel, aiDifficulty, winCondition, playerBaseLocation, aiBaseLocation, initialUnitCounts, destroyedPlayerUnits, destroyedAIUnits);
@@ -552,7 +563,7 @@ public class ScoreMgr : MonoBehaviour
     }
     private IEnumerator UploadToServer(string csvPath)
 {
-    string url = "https://www.cse.unr.edu/~yvohra/Study/upload.php";
+    string url = "164.90.151.175/upload/";
     string csvContent = File.ReadAllText(csvPath);
     string filename = Path.GetFileName(csvPath);
 

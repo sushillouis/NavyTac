@@ -185,6 +185,9 @@ public class CameraMgr : MonoBehaviour
     private void HandleEdgeScrolling()
     {
         if (!isRTSMode) return;
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        if (mousePos.x < 0 || mousePos.x > Screen.width || mousePos.y < 0 || mousePos.y > Screen.height)
+            return;
 
         Vector2 mousePosition = Mouse.current.position.ReadValue();
         Vector2 moveInput = Vector2.zero;

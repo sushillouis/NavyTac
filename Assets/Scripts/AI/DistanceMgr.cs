@@ -1,8 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Threading.Tasks; // Added for Parallel.ForEach
+// using System.Threading.Tasks; // Replaced by Unity.Jobs
+using Unity.Jobs;
+using Unity.Collections;
+using Unity.Burst;
 
 [Serializable]
 public class SubPotential{
@@ -12,6 +14,7 @@ public class SubPotential{
     public Transform pfTransform;
     public Collider cachedPftCollider; // Cached collider for pfTransform
 }
+
 
 [Serializable]
 public class Potential
@@ -25,48 +28,33 @@ public class Potential
     public CPAInfo cpaInfo;
     public float targetAngle;
 
-    public int framecount;
+    public int FrameCount;
 
     public List<SubPotential> subPotentials;
 
+    
     public Potential(Entity own, Entity tgt)
     {
         ownship = own;
         target = tgt;
-        cpaInfo = new CPAInfo(own, target);
-        subPotentials = new List<SubPotential>();
+        cpaInfo = new CPAInfo(own, target); // CPAInfo must be initialized here
+        subPotentials = new();
         if (own != null && own.ai != null && own.ai.pfList != null)
         {
             foreach(Transform t in own.ai.pfList) {
                 if (t == null) continue;
-                SubPotential subPotential = new SubPotential();
-                subPotential.pfTransform = t;
-                subPotential.cachedPftCollider = t.GetComponent<Collider>();
+                SubPotential subPotential = new() {
+                    pfTransform = t,
+                    cachedPftCollider = t.GetComponent<Collider>()
+                };
                 subPotentials.Add(subPotential);
             }
         }
     }
 
-    // This method is not directly used by DistanceMgr in its current update flow.
-    void InitDefaults()
-    {
-        distance = 0;
-        diff = Vector3.zero;
-        relativeVelocity = Vector3.zero;
-        direction = Vector3.zero;
-        if (ownship != null && target != null)
-        {
-            cpaInfo = new CPAInfo(ownship, target);
-        } else {
-            cpaInfo = null; 
-        }
-        targetAngle = 0;
-    }
-
     // This method is not directly used by DistanceMgr's new multi-threaded update.
-    // DistanceMgr performs similar calculations with more detailed collider logic.
     public void ReCompute() {
-        framecount = Time.frameCount;
+        FrameCount = Time.frameCount;
 
         if (target == null || ownship == null) return;
 
@@ -74,7 +62,7 @@ public class Potential
         distance = diff.magnitude;
         direction = diff.normalized;
         
-        if (cpaInfo == null) cpaInfo = new CPAInfo(ownship, target);
+        cpaInfo ??= new CPAInfo(ownship, target);
         cpaInfo.ReCompute();
         relativeVelocity = cpaInfo.relativeVelocity; 
         targetAngle = cpaInfo.targetAngle;
@@ -88,22 +76,22 @@ public class Potential
     }
 }
 
-[System.Serializable]
+[Serializable]
 public class CPAInfo
 {
-    public Entity ownship; // Used by original ReCompute, and for context in constructor
-    public Entity target;  // Used by original ReCompute, and for context in constructor
-    public Vector3 ownShipPosition = Vector3.zero; // Position of ownship at CPA
-    public Vector3 targetPosition = Vector3.zero;  // Position of target at CPA
-    public float time = 0; // Time to CPA
-    public float range = 0; // Range at CPA
+    public Entity ownship; 
+    public Entity target;  
+    public Vector3 ownShipPosition = Vector3.zero; 
+    public Vector3 targetPosition = Vector3.zero;  
+    public float time = 0; 
+    public float range = 0; 
     public float targetRelativeBearing = 0;
     public float targetAbsBearing = 0;
     public float targetAngle;
-    public Vector3 relativeVelocity = Vector3.zero; // target.velocity - ownship.velocity
+    public Vector3 relativeVelocity = Vector3.zero; 
 
-    private Vector3 _velDiff = Vector3.zero;    // ownship.velocity - target.velocity
-    private Vector3 _posDiff = Vector3.zero;    // ownship.position - target.position (or closest points based)
+    private Vector3 _velDiff = Vector3.zero;   
+    private Vector3 _posDiff = Vector3.zero;   
     private float _relSpeedSquared = 0;
 
     public CPAInfo(Entity e1, Entity e2)
@@ -153,38 +141,11 @@ public class CPAInfo
         targetRelativeBearing = Utils.Degrees360(Utils.AngleDiffPosNeg(targetAbsBearing, ownship.heading));
         targetAngle = Utils.Degrees360(targetAbsBearing + 180 - target.heading);
     }
-
-    // Thread-safe version of ReCompute, takes all necessary data as parameters
-    public void ReCompute_ThreadSafe(Vector3 osPos, Vector3 osVel, float osHeading,
-                                     Vector3 tgtPos, Vector3 tgtVel, float tgtHeading,
-                                     Vector3 precomputedPosDiff)
-    {
-        _velDiff = osVel - tgtVel;
-        _posDiff = precomputedPosDiff; // Use precomputed value (e.g., from ClosestPoint or center-to-center)
-
-        relativeVelocity = tgtVel - osVel; 
-        _relSpeedSquared = _velDiff.sqrMagnitude;
-
-        if (_relSpeedSquared < Utils.EPSILON * 10)
-            time = 0;
-        else
-            time = -Vector3.Dot(_posDiff, _velDiff) / _relSpeedSquared;
-        
-        if (time < 0) time = 0; // CPA is in the past
-
-        ownShipPosition = osPos + osVel * time;
-        targetPosition = tgtPos + tgtVel * time;
-        
-        Vector3 cpaVector = targetPosition - ownShipPosition;
-        range = cpaVector.magnitude;
-
-        targetAbsBearing = Utils.Degrees360(Utils.VectorToHeadingDegrees(cpaVector));
-        targetRelativeBearing = Utils.Degrees360(Utils.AngleDiffPosNeg(targetAbsBearing, osHeading));
-        targetAngle = Utils.Degrees360(targetAbsBearing + 180 - tgtHeading);
-    }
+    // This method is now effectively replaced by CPAHelper.CalculateCPA for job-based computation
+    // public void ReCompute_ThreadSafe(...) { ... }
 };
 
-// Helper class for passing data to worker threads for SubPotential calculation
+// Helper class for passing data to worker threads for SubPotential calculation (Main Thread side)
 class SubPotentialTaskData {
     public SubPotential subPotentialToUpdate; // Reference to the SubPotential object
     public Vector3 pfPosition;
@@ -194,37 +155,223 @@ class SubPotentialTaskData {
     public Vector3 direction;
 }
 
-// Helper class for passing data to worker threads for Potential calculation
+// Helper class for passing data to worker threads for Potential calculation (Main Thread side)
 class PotentialCalculationTaskData {
     public Potential potentialToUpdateP1;
     public Potential potentialToUpdateP2;
     public int frameCount;
 
     // Data for P1 (ent1 -> ent2)
-    public Vector3 ownshipPositionP1;
-    public Vector3 ownshipVelocityP1;
-    public float ownshipHeadingP1;
-    public Vector3 targetPositionP1;
-    public Vector3 targetVelocityP1;
-    public float targetHeadingP1;
-    public float precalculatedDistanceP1;
-    public Vector3 diffP1;
-    public Vector3 directionP1;
-    public Vector3 cpaP1_posDiff; // Precomputed position difference for CPA calc
+    public Vector3 ownshipPositionP1; public Vector3 ownshipVelocityP1; public float ownshipHeadingP1;
+    public Vector3 targetPositionP1; public Vector3 targetVelocityP1; public float targetHeadingP1;
+    public float precalculatedDistanceP1; public Vector3 diffP1; public Vector3 directionP1;
+    public Vector3 cpaP1_posDiff; 
     public List<SubPotentialTaskData> subPotentialsDataP1;
 
     // Data for P2 (ent2 -> ent1)
-    public Vector3 ownshipPositionP2;
-    public Vector3 ownshipVelocityP2;
-    public float ownshipHeadingP2;
-    public Vector3 targetPositionP2;
-    public Vector3 targetVelocityP2;
-    public float targetHeadingP2;
-    public float precalculatedDistanceP2;
-    public Vector3 diffP2;
-    public Vector3 directionP2;
-    public Vector3 cpaP2_posDiff; // Precomputed position difference for CPA calc
+    public Vector3 ownshipPositionP2; public Vector3 ownshipVelocityP2; public float ownshipHeadingP2;
+    public Vector3 targetPositionP2; public Vector3 targetVelocityP2; public float targetHeadingP2;
+    public float precalculatedDistanceP2; public Vector3 diffP2; public Vector3 directionP2;
+    public Vector3 cpaP2_posDiff; 
     public List<SubPotentialTaskData> subPotentialsDataP2;
+}
+
+
+// --- Burst Job Related Structs ---
+
+// Struct for CPA calculation results, used by the job
+public struct CPAJobOutputData
+{
+    public Vector3 ownShipPositionAtCPA;
+    public Vector3 targetPositionAtCPA;
+    public float time;
+    public float range;
+    public float targetRelativeBearing;
+    public float targetAbsBearing;
+    public float targetAngle;
+    public Vector3 relativeVelocity;
+}
+
+// Helper for CPA calculations within a Burst job
+[BurstCompile]
+public static class CPAJobHelper // Made static class for helper methods
+{
+    public static CPAJobOutputData CalculateCPA(Vector3 osPos, Vector3 osVel, float osHeading,
+                                             Vector3 tgtPos, Vector3 tgtVel, float tgtHeading,
+                                             Vector3 precomputedPosDiff)
+    {
+        CPAJobOutputData output = new();
+        output.relativeVelocity = tgtVel - osVel;
+
+        Vector3 _velDiff = osVel - tgtVel;
+        float _relSpeedSquared = _velDiff.sqrMagnitude;
+
+        if (_relSpeedSquared < Utils.EPSILON * 10) // Assuming Utils.EPSILON is a const float
+            output.time = 0;
+        else
+            output.time = -Vector3.Dot(precomputedPosDiff, _velDiff) / _relSpeedSquared;
+        
+        if (output.time < 0) output.time = 0; 
+
+        output.ownShipPositionAtCPA = osPos + osVel * output.time;
+        output.targetPositionAtCPA = tgtPos + tgtVel * output.time;
+        
+        Vector3 cpaVector = output.targetPositionAtCPA - output.ownShipPositionAtCPA;
+        output.range = cpaVector.magnitude;
+
+        // Ensure Utils methods are Burst-compatible (static, no managed types, only blittable math)
+        output.targetAbsBearing = Utils.Degrees360(Utils.VectorToHeadingDegrees(cpaVector));
+        output.targetRelativeBearing = Utils.Degrees360(Utils.AngleDiffPosNeg(output.targetAbsBearing, osHeading));
+        output.targetAngle = Utils.Degrees360(output.targetAbsBearing + 180 - tgtHeading);
+        
+        return output;
+    }
+}
+
+// Input data for a pair of potentials for the job
+public struct PotentialPairJobInput
+{
+    public int frameCount;
+    // P1 data
+    public Vector3 ownshipPositionP1; public Vector3 ownshipVelocityP1; public float ownshipHeadingP1;
+    public Vector3 targetPositionP1; public Vector3 targetVelocityP1; public float targetHeadingP1;
+    public Vector3 diffP1_mainThread; public Vector3 directionP1_mainThread; 
+    public float precalculatedDistanceP1_mainThread; public Vector3 cpaP1_posDiff_mainThread;
+    // P2 data
+    public Vector3 ownshipPositionP2; public Vector3 ownshipVelocityP2; public float ownshipHeadingP2;
+    public Vector3 targetPositionP2; public Vector3 targetVelocityP2; public float targetHeadingP2;
+    public Vector3 diffP2_mainThread; public Vector3 directionP2_mainThread; 
+    public float precalculatedDistanceP2_mainThread; public Vector3 cpaP2_posDiff_mainThread;
+    
+    public int subPotentialsP1_Count;
+    public int subPotentialsP1_StartIndex; // Index into the flat AllSubPotentialInputs array
+    public int subPotentialsP2_Count;
+    public int subPotentialsP2_StartIndex; // Index into the flat AllSubPotentialInputs array
+}
+
+// Input data for a single sub-potential for the job
+public struct SubPotentialJobInput
+{
+    // Values pre-calculated on the main thread
+    public Vector3 diff_mainThread;
+    public Vector3 direction_mainThread;
+    public float precalculatedDistance_mainThread;
+}
+
+// Output data for a pair of potentials from the job
+public struct PotentialPairJobOutput
+{
+    // P1 results
+    public Vector3 diffP1; public Vector3 directionP1; public float distanceP1; public int frameCountP1;
+    public Vector3 relativeVelocityP1; public float cpaTargetAngleP1;
+    public float cpaTimeP1; public float cpaRangeP1;
+    public float cpaTargetRelativeBearingP1; public float cpaTargetAbsBearingP1;
+    public Vector3 cpaOwnShipPositionP1; public Vector3 cpaTargetPositionP1;
+
+    // P2 results
+    public Vector3 diffP2; public Vector3 directionP2; public float distanceP2; public int frameCountP2;
+    public Vector3 relativeVelocityP2; public float cpaTargetAngleP2;
+    public float cpaTimeP2; public float cpaRangeP2;
+    public float cpaTargetRelativeBearingP2; public float cpaTargetAbsBearingP2;
+    public Vector3 cpaOwnShipPositionP2; public Vector3 cpaTargetPositionP2;
+}
+
+// Output data for a single sub-potential from the job
+public struct SubPotentialJobOutput
+{
+    public Vector3 diff;
+    public Vector3 direction;
+    public float distance;
+}
+
+[BurstCompile]
+public struct ProcessPotentialsJob : IJobParallelFor
+{
+    [ReadOnly] public NativeArray<PotentialPairJobInput> PotentialPairInputs;
+    [ReadOnly] public NativeArray<SubPotentialJobInput> AllSubPotentialInputs;
+
+    [WriteOnly] public NativeArray<PotentialPairJobOutput> PotentialPairOutputs;
+    [WriteOnly, NativeDisableParallelForRestriction] public NativeArray<SubPotentialJobOutput> AllSubPotentialOutputs;
+
+    public void Execute(int index)
+    {
+        PotentialPairJobInput jobInputData = PotentialPairInputs[index];
+        PotentialPairJobOutput jobOutputData = new();
+
+        // --- Process P1 (potentialToUpdateP1) ---
+        jobOutputData.frameCountP1 = jobInputData.frameCount;
+        jobOutputData.diffP1 = jobInputData.diffP1_mainThread; // Added missing assignment
+        jobOutputData.directionP1 = jobInputData.directionP1_mainThread;
+        jobOutputData.distanceP1 = jobInputData.precalculatedDistanceP1_mainThread;
+
+        CPAJobOutputData cpaP1 = CPAJobHelper.CalculateCPA(
+            jobInputData.ownshipPositionP1, jobInputData.ownshipVelocityP1, jobInputData.ownshipHeadingP1,
+            jobInputData.targetPositionP1, jobInputData.targetVelocityP1, jobInputData.targetHeadingP1,
+            jobInputData.cpaP1_posDiff_mainThread
+        );
+        jobOutputData.relativeVelocityP1 = cpaP1.relativeVelocity;
+        jobOutputData.cpaTimeP1 = cpaP1.time;
+        jobOutputData.cpaRangeP1 = cpaP1.range;
+        jobOutputData.cpaTargetRelativeBearingP1 = cpaP1.targetRelativeBearing;
+        jobOutputData.cpaTargetAbsBearingP1 = cpaP1.targetAbsBearing;
+        jobOutputData.cpaTargetAngleP1 = cpaP1.targetAngle;
+        jobOutputData.cpaOwnShipPositionP1 = cpaP1.ownShipPositionAtCPA;
+        jobOutputData.cpaTargetPositionP1 = cpaP1.targetPositionAtCPA;
+
+        for (int i = 0; i < jobInputData.subPotentialsP1_Count; i++)
+        {
+            int subInputIndex = jobInputData.subPotentialsP1_StartIndex + i;
+            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialInputs.Length) continue; // Bounds check
+
+            SubPotentialJobInput subInput = AllSubPotentialInputs[subInputIndex];
+            SubPotentialJobOutput subOutput = new()
+            {
+                diff = subInput.diff_mainThread,
+                direction = subInput.direction_mainThread,
+                distance = subInput.precalculatedDistance_mainThread // Added missing assignment
+            };
+            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialOutputs.Length) continue; // Bounds check
+            AllSubPotentialOutputs[subInputIndex] = subOutput;
+        }
+
+        // --- Process P2 (potentialToUpdateP2) ---
+        jobOutputData.frameCountP2 = jobInputData.frameCount;
+        jobOutputData.diffP2 = jobInputData.diffP2_mainThread;
+        jobOutputData.directionP2 = jobInputData.directionP2_mainThread;
+        jobOutputData.distanceP2 = jobInputData.precalculatedDistanceP2_mainThread;
+
+        CPAJobOutputData cpaP2 = CPAJobHelper.CalculateCPA(
+            jobInputData.ownshipPositionP2, jobInputData.ownshipVelocityP2, jobInputData.ownshipHeadingP2,
+            jobInputData.targetPositionP2, jobInputData.targetVelocityP2, jobInputData.targetHeadingP2,
+            jobInputData.cpaP2_posDiff_mainThread
+        );
+        jobOutputData.relativeVelocityP2 = cpaP2.relativeVelocity;
+        jobOutputData.cpaTimeP2 = cpaP2.time;
+        jobOutputData.cpaRangeP2 = cpaP2.range;
+        jobOutputData.cpaTargetRelativeBearingP2 = cpaP2.targetRelativeBearing;
+        jobOutputData.cpaTargetAbsBearingP2 = cpaP2.targetAbsBearing;
+        jobOutputData.cpaTargetAngleP2 = cpaP2.targetAngle;
+        jobOutputData.cpaOwnShipPositionP2 = cpaP2.ownShipPositionAtCPA;
+        jobOutputData.cpaTargetPositionP2 = cpaP2.targetPositionAtCPA;
+        
+        for (int i = 0; i < jobInputData.subPotentialsP2_Count; i++)
+        {
+            int subInputIndex = jobInputData.subPotentialsP2_StartIndex + i;
+            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialInputs.Length) continue; // Bounds check
+
+            SubPotentialJobInput subInput = AllSubPotentialInputs[subInputIndex];
+            SubPotentialJobOutput subOutput = new()
+            {
+                diff = subInput.diff_mainThread,
+                direction = subInput.direction_mainThread,
+                distance = subInput.precalculatedDistance_mainThread // Added missing assignment
+            };
+            if (subInputIndex < 0 || subInputIndex >= AllSubPotentialOutputs.Length) continue; // Bounds check
+            AllSubPotentialOutputs[subInputIndex] = subOutput;
+        }
+        
+        PotentialPairOutputs[index] = jobOutputData;
+    }
 }
 
 
@@ -244,18 +391,21 @@ public class DistanceMgr : MonoBehaviour
     public int ii = 0;
     public int jj = 0;
 
-    private List<PotentialCalculationTaskData> _taskDataList = new List<PotentialCalculationTaskData>(); // Reusable list for task data
 
-    void Start()
-    {
-        // Initialization is handled in Update if not initialized.
-    }
+    // Main thread lists to hold task data and references for mapping job results back
+    private readonly List<PotentialCalculationTaskData> _mainThreadTaskDataList = new();
+    private readonly List<SubPotential> _flatSubPotentialReferences = new(); // For direct mapping of sub-potential results
+
+    // Temporary lists for populating NativeArrays
+    private readonly List<PotentialPairJobInput> _tempPotentialPairJobInputs = new();
+    private readonly List<SubPotentialJobInput> _tempAllSubPotentialJobInputs = new();
+
 
      public void Initialize()
     {
         isInitialized = true;
-        potentialsDictionary = new Dictionary<Entity, Dictionary<Entity, Potential>>();
-        potentialsList = new List<List<Potential>>();
+        potentialsDictionary = new();
+        potentialsList = new();
         
         var validEntities = EntityMgr.inst.entities.FindAll(e => e != null && e.entityClass != EntityClass.Missile);
         int n = validEntities.Count;
@@ -266,8 +416,8 @@ public class DistanceMgr : MonoBehaviour
         {
             Entity ent1 = validEntities[i_idx];
             
-            Dictionary<Entity, Potential> ent1PotDictionary = new Dictionary<Entity, Potential>();
-            List<Potential> ent1PotList = new List<Potential>();
+            Dictionary<Entity, Potential> ent1PotDictionary = new();
+            List<Potential> ent1PotList = new();
             potentialsDictionary.Add(ent1, ent1PotDictionary);
             potentialsList.Add(ent1PotList);
             
@@ -275,23 +425,23 @@ public class DistanceMgr : MonoBehaviour
             {
                 Entity ent2 = validEntities[j_idx];
                 
-                Potential pot = new Potential(ent1, ent2);
+                Potential pot = new(ent1, ent2);
                 ent1PotDictionary.Add(ent2, pot);
                 ent1PotList.Add(pot);
                 potentials2D[i_idx, j_idx] = pot;
             }
         }
-        this.ii = n; 
-        this.jj = n; 
-    }
+        ii = n; 
+        jj = n; 
+    } // End of Initialize method
 
-    void Stop() // Consider OnDisable or OnDestroy
+    void OnDestroy() // Changed from Stop() to OnDestroy for typical Unity lifecycle
     {
-        isInitialized = false;
-        // potentials2D = null;
-        // potentialsDictionary?.Clear();
-        // potentialsList?.Clear();
-        // _taskDataList?.Clear();
+        // Clear lists that might hold references or large data
+        _mainThreadTaskDataList.Clear();
+        _flatSubPotentialReferences.Clear();
+        _tempPotentialPairJobInputs.Clear();
+        _tempAllSubPotentialJobInputs.Clear();
     }
 
     private int frameCounter = 0; 
@@ -309,31 +459,35 @@ public class DistanceMgr : MonoBehaviour
         
         if (isInitialized)
         {
-            UpdatePotentialsMultiThreaded();
+            UpdatePotentialsWithJob();
         }
         frameCounter++;
     }
 
     public List<Potential> selectedEntityPotentials; 
 
-    void UpdatePotentialsMultiThreaded()
+    void UpdatePotentialsWithJob()
     {
         if (potentialsList == null) return;
         int n = potentialsList.Count;
         if (n == 0) return;
 
-        int currentFrameMod = frameCounter % 10; // Stagger updates
-        _taskDataList.Clear(); // Reuse the list
-        int currentFrame = Time.frameCount; // Read once on main thread
+        int currentFrameMod = frameCounter % 10; 
+        _mainThreadTaskDataList.Clear(); 
+        _flatSubPotentialReferences.Clear();
+        _tempPotentialPairJobInputs.Clear();
+        _tempAllSubPotentialJobInputs.Clear();
 
-        // Phase 1: Data Gathering (Main Thread)
-        for (int i = 0; i < n; i++)
+        int currentFrame = Time.frameCount; 
+
+        // Phase 1: Data Gathering (Main Thread) - Populates _mainThreadTaskDataList and temporary job input lists
+        for (int i_loop = 0; i_loop < n; i_loop++) // Renamed loop variable to avoid conflict
         {
-            if (i % 10 != currentFrameMod) continue; // Staggering
-            if (potentialsList[i] == null || potentialsList[i].Count == 0) continue;
+            if (i_loop % 10 != currentFrameMod) continue; 
+            if (potentialsList[i_loop] == null || potentialsList[i_loop].Count == 0) continue;
 
             Entity ent1 = null;
-            foreach (var p_check in potentialsList[i]) {
+            foreach (var p_check in potentialsList[i_loop]) { // Find ent1 for this row
                 if (p_check != null && p_check.ownship != null) {
                     ent1 = p_check.ownship;
                     break;
@@ -344,205 +498,248 @@ public class DistanceMgr : MonoBehaviour
 
             if (SelectionMgr.inst != null && ent1 == SelectionMgr.inst.selectedEntity)
             {
-                selectedEntityPotentials = potentialsList[i];
+                selectedEntityPotentials = potentialsList[i_loop];
             }
 
-            for (int j = i + 1; j < n; j++) // Process each pair (i, j) once where j > i
+            for (int j_loop = i_loop + 1; j_loop < n; j_loop++)  // Renamed loop variable
             {
-                if (potentialsList[i].Count <= j) continue;
-                Potential p1 = potentialsList[i][j]; // Potential(ent1, ent_j)
+                if (potentialsList[i_loop].Count <= j_loop) continue;
+                Potential p1 = potentialsList[i_loop][j_loop]; 
                 if (p1 == null || p1.ownship == null || p1.target == null) continue;
-                Entity ent2 = p1.target; // This is ent_j
+                Entity ent2 = p1.target; 
                 if (ent2 == null || ent2.entityClass == EntityClass.Missile) continue;
 
-                // Get p2 = Potential(ent_j, ent1)
-                if (j >= potentialsList.Count || potentialsList[j].Count <= i) continue;
-                Potential p2 = potentialsList[j][i]; 
+                if (j_loop >= potentialsList.Count || potentialsList[j_loop].Count <= i_loop) continue;
+                Potential p2 = potentialsList[j_loop][i_loop]; 
                 if (p2 == null || p2.ownship == null || p2.target == null || p2.ownship != ent2 || p2.target != ent1) {
-                     // Data inconsistency or p2 not found as expected
                     Debug.LogWarning($"Could not find or verify symmetric potential for pair ({ent1.name}, {ent2.name})");
                     continue;
                 }
 
-                var taskData = new PotentialCalculationTaskData {
-                    potentialToUpdateP1 = p1,
-                    potentialToUpdateP2 = p2,
-                    frameCount = currentFrame,
-                    // P1 (ent1 -> ent2)
+                // Create main thread task data (holds references to Potential objects)
+                var mtTaskData = new PotentialCalculationTaskData() {
+                    potentialToUpdateP1 = p1, potentialToUpdateP2 = p2, frameCount = currentFrame,
                     ownshipPositionP1 = ent1.position, ownshipVelocityP1 = ent1.velocity, ownshipHeadingP1 = ent1.heading,
                     targetPositionP1 = ent2.position, targetVelocityP1 = ent2.velocity, targetHeadingP1 = ent2.heading,
-                    subPotentialsDataP1 = new List<SubPotentialTaskData>(),
-                    // P2 (ent2 -> ent1)
+                    subPotentialsDataP1 = new(),
                     ownshipPositionP2 = ent2.position, ownshipVelocityP2 = ent2.velocity, ownshipHeadingP2 = ent2.heading,
                     targetPositionP2 = ent1.position, targetVelocityP2 = ent1.velocity, targetHeadingP2 = ent1.heading,
-                    subPotentialsDataP2 = new List<SubPotentialTaskData>()
+                    subPotentialsDataP2 = new()
                 };
 
-                // --- Main Thread Computations for P1 (ent1 -> ent2) ---
-                taskData.diffP1 = taskData.targetPositionP1 - taskData.ownshipPositionP1;
-                taskData.directionP1 = taskData.diffP1.normalized;
+                PotentialPairJobInput jobInputItem = new() { 
+                    frameCount = currentFrame,
+                    ownshipPositionP1 = mtTaskData.ownshipPositionP1, ownshipVelocityP1 = mtTaskData.ownshipVelocityP1, ownshipHeadingP1 = mtTaskData.ownshipHeadingP1,
+                    targetPositionP1 = mtTaskData.targetPositionP1, targetVelocityP1 = mtTaskData.targetVelocityP1, targetHeadingP1 = mtTaskData.targetHeadingP1,
+                    ownshipPositionP2 = mtTaskData.ownshipPositionP2, ownshipVelocityP2 = mtTaskData.ownshipVelocityP2, ownshipHeadingP2 = mtTaskData.ownshipHeadingP2,
+                    targetPositionP2 = mtTaskData.targetPositionP2, targetVelocityP2 = mtTaskData.targetVelocityP2, targetHeadingP2 = mtTaskData.targetHeadingP2
+                };
+                
                 Collider ownshipColliderP1 = ent1.GetComponent<Collider>();
                 Collider targetColliderP1 = ent2.GetComponent<Collider>();
 
-                if (ownshipColliderP1 != null && targetColliderP1 != null) {
-                    Vector3 closestOnOwnP1 = ownshipColliderP1.ClosestPoint(taskData.targetPositionP1);
-                    Vector3 closestOnTgtP1 = targetColliderP1.ClosestPoint(taskData.ownshipPositionP1);
-                    taskData.precalculatedDistanceP1 = Vector3.Distance(closestOnOwnP1, closestOnTgtP1);
-                    taskData.cpaP1_posDiff = closestOnOwnP1 - closestOnTgtP1;
-                } else {
-                    taskData.precalculatedDistanceP1 = taskData.diffP1.magnitude;
-                    taskData.cpaP1_posDiff = taskData.ownshipPositionP1 - taskData.targetPositionP1;
-                }
+                // --- Main Thread Computations for P1 (ent1 -> ent2) ---
+                mtTaskData.diffP1 = mtTaskData.targetPositionP1 - mtTaskData.ownshipPositionP1;
+                jobInputItem.diffP1_mainThread = mtTaskData.diffP1;
+                mtTaskData.directionP1 = mtTaskData.diffP1.normalized;
+                jobInputItem.directionP1_mainThread = mtTaskData.directionP1;
 
-                // SubPotentials for P1 (ownship: ent1, target: ent2)
+                if (ownshipColliderP1 != null && targetColliderP1 != null) {
+                    Vector3 closestOnOwnP1 = ownshipColliderP1.ClosestPoint(mtTaskData.targetPositionP1);
+                    Vector3 closestOnTgtP1 = targetColliderP1.ClosestPoint(mtTaskData.ownshipPositionP1);
+                    mtTaskData.precalculatedDistanceP1 = Vector3.Distance(closestOnOwnP1, closestOnTgtP1);
+                    mtTaskData.cpaP1_posDiff = closestOnOwnP1 - closestOnTgtP1;
+                } else {
+                    mtTaskData.precalculatedDistanceP1 = mtTaskData.diffP1.magnitude;
+                    mtTaskData.cpaP1_posDiff = mtTaskData.ownshipPositionP1 - mtTaskData.targetPositionP1;
+                }
+                jobInputItem.precalculatedDistanceP1_mainThread = mtTaskData.precalculatedDistanceP1;
+                jobInputItem.cpaP1_posDiff_mainThread = mtTaskData.cpaP1_posDiff;
+                
+                jobInputItem.subPotentialsP1_StartIndex = _tempAllSubPotentialJobInputs.Count;
                 if (p1.subPotentials != null) {
                     foreach (SubPotential sp_p1 in p1.subPotentials) {
                         if (sp_p1 == null || sp_p1.pfTransform == null) continue;
-                        var subData = new SubPotentialTaskData { subPotentialToUpdate = sp_p1 };
-                        subData.pfPosition = sp_p1.pfTransform.position;
-                        subData.targetEntityPosition = taskData.targetPositionP1; // ent2.position
-                        subData.diff = subData.targetEntityPosition - subData.pfPosition;
-                        subData.direction = subData.diff.normalized;
-                        Collider pfCollider = sp_p1.cachedPftCollider;
-                        if (pfCollider != null && targetColliderP1 != null) { // targetColliderP1 is ent2's collider
-                            Vector3 cOnPf = pfCollider.ClosestPoint(subData.targetEntityPosition);
-                            Vector3 cOnTgt = targetColliderP1.ClosestPoint(subData.pfPosition);
-                            subData.precalculatedDistance = Vector3.Distance(cOnPf, cOnTgt);
-                        } else if (pfCollider != null) {
-                            subData.precalculatedDistance = Vector3.Distance(pfCollider.ClosestPoint(subData.targetEntityPosition), subData.targetEntityPosition);
+                        var subMTData = new SubPotentialTaskData() { subPotentialToUpdate = sp_p1 }; 
+                        subMTData.pfPosition = sp_p1.pfTransform.position;
+                        subMTData.targetEntityPosition = mtTaskData.targetPositionP1;
+                        subMTData.diff = subMTData.targetEntityPosition - subMTData.pfPosition;
+                        subMTData.direction = subMTData.diff.normalized;
+
+                        Collider pfSpCollider = sp_p1.cachedPftCollider;
+                        if (pfSpCollider != null && targetColliderP1 != null) {
+                            Vector3 cOnPf = pfSpCollider.ClosestPoint(subMTData.targetEntityPosition);
+                            Vector3 cOnTgt = targetColliderP1.ClosestPoint(subMTData.pfPosition);
+                            subMTData.precalculatedDistance = Vector3.Distance(cOnPf, cOnTgt);
+                        } else if (pfSpCollider != null) {
+                            subMTData.precalculatedDistance = Vector3.Distance(pfSpCollider.ClosestPoint(subMTData.targetEntityPosition), subMTData.targetEntityPosition);
                         } else if (targetColliderP1 != null) {
-                            subData.precalculatedDistance = Vector3.Distance(targetColliderP1.ClosestPoint(subData.pfPosition), subData.pfPosition);
+                            subMTData.precalculatedDistance = Vector3.Distance(targetColliderP1.ClosestPoint(subMTData.pfPosition), subMTData.pfPosition);
                         } else {
-                            subData.precalculatedDistance = subData.diff.magnitude;
+                            subMTData.precalculatedDistance = subMTData.diff.magnitude;
                         }
-                        taskData.subPotentialsDataP1.Add(subData);
+                        mtTaskData.subPotentialsDataP1.Add(subMTData); 
+                        _flatSubPotentialReferences.Add(sp_p1);
+                        _tempAllSubPotentialJobInputs.Add(new() {
+                            diff_mainThread = subMTData.diff,
+                            direction_mainThread = subMTData.direction,
+                            precalculatedDistance_mainThread = subMTData.precalculatedDistance
+                        });
                     }
                 }
+                jobInputItem.subPotentialsP1_Count = _tempAllSubPotentialJobInputs.Count - jobInputItem.subPotentialsP1_StartIndex;
 
                 // --- Main Thread Computations for P2 (ent2 -> ent1) ---
-                taskData.diffP2 = taskData.targetPositionP2 - taskData.ownshipPositionP2; // ent1.pos - ent2.pos
-                taskData.directionP2 = taskData.diffP2.normalized;
-                taskData.precalculatedDistanceP2 = taskData.precalculatedDistanceP1; // Distance is symmetric
+                mtTaskData.diffP2 = mtTaskData.targetPositionP2 - mtTaskData.ownshipPositionP2;
+                jobInputItem.diffP2_mainThread = mtTaskData.diffP2;
+                mtTaskData.directionP2 = mtTaskData.diffP2.normalized;
+                jobInputItem.directionP2_mainThread = mtTaskData.directionP2;
+                mtTaskData.precalculatedDistanceP2 = mtTaskData.precalculatedDistanceP1; // Symmetric
+                jobInputItem.precalculatedDistanceP2_mainThread = mtTaskData.precalculatedDistanceP2;
 
-                // cpaP2_posDiff: ent2.collider.ClosestPoint(ent1.pos) - ent1.collider.ClosestPoint(ent2.pos)
-                if (targetColliderP1 != null && ownshipColliderP1 != null) { // ent2.collider & ent1.collider
-                    Vector3 closestOnOwnP2 = targetColliderP1.ClosestPoint(taskData.targetPositionP2); // ent2.collider.ClosestPoint(ent1.pos)
-                    Vector3 closestOnTgtP2 = ownshipColliderP1.ClosestPoint(taskData.ownshipPositionP2); // ent1.collider.ClosestPoint(ent2.pos)
-                    taskData.cpaP2_posDiff = closestOnOwnP2 - closestOnTgtP2;
+                // Note: ownshipColliderP1 is ent1's collider, targetColliderP1 is ent2's collider
+                if (targetColliderP1 != null && ownshipColliderP1 != null) { 
+                    Vector3 closestOnOwnP2 = targetColliderP1.ClosestPoint(mtTaskData.targetPositionP2); // ent2's collider, closest to ent1
+                    Vector3 closestOnTgtP2 = ownshipColliderP1.ClosestPoint(mtTaskData.ownshipPositionP2); // ent1's collider, closest to ent2
+                    mtTaskData.cpaP2_posDiff = closestOnOwnP2 - closestOnTgtP2;
                 } else {
-                    taskData.cpaP2_posDiff = taskData.ownshipPositionP2 - taskData.targetPositionP2; // ent2.pos - ent1.pos
+                    mtTaskData.cpaP2_posDiff = mtTaskData.ownshipPositionP2 - mtTaskData.targetPositionP2; 
                 }
-                
-                // SubPotentials for P2 (ownship: ent2, target: ent1)
-                if (p2.subPotentials != null) {
+                jobInputItem.cpaP2_posDiff_mainThread = mtTaskData.cpaP2_posDiff;
+
+                jobInputItem.subPotentialsP2_StartIndex = _tempAllSubPotentialJobInputs.Count;
+                 if (p2.subPotentials != null) {
                     foreach (SubPotential sp_p2 in p2.subPotentials) {
                         if (sp_p2 == null || sp_p2.pfTransform == null) continue;
-                        var subData = new SubPotentialTaskData { subPotentialToUpdate = sp_p2 };
-                        subData.pfPosition = sp_p2.pfTransform.position;
-                        subData.targetEntityPosition = taskData.targetPositionP2; // ent1.position
-                        subData.diff = subData.targetEntityPosition - subData.pfPosition;
-                        subData.direction = subData.diff.normalized;
-                        Collider pfCollider = sp_p2.cachedPftCollider;
-                        // ownshipColliderP1 is ent1's collider
-                        if (pfCollider != null && ownshipColliderP1 != null) { 
-                            Vector3 cOnPf = pfCollider.ClosestPoint(subData.targetEntityPosition);
-                            Vector3 cOnTgt = ownshipColliderP1.ClosestPoint(subData.pfPosition);
-                            subData.precalculatedDistance = Vector3.Distance(cOnPf, cOnTgt);
-                        } else if (pfCollider != null) {
-                             subData.precalculatedDistance = Vector3.Distance(pfCollider.ClosestPoint(subData.targetEntityPosition), subData.targetEntityPosition);
-                        } else if (ownshipColliderP1 != null) {
-                            subData.precalculatedDistance = Vector3.Distance(ownshipColliderP1.ClosestPoint(subData.pfPosition), subData.pfPosition);
+                        var subMTData = new SubPotentialTaskData() { subPotentialToUpdate = sp_p2 };
+                        subMTData.pfPosition = sp_p2.pfTransform.position;
+                        subMTData.targetEntityPosition = mtTaskData.targetPositionP2; // This is ent1's position
+                        subMTData.diff = subMTData.targetEntityPosition - subMTData.pfPosition;
+                        subMTData.direction = subMTData.diff.normalized;
+
+                        Collider pfSpCollider = sp_p2.cachedPftCollider;
+                        // ownshipColliderP1 is ent1's collider, which is the target for p2's subpotentials
+                        if (pfSpCollider != null && ownshipColliderP1 != null) {
+                            Vector3 cOnPf = pfSpCollider.ClosestPoint(subMTData.targetEntityPosition);
+                            Vector3 cOnTgt = ownshipColliderP1.ClosestPoint(subMTData.pfPosition);
+                            subMTData.precalculatedDistance = Vector3.Distance(cOnPf, cOnTgt);
+                        } else if (pfSpCollider != null) {
+                             subMTData.precalculatedDistance = Vector3.Distance(pfSpCollider.ClosestPoint(subMTData.targetEntityPosition), subMTData.targetEntityPosition);
+                        } else if (ownshipColliderP1 != null) { // Collider of ent1
+                            subMTData.precalculatedDistance = Vector3.Distance(ownshipColliderP1.ClosestPoint(subMTData.pfPosition), subMTData.pfPosition);
                         } else {
-                            subData.precalculatedDistance = subData.diff.magnitude;
+                            subMTData.precalculatedDistance = subMTData.diff.magnitude;
                         }
-                        taskData.subPotentialsDataP2.Add(subData);
+                        mtTaskData.subPotentialsDataP2.Add(subMTData);
+                        _flatSubPotentialReferences.Add(sp_p2);
+                         _tempAllSubPotentialJobInputs.Add(new() {
+                            diff_mainThread = subMTData.diff,
+                            direction_mainThread = subMTData.direction,
+                            precalculatedDistance_mainThread = subMTData.precalculatedDistance
+                        });
                     }
                 }
-                _taskDataList.Add(taskData);
+                jobInputItem.subPotentialsP2_Count = _tempAllSubPotentialJobInputs.Count - jobInputItem.subPotentialsP2_StartIndex;
+                _mainThreadTaskDataList.Add(mtTaskData);
+                _tempPotentialPairJobInputs.Add(jobInputItem);
             }
         }
+        
+        if (_tempPotentialPairJobInputs.Count == 0) return;
 
-        // Phase 2: Parallel Computation
-        if (_taskDataList.Count > 0) {
-            Parallel.ForEach(_taskDataList, ProcessPotentialDataOnWorkerThread);
+        // Phase 2: Allocate NativeArrays and Schedule Job
+        NativeArray<PotentialPairJobInput> potentialPairInputsNat = new(_tempPotentialPairJobInputs.ToArray(), Allocator.TempJob);
+        NativeArray<SubPotentialJobInput> allSubPotentialInputsNat = new(_tempAllSubPotentialJobInputs.ToArray(), Allocator.TempJob);
+        
+        NativeArray<PotentialPairJobOutput> potentialPairOutputsNat = new(_tempPotentialPairJobInputs.Count, Allocator.TempJob);
+        NativeArray<SubPotentialJobOutput> allSubPotentialOutputsNat = new(_tempAllSubPotentialJobInputs.Count > 0 ? _tempAllSubPotentialJobInputs.Count : 1, Allocator.TempJob); // Ensure non-zero length if no subpotentials
+
+        var job = new ProcessPotentialsJob
+        {
+            PotentialPairInputs = potentialPairInputsNat,
+            AllSubPotentialInputs = allSubPotentialInputsNat,
+            PotentialPairOutputs = potentialPairOutputsNat,
+            AllSubPotentialOutputs = allSubPotentialOutputsNat
+        };
+        
+        JobHandle jobHandle = job.Schedule(_tempPotentialPairJobInputs.Count, 32); // Adjust batch count as needed
+        jobHandle.Complete();
+
+        // Phase 3: Apply Results (Main Thread)
+        for (int k = 0; k < _mainThreadTaskDataList.Count; k++) // Renamed loop variable
+        {
+            PotentialCalculationTaskData mtTaskData = _mainThreadTaskDataList[k];
+            PotentialPairJobOutput jobOutput = potentialPairOutputsNat[k];
+
+            // Apply to P1
+            Potential p1_res = mtTaskData.potentialToUpdateP1;
+            p1_res.diff = jobOutput.diffP1;
+            p1_res.direction = jobOutput.directionP1;
+            p1_res.distance = jobOutput.distanceP1;
+            p1_res.FrameCount = jobOutput.frameCountP1;
+            p1_res.relativeVelocity = jobOutput.relativeVelocityP1;
+            p1_res.targetAngle = jobOutput.cpaTargetAngleP1;
+            if (p1_res.cpaInfo != null) 
+            {
+                p1_res.cpaInfo.time = jobOutput.cpaTimeP1;
+                p1_res.cpaInfo.range = jobOutput.cpaRangeP1;
+                p1_res.cpaInfo.targetRelativeBearing = jobOutput.cpaTargetRelativeBearingP1;
+                p1_res.cpaInfo.targetAbsBearing = jobOutput.cpaTargetAbsBearingP1;
+                p1_res.cpaInfo.targetAngle = jobOutput.cpaTargetAngleP1; // CPA's targetAngle
+                p1_res.cpaInfo.relativeVelocity = jobOutput.relativeVelocityP1; 
+                p1_res.cpaInfo.ownShipPosition = jobOutput.cpaOwnShipPositionP1;
+                p1_res.cpaInfo.targetPosition = jobOutput.cpaTargetPositionP1;
+            }
+            
+            // Apply to P2
+            Potential p2_res = mtTaskData.potentialToUpdateP2;
+            p2_res.diff = jobOutput.diffP2;
+            p2_res.direction = jobOutput.directionP2;
+            p2_res.distance = jobOutput.distanceP2;
+            p2_res.FrameCount = jobOutput.frameCountP2;
+            p2_res.relativeVelocity = jobOutput.relativeVelocityP2;
+            p2_res.targetAngle = jobOutput.cpaTargetAngleP2;
+             if (p2_res.cpaInfo != null)
+             {
+                p2_res.cpaInfo.time = jobOutput.cpaTimeP2;
+                p2_res.cpaInfo.range = jobOutput.cpaRangeP2;
+                p2_res.cpaInfo.targetRelativeBearing = jobOutput.cpaTargetRelativeBearingP2;
+                p2_res.cpaInfo.targetAbsBearing = jobOutput.cpaTargetAbsBearingP2;
+                p2_res.cpaInfo.targetAngle = jobOutput.cpaTargetAngleP2; // CPA's targetAngle
+                p2_res.cpaInfo.relativeVelocity = jobOutput.relativeVelocityP2;
+                p2_res.cpaInfo.ownShipPosition = jobOutput.cpaOwnShipPositionP2;
+                p2_res.cpaInfo.targetPosition = jobOutput.cpaTargetPositionP2;
+            }
         }
-    }
-
-    // This method is executed on worker threads by Parallel.ForEach
-    private void ProcessPotentialDataOnWorkerThread(PotentialCalculationTaskData data)
-    {
-        // Process P1
-        Potential p1 = data.potentialToUpdateP1;
-        p1.diff = data.diffP1;
-        p1.direction = data.directionP1;
-        p1.distance = data.precalculatedDistanceP1;
-        p1.framecount = data.frameCount;
-
-        if (p1.cpaInfo == null) {
-            // This allocation happens on a worker thread. CPAInfo constructor is simple.
-            // It's generally better to ensure these are created on the main thread during init if possible.
-            // However, given its simplicity (just assigning references), it's likely fine.
-            p1.cpaInfo = new CPAInfo(p1.ownship, p1.target); 
-        }
-        p1.cpaInfo.ReCompute_ThreadSafe(
-            data.ownshipPositionP1, data.ownshipVelocityP1, data.ownshipHeadingP1,
-            data.targetPositionP1, data.targetVelocityP1, data.targetHeadingP1,
-            data.cpaP1_posDiff
-        );
-        p1.relativeVelocity = p1.cpaInfo.relativeVelocity;
-        p1.targetAngle = p1.cpaInfo.targetAngle;
-
-        foreach (var subData in data.subPotentialsDataP1) {
-            SubPotential sp = subData.subPotentialToUpdate;
-            sp.diff = subData.diff;
-            sp.direction = subData.direction;
-            sp.distance = subData.precalculatedDistance;
+        
+        // Apply SubPotential results
+        for(int l=0; l < _flatSubPotentialReferences.Count; ++l) // Renamed loop variable
+        {
+            if (l >= allSubPotentialOutputsNat.Length) continue; // Bounds check
+            SubPotential sp = _flatSubPotentialReferences[l];
+            SubPotentialJobOutput spOutput = allSubPotentialOutputsNat[l];
+            sp.diff = spOutput.diff;
+            sp.direction = spOutput.direction;
+            sp.distance = spOutput.distance;
         }
 
-        // Process P2
-        Potential p2 = data.potentialToUpdateP2;
-        p2.diff = data.diffP2;
-        p2.direction = data.directionP2;
-        p2.distance = data.precalculatedDistanceP2;
-        p2.framecount = data.frameCount;
-
-        if (p2.cpaInfo == null) {
-            p2.cpaInfo = new CPAInfo(p2.ownship, p2.target);
-        }
-        p2.cpaInfo.ReCompute_ThreadSafe(
-            data.ownshipPositionP2, data.ownshipVelocityP2, data.ownshipHeadingP2,
-            data.targetPositionP2, data.targetVelocityP2, data.targetHeadingP2,
-            data.cpaP2_posDiff
-        );
-        p2.relativeVelocity = p2.cpaInfo.relativeVelocity;
-        p2.targetAngle = p2.cpaInfo.targetAngle;
-
-        foreach (var subData in data.subPotentialsDataP2) {
-            SubPotential sp = subData.subPotentialToUpdate;
-            sp.diff = subData.diff;
-            sp.direction = subData.direction;
-            sp.distance = subData.precalculatedDistance;
-        }
+        // Dispose NativeArrays
+        potentialPairInputsNat.Dispose();
+        allSubPotentialInputsNat.Dispose();
+        potentialPairOutputsNat.Dispose();
+        allSubPotentialOutputsNat.Dispose();
     }
     
-    // The original ComputePotentials and ComputeSubPotentials are now integrated into UpdatePotentialsMultiThreaded and ProcessPotentialDataOnWorkerThread
-    // public void ComputePotentials(Entity ent1, int ent1Index, Entity ent2, int ent2Index) { ... }
-    // public void ComputeSubPotentials(Potential activePotential, Potential otherPotential) { ... }
-
-
-    public Potential ComputeEntityPotential(Entity ownship, Entity target) {
-        if (ownship == null || target == null) return null;
-        Potential pot = new Potential(ownship, target);
-        // pot.ReCompute(); // If full computation is needed immediately (will use main thread Unity API calls)
+    public Potential ComputeEntityPotential(Entity ownshipParam, Entity targetParam) {
+        if (ownshipParam == null || targetParam == null) return null;
+        Potential pot = new(ownshipParam, targetParam);
+        // pot.ReCompute(); // This would be a main-thread only, non-job computation
         return pot;
     }
 
     public Potential GetPotential(Entity e1, Entity e2)
     {
-        if (!isInitialized) return null;
         if (e1 == null || e2 == null) return null;
-        if (e1 == e2) return null;
-        
         if (e1.entityClass == EntityClass.Missile || e2.entityClass == EntityClass.Missile)
             return null; 
 

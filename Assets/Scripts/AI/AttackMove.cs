@@ -188,7 +188,7 @@ public class AttackMove : Move
         {
             if (hasExplicitTarget && explicitTarget != null && _weaponsAspect.IsTargetValid(explicitTarget))
             {
-                float rangeSq = _weaponsAspect.weapon.range * _weaponsAspect.weapon.range;
+                float rangeSq = (_weaponsAspect.weapon.range * _weaponsAspect.weapon.range)-100f*100f;
                 if ((explicitTarget.position - entity.position).sqrMagnitude <= rangeSq)
                 {
                     targetToEngage = explicitTarget;

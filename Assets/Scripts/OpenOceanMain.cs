@@ -625,12 +625,19 @@ public class OpenOceanMain : MonoBehaviour
     {
         if (ReplayMgr.inst != null) ReplayMgr.inst.CompleteScenario();
 
-        if (currentTrainingState == TrainingState.Adaptive || ShouldEndSession())
+        if (currentTrainingState == TrainingState.Adaptive)
         {
-
-
             if (IsDebugging) Debug.Log($"Proceeding to MultiScorePanel. Adaptive: {currentTrainingState == TrainingState.Adaptive}, ShouldEnd: {ShouldEndSession()}", this);
             lobbyState = LobbyState.MultiScorePanel;
+        }
+        else if (currentTrainingState == TrainingState.NonAdaptive && ShouldEndSession())
+        {
+            if (IsDebugging) Debug.Log($"Ending session. Non-Adaptive: {currentTrainingState == TrainingState.NonAdaptive}, ShouldEnd: {ShouldEndSession()}", this);
+            lobbyState = LobbyState.MultiScorePanel;
+        }
+        else if ((currentTrainingState == TrainingState.PreTest || currentTrainingState == TrainingState.PostTest) && ShouldEndSession())
+        {
+            OnQuitButton();
         }
         else
         {

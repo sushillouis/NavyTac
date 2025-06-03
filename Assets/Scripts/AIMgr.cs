@@ -210,7 +210,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
                 // Get weapon range squared from WeaponsAspect
                 WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
                 doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null) 
-                    ? weaponsAspect.weapon.range * weaponsAspect.weapon.range 
+                    ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range )- 100f * 100f // Subtracting a small buffer
                     : 100000f; // Fallback
             }
             
@@ -230,7 +230,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
             {
                 WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
                 doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null) 
-                    ? weaponsAspect.weapon.range * weaponsAspect.weapon.range 
+                    ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range )- 100f * 100f 
                     : 100000f;
             }
             else
@@ -275,7 +275,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
                 WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
                 if (weaponsAspect != null && weaponsAspect.weapon != null)
                 {
-                    currentDoneDistanceSq = weaponsAspect.weapon.range * weaponsAspect.weapon.range;
+                    currentDoneDistanceSq = (weaponsAspect.weapon.range * weaponsAspect.weapon.range )- 100f * 100f ;
                 }
                 else
                 {

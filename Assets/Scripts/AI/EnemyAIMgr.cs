@@ -68,14 +68,9 @@ public class EnemyAIMgr : MonoBehaviour
 
         if (aiBases.Count == 0)
         {
-            if (currentLevel == 3)
-            {
-            }
-            else 
-            {
+            
                 HandleNoAIBases(); 
                 return;
-            }
         }
 
         UpdateOpponentBaseCache(); 
@@ -214,7 +209,6 @@ public class EnemyAIMgr : MonoBehaviour
     float adaptiveWeaponRangeFallback = Mathf.Lerp(800f, 400f, diff);
     float adaptiveCooldown = Mathf.Lerp(1f, 0.25f, diff);
     float adaptiveInitialBuffer = Mathf.Lerp(100f, 25f, diff);
-    float adaptiveWeaponRangeMultiplier = Mathf.Lerp(.25f, 2f, diff); // NEW: Weapon range scaling
 
     for (int i = aiEntities.Count - 1; i >= 0; i--)
     {
@@ -225,10 +219,10 @@ public class EnemyAIMgr : MonoBehaviour
         UnitAI unitAIComponent = aiEntity.GetComponentInChildren<UnitAI>();
 
         float baseRange = weaponAspect != null && weaponAspect.weapon != null
-            ? weaponAspect.weapon.range
+            ? weaponAspect.weapon.range -100f
             : adaptiveWeaponRangeFallback;
 
-        float weaponRange = baseRange * adaptiveWeaponRangeMultiplier;
+            float weaponRange = baseRange;
         
         // Initialize cooldown if not already done
         if (!entityCooldowns.ContainsKey(aiEntity))
@@ -288,7 +282,7 @@ public class EnemyAIMgr : MonoBehaviour
             WeaponsAspect weaponAspect = aiEntity.GetComponentInChildren<WeaponsAspect>();
             UnitAI unitAIComponent = aiEntity.GetComponentInChildren<UnitAI>();
 
-            float weaponRange = weaponAspect != null && weaponAspect.weapon != null ? weaponAspect.weapon.range : DefaultWeaponRangeFallback;
+            float weaponRange =  weaponAspect.weapon.range - 100f ;
 
             if (!entityCooldowns.ContainsKey(aiEntity))
             {
@@ -303,7 +297,7 @@ public class EnemyAIMgr : MonoBehaviour
             if (isInitialMovePhase)
             {
                 targetDistance = initialStopDistance;
-                if (currentDistance <= initialStopDistance + InitialMoveTargetBuffer)
+                if (currentDistance <= initialStopDistance - InitialMoveTargetBuffer)
                 {
                     entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
                 }
@@ -315,7 +309,7 @@ public class EnemyAIMgr : MonoBehaviour
                     continue;
                 }
 
-                Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange);
+                Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange- 100f);
                 if (nearestEnemy != null)
                 {
                     unitAIComponent?.StopAndRemoveAllCommands();
@@ -324,11 +318,11 @@ public class EnemyAIMgr : MonoBehaviour
                 }
                 else
                 {
-                    targetDistance = CalculateDynamicTargetDistance(aiEntity, weaponRange, currentDistance);
+                    
                     entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
                 }
             }
-            AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false, doneDistanceSq: targetDistance * targetDistance);
+            AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false);
         }
     }
 private bool _level2CommandsStarted = false;
@@ -386,11 +380,7 @@ private void HandleLevel2CombatBehavior(List<Entity> aiEntities)
         if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
         {
             float diff = GameMgr.inst.difficultyLevel; // Assuming diff is normalized between 0 (easy) and 1 (hard)
-            // Adaptive delay: 66f for easiest (diff=0), 15f for hardest (diff=1)
-            // User specified: "batchdelay will be 45f at .334 diff and range between .66f 15f"
-            // Linear interpolation: Mathf.Lerp(from, to, t)
-            // If diff=0 means easier, delay should be longer (66f).
-            // If diff=1 means harder, delay should be shorter (15f).
+            
             BatchDelay = Mathf.Lerp(60f, 20f, (diff - 0.33f) / (0.66f - 0.33f));
         }
        
@@ -400,9 +390,7 @@ private void HandleLevel2CombatBehavior(List<Entity> aiEntities)
         {
             StopCoroutine(_level2Coroutine);
         }
-        // Note: The RunLevel2CommandSequence method signature will need to be updated 
-        // to accept a float parameter for the batch delay.
-        // e.g., private IEnumerator RunLevel2CommandSequence(float currentBatchDelay)
+       
         _level2Coroutine = StartCoroutine(RunLevel2CommandSequence()); 
     }
 }
@@ -435,15 +423,15 @@ private void SplitEntitiesByType(EntityType type, List<Entity> allEntities)
 
     private IEnumerator RunLevel2CommandSequence()
     {
-        // Phase 1: T=0 seconds
-        IssueDirectCommand(_batch1, opponentBase.position, true);  // Attack immediately
+        yield return new WaitForSecondsRealtime(10f);
+        IssueDirectCommand(_batch1, opponentBase.position, true);  
         IssueDirectCommand(_batch2, GetStagingPosition(4000f), true, false);  
         IssueDirectCommand(_batch3, GetStagingPosition(1000f), true, false);
 
         // Phase 2: T=45 seconds
         yield return new WaitForSecondsRealtime(BatchDelay);
-        IssueDirectCommand(_batch2, GetStagingPosition2(), true);  // Attack
-        IssueDirectCommand(_batch3, GetStagingPosition(4000f), true, false);   // Move closer to AI base
+        IssueDirectCommand(_batch2, GetStagingPosition2(), true);  
+        IssueDirectCommand(_batch3, GetStagingPosition(4000f), true, false);   
 
         // Phase 3: T=90 seconds
         yield return new WaitForSecondsRealtime(BatchDelay);
@@ -451,7 +439,7 @@ private void SplitEntitiesByType(EntityType type, List<Entity> allEntities)
         IssueDirectCommand(_batch3, GetStagingPosition2(), true,false);
 
         yield return new WaitForSecondsRealtime(BatchDelay);
-        IssueDirectCommand(_batch3, opponentBase.position, true);    // Final attack
+        IssueDirectCommand(_batch3, opponentBase.position, true);    
     }
 
 private Vector3 GetStagingPosition(float position)

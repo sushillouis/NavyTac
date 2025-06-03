@@ -74,13 +74,6 @@
             movePosition = pos;
             this.maxSpeedMovement = maxSpeedMovement;
             this.doneDistanceSq = doneDistanceSq;
-            
-            //Debug.Log("Move.cs: doneDistanceSq set to " + this.doneDistanceSq);
-            // if (ent.GetComponentInChildren<WeaponsAspect>() != null)
-            // {
-            //     this.doneDistanceSq = AIMgr.inst.StoppingDistanceSq(ent.entityType);
-            //     //Debug.Log("Move.cs: doneDistanceSq set to " + this.doneDistanceSq);
-            // }
         }
 
         public override void Init()
@@ -544,7 +537,7 @@
                 if(currentState != PathfindingState.Finished) currentState = PathfindingState.Finished;
                 return true;
             }
-            bool done = (entity.position - movePosition).sqrMagnitude < doneDistanceSq;
+            bool done = (entity.position - movePosition).sqrMagnitude < doneDistanceSq -100f*100f;
             return done;
         }
 

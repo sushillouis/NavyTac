@@ -61,93 +61,39 @@ public class WeaponsAspect : MonoBehaviour
         }
     }
 
-   public Entity FindImmediateThreatInRange()
+public Entity FindImmediateThreatInRange()
 {
     Vector3 entityPos = entity.position;
-    float rangeSq = weapon.range * weapon.range;
-    Entity bestThreat = null;
-    float bestDistanceSq = float.MaxValue;
+    Entity nearest = null;
+    float nearestDistSq = float.MaxValue;
 
-    bool isAI = entity.owner != null && entity.owner.name.Equals("Ai", StringComparison.OrdinalIgnoreCase);
-    
-    // For AI: Precompute priority dictionary
-    Dictionary<EntityType, int> priorityDict = null;
-    if (isAI)
+    Collider[] hitColliders = Physics.OverlapSphere(entityPos, weapon.range);
+
+    foreach (Collider hitCollider in hitColliders)
     {
-        priorityDict = new Dictionary<EntityType, int>();
-        var priorityList = SpawnEntityMgr.inst.priorityList;
-        for (int i = 0; i < priorityList.Count; i++)
+        Entity potentialEnemy = hitCollider.GetComponentInParent<Entity>();
+
+        if (potentialEnemy == null || potentialEnemy.owner == null ||
+            potentialEnemy.owner == entity.owner || // Check if the owner is the same
+            potentialEnemy.entityClass == EntityClass.Missile ||
+            potentialEnemy == entity)
         {
-            priorityDict[priorityList[i]] = i;
-        }
-    }
-
-    // For AI: Track best priority/health state
-    int bestPriorityIndex = int.MaxValue;
-    float bestHealth = float.MaxValue;
-
-    foreach (Entity potential in EntityMgr.inst.entities)
-    {
-        // Fast rejection checks
-        if (potential == entity || 
-            potential.owner == entity.owner || 
-            !IsTargetValid(potential)) 
             continue;
-
-        // Distance check
-        float distSq = (potential.position - entityPos).sqrMagnitude;
-        if (distSq > rangeSq) continue;
-
-        if (isAI)
-        {
-            // Get priority (default to MaxValue if not found)
-            int currentPriority = priorityDict.TryGetValue(potential.entityType, out int idx) 
-                ? idx 
-                : int.MaxValue;
-            
-            // Selection logic with priority order:
-            // 1. Higher priority (lower index)
-            // 2. Lower health
-            // 3. Closer distance
-            if (bestThreat == null)
-            {
-                UpdateBest();
-            }
-            else if (currentPriority < bestPriorityIndex)
-            {
-                UpdateBest();
-            }
-            else if (currentPriority == bestPriorityIndex)
-            {
-                if (potential.health < bestHealth)
-                {
-                    UpdateBest();
-                }
-                else if (potential.health == bestHealth && distSq < bestDistanceSq)
-                {
-                    UpdateBest();
-                }
-            }
-
-            void UpdateBest()
-            {
-                bestThreat = potential;
-                bestDistanceSq = distSq;
-                bestPriorityIndex = currentPriority;
-                bestHealth = potential.health;
-            }
         }
-        else // Non-AI logic
+        
+        if (!IsTargetValid(potentialEnemy)) // Use existing IsTargetValid for additional checks
         {
-            if (distSq < bestDistanceSq)
-            {
-                bestThreat = potential;
-                bestDistanceSq = distSq;
-            }
+            continue;
+        }
+
+        float distSq = (potentialEnemy.position - entityPos).sqrMagnitude;
+        if (distSq < nearestDistSq)
+        {
+            nearest = potentialEnemy;
+            nearestDistSq = distSq;
         }
     }
-
-    return bestThreat;
+    return nearest;
 }
     
     public bool IsTargetValid(Entity target)

@@ -338,21 +338,57 @@ public class ReplayMgr : MonoBehaviour
         SaveScenarioCommands(currentScenarioNumber);
     }
 
-    private void SaveScenarioCommands(int scenarioNumber)
+   private void SaveScenarioCommands(int scenarioNumber)
+{
+    ScenarioReplayData replayData = scenarioReplayDataList.Find(data => data.scenarioNumber == scenarioNumber);
+    if (replayData == null) 
     {
-        ScenarioReplayData replayData = scenarioReplayDataList.Find(data => data.scenarioNumber == scenarioNumber);
-        if (replayData != null && replayData.commands != null && replayData.commands.Count > 0)
-        {
-            ReplayCommandList commandList = new ReplayCommandList { commands = replayData.commands };
-            string json = JsonUtility.ToJson(commandList);
-            string filePath = Path.Combine(Application.persistentDataPath, $"scenario_{scenarioNumber}_commands.json");
-            File.WriteAllText(filePath, json);
-            Debug.Log($"Saved scenario {scenarioNumber} commands to {filePath}");
-        }
-        else
-        {
-            Debug.LogWarning($"ReplayMgr: No commands found for scenario {scenarioNumber} to save, or scenario data not found.");
-        }
+        Debug.LogWarning($"ReplayMgr: No replay data found for scenario {scenarioNumber}. Not saving.");
+        return;
     }
+
+    // 1. Get student ID and game type
+    string studentID = OpenOceanMain.inst.playerName ?? "UnknownStudent";
+    string gameType = GetGameTypeFolder(); // Reuse ScoreMgr's folder logic
+
+    // 2. Create directory path: PersistentDataPath/StudentID/GameType
+    string directoryPath = Path.Combine(
+        Application.persistentDataPath, 
+        studentID, 
+        gameType
+    );
+
+    // 3. Create directory if missing
+    if (!Directory.Exists(directoryPath))
+    {
+        Directory.CreateDirectory(directoryPath);
+        Debug.Log($"Created replay directory: {directoryPath}");
+    }
+
+    // 4. Generate filename with timestamp
+    string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+    string fileName = $"scenario{scenarioNumber}_{timestamp}.json";
+    string filePath = Path.Combine(directoryPath, fileName);
+
+    // 5. Save JSON data
+    ReplayCommandList commandList = new ReplayCommandList { 
+        commands = replayData.commands 
+    };
+    string json = JsonUtility.ToJson(commandList, true); // Pretty-print
+    File.WriteAllText(filePath, json);
+    
+    Debug.Log($"Saved scenario {scenarioNumber} commands to {filePath}");
+}
+
+// Reuse ScoreMgr's folder naming logic
+private string GetGameTypeFolder()
+{
+    string playerCode = OpenOceanMain.inst.playerCode;
+    if (playerCode == "AAA") return "Adaptive";
+    if (playerCode == "BBB") return "Non-Adaptive";
+    if (playerCode == "ABC") return "Pre-Test";
+    if (playerCode == "XYZ") return "Post-Test";
+    return "UnknownGameType";
+}
 }
 

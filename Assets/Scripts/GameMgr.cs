@@ -50,7 +50,7 @@ public class GameMgr : MonoBehaviour
     [SerializeField] public int seedNonAdaptive = 40;
 
     public float min = 0;
-    public float max = 16;
+    public float max = 5;
 
     public int GetSelectedSeed()
     {
@@ -160,7 +160,7 @@ public class GameMgr : MonoBehaviour
         Time.timeScale = Mathf.Clamp(newTimeScale, min, max);
         if (simSpeedButtonText != null)
         {
-            float displayedSpeedValue = Time.timeScale - min + 1;
+            float displayedSpeedValue = Time.timeScale;
             foreach (TextMeshProUGUI text in simSpeedButtonText)
             {
                 text.text = displayedSpeedValue.ToString("0");
@@ -216,7 +216,7 @@ public class GameMgr : MonoBehaviour
         {
             if (ScoreMgr.inst.playerScores.Count == 0)
             {
-                difficultyLevel = 0.6f; // Default value if no scores are available
+                difficultyLevel = 0.2f; 
                 return difficultyLevel;
             }
             difficultyLevel = difficultyLevel + 0.05f * ScoreMgr.inst.playerScores[ScoreMgr.inst.playerScores.Count - 1] / 100f;
@@ -252,8 +252,6 @@ public class GameMgr : MonoBehaviour
     public void OpenOcean1x1()
     {
         InitializeScenario();
-
-
         SpawnEntities();
         if (CameraMgr.inst != null) CameraMgr.inst.SetCameraPosition();
 
