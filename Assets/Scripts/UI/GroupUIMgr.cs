@@ -241,16 +241,16 @@ public class GroupUIMgr : MonoBehaviour
 
     }
     // Add this method to show/hide panels
-public void ShowEntityControlPanel(Vector2 mousePos) {
-    if (SelectionMgr.inst.selectedEntities.Count == 1) {
-        // Convert mouse position to UI canvas position
-        Vector2 localPoint;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(mainCanvas, mousePos, null, out localPoint);
-        EntityControlPanel.GetComponent<RectTransform>().localPosition = localPoint;
-        EntityControlPanel.isVisible = true;
-        TacticalCommandsPanel.isVisible = false; // Hide tactical panel
-    }
-}
+// public void ShowEntityControlPanel(Vector2 mousePos) {
+//     if (SelectionMgr.inst.selectedEntities.Count == 1) {
+//         // Convert mouse position to UI canvas position
+//         Vector2 localPoint;
+//         RectTransformUtility.ScreenPointToLocalPointInRectangle(mainCanvas, mousePos, null, out localPoint);
+//         EntityControlPanel.GetComponent<RectTransform>().localPosition = localPoint;
+//         EntityControlPanel.isVisible = true;
+//         TacticalCommandsPanel.isVisible = false; // Hide tactical panel
+//     }
+// }
 
 // Update ClearSelection to hide panels
 

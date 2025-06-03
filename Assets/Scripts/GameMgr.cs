@@ -216,7 +216,7 @@ public class GameMgr : MonoBehaviour
         {
             if (ScoreMgr.inst.playerScores.Count == 0)
             {
-                difficultyLevel = 0.2f; 
+                difficultyLevel = 0.12f; 
                 return difficultyLevel;
             }
             difficultyLevel = difficultyLevel + 0.05f * ScoreMgr.inst.playerScores[ScoreMgr.inst.playerScores.Count - 1] / 100f;

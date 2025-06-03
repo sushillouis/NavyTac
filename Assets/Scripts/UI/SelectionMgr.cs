@@ -224,9 +224,9 @@ public class SelectionMgr : MonoBehaviour
         }
 
         // Show entity control panel if only one entity is selected
-        if (selectedEntities.Count == 1) {
-            GroupUIMgr.inst.ShowEntityControlPanel(mousePos);
-        }
+        // if (selectedEntities.Count == 1) {
+        //     GroupUIMgr.inst.ShowEntityControlPanel(mousePos);
+        // }
     }
 }
 

@@ -30,17 +30,17 @@ public class PaintingManger : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKey(KeyCode.Space)) 
-        {
-            int size = currentMap.GetLength(0);
-            for(int y=0; y<size;y++) 
-            {
-                for(int x=0; x<size;x++) 
-                {
-                    currentMap[x,y] += 1f* Time.deltaTime;
-                }
-            }
-        }
+        // if(Input.GetKey(KeyCode.Space)) 
+        // {
+        //     int size = currentMap.GetLength(0);
+        //     for(int y=0; y<size;y++) 
+        //     {
+        //         for(int x=0; x<size;x++) 
+        //         {
+        //             currentMap[x,y] += 1f* Time.deltaTime;
+        //         }
+        //     }
+        // }
 
         if(Input.GetMouseButtonDown(0)) {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);

@@ -507,9 +507,17 @@ public class OpenOceanMain : MonoBehaviour
             {
                 singleScoreButtonText.text = SCORE_PANEL_TEXT_FEEDBACK;
             }
+            else if (currentTrainingState == TrainingState.NonAdaptive && ShouldEndSession())
+            {
+                singleScoreButtonText.text = SCORE_PANEL_TEXT_FEEDBACK;
+            }
+            else if ((currentTrainingState == TrainingState.PreTest || currentTrainingState == TrainingState.PostTest)&& ShouldEndSession())
+            {
+                singleScoreButtonText.text = EXIT_BUTTON_TEXT;
+            }
             else
             {
-                singleScoreButtonText.text = ShouldEndSession() ? SCORE_PANEL_TEXT_FEEDBACK : NEXT_GAME_BUTTON_TEXT;
+                singleScoreButtonText.text = NEXT_GAME_BUTTON_TEXT;
             }
         }
 
