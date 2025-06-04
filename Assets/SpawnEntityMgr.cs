@@ -62,48 +62,77 @@ public class SpawnEntityMgr : MonoBehaviour
             EntityMgr.inst.CreateEntity(entity, center, new Vector3(0, heading, 0), player);
         }
 
-        // Spawn front units (JARIUSV) - 500m directly in front
-        SpawnInArc(frontList, center, heading, 500f, -45f, 45f, player);
+        // Spawn front units (JARIUSV) with multi-row support
+        SpawnMultiRowFormation(frontList, center, heading, 500f, -45f, 45f, player, 10, 200f);
         
-        // Spawn middle units - 1000m in a wide front arc
-        SpawnInArc(middleList, center, heading, 1000f, -90f, 90f, player);
+        // Spawn middle units with multi-row support
+        SpawnMultiRowFormation(middleList, center, heading, 1000f, -90f, 90f, player, 10, 200f);
         
-        // Spawn back units (DDG51/SeaHunter) - 1500m directly behind
-        SpawnInArc(backList, center, heading, 1000f, 135f, 225f, player);
+        // Spawn back units (DDG51/SeaHunter) with multi-row support
+        SpawnMultiRowFormation(backList, center, heading, 1000f, 135f, 225f, player, 10, 200f);
         
         // Spawn other units in standard rings
         SpawnOtherEntities(otherList, center, heading, player);
     }
 
-    void SpawnInArc(List<EntityType> entities, Vector3 center, float heading, float radius, 
-                   float startAngle, float endAngle, TactPlayer player)
+    void SpawnMultiRowFormation(List<EntityType> entities, Vector3 center, float heading, 
+                               float baseRadius, float startAngle, float endAngle, 
+                               TactPlayer player, int maxPerRow = 10, float rowSpacing = 500f)
     {
         if (entities.Count == 0) return;
-        
-        // Convert heading to direction vector
-        Vector3 headingDirection = Quaternion.Euler(0, heading, 0) * Vector3.forward;
-        
-        float angleRange = Mathf.Abs(endAngle - startAngle);
-        float angleStep = angleRange / Mathf.Max(1, entities.Count - 1);
-        
-        for (int i = 0; i < entities.Count; i++)
+
+        // Reorder so that SeaHunter spawns first, then DDG51
+        List<EntityType> seahunters = new();
+        List<EntityType> ddg51s = new();
+        List<EntityType> others = new();
+        foreach (var e in entities)
         {
-            float currentAngle = startAngle + i * angleStep;
+            if (e == EntityType.SeaHunter) seahunters.Add(e);
+            else if (e == EntityType.DDG51) ddg51s.Add(e);
+            else others.Add(e);
+        }
+        List<EntityType> reordered = new();
+        reordered.AddRange(seahunters);
+        reordered.AddRange(ddg51s);
+        reordered.AddRange(others);
+
+        Vector3 headingDirection = Quaternion.Euler(0, heading, 0) * Vector3.forward;
+        int rowCount = Mathf.CeilToInt((float)reordered.Count / maxPerRow);
+        float angleRange = Mathf.Abs(endAngle - startAngle);
+
+        for (int row = 0; row < rowCount; row++)
+        {
+            int rowStartIndex = row * maxPerRow;
+            int unitsInThisRow = Mathf.Min(maxPerRow, reordered.Count - rowStartIndex);
+            float currentRadius = baseRadius + row * rowSpacing;
             
-            // Create rotation based on current angle
-            Quaternion rotation = Quaternion.Euler(0, currentAngle, 0);
-            
-            // Create offset vector relative to heading
-            Vector3 offset = rotation * headingDirection * radius;
-            
-            // Create entity with forward direction matching formation heading
-            Vector3 position = center + offset;
-            EntityMgr.inst.CreateEntity(
-                entities[i],
-                position,
-                new Vector3(0, heading, 0),
-                player
-            );
+            if (unitsInThisRow == 1)
+            {
+                Vector3 offset = Quaternion.Euler(0, (startAngle + endAngle) / 2, 0) * headingDirection * currentRadius;
+                EntityMgr.inst.CreateEntity(
+                    reordered[rowStartIndex],
+                    center + offset,
+                    new Vector3(0, heading, 0),
+                    player
+                );
+                continue;
+            }
+
+            float angleStep = angleRange / (unitsInThisRow - 1);
+            for (int i = 0; i < unitsInThisRow; i++)
+            {
+                int entityIndex = rowStartIndex + i;
+                float currentAngle = startAngle + i * angleStep;
+                Quaternion rotation = Quaternion.Euler(0, currentAngle, 0);
+                Vector3 offset = rotation * headingDirection * currentRadius;
+                
+                EntityMgr.inst.CreateEntity(
+                    reordered[entityIndex],
+                    center + offset,
+                    new Vector3(0, heading, 0),
+                    player
+                );
+            }
         }
     }
 

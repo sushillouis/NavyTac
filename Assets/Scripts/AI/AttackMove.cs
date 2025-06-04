@@ -5,31 +5,27 @@ public class AttackMove : Move
 {
     private Entity explicitTarget;
     private bool hasExplicitTarget;
-    private Entity commandedTarget;
+    private readonly Entity commandedTarget;
     private Vector3 lastKnownCommandedTargetPosition;
     private bool isAcquiredTarget;
-    private bool acquireTargetsOnWay;
-
+    private readonly bool acquireTargetsOnWay;
     private Vector3 originalDestinationForAttackMove;
-    private bool wasOriginallyAttackMoveToPosition;
-
-    private float basePathUpdateCooldown;
+    private readonly bool wasOriginallyAttackMoveToPosition;
+    private readonly float basePathUpdateCooldown;
     private Vector3 lastKnownTargetPosition;
     private WeaponsAspect _weaponsAspect;
-
     private const float DefaultPathUpdateCooldown = 0.3f;
     private const float MovingTargetPathUpdateCooldown = 0.2f;
     private const float TargetMovingSpeedThreshold = 1.0f;
-    
     // Optimization fields
-    private float threatCheckCooldown = 0.5f;
+    private readonly float threatCheckCooldown = 0.5f;
     private float timeSinceLastThreatCheck = 0f;
     private float timeSinceLastPathUpdate = 0f;
     private const float SignificantMovementThresholdSq = 1.0f; // 1 unit squared
 
     public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, pos, maxSpeed, doneDistanceSq)
     {
-        InitializeWeaponsAspect(ent);
+        InitializeWeaponsAspect();
         hasExplicitTarget = false;
         explicitTarget = null;
         commandedTarget = null;
@@ -37,41 +33,52 @@ public class AttackMove : Move
         acquireTargetsOnWay = false;
         pathUpdateCooldown = DefaultPathUpdateCooldown;
         basePathUpdateCooldown = DefaultPathUpdateCooldown;
-        this.originalDestinationForAttackMove = pos;
-        this.wasOriginallyAttackMoveToPosition = true;
+        originalDestinationForAttackMove = pos;
+        wasOriginallyAttackMoveToPosition = true;
         lastKnownTargetPosition = pos;
         lastKnownCommandedTargetPosition = pos;
     }
 
-    public AttackMove(Entity ent, Entity target, bool acquireTargetsOnWay = false, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, target.position, maxSpeed, doneDistanceSq)
+    public AttackMove(Entity ent, Entity target, bool acquireTargetsOnWay = false, bool maxSpeed = false, float doneDistanceSq = 100000f)
+        : base(ent, target != null ? target.position : ent.position, maxSpeed, doneDistanceSq)
     {
-        InitializeWeaponsAspect(ent);
+        InitializeWeaponsAspect();
         explicitTarget = target;
-        hasExplicitTarget = true;
+        hasExplicitTarget = (target != null);
         commandedTarget = target;
         isAcquiredTarget = false;
         this.acquireTargetsOnWay = acquireTargetsOnWay;
+
         lastKnownTargetPosition = target != null ? target.position : ent.position;
         lastKnownCommandedTargetPosition = target != null ? target.position : ent.position;
 
-        if (target != null && _weaponsAspect.IsTargetValid(target))
+        if (target != null && _weaponsAspect != null && _weaponsAspect.IsTargetValid(target))
         {
-            pathUpdateCooldown = target.speed > TargetMovingSpeedThreshold ? MovingTargetPathUpdateCooldown : DefaultPathUpdateCooldown;
+            pathUpdateCooldown = target.speed > TargetMovingSpeedThreshold
+                ? MovingTargetPathUpdateCooldown
+                : DefaultPathUpdateCooldown;
         }
         else
         {
             pathUpdateCooldown = DefaultPathUpdateCooldown;
         }
+
         basePathUpdateCooldown = DefaultPathUpdateCooldown;
-        this.wasOriginallyAttackMoveToPosition = false;
+        wasOriginallyAttackMoveToPosition = false;
     }
 
-    private void InitializeWeaponsAspect(Entity ent)
+    private void InitializeWeaponsAspect()
     {
-        _weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-        if (_weaponsAspect == null)
+        if (entity != null) // Check if the entity is valid (not null and not destroyed)
         {
-            Debug.LogError("WeaponsAspect not found on entity: " + ent.name);
+            _weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+            if (_weaponsAspect == null)
+            {
+            }
+        }
+        else
+        {
+            _weaponsAspect = null; // Ensure _weaponsAspect is null if entity is invalid
         }
     }
 
@@ -255,7 +262,7 @@ public class AttackMove : Move
         {
             return false;
         }
-        
+    
         if (_weaponsAspect != null && _weaponsAspect.weapon != null)
         {
             // Only check for threats periodically
@@ -265,10 +272,8 @@ public class AttackMove : Move
                 if (threatInRange != null) return false;
             }
         }
-        
         return base.IsDone();
     }
-
     public override void Stop()
     {
         base.Stop();

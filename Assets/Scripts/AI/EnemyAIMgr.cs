@@ -339,7 +339,6 @@ private float BatchDelay = 45f;
 private Vector3 _aiBasePosition;
 private List<Entity> _batch1 = new List<Entity>();
 private List<Entity> _batch2 = new List<Entity>();
-private List<Entity> _batch3 = new List<Entity>();
 private Coroutine _level2Coroutine;
 
 public void ResetLevel2State()
@@ -349,7 +348,6 @@ public void ResetLevel2State()
 
     _batch1.Clear();
     _batch2.Clear();
-    _batch3.Clear();
 
     if (_level2Coroutine != null)
     {
@@ -363,15 +361,11 @@ private void HandleLevel2CombatBehavior(List<Entity> aiEntities)
     if (opponentBase == null) return;
     if (aiEntities.Count == 0) return;
     
-    // Initialize only once
     if (!_level2CommandsStarted && aiBases.Count > 0)
     {
-        // Critical: Set position FIRST
-        // Ensure aiBases[0] is valid if accessed directly. The check aiBases.Count > 0 helps.
         _aiBasePosition = aiBases[0].position; 
         _level2CommandsStarted = true;
         
-        // Filter valid entities
         var validTypes = new HashSet<EntityType> 
         { 
             EntityType.DDG51, 
@@ -385,16 +379,12 @@ private void HandleLevel2CombatBehavior(List<Entity> aiEntities)
             
         CreateBatches(filteredEntities);
         
-        
         if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
         {
-            float diff = GameMgr.inst.difficultyLevel; // Assuming diff is normalized between 0 (easy) and 1 (hard)
-            
+            float diff = GameMgr.inst.difficultyLevel; 
             BatchDelay = Mathf.Lerp(60f, 20f, (diff - 0.33f) / (0.66f - 0.33f));
         }
-       
 
-        // Start the command sequence
         if (_level2Coroutine != null) 
         {
             StopCoroutine(_level2Coroutine);
@@ -408,47 +398,30 @@ private void CreateBatches(List<Entity> allEntities)
 {
     _batch1.Clear();
     _batch2.Clear();
-    _batch3.Clear();
 
-    // Split each entity type into 3 batches
-    SplitEntitiesByType(EntityType.DDG51, allEntities);
-    SplitEntitiesByType(EntityType.JARIUSV, allEntities);
-    SplitEntitiesByType(EntityType.SeaHunter, allEntities);
+    // Split each entity type into 2 batches
+    foreach (EntityType type in new[] { EntityType.DDG51, EntityType.JARIUSV, EntityType.SeaHunter })
+    {
+        var entitiesOfType = allEntities.Where(e => e.entityType == type).ToList();
+        int half = Mathf.CeilToInt(entitiesOfType.Count / 2f);
+
+        _batch1.AddRange(entitiesOfType.Take(half));
+        _batch2.AddRange(entitiesOfType.Skip(half));
+    }
 }
 
-private void SplitEntitiesByType(EntityType type, List<Entity> allEntities)
-{
-    var entities = allEntities.Where(e => e.entityType == type).ToList();
-    int count = entities.Count;
-    
-    if (count == 0) return;
-    
-    int batchSize = Mathf.CeilToInt(count / 3f);
 
-    _batch1.AddRange(entities.Take(batchSize));
-    _batch2.AddRange(entities.Skip(batchSize).Take(batchSize));
-    _batch3.AddRange(entities.Skip(batchSize * 2).Take(count - batchSize * 2));
-}
 
     private IEnumerator RunLevel2CommandSequence()
     {
-        yield return new WaitForSecondsRealtime(10f);
+        yield return new WaitForSecondsRealtime(BatchDelay);
         IssueDirectCommand(_batch1, opponentBase.position, true);  
-        IssueDirectCommand(_batch2, GetStagingPosition(4000f), true, false);  
-        IssueDirectCommand(_batch3, GetStagingPosition(1000f), true, false);
+        IssueDirectCommand(_batch2, GetStagingPosition(1000f), true, false);  
+       
 
         // Phase 2: T=45 seconds
-        yield return new WaitForSecondsRealtime(BatchDelay);
-        IssueDirectCommand(_batch2, GetStagingPosition2(), true);  
-        IssueDirectCommand(_batch3, GetStagingPosition(4000f), true, false);   
-
-        // Phase 3: T=90 seconds
-        yield return new WaitForSecondsRealtime(BatchDelay);
-        IssueDirectCommand(_batch2, opponentBase.position, true);
-        IssueDirectCommand(_batch3, GetStagingPosition2(), true,false);
-
-        yield return new WaitForSecondsRealtime(BatchDelay);
-        IssueDirectCommand(_batch3, opponentBase.position, true);    
+        yield return new WaitForSecondsRealtime(BatchDelay*2);
+        IssueDirectCommand(_batch2, opponentBase.position, true);  
     }
 
 private Vector3 GetStagingPosition(float position)

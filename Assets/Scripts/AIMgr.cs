@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using Unity.Netcode;
@@ -200,7 +198,7 @@ public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, boo
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
     //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
     // Constructor for position-based attack-move
-public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, bool acquireTarget = false)
+public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, bool acquireTarget = false, float doneDistanceSq = 0f)
 {
     if (isLocalCommand)
     {
@@ -209,31 +207,32 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
 
     foreach (Entity entity in entities)
     {
-        float doneDistanceSq;
+        if (entity == null || entity.gameObject == null)
+            continue;
+        
+        if (target != null && (target.gameObject == null))
+            target = null;
 
         if (target != null)
         {
-                // Use weapon range squared if available
-            if (entity == null || entity.GetComponentInChildren<WeaponsAspect>() == null)
+            if (entity.GetComponentInChildren<WeaponsAspect>() == null)
             {
-                doneDistanceSq = 100000f; // Fallback
+                doneDistanceSq = 100000f;
             }
             else
             {
-                // Get weapon range squared from WeaponsAspect
                 WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-                doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null) 
-                    ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range )- 100f * 100f // Subtracting a small buffer
-                    : 100000f; // Fallback
+                doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null)
+                    ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range) - 100f * 100f
+                    : 100000f;
             }
-            
         }
         else
         {
-            // Use Move's logic based on entity count
             if (entities.Count == 1)
             {
-                doneDistanceSq = 100f * 100f; 
+                if (doneDistanceSq <= 0f)
+                    doneDistanceSq = 200f * 200f;
             }
             else if (entities.Count < 5)
             {
@@ -242,8 +241,8 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
             else if (entities.Count >= 10)
             {
                 WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-                doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null) 
-                    ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range ) 
+                doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null)
+                    ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range)
                     : 100000f;
             }
             else
@@ -252,8 +251,8 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
             }
         }
 
-        AttackMove am = target != null 
-            ? new AttackMove(entity, target,acquireTargetsOnWay:acquireTarget, maxSpeedMovement, doneDistanceSq) 
+        AttackMove am = target != null
+            ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, doneDistanceSq)
             : new AttackMove(entity, point, maxSpeedMovement, doneDistanceSq);
 
         UnitAI uai = entity.GetComponentInChildren<UnitAI>();
@@ -261,7 +260,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
     }
 }
     public void HandleMove(List<Entity> entities, Vector3 point,
-                      bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, float doneDistanceSq = 100000)
+                      bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, float doneDistanceSq = 0f)
     {
         if (isLocalCommand)
         {
@@ -276,7 +275,11 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
 
             if (entities.Count == 1)
             {
-                currentDoneDistanceSq = 500f;
+                if (doneDistanceSq > 0f) {
+                    currentDoneDistanceSq = doneDistanceSq;
+                } else {
+                    currentDoneDistanceSq = 200f * 200f; 
+                }
             }
             else if (entities.Count < 5) // Covers 2, 3, 4 entities
             {
