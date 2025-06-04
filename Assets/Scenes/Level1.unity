@@ -9644,6 +9644,21 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4715075789291857783, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_Padding.m_Left
+      value: -25
+      objectReference: {fileID: 0}
+    - target: {fileID: 4883500247948357232, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_MovementType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4883500247948357232, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_ScrollSensitivity
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5452693900314548864, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -9757,6 +9772,16 @@ PrefabInstance:
     - target: {fileID: 6347363474440040677, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6729362625217574971, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6729362625217574971, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_Color.a
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8654361994499445350, guid: b89ba6f4b759a464da93e95fbafe480f,

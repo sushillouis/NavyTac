@@ -154,7 +154,7 @@ public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, boo
 
                 ReplayCommand cmd = new ReplayCommand
                 {
-                    timestamp = Time.unscaledTime,
+                    timestamp = Time.time,
                     commandType = commandType,
                     entityIds = selectedEntities.Select(e => e.entityId).ToArray(),
                     targetPosition = pos,
@@ -222,7 +222,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
             // Use Move's logic based on entity count
             if (entities.Count == 1)
             {
-                doneDistanceSq = 500f;
+                doneDistanceSq = 100f * 100f; 
             }
             else if (entities.Count < 5)
             {
@@ -232,7 +232,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
             {
                 WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
                 doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null) 
-                    ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range )- 100f * 100f 
+                    ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range ) 
                     : 100000f;
             }
             else

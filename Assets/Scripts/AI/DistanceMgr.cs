@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-// using System.Threading.Tasks; // Replaced by Unity.Jobs
 using Unity.Jobs;
 using Unity.Collections;
 using Unity.Burst;
+using System.Linq; // Added for ToList()
 
 [Serializable]
 public class SubPotential{
@@ -53,6 +53,7 @@ public class Potential
     }
 
     // This method is not directly used by DistanceMgr's new multi-threaded update.
+    // Kept for potential direct use or debugging.
     public void ReCompute() {
         FrameCount = Time.frameCount;
 
@@ -141,8 +142,6 @@ public class CPAInfo
         targetRelativeBearing = Utils.Degrees360(Utils.AngleDiffPosNeg(targetAbsBearing, ownship.heading));
         targetAngle = Utils.Degrees360(targetAbsBearing + 180 - target.heading);
     }
-    // This method is now effectively replaced by CPAHelper.CalculateCPA for job-based computation
-    // public void ReCompute_ThreadSafe(...) { ... }
 };
 
 // Helper class for passing data to worker threads for SubPotential calculation (Main Thread side)
@@ -178,8 +177,6 @@ class PotentialCalculationTaskData {
 
 
 // --- Burst Job Related Structs ---
-
-// Struct for CPA calculation results, used by the job
 public struct CPAJobOutputData
 {
     public Vector3 ownShipPositionAtCPA;
@@ -192,13 +189,12 @@ public struct CPAJobOutputData
     public Vector3 relativeVelocity;
 }
 
-// Helper for CPA calculations within a Burst job
 [BurstCompile]
-public static class CPAJobHelper // Made static class for helper methods
+public static class CPAJobHelper 
 {
     public static CPAJobOutputData CalculateCPA(Vector3 osPos, Vector3 osVel, float osHeading,
                                              Vector3 tgtPos, Vector3 tgtVel, float tgtHeading,
-                                             Vector3 precomputedPosDiff, float epsilon) // Added epsilon parameter
+                                             Vector3 precomputedPosDiff, float epsilon) 
     {
         CPAJobOutputData output = new();
         output.relativeVelocity = tgtVel - osVel;
@@ -206,7 +202,7 @@ public static class CPAJobHelper // Made static class for helper methods
         Vector3 _velDiff = osVel - tgtVel;
         float _relSpeedSquared = _velDiff.sqrMagnitude;
 
-        if (_relSpeedSquared < epsilon * 10) // Use passed epsilon
+        if (_relSpeedSquared < epsilon * 10) 
             output.time = 0;
         else
             output.time = -Vector3.Dot(precomputedPosDiff, _velDiff) / _relSpeedSquared;
@@ -219,7 +215,6 @@ public static class CPAJobHelper // Made static class for helper methods
         Vector3 cpaVector = output.targetPositionAtCPA - output.ownShipPositionAtCPA;
         output.range = cpaVector.magnitude;
 
-        // Ensure Utils methods are Burst-compatible (static, no managed types, only blittable math)
         output.targetAbsBearing = Utils.Degrees360(Utils.VectorToHeadingDegrees(cpaVector));
         output.targetRelativeBearing = Utils.Degrees360(Utils.AngleDiffPosNeg(output.targetAbsBearing, osHeading));
         output.targetAngle = Utils.Degrees360(output.targetAbsBearing + 180 - tgtHeading);
@@ -228,47 +223,37 @@ public static class CPAJobHelper // Made static class for helper methods
     }
 }
 
-// Input data for a pair of potentials for the job
 public struct PotentialPairJobInput
 {
     public int frameCount;
-    // P1 data
     public Vector3 ownshipPositionP1; public Vector3 ownshipVelocityP1; public float ownshipHeadingP1;
     public Vector3 targetPositionP1; public Vector3 targetVelocityP1; public float targetHeadingP1;
     public Vector3 diffP1_mainThread; public Vector3 directionP1_mainThread; 
     public float precalculatedDistanceP1_mainThread; public Vector3 cpaP1_posDiff_mainThread;
-    // P2 data
     public Vector3 ownshipPositionP2; public Vector3 ownshipVelocityP2; public float ownshipHeadingP2;
     public Vector3 targetPositionP2; public Vector3 targetVelocityP2; public float targetHeadingP2;
     public Vector3 diffP2_mainThread; public Vector3 directionP2_mainThread; 
     public float precalculatedDistanceP2_mainThread; public Vector3 cpaP2_posDiff_mainThread;
-    
     public int subPotentialsP1_Count;
-    public int subPotentialsP1_StartIndex; // Index into the flat AllSubPotentialInputs array
+    public int subPotentialsP1_StartIndex; 
     public int subPotentialsP2_Count;
-    public int subPotentialsP2_StartIndex; // Index into the flat AllSubPotentialInputs array
+    public int subPotentialsP2_StartIndex; 
 }
 
-// Input data for a single sub-potential for the job
 public struct SubPotentialJobInput
 {
-    // Values pre-calculated on the main thread
     public Vector3 diff_mainThread;
     public Vector3 direction_mainThread;
     public float precalculatedDistance_mainThread;
 }
 
-// Output data for a pair of potentials from the job
 public struct PotentialPairJobOutput
 {
-    // P1 results
     public Vector3 diffP1; public Vector3 directionP1; public float distanceP1; public int frameCountP1;
     public Vector3 relativeVelocityP1; public float cpaTargetAngleP1;
     public float cpaTimeP1; public float cpaRangeP1;
     public float cpaTargetRelativeBearingP1; public float cpaTargetAbsBearingP1;
     public Vector3 cpaOwnShipPositionP1; public Vector3 cpaTargetPositionP1;
-
-    // P2 results
     public Vector3 diffP2; public Vector3 directionP2; public float distanceP2; public int frameCountP2;
     public Vector3 relativeVelocityP2; public float cpaTargetAngleP2;
     public float cpaTimeP2; public float cpaRangeP2;
@@ -276,7 +261,6 @@ public struct PotentialPairJobOutput
     public Vector3 cpaOwnShipPositionP2; public Vector3 cpaTargetPositionP2;
 }
 
-// Output data for a single sub-potential from the job
 public struct SubPotentialJobOutput
 {
     public Vector3 diff;
@@ -289,7 +273,7 @@ public struct ProcessPotentialsJob : IJobParallelFor
 {
     [ReadOnly] public NativeArray<PotentialPairJobInput> PotentialPairInputs;
     [ReadOnly] public NativeArray<SubPotentialJobInput> AllSubPotentialInputs;
-    [ReadOnly] public float Epsilon; // Added Epsilon field
+    [ReadOnly] public float Epsilon; 
 
     [WriteOnly] public NativeArray<PotentialPairJobOutput> PotentialPairOutputs;
     [WriteOnly, NativeDisableParallelForRestriction] public NativeArray<SubPotentialJobOutput> AllSubPotentialOutputs;
@@ -299,7 +283,6 @@ public struct ProcessPotentialsJob : IJobParallelFor
         PotentialPairJobInput jobInputData = PotentialPairInputs[index];
         PotentialPairJobOutput jobOutputData = new();
 
-        // --- Process P1 (potentialToUpdateP1) ---
         jobOutputData.frameCountP1 = jobInputData.frameCount;
         jobOutputData.diffP1 = jobInputData.diffP1_mainThread; 
         jobOutputData.directionP1 = jobInputData.directionP1_mainThread;
@@ -308,9 +291,7 @@ public struct ProcessPotentialsJob : IJobParallelFor
         CPAJobOutputData cpaP1 = CPAJobHelper.CalculateCPA(
             jobInputData.ownshipPositionP1, jobInputData.ownshipVelocityP1, jobInputData.ownshipHeadingP1,
             jobInputData.targetPositionP1, jobInputData.targetVelocityP1, jobInputData.targetHeadingP1,
-            jobInputData.cpaP1_posDiff_mainThread,
-            Epsilon // Pass Epsilon to CPAJobHelper
-        );
+            jobInputData.cpaP1_posDiff_mainThread, Epsilon );
         jobOutputData.relativeVelocityP1 = cpaP1.relativeVelocity;
         jobOutputData.cpaTimeP1 = cpaP1.time;
         jobOutputData.cpaRangeP1 = cpaP1.range;
@@ -324,7 +305,6 @@ public struct ProcessPotentialsJob : IJobParallelFor
         {
             int subInputIndex = jobInputData.subPotentialsP1_StartIndex + i;
             if (subInputIndex < 0 || subInputIndex >= AllSubPotentialInputs.Length) continue; 
-
             SubPotentialJobInput subInput = AllSubPotentialInputs[subInputIndex];
             SubPotentialJobOutput subOutput = new()
             {
@@ -336,7 +316,6 @@ public struct ProcessPotentialsJob : IJobParallelFor
             AllSubPotentialOutputs[subInputIndex] = subOutput;
         }
 
-        // --- Process P2 (potentialToUpdateP2) ---
         jobOutputData.frameCountP2 = jobInputData.frameCount;
         jobOutputData.diffP2 = jobInputData.diffP2_mainThread;
         jobOutputData.directionP2 = jobInputData.directionP2_mainThread;
@@ -345,9 +324,7 @@ public struct ProcessPotentialsJob : IJobParallelFor
         CPAJobOutputData cpaP2 = CPAJobHelper.CalculateCPA(
             jobInputData.ownshipPositionP2, jobInputData.ownshipVelocityP2, jobInputData.ownshipHeadingP2,
             jobInputData.targetPositionP2, jobInputData.targetVelocityP2, jobInputData.targetHeadingP2,
-            jobInputData.cpaP2_posDiff_mainThread,
-            Epsilon // Pass Epsilon to CPAJobHelper
-        );
+            jobInputData.cpaP2_posDiff_mainThread, Epsilon );
         jobOutputData.relativeVelocityP2 = cpaP2.relativeVelocity;
         jobOutputData.cpaTimeP2 = cpaP2.time;
         jobOutputData.cpaRangeP2 = cpaP2.range;
@@ -361,7 +338,6 @@ public struct ProcessPotentialsJob : IJobParallelFor
         {
             int subInputIndex = jobInputData.subPotentialsP2_StartIndex + i;
             if (subInputIndex < 0 || subInputIndex >= AllSubPotentialInputs.Length) continue; 
-
             SubPotentialJobInput subInput = AllSubPotentialInputs[subInputIndex];
             SubPotentialJobOutput subOutput = new()
             {
@@ -372,11 +348,16 @@ public struct ProcessPotentialsJob : IJobParallelFor
             if (subInputIndex < 0 || subInputIndex >= AllSubPotentialOutputs.Length) continue; 
             AllSubPotentialOutputs[subInputIndex] = subOutput;
         }
-        
         PotentialPairOutputs[index] = jobOutputData;
     }
 }
 
+// Helper container for a pair of potentials (e1->e2 and e2->e1)
+public class PotentialPairContainer
+{
+    public Potential P1; // Potential from e1 to e2
+    public Potential P2; // Potential from e2 to e1
+}
 
 public class DistanceMgr : MonoBehaviour
 {
@@ -386,68 +367,56 @@ public class DistanceMgr : MonoBehaviour
         inst = this;
     }
 
-    public Potential[,] potentials2D;
-    public Dictionary<Entity, Dictionary<Entity, Potential>> potentialsDictionary;
-    public List<List<Potential>> potentialsList;
-
     public bool isInitialized = false;
-    public int ii = 0;
-    public int jj = 0;
+    
+    // New members for spatial grid and on-demand potentials
+    private Dictionary<Vector2Int, List<Entity>> _spatialGrid;
+    private Dictionary<Tuple<int, int>, PotentialPairContainer> _activePotentials; // Key: (minEntityId, maxEntityId)
+    private List<Tuple<int, int>> _activePotentialKeysToProcess; // List of keys from _activePotentials for iteration
+    private int _currentProcessingStartIndex = 0; // For round-robin processing of active potentials
 
+    public float cellSize = 500f; // Tune this based on typical engagement ranges / entity density
+    public float interactionRange = 2000f; // Entities within this range will have potentials calculated
+    private float _interactionRangeSqr;
+
+    public int maxPairsToProcessPerFrame = 50; // Tune this to balance workload per frame
 
     // Main thread lists to hold task data and references for mapping job results back
     private readonly List<PotentialCalculationTaskData> _mainThreadTaskDataList = new();
-    private readonly List<SubPotential> _flatSubPotentialReferences = new(); // For direct mapping of sub-potential results
+    private readonly List<SubPotential> _flatSubPotentialReferences = new(); 
 
     // Temporary lists for populating NativeArrays
     private readonly List<PotentialPairJobInput> _tempPotentialPairJobInputs = new();
     private readonly List<SubPotentialJobInput> _tempAllSubPotentialJobInputs = new();
-
+    
+    public List<Potential> selectedEntityPotentials; // For UI or other systems needing potentials for a selected entity
 
      public void Initialize()
     {
-        isInitialized = true;
-        potentialsDictionary = new();
-        potentialsList = new();
+        _spatialGrid = new Dictionary<Vector2Int, List<Entity>>();
+        _activePotentials = new Dictionary<Tuple<int, int>, PotentialPairContainer>();
+        _activePotentialKeysToProcess = new List<Tuple<int, int>>();
+        _interactionRangeSqr = interactionRange * interactionRange;
         
-        var validEntities = EntityMgr.inst.entities.FindAll(e => e != null && e.entityClass != EntityClass.Missile);
-        int n = validEntities.Count;
-        
-        potentials2D = new Potential[n, n];
-        
-        for (int i_idx = 0; i_idx < n; i_idx++)
-        {
-            Entity ent1 = validEntities[i_idx];
-            
-            Dictionary<Entity, Potential> ent1PotDictionary = new();
-            List<Potential> ent1PotList = new();
-            potentialsDictionary.Add(ent1, ent1PotDictionary);
-            potentialsList.Add(ent1PotList);
-            
-            for (int j_idx = 0; j_idx < n; j_idx++)
-            {
-                Entity ent2 = validEntities[j_idx];
-                
-                Potential pot = new(ent1, ent2);
-                ent1PotDictionary.Add(ent2, pot);
-                ent1PotList.Add(pot);
-                potentials2D[i_idx, j_idx] = pot;
-            }
-        }
-        ii = n; 
-        jj = n; 
-    } // End of Initialize method
+        selectedEntityPotentials = new List<Potential>(); // Initialize the list
 
-    void OnDestroy() // Changed from Stop() to OnDestroy for typical Unity lifecycle
+        isInitialized = true;
+        // No longer pre-calculating all potentials
+    }
+
+    void OnDestroy()
     {
-        // Clear lists that might hold references or large data
         _mainThreadTaskDataList.Clear();
         _flatSubPotentialReferences.Clear();
         _tempPotentialPairJobInputs.Clear();
         _tempAllSubPotentialJobInputs.Clear();
-    }
 
-    private int frameCounter = 0; 
+        if (_spatialGrid != null) _spatialGrid.Clear();
+        if (_activePotentials != null) _activePotentials.Clear();
+        if (_activePotentialKeysToProcess != null) _activePotentialKeysToProcess.Clear();
+        if (selectedEntityPotentials != null) selectedEntityPotentials.Clear();
+    }
+    
     void Update()
     {
         if (!isInitialized)
@@ -462,200 +431,295 @@ public class DistanceMgr : MonoBehaviour
         
         if (isInitialized)
         {
-            UpdatePotentialsWithJob();
+            UpdateSpatialGridAndActivePotentials();
+            ProcessActivePotentialsWithJob();
+            UpdateSelectedEntityPotentials(); // Update after job processing
         }
-        frameCounter++;
     }
 
-    public List<Potential> selectedEntityPotentials; 
+    Vector2Int GetGridCell(Vector3 position) {
+        // Assuming XZ plane for grid
+        return new Vector2Int(Mathf.FloorToInt(position.x / cellSize), Mathf.FloorToInt(position.z / cellSize));
+    }
 
-    void UpdatePotentialsWithJob()
+    IEnumerable<Vector2Int> GetNeighborCellsIncludingSelf(Vector2Int cell) {
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                yield return new Vector2Int(cell.x + dx, cell.y + dy);
+            }
+        }
+    }
+    
+    void UpdateSpatialGridAndActivePotentials()
     {
-        if (potentialsList == null) return;
-        int n = potentialsList.Count;
-        if (n == 0) return;
+        if (EntityMgr.inst == null || EntityMgr.inst.entities == null) return;
 
-        int currentFrameMod = frameCounter % 10; 
-        _mainThreadTaskDataList.Clear(); 
+        var relevantEntities = EntityMgr.inst.entities.FindAll(e => e != null && e.entityClass != EntityClass.Missile && e.isActiveAndEnabled);
+
+        _spatialGrid.Clear();
+        foreach (Entity entity in relevantEntities)
+        {
+            if(entity == null) continue; 
+            Vector2Int cell = GetGridCell(entity.position);
+            if (!_spatialGrid.TryGetValue(cell, out var entitiesInCell))
+            {
+                entitiesInCell = new List<Entity>();
+                _spatialGrid[cell] = entitiesInCell;
+            }
+            entitiesInCell.Add(entity);
+        }
+
+        var newActivePotentials = new Dictionary<Tuple<int, int>, PotentialPairContainer>();
+        var consideredPairsThisUpdate = new HashSet<Tuple<int, int>>(); // To avoid duplicate processing in this method
+
+        foreach (Entity e1 in relevantEntities)
+        {
+            if(e1 == null) continue;
+            Vector2Int e1Cell = GetGridCell(e1.position);
+            
+            foreach (Vector2Int cellToSearch in GetNeighborCellsIncludingSelf(e1Cell))
+            {
+                if (_spatialGrid.TryGetValue(cellToSearch, out var entitiesInCell))
+                {
+                    foreach (Entity e2 in entitiesInCell)
+                    {
+                        if (e2 == null || e1 == e2) continue;
+
+                        int id1 = e1.GetInstanceID();
+                        int id2 = e2.GetInstanceID();
+                        Entity firstEntity = (id1 < id2) ? e1 : e2; // Canonical order for key
+                        Entity secondEntity = (id1 < id2) ? e2 : e1;
+                        Tuple<int, int> pairKey = Tuple.Create(firstEntity.GetInstanceID(), secondEntity.GetInstanceID());
+
+                        if (consideredPairsThisUpdate.Contains(pairKey)) continue;
+                        consideredPairsThisUpdate.Add(pairKey);
+
+                        if ((firstEntity.position - secondEntity.position).sqrMagnitude < _interactionRangeSqr)
+                        {
+                            if (_activePotentials.TryGetValue(pairKey, out var existingPairContainer))
+                            {
+                                // Ensure entities are still valid and match
+                                if (existingPairContainer.P1.ownship == firstEntity && existingPairContainer.P1.target == secondEntity &&
+                                    firstEntity.isActiveAndEnabled && secondEntity.isActiveAndEnabled)
+                                {
+                                    newActivePotentials.Add(pairKey, existingPairContainer);
+                                }
+                                else // Stale references or entities changed, recreate
+                                {
+                                    Potential newP1 = new Potential(firstEntity, secondEntity);
+                                    Potential newP2 = new Potential(secondEntity, firstEntity);
+                                    newActivePotentials.Add(pairKey, new PotentialPairContainer { P1 = newP1, P2 = newP2 });
+                                }
+                            }
+                            else
+                            {
+                                Potential newP1 = new Potential(firstEntity, secondEntity);
+                                Potential newP2 = new Potential(secondEntity, firstEntity);
+                                newActivePotentials.Add(pairKey, new PotentialPairContainer { P1 = newP1, P2 = newP2 });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        _activePotentials = newActivePotentials;
+        _activePotentialKeysToProcess = _activePotentials.Keys.ToList(); // Update the list of keys to iterate over
+    }
+
+
+    void ProcessActivePotentialsWithJob()
+    {
+        if (_activePotentialKeysToProcess == null || _activePotentialKeysToProcess.Count == 0) return;
+
+        _mainThreadTaskDataList.Clear();
         _flatSubPotentialReferences.Clear();
         _tempPotentialPairJobInputs.Clear();
         _tempAllSubPotentialJobInputs.Clear();
+        
+        int currentFrame = Time.frameCount;
+        List<PotentialPairContainer> pairsForThisJobRun = new List<PotentialPairContainer>();
+        int processedCountInLoop = 0; // How many pairs we've decided to process in this call
+        int initialKeyCount = _activePotentialKeysToProcess.Count; // Count before potential removals within the loop
 
-        int currentFrame = Time.frameCount; 
-
-        // Phase 1: Data Gathering (Main Thread) - Populates _mainThreadTaskDataList and temporary job input lists
-        for (int i_loop = 0; i_loop < n; i_loop++) // Renamed loop variable to avoid conflict
+        for (int i = 0; i < initialKeyCount && processedCountInLoop < maxPairsToProcessPerFrame; ++i)
         {
-            if (i_loop % 10 != currentFrameMod) continue; 
-            if (potentialsList[i_loop] == null || potentialsList[i_loop].Count == 0) continue;
+            if (_currentProcessingStartIndex >= _activePotentialKeysToProcess.Count)
+            {
+                _currentProcessingStartIndex = 0; // Wrap around
+            }
+            // If list becomes empty after wrap-around (e.g., all entities destroyed)
+            if (_activePotentialKeysToProcess.Count == 0) break;
 
-            Entity ent1 = null;
-            foreach (var p_check in potentialsList[i_loop]) { // Find ent1 for this row
-                if (p_check != null && p_check.ownship != null) {
-                    ent1 = p_check.ownship;
-                    break;
-                }
+            Tuple<int, int> currentKey = _activePotentialKeysToProcess[_currentProcessingStartIndex];
+            
+            if (!_activePotentials.TryGetValue(currentKey, out var potentialPairContainer))
+            {
+                // Key in list but not in dictionary (should be rare, indicates inconsistency)
+                _activePotentialKeysToProcess.RemoveAt(_currentProcessingStartIndex);
+                // Do not increment _currentProcessingStartIndex, as list shifted. Loop continues.
+                continue; 
+            }
+
+            Potential p1 = potentialPairContainer.P1;
+            Potential p2 = potentialPairContainer.P2;
+
+            // Check if entities are still valid (e.g., not destroyed since last grid update)
+            if (p1.ownship == null || p1.target == null || !p1.ownship.isActiveAndEnabled || !p1.target.isActiveAndEnabled)
+            {
+                _activePotentials.Remove(currentKey); // Remove from main dictionary
+                _activePotentialKeysToProcess.RemoveAt(_currentProcessingStartIndex); // Remove from iteration list
+                // Do not increment _currentProcessingStartIndex, as list shifted.
+                continue;
             }
             
-            if (ent1 == null || ent1.entityClass == EntityClass.Missile) continue;
+            pairsForThisJobRun.Add(potentialPairContainer);
+            processedCountInLoop++;
+            _currentProcessingStartIndex++; // Move to next key for the *next* frame/batch
+        }
 
-            if (SelectionMgr.inst != null && ent1 == SelectionMgr.inst.selectedEntity)
-            {
-                selectedEntityPotentials = potentialsList[i_loop];
+
+        if (pairsForThisJobRun.Count == 0) return;
+
+        // --- Phase 1: Data Gathering for selected pairs (Main Thread) ---
+        foreach (var pairContainer in pairsForThisJobRun)
+        {
+            Potential p1 = pairContainer.P1;
+            Potential p2 = pairContainer.P2;
+            Entity ent1 = p1.ownship;
+            Entity ent2 = p1.target;
+
+            // Create main thread task data (holds references to Potential objects)
+            var mtTaskData = new PotentialCalculationTaskData() {
+                potentialToUpdateP1 = p1, potentialToUpdateP2 = p2, frameCount = currentFrame,
+                ownshipPositionP1 = ent1.position, ownshipVelocityP1 = ent1.velocity, ownshipHeadingP1 = ent1.heading,
+                targetPositionP1 = ent2.position, targetVelocityP1 = ent2.velocity, targetHeadingP1 = ent2.heading,
+                subPotentialsDataP1 = new(),
+                ownshipPositionP2 = ent2.position, ownshipVelocityP2 = ent2.velocity, ownshipHeadingP2 = ent2.heading,
+                targetPositionP2 = ent1.position, targetVelocityP2 = ent1.velocity, targetHeadingP2 = ent1.heading,
+                subPotentialsDataP2 = new()
+            };
+
+            PotentialPairJobInput jobInputItem = new() { 
+                frameCount = currentFrame,
+                ownshipPositionP1 = mtTaskData.ownshipPositionP1, ownshipVelocityP1 = mtTaskData.ownshipVelocityP1, ownshipHeadingP1 = mtTaskData.ownshipHeadingP1,
+                targetPositionP1 = mtTaskData.targetPositionP1, targetVelocityP1 = mtTaskData.targetVelocityP1, targetHeadingP1 = mtTaskData.targetHeadingP1,
+                ownshipPositionP2 = mtTaskData.ownshipPositionP2, ownshipVelocityP2 = mtTaskData.ownshipVelocityP2, ownshipHeadingP2 = mtTaskData.ownshipHeadingP2,
+                targetPositionP2 = mtTaskData.targetPositionP2, targetVelocityP2 = mtTaskData.targetVelocityP2, targetHeadingP2 = mtTaskData.targetHeadingP2
+            };
+            
+            Collider ownshipColliderP1 = ent1.GetComponent<Collider>();
+            Collider targetColliderP1 = ent2.GetComponent<Collider>();
+
+            mtTaskData.diffP1 = mtTaskData.targetPositionP1 - mtTaskData.ownshipPositionP1;
+            jobInputItem.diffP1_mainThread = mtTaskData.diffP1;
+            mtTaskData.directionP1 = mtTaskData.diffP1.normalized;
+            jobInputItem.directionP1_mainThread = mtTaskData.directionP1;
+
+            if (ownshipColliderP1 != null && targetColliderP1 != null) {
+                Vector3 closestOnOwnP1 = ownshipColliderP1.ClosestPoint(mtTaskData.targetPositionP1);
+                Vector3 closestOnTgtP1 = targetColliderP1.ClosestPoint(mtTaskData.ownshipPositionP1);
+                mtTaskData.precalculatedDistanceP1 = Vector3.Distance(closestOnOwnP1, closestOnTgtP1);
+                mtTaskData.cpaP1_posDiff = closestOnOwnP1 - closestOnTgtP1;
+            } else {
+                mtTaskData.precalculatedDistanceP1 = mtTaskData.diffP1.magnitude;
+                mtTaskData.cpaP1_posDiff = mtTaskData.ownshipPositionP1 - mtTaskData.targetPositionP1;
             }
+            jobInputItem.precalculatedDistanceP1_mainThread = mtTaskData.precalculatedDistanceP1;
+            jobInputItem.cpaP1_posDiff_mainThread = mtTaskData.cpaP1_posDiff;
+            
+            jobInputItem.subPotentialsP1_StartIndex = _tempAllSubPotentialJobInputs.Count;
+            if (p1.subPotentials != null) {
+                foreach (SubPotential sp_p1 in p1.subPotentials) {
+                    if (sp_p1 == null || sp_p1.pfTransform == null) continue;
+                    var subMTData = new SubPotentialTaskData() { subPotentialToUpdate = sp_p1 }; 
+                    subMTData.pfPosition = sp_p1.pfTransform.position;
+                    subMTData.targetEntityPosition = mtTaskData.targetPositionP1;
+                    subMTData.diff = subMTData.targetEntityPosition - subMTData.pfPosition;
+                    subMTData.direction = subMTData.diff.normalized;
 
-            for (int j_loop = i_loop + 1; j_loop < n; j_loop++)  // Renamed loop variable
-            {
-                if (potentialsList[i_loop].Count <= j_loop) continue;
-                Potential p1 = potentialsList[i_loop][j_loop]; 
-                if (p1 == null || p1.ownship == null || p1.target == null) continue;
-                Entity ent2 = p1.target; 
-                if (ent2 == null || ent2.entityClass == EntityClass.Missile) continue;
-
-                if (j_loop >= potentialsList.Count || potentialsList[j_loop].Count <= i_loop) continue;
-                Potential p2 = potentialsList[j_loop][i_loop]; 
-                if (p2 == null || p2.ownship == null || p2.target == null || p2.ownship != ent2 || p2.target != ent1) {
-                    Debug.LogWarning($"Could not find or verify symmetric potential for pair ({ent1.name}, {ent2.name})");
-                    continue;
-                }
-
-                // Create main thread task data (holds references to Potential objects)
-                var mtTaskData = new PotentialCalculationTaskData() {
-                    potentialToUpdateP1 = p1, potentialToUpdateP2 = p2, frameCount = currentFrame,
-                    ownshipPositionP1 = ent1.position, ownshipVelocityP1 = ent1.velocity, ownshipHeadingP1 = ent1.heading,
-                    targetPositionP1 = ent2.position, targetVelocityP1 = ent2.velocity, targetHeadingP1 = ent2.heading,
-                    subPotentialsDataP1 = new(),
-                    ownshipPositionP2 = ent2.position, ownshipVelocityP2 = ent2.velocity, ownshipHeadingP2 = ent2.heading,
-                    targetPositionP2 = ent1.position, targetVelocityP2 = ent1.velocity, targetHeadingP2 = ent1.heading,
-                    subPotentialsDataP2 = new()
-                };
-
-                PotentialPairJobInput jobInputItem = new() { 
-                    frameCount = currentFrame,
-                    ownshipPositionP1 = mtTaskData.ownshipPositionP1, ownshipVelocityP1 = mtTaskData.ownshipVelocityP1, ownshipHeadingP1 = mtTaskData.ownshipHeadingP1,
-                    targetPositionP1 = mtTaskData.targetPositionP1, targetVelocityP1 = mtTaskData.targetVelocityP1, targetHeadingP1 = mtTaskData.targetHeadingP1,
-                    ownshipPositionP2 = mtTaskData.ownshipPositionP2, ownshipVelocityP2 = mtTaskData.ownshipVelocityP2, ownshipHeadingP2 = mtTaskData.ownshipHeadingP2,
-                    targetPositionP2 = mtTaskData.targetPositionP2, targetVelocityP2 = mtTaskData.targetVelocityP2, targetHeadingP2 = mtTaskData.targetHeadingP2
-                };
-                
-                Collider ownshipColliderP1 = ent1.GetComponent<Collider>();
-                Collider targetColliderP1 = ent2.GetComponent<Collider>();
-
-                // --- Main Thread Computations for P1 (ent1 -> ent2) ---
-                mtTaskData.diffP1 = mtTaskData.targetPositionP1 - mtTaskData.ownshipPositionP1;
-                jobInputItem.diffP1_mainThread = mtTaskData.diffP1;
-                mtTaskData.directionP1 = mtTaskData.diffP1.normalized;
-                jobInputItem.directionP1_mainThread = mtTaskData.directionP1;
-
-                if (ownshipColliderP1 != null && targetColliderP1 != null) {
-                    Vector3 closestOnOwnP1 = ownshipColliderP1.ClosestPoint(mtTaskData.targetPositionP1);
-                    Vector3 closestOnTgtP1 = targetColliderP1.ClosestPoint(mtTaskData.ownshipPositionP1);
-                    mtTaskData.precalculatedDistanceP1 = Vector3.Distance(closestOnOwnP1, closestOnTgtP1);
-                    mtTaskData.cpaP1_posDiff = closestOnOwnP1 - closestOnTgtP1;
-                } else {
-                    mtTaskData.precalculatedDistanceP1 = mtTaskData.diffP1.magnitude;
-                    mtTaskData.cpaP1_posDiff = mtTaskData.ownshipPositionP1 - mtTaskData.targetPositionP1;
-                }
-                jobInputItem.precalculatedDistanceP1_mainThread = mtTaskData.precalculatedDistanceP1;
-                jobInputItem.cpaP1_posDiff_mainThread = mtTaskData.cpaP1_posDiff;
-                
-                jobInputItem.subPotentialsP1_StartIndex = _tempAllSubPotentialJobInputs.Count;
-                if (p1.subPotentials != null) {
-                    foreach (SubPotential sp_p1 in p1.subPotentials) {
-                        if (sp_p1 == null || sp_p1.pfTransform == null) continue;
-                        var subMTData = new SubPotentialTaskData() { subPotentialToUpdate = sp_p1 }; 
-                        subMTData.pfPosition = sp_p1.pfTransform.position;
-                        subMTData.targetEntityPosition = mtTaskData.targetPositionP1;
-                        subMTData.diff = subMTData.targetEntityPosition - subMTData.pfPosition;
-                        subMTData.direction = subMTData.diff.normalized;
-
-                        Collider pfSpCollider = sp_p1.cachedPftCollider;
-                        if (pfSpCollider != null && targetColliderP1 != null) {
-                            Vector3 cOnPf = pfSpCollider.ClosestPoint(subMTData.targetEntityPosition);
-                            Vector3 cOnTgt = targetColliderP1.ClosestPoint(subMTData.pfPosition);
-                            subMTData.precalculatedDistance = Vector3.Distance(cOnPf, cOnTgt);
-                        } else if (pfSpCollider != null) {
-                            subMTData.precalculatedDistance = Vector3.Distance(pfSpCollider.ClosestPoint(subMTData.targetEntityPosition), subMTData.targetEntityPosition);
-                        } else if (targetColliderP1 != null) {
-                            subMTData.precalculatedDistance = Vector3.Distance(targetColliderP1.ClosestPoint(subMTData.pfPosition), subMTData.pfPosition);
-                        } else {
-                            subMTData.precalculatedDistance = subMTData.diff.magnitude;
-                        }
-                        mtTaskData.subPotentialsDataP1.Add(subMTData); 
-                        _flatSubPotentialReferences.Add(sp_p1);
-                        _tempAllSubPotentialJobInputs.Add(new() {
-                            diff_mainThread = subMTData.diff,
-                            direction_mainThread = subMTData.direction,
-                            precalculatedDistance_mainThread = subMTData.precalculatedDistance
-                        });
+                    Collider pfSpCollider = sp_p1.cachedPftCollider;
+                    if (pfSpCollider != null && targetColliderP1 != null) {
+                        Vector3 cOnPf = pfSpCollider.ClosestPoint(subMTData.targetEntityPosition);
+                        Vector3 cOnTgt = targetColliderP1.ClosestPoint(subMTData.pfPosition);
+                        subMTData.precalculatedDistance = Vector3.Distance(cOnPf, cOnTgt);
+                    } else if (pfSpCollider != null) {
+                        subMTData.precalculatedDistance = Vector3.Distance(pfSpCollider.ClosestPoint(subMTData.targetEntityPosition), subMTData.targetEntityPosition);
+                    } else if (targetColliderP1 != null) {
+                        subMTData.precalculatedDistance = Vector3.Distance(targetColliderP1.ClosestPoint(subMTData.pfPosition), subMTData.pfPosition);
+                    } else {
+                        subMTData.precalculatedDistance = subMTData.diff.magnitude;
                     }
+                    mtTaskData.subPotentialsDataP1.Add(subMTData); 
+                    _flatSubPotentialReferences.Add(sp_p1);
+                    _tempAllSubPotentialJobInputs.Add(new() {
+                        diff_mainThread = subMTData.diff,
+                        direction_mainThread = subMTData.direction,
+                        precalculatedDistance_mainThread = subMTData.precalculatedDistance
+                    });
                 }
-                jobInputItem.subPotentialsP1_Count = _tempAllSubPotentialJobInputs.Count - jobInputItem.subPotentialsP1_StartIndex;
-
-                // --- Main Thread Computations for P2 (ent2 -> ent1) ---
-                mtTaskData.diffP2 = mtTaskData.targetPositionP2 - mtTaskData.ownshipPositionP2;
-                jobInputItem.diffP2_mainThread = mtTaskData.diffP2;
-                mtTaskData.directionP2 = mtTaskData.diffP2.normalized;
-                jobInputItem.directionP2_mainThread = mtTaskData.directionP2;
-                mtTaskData.precalculatedDistanceP2 = mtTaskData.precalculatedDistanceP1; // Symmetric
-                jobInputItem.precalculatedDistanceP2_mainThread = mtTaskData.precalculatedDistanceP2;
-
-                // Note: ownshipColliderP1 is ent1's collider, targetColliderP1 is ent2's collider
-                if (targetColliderP1 != null && ownshipColliderP1 != null) { 
-                    Vector3 closestOnOwnP2 = targetColliderP1.ClosestPoint(mtTaskData.targetPositionP2); // ent2's collider, closest to ent1
-                    Vector3 closestOnTgtP2 = ownshipColliderP1.ClosestPoint(mtTaskData.ownshipPositionP2); // ent1's collider, closest to ent2
-                    mtTaskData.cpaP2_posDiff = closestOnOwnP2 - closestOnTgtP2;
-                } else {
-                    mtTaskData.cpaP2_posDiff = mtTaskData.ownshipPositionP2 - mtTaskData.targetPositionP2; 
-                }
-                jobInputItem.cpaP2_posDiff_mainThread = mtTaskData.cpaP2_posDiff;
-
-                jobInputItem.subPotentialsP2_StartIndex = _tempAllSubPotentialJobInputs.Count;
-                 if (p2.subPotentials != null) {
-                    foreach (SubPotential sp_p2 in p2.subPotentials) {
-                        if (sp_p2 == null || sp_p2.pfTransform == null) continue;
-                        var subMTData = new SubPotentialTaskData() { subPotentialToUpdate = sp_p2 };
-                        subMTData.pfPosition = sp_p2.pfTransform.position;
-                        subMTData.targetEntityPosition = mtTaskData.targetPositionP2; // This is ent1's position
-                        subMTData.diff = subMTData.targetEntityPosition - subMTData.pfPosition;
-                        subMTData.direction = subMTData.diff.normalized;
-
-                        Collider pfSpCollider = sp_p2.cachedPftCollider;
-                        // ownshipColliderP1 is ent1's collider, which is the target for p2's subpotentials
-                        if (pfSpCollider != null && ownshipColliderP1 != null) {
-                            Vector3 cOnPf = pfSpCollider.ClosestPoint(subMTData.targetEntityPosition);
-                            Vector3 cOnTgt = ownshipColliderP1.ClosestPoint(subMTData.pfPosition);
-                            subMTData.precalculatedDistance = Vector3.Distance(cOnPf, cOnTgt);
-                        } else if (pfSpCollider != null) {
-                             subMTData.precalculatedDistance = Vector3.Distance(pfSpCollider.ClosestPoint(subMTData.targetEntityPosition), subMTData.targetEntityPosition);
-                        } else if (ownshipColliderP1 != null) { // Collider of ent1
-                            subMTData.precalculatedDistance = Vector3.Distance(ownshipColliderP1.ClosestPoint(subMTData.pfPosition), subMTData.pfPosition);
-                        } else {
-                            subMTData.precalculatedDistance = subMTData.diff.magnitude;
-                        }
-                        mtTaskData.subPotentialsDataP2.Add(subMTData);
-                        _flatSubPotentialReferences.Add(sp_p2);
-                         _tempAllSubPotentialJobInputs.Add(new() {
-                            diff_mainThread = subMTData.diff,
-                            direction_mainThread = subMTData.direction,
-                            precalculatedDistance_mainThread = subMTData.precalculatedDistance
-                        });
-                    }
-                }
-                jobInputItem.subPotentialsP2_Count = _tempAllSubPotentialJobInputs.Count - jobInputItem.subPotentialsP2_StartIndex;
-                _mainThreadTaskDataList.Add(mtTaskData);
-                _tempPotentialPairJobInputs.Add(jobInputItem);
             }
+            jobInputItem.subPotentialsP1_Count = _tempAllSubPotentialJobInputs.Count - jobInputItem.subPotentialsP1_StartIndex;
+
+            mtTaskData.diffP2 = mtTaskData.targetPositionP2 - mtTaskData.ownshipPositionP2;
+            jobInputItem.diffP2_mainThread = mtTaskData.diffP2;
+            mtTaskData.directionP2 = mtTaskData.diffP2.normalized;
+            jobInputItem.directionP2_mainThread = mtTaskData.directionP2;
+            mtTaskData.precalculatedDistanceP2 = mtTaskData.precalculatedDistanceP1; 
+            jobInputItem.precalculatedDistanceP2_mainThread = mtTaskData.precalculatedDistanceP2;
+
+            if (targetColliderP1 != null && ownshipColliderP1 != null) { 
+                Vector3 closestOnOwnP2 = targetColliderP1.ClosestPoint(mtTaskData.targetPositionP2); 
+                Vector3 closestOnTgtP2 = ownshipColliderP1.ClosestPoint(mtTaskData.ownshipPositionP2); 
+                mtTaskData.cpaP2_posDiff = closestOnOwnP2 - closestOnTgtP2;
+            } else {
+                mtTaskData.cpaP2_posDiff = mtTaskData.ownshipPositionP2 - mtTaskData.targetPositionP2; 
+            }
+            jobInputItem.cpaP2_posDiff_mainThread = mtTaskData.cpaP2_posDiff;
+
+            jobInputItem.subPotentialsP2_StartIndex = _tempAllSubPotentialJobInputs.Count;
+             if (p2.subPotentials != null) {
+                foreach (SubPotential sp_p2 in p2.subPotentials) {
+                    if (sp_p2 == null || sp_p2.pfTransform == null) continue;
+                    var subMTData = new SubPotentialTaskData() { subPotentialToUpdate = sp_p2 };
+                    subMTData.pfPosition = sp_p2.pfTransform.position;
+                    subMTData.targetEntityPosition = mtTaskData.targetPositionP2; 
+                    subMTData.diff = subMTData.targetEntityPosition - subMTData.pfPosition;
+                    subMTData.direction = subMTData.diff.normalized;
+
+                    Collider pfSpCollider = sp_p2.cachedPftCollider;
+                    if (pfSpCollider != null && ownshipColliderP1 != null) {
+                        Vector3 cOnPf = pfSpCollider.ClosestPoint(subMTData.targetEntityPosition);
+                        Vector3 cOnTgt = ownshipColliderP1.ClosestPoint(subMTData.pfPosition);
+                        subMTData.precalculatedDistance = Vector3.Distance(cOnPf, cOnTgt);
+                    } else if (pfSpCollider != null) {
+                         subMTData.precalculatedDistance = Vector3.Distance(pfSpCollider.ClosestPoint(subMTData.targetEntityPosition), subMTData.targetEntityPosition);
+                    } else if (ownshipColliderP1 != null) { 
+                        subMTData.precalculatedDistance = Vector3.Distance(ownshipColliderP1.ClosestPoint(subMTData.pfPosition), subMTData.pfPosition);
+                    } else {
+                        subMTData.precalculatedDistance = subMTData.diff.magnitude;
+                    }
+                    mtTaskData.subPotentialsDataP2.Add(subMTData);
+                    _flatSubPotentialReferences.Add(sp_p2);
+                     _tempAllSubPotentialJobInputs.Add(new() {
+                        diff_mainThread = subMTData.diff,
+                        direction_mainThread = subMTData.direction,
+                        precalculatedDistance_mainThread = subMTData.precalculatedDistance
+                    });
+                }
+            }
+            jobInputItem.subPotentialsP2_Count = _tempAllSubPotentialJobInputs.Count - jobInputItem.subPotentialsP2_StartIndex;
+            _mainThreadTaskDataList.Add(mtTaskData);
+            _tempPotentialPairJobInputs.Add(jobInputItem);
         }
         
         if (_tempPotentialPairJobInputs.Count == 0) return;
 
         // Phase 2: Allocate NativeArrays and Schedule Job
         NativeArray<PotentialPairJobInput> potentialPairInputsNat = new(_tempPotentialPairJobInputs.ToArray(), Allocator.TempJob);
-        NativeArray<SubPotentialJobInput> allSubPotentialInputsNat = new(_tempAllSubPotentialJobInputs.ToArray(), Allocator.TempJob);
+        NativeArray<SubPotentialJobInput> allSubPotentialInputsNat = new(_tempAllSubPotentialJobInputs.Count > 0 ? _tempAllSubPotentialJobInputs.ToArray() : new SubPotentialJobInput[1], Allocator.TempJob); // Ensure non-empty if using count
         
         NativeArray<PotentialPairJobOutput> potentialPairOutputsNat = new(_tempPotentialPairJobInputs.Count, Allocator.TempJob);
-        NativeArray<SubPotentialJobOutput> allSubPotentialOutputsNat = new(_tempAllSubPotentialJobInputs.Count > 0 ? _tempAllSubPotentialJobInputs.Count : 1, Allocator.TempJob); // Ensure non-zero length if no subpotentials
+        NativeArray<SubPotentialJobOutput> allSubPotentialOutputsNat = new(_tempAllSubPotentialJobInputs.Count > 0 ? _tempAllSubPotentialJobInputs.Count : 1, Allocator.TempJob);
 
         var job = new ProcessPotentialsJob
         {
@@ -663,19 +727,18 @@ public class DistanceMgr : MonoBehaviour
             AllSubPotentialInputs = allSubPotentialInputsNat,
             PotentialPairOutputs = potentialPairOutputsNat,
             AllSubPotentialOutputs = allSubPotentialOutputsNat,
-            Epsilon = Utils.EPSILON // Set Epsilon for the job
+            Epsilon = Utils.EPSILON 
         };
         
-        JobHandle jobHandle = job.Schedule(_tempPotentialPairJobInputs.Count, 32); // Adjust batch count as needed
+        JobHandle jobHandle = job.Schedule(_tempPotentialPairJobInputs.Count, 32); 
         jobHandle.Complete();
 
         // Phase 3: Apply Results (Main Thread)
-        for (int k = 0; k < _mainThreadTaskDataList.Count; k++) // Renamed loop variable
+        for (int k = 0; k < _mainThreadTaskDataList.Count; k++) 
         {
             PotentialCalculationTaskData mtTaskData = _mainThreadTaskDataList[k];
             PotentialPairJobOutput jobOutput = potentialPairOutputsNat[k];
 
-            // Apply to P1
             Potential p1_res = mtTaskData.potentialToUpdateP1;
             p1_res.diff = jobOutput.diffP1;
             p1_res.direction = jobOutput.directionP1;
@@ -689,13 +752,12 @@ public class DistanceMgr : MonoBehaviour
                 p1_res.cpaInfo.range = jobOutput.cpaRangeP1;
                 p1_res.cpaInfo.targetRelativeBearing = jobOutput.cpaTargetRelativeBearingP1;
                 p1_res.cpaInfo.targetAbsBearing = jobOutput.cpaTargetAbsBearingP1;
-                p1_res.cpaInfo.targetAngle = jobOutput.cpaTargetAngleP1; // CPA's targetAngle
+                p1_res.cpaInfo.targetAngle = jobOutput.cpaTargetAngleP1; 
                 p1_res.cpaInfo.relativeVelocity = jobOutput.relativeVelocityP1; 
                 p1_res.cpaInfo.ownShipPosition = jobOutput.cpaOwnShipPositionP1;
                 p1_res.cpaInfo.targetPosition = jobOutput.cpaTargetPositionP1;
             }
             
-            // Apply to P2
             Potential p2_res = mtTaskData.potentialToUpdateP2;
             p2_res.diff = jobOutput.diffP2;
             p2_res.direction = jobOutput.directionP2;
@@ -709,17 +771,16 @@ public class DistanceMgr : MonoBehaviour
                 p2_res.cpaInfo.range = jobOutput.cpaRangeP2;
                 p2_res.cpaInfo.targetRelativeBearing = jobOutput.cpaTargetRelativeBearingP2;
                 p2_res.cpaInfo.targetAbsBearing = jobOutput.cpaTargetAbsBearingP2;
-                p2_res.cpaInfo.targetAngle = jobOutput.cpaTargetAngleP2; // CPA's targetAngle
+                p2_res.cpaInfo.targetAngle = jobOutput.cpaTargetAngleP2; 
                 p2_res.cpaInfo.relativeVelocity = jobOutput.relativeVelocityP2;
                 p2_res.cpaInfo.ownShipPosition = jobOutput.cpaOwnShipPositionP2;
                 p2_res.cpaInfo.targetPosition = jobOutput.cpaTargetPositionP2;
             }
         }
         
-        // Apply SubPotential results
-        for(int l=0; l < _flatSubPotentialReferences.Count; ++l) // Renamed loop variable
+        for(int l=0; l < _flatSubPotentialReferences.Count; ++l) 
         {
-            if (l >= allSubPotentialOutputsNat.Length) continue; // Bounds check
+            if (l >= allSubPotentialOutputsNat.Length) continue; 
             SubPotential sp = _flatSubPotentialReferences[l];
             SubPotentialJobOutput spOutput = allSubPotentialOutputsNat[l];
             sp.diff = spOutput.diff;
@@ -727,33 +788,63 @@ public class DistanceMgr : MonoBehaviour
             sp.distance = spOutput.distance;
         }
 
-        // Dispose NativeArrays
         potentialPairInputsNat.Dispose();
         allSubPotentialInputsNat.Dispose();
         potentialPairOutputsNat.Dispose();
         allSubPotentialOutputsNat.Dispose();
     }
+
+    void UpdateSelectedEntityPotentials()
+    {
+        if (SelectionMgr.inst != null && SelectionMgr.inst.selectedEntity != null)
+        {
+            if (selectedEntityPotentials == null) selectedEntityPotentials = new List<Potential>();
+            selectedEntityPotentials.Clear();
+            Entity selected = SelectionMgr.inst.selectedEntity;
+
+            foreach (var kvp in _activePotentials)
+            {
+                Potential p1 = kvp.Value.P1; // e.g., ownship -> target
+                if (p1.ownship == selected)
+                {
+                    selectedEntityPotentials.Add(p1);
+                }
+                // No need to check P2.ownship, as P1.ownship covers one side of the pair.
+                // If selected is P1.target, then P2.ownship would be selected.
+                // We only want potentials *from* the selected entity.
+            }
+        }
+        else if (selectedEntityPotentials != null)
+        {
+            selectedEntityPotentials.Clear();
+        }
+    }
     
     public Potential ComputeEntityPotential(Entity ownshipParam, Entity targetParam) {
         if (ownshipParam == null || targetParam == null) return null;
+        // This method is for one-off calculations, not part of the main job loop.
+        // It will not benefit from the job system directly unless adapted.
         Potential pot = new(ownshipParam, targetParam);
-        // pot.ReCompute(); // This would be a main-thread only, non-job computation
+        pot.ReCompute(); // Perform immediate, single-threaded computation.
         return pot;
     }
 
     public Potential GetPotential(Entity e1, Entity e2)
     {
-        if (e1 == null || e2 == null) return null;
-        if (e1.entityClass == EntityClass.Missile || e2.entityClass == EntityClass.Missile)
+        if (e1 == null || e2 == null || e1.entityClass == EntityClass.Missile || e2.entityClass == EntityClass.Missile)
             return null; 
 
-        if (potentialsDictionary.TryGetValue(e1, out var e1Potentials))
+        int id1 = e1.GetInstanceID();
+        int id2 = e2.GetInstanceID();
+        
+        Tuple<int, int> pairKey = (id1 < id2) ? Tuple.Create(id1, id2) : Tuple.Create(id2, id1);
+
+        if (_activePotentials.TryGetValue(pairKey, out var container))
         {
-            if (e1Potentials.TryGetValue(e2, out var potential))
-            {
-                return potential;
-            }
+            // Return the potential where e1 is the ownship
+            if (container.P1.ownship == e1 && container.P1.target == e2) return container.P1;
+            if (container.P2.ownship == e1 && container.P2.target == e2) return container.P2; // Should be this if P1.ownship != e1
         }
-        return null;
+        return null; // Pair is not active or not found
     }
 }

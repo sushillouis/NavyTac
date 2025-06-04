@@ -119,6 +119,7 @@ public class CameraMgr : MonoBehaviour
     {
         if (ReplayMgr.inst.isReplaying)
         {
+            Vector3 moveVector = Vector3.zero;
             // Read the scroll wheel's vertical movement delta for this frame.
             float scrollInputY = Mouse.current.scroll.ReadValue().y;
 
@@ -127,13 +128,14 @@ public class CameraMgr : MonoBehaviour
                 // Normalize the scroll input. Mouse scroll delta is often in multiples of 120.
                 // Dividing by 120f gives a value like +1.0 or -1.0 per notch.
                 float normalizedScroll = scrollInputY / 120f;
-                
+
                 // Determine the amount to move. Positive scroll (wheel forward/up) should increase height.
                 // MoveCameraY expects a positive value to move up.
                 float moveAmount = normalizedScroll * replayScrollFactor;
-                
-                MoveCameraY(moveAmount);
+                moveVector.z = moveAmount * moveCoefficent;
+
             }
+            YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
         }
     }
     public void MoveCameraXZ(Vector2 moveValue)

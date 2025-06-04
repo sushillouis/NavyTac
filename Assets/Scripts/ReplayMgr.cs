@@ -191,27 +191,24 @@ public class ReplayMgr : MonoBehaviour
         nextCommandIndex = 0;
         Debug.Log($"ReplayMgr: Replay started. isReplaying={isReplaying}, replayStartTime={replayStartTime}, nextCommandIndex={nextCommandIndex}");
         if (CameraMgr.inst != null) CameraMgr.inst.ReplayCamera(); else Debug.LogWarning("ReplayMgr: CameraMgr.inst is null, cannot set replay camera.");
-        replayStartTime = Time.unscaledTime;
+        replayStartTime = Time.time;
     }
 
     private void Update()
     {
         if (isReplaying && !replayFinished && currentReplayCommands != null)
         {
-            float currentReplayTime = Time.unscaledTime - replayStartTime;
+            float currentReplayTime = Time.time- replayStartTime;
             if (currentReplayTime > actualTimeTaken + 10f)
             {
                 Debug.LogWarning($"ReplayMgr: Current replay time {currentReplayTime:F2} exceeds actual time taken {actualTimeTaken:F2}. Stopping replay.");
                 StopReplayAndShowScores();
                 return;
             }
-            // ADDED: General status log at the beginning of Update when replaying
-            float effectiveReplayLoopTime = currentReplayTime * Time.timeScale;
-
-            Debug.Log($"ReplayMgr Update: IsReplaying={isReplaying}, ReplayFinished={replayFinished}, EffectiveReplayTime={effectiveReplayLoopTime:F2} (UnscaledTime={currentReplayTime:F2}, TimeScale={Time.timeScale:F2}), NextCmdIndex={nextCommandIndex}, TotalCmds={(currentReplayCommands != null ? currentReplayCommands.Count : 0)}");
-
+            
+            
             while (nextCommandIndex < currentReplayCommands.Count &&
-                   currentReplayCommands[nextCommandIndex].timestamp <= effectiveReplayLoopTime)
+                   currentReplayCommands[nextCommandIndex].timestamp <= currentReplayTime)
             {
                 ReplayCommand commandToExecute = currentReplayCommands[nextCommandIndex];
                 // MODIFIED: Added command type to the existing log for better context
