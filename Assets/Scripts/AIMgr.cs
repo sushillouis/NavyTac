@@ -152,15 +152,26 @@ public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, boo
                     commandType = "Move";
                 }
 
-                ReplayCommand cmd = new ReplayCommand
+                string targetEntityName = null;
+                string targetOwnerName = null;
+                if (targetEntityId != -1 && EntityMgr.inst.entitiesDict.TryGetValue(targetEntityId, out Entity targetEntity) && targetEntity != null)
+                {
+                    targetEntityName = targetEntity.name;
+                    if (targetEntity.owner != null)
+                    {
+                        targetOwnerName = targetEntity.owner.name;
+                    }
+                }
+
+                ReplayCommand cmd = new()
                 {
                     timestamp = Time.time,
                     commandType = commandType,
                     entityIds = selectedEntities.Select(e => e.entityId).ToArray(),
                     targetPosition = pos,
                     targetEntityId = targetEntityId,
-                    targetEntityName = targetEntityId != -1 ? EntityMgr.inst.entitiesDict[targetEntityId]?.name : null,
-                    targetOwnerName = targetEntityId != -1 ? EntityMgr.inst.entitiesDict[targetEntityId]?.owner.name : null,
+                    targetEntityName = targetEntityName,
+                    targetOwnerName = targetOwnerName,
                     add = add
                 };
                 Debug.Log($"Recording command: {cmd.commandType} at {cmd.targetPosition} for entities: {string.Join(", ", cmd.entityIds)}");

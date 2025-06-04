@@ -248,23 +248,51 @@ public class OpenOceanMain : MonoBehaviour
             return false;
         }
 
-        playerName = loginNameInputField.text.Trim();
-        playerCode = loginCodeInputField.text.Trim();
+        // Get raw inputs
+        string rawPlayerName = loginNameInputField.text.Trim();
+        string rawPlayerCode = loginCodeInputField.text.Trim();
 
+        // Clear previous error messages
         if (WrongNameText != null) WrongNameText.gameObject.SetActive(false);
         if (WrongCodeText != null) WrongCodeText.gameObject.SetActive(false);
 
-        if (!PlayerNameRegex.IsMatch(playerName))
+        // Validate and parse player name
+        // Regex for "Student" (case-insensitive) followed by optional spaces and one or more digits (captured).
+        Regex playerNameParsingRegex = new Regex(@"^Student\s*(\d+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        Match nameParseMatch = playerNameParsingRegex.Match(rawPlayerName);
+
+        if (!nameParseMatch.Success)
         {
             if (WrongNameText != null)
             {
                 WrongNameText.text = INVALID_NAME_FORMAT_MSG;
                 StartCoroutine(ShowMessageForDuration(WrongNameText, 10f));
             }
+            Debug.LogWarning($"Invalid player name format: '{rawPlayerName}'. Expected 'Student <number>'.", this);
             return false;
         }
 
-        switch (playerCode)
+        // Format playerName to "Student" + number and assign to class field
+        string numberPart = nameParseMatch.Groups[1].Value;
+        this.playerName = "Student" + numberPart; // Ensures playerName is stored as "Student1", "Student123" etc.
+
+        // Parse player number and assign to class field
+        if (int.TryParse(numberPart, out int parsedPlayerNo))
+        {
+            this.playerNo = parsedPlayerNo;
+        }
+        else
+        {
+            // This case might occur if the number string is too large for an int.
+            if (IsDebugging) Debug.LogWarning($"Could not parse player number '{numberPart}' from name '{rawPlayerName}'. Defaulting to 0.", this);
+            this.playerNo = 0; // Default playerNo if parsing fails
+        }
+
+        // Format playerCode to uppercase and assign to class field
+        this.playerCode = rawPlayerCode.ToUpperInvariant(); // Ensures playerCode is stored as "AAA", "BBB" etc.
+
+        // Validate player code (now using the uppercase class field this.playerCode)
+        switch (this.playerCode)
         {
             case LOGIN_CODE_ADAPTIVE:
                 currentTrainingState = TrainingState.Adaptive;
@@ -285,29 +313,20 @@ public class OpenOceanMain : MonoBehaviour
                     WrongCodeText.text = INVALID_LOGIN_CODE_MSG;
                     StartCoroutine(ShowMessageForDuration(WrongCodeText, 10f));
                 }
+                Debug.LogWarning($"Invalid login code: '{this.playerCode}'.", this); // this.playerCode is already uppercase
                 return false;
         }
 
-        Match numberMatch = Regex.Match(playerName, @"\d+$");
-        if (numberMatch.Success && int.TryParse(numberMatch.Value, out int parsedPlayerNo))
-        {
-            playerNo = parsedPlayerNo;
-        }
-        else
-        {
-            if (IsDebugging) Debug.LogWarning($"Could not parse player number from name: '{playerName}'. Defaulting to 0.", this);
-            playerNo = 0;
-        }
-
+        // Seed initialization
         if (GameMgr.inst != null)
         {
             UnityEngine.Random.InitState(GameMgr.inst.GetSelectedSeed());
-            if (IsDebugging) Debug.Log($"Player No set to: {playerNo}. Training State: {currentTrainingState}. GameMgr seed set to: {GameMgr.inst.GetSelectedSeed()}", this);
+            if (IsDebugging) Debug.Log($"Player Name: {this.playerName}, Player No set to: {this.playerNo}. Player Code: {this.playerCode}. Training State: {currentTrainingState}. GameMgr seed set to: {GameMgr.inst.GetSelectedSeed()}", this);
         }
         else
         {
             Debug.LogWarning("GameMgr.inst is null. Cannot set seed.", this);
-            if (IsDebugging) Debug.Log($"Player No set to: {playerNo}. Training State: {currentTrainingState}. GameMgr seed NOT set.", this);
+            if (IsDebugging) Debug.Log($"Player Name: {this.playerName}, Player No set to: {this.playerNo}. Player Code: {this.playerCode}. Training State: {currentTrainingState}. GameMgr seed NOT set.", this);
         }
         return true;
     }

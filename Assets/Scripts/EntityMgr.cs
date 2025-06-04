@@ -96,9 +96,9 @@ public class EntityMgr : MonoBehaviour
             File.WriteAllText(filePath, csvContent.ToString(), Encoding.UTF8);
             //Debug.Log($"Successfully exported {exportedCount} entities to:\n{filePath}");
         }
-        catch (System.Exception e)
+        catch 
         {
-            //Debug.LogError($"Export failed: {e.Message}");
+            
         }
     }
    [ContextMenu("Import Entities from CSV")]
