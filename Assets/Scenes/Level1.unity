@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.38653484, g: 0.47797692, b: 0.5743225, a: 1}
+  m_IndirectSpecularColor: {r: 0.3865354, g: 0.4779775, b: 0.5743237, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1894,10 +1894,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1491763689}
     m_Modifications:
+    - target: {fileID: 421616263120374092, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7587122850021805978, guid: 25a77a5a7d309544b9cdd76bf96382f5,
         type: 3}
       propertyPath: m_Name
       value: LoginPanel (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8115932314129351265, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9218733183138762138, guid: 25a77a5a7d309544b9cdd76bf96382f5,
         type: 3}
@@ -3284,8 +3294,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isInitialized: 0
-  ii: 0
-  jj: 0
+  cellSize: 500
+  interactionRange: 2000
+  maxPairsToProcessPerFrame: 50
   selectedEntityPotentials: []
 --- !u!1 &690747839
 GameObject:
