@@ -5040,8 +5040,8 @@ MonoBehaviour:
   seedPostTest: 20
   seedAdaptive: 30
   seedNonAdaptive: 40
-  min: 0
-  max: 16
+  min: 2
+  max: 5
   plusButton: {fileID: 6012287531714796469}
   minusButton: {fileID: 6012287531714796468}
   simSpeedButtonText:
@@ -7535,7 +7535,7 @@ MonoBehaviour:
   port: 7777
   gamePlayCountMAX: 5
   totalTrainingTime: 0
-  nonAdaptiveTrainingTime: 15
+  TrainingTime: 15
   loginPanel: {fileID: 2126898623}
   mapSelectPanel: {fileID: 49458995}
   HostOrJoinPanel: {fileID: 6234182296967638321}

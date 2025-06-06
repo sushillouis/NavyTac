@@ -198,6 +198,8 @@ public class GameMgr : MonoBehaviour
         switch (OpenOceanMain.inst.currentTrainingState)
         {
             case TrainingState.PreTest:
+                difficultyLevel = 0.2f; // Default for PreTest
+                break;
             case TrainingState.PostTest:
                 if (OpenOceanMain.inst.gamePlayCountMAX > 0)
                 {
@@ -232,7 +234,7 @@ public class GameMgr : MonoBehaviour
                 difficultyLevel = 0.2f;
                 return difficultyLevel;
             }
-            difficultyLevel += 0.05f * ScoreMgr.inst.playerScores[^1] / 100f;
+            difficultyLevel += 0.07f * ScoreMgr.inst.playerScores[^1] / 100f;
         }
         return Mathf.Clamp(difficultyLevel, 0f, 1f);
     }
@@ -448,8 +450,8 @@ private void SetAccelerationAndTurnRate(Entity entity, float speedFactor)
                 validPositions.Add(positionRelations[player1Index, 0]);
                 break;
             case Difficulty.Medium:
-                validPositions.Add(positionRelations[player1Index, 0]);
-                validPositions.Add(positionRelations[player1Index, 1]);
+                for (int i = 0; i < 4; i++)
+                    if (i != player1Index) validPositions.Add(i);
                 break;
             case Difficulty.Hard:
                 for (int i = 0; i < 4; i++)

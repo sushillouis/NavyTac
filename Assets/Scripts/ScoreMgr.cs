@@ -84,7 +84,7 @@ public class ScoreMgr : MonoBehaviour
 
         OpenOceanMain.inst.lobbyState = LobbyState.ScorePanel;
 
-        score = (float)(0.5 * (playerWon ? 1 : 0)) * 100 + 0.5f * (damageDealt / (damageDealt + damageTaken)) * 100;
+        score = (float)(0.3 * (playerWon ? 1 : 0)) * 100 + 0.7f * (damageDealt / (damageDealt + damageTaken)) * 100;
         if (ReplayMgr.inst != null && ReplayMgr.inst.isRecording)
         {
             playerScores.Add(score); 
