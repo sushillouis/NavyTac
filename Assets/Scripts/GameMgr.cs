@@ -49,7 +49,7 @@ public class GameMgr : MonoBehaviour
     [Tooltip("Seed for the NonAdaptive training state.")]
     [SerializeField] public int seedNonAdaptive = 40;
 
-    public float min = 0;
+    public float min = 2;
     public float max = 5;
 
     public int GetSelectedSeed()
@@ -76,7 +76,6 @@ public class GameMgr : MonoBehaviour
                     break;
             }
         }
-
         return selectedSeed;
     }
 
@@ -146,7 +145,7 @@ public class GameMgr : MonoBehaviour
     {
         DeltaScale(-1);
     }
-    float lastDisplayedSpeedValue = 1f;
+    float lastDisplayedSpeedValue = -10f;
     void Update()
     {
         if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus))
@@ -155,30 +154,30 @@ public class GameMgr : MonoBehaviour
             DeltaScale(-1);
         float displayedSpeedValue = Time.timeScale;
         if (displayedSpeedValue != lastDisplayedSpeedValue)
+    {
+        lastDisplayedSpeedValue = displayedSpeedValue;
+        float relativeDisplay = displayedSpeedValue - min + 1f; // Display "1" when timeScale == min
+        foreach (TextMeshProUGUI text in simSpeedButtonText)
         {
-            lastDisplayedSpeedValue = displayedSpeedValue;
-            foreach (TextMeshProUGUI text in simSpeedButtonText)
-        {
-            text.text = displayedSpeedValue.ToString("0");
+            text.text = relativeDisplay.ToString("0");
         }
-        }
+    }
 
-        
     }
 
     public void DeltaScale(float delta = 0)
     {
         float newTimeScale = Time.timeScale + delta;
         Time.timeScale = Mathf.Clamp(newTimeScale, min, max);
-        // if (simSpeedButtonText != null)
-        // {
-        //     float displayedSpeedValue = Time.timeScale;
-        //     foreach (TextMeshProUGUI text in simSpeedButtonText)
-        //     {
-        //         text.text = displayedSpeedValue.ToString("0");
-        //     }
-        // }
+         ReplayCommand cmd = new()
+         {
+             timestamp = Time.time,
+             timeScale = Time.timeScale,
+                commandType ="TimeScaleChange",
+                };
+                ReplayMgr.inst.RecordCommand(cmd);
     }
+
     void DetermineDifficulty()
     {
         if (OpenOceanMain.inst == null)
@@ -187,6 +186,7 @@ public class GameMgr : MonoBehaviour
             currentDifficulty = Difficulty.Easy;
             return;
         }
+
         if (OpenOceanMain.inst.lobbyState == LobbyState.Replay)
         {
             if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
@@ -194,6 +194,7 @@ public class GameMgr : MonoBehaviour
             else currentDifficulty = Difficulty.Hard;
             return;
         }
+
         switch (OpenOceanMain.inst.currentTrainingState)
         {
             case TrainingState.PreTest:
@@ -228,13 +229,12 @@ public class GameMgr : MonoBehaviour
         {
             if (ScoreMgr.inst.playerScores.Count == 0)
             {
-                difficultyLevel = 0.2f; 
+                difficultyLevel = 0.2f;
                 return difficultyLevel;
             }
-            difficultyLevel = difficultyLevel + 0.05f * ScoreMgr.inst.playerScores[ScoreMgr.inst.playerScores.Count - 1] / 100f;
+            difficultyLevel += 0.05f * ScoreMgr.inst.playerScores[^1] / 100f;
         }
-        float clampedDifficulty = Mathf.Clamp(difficultyLevel, 0f, 1f);
-        return clampedDifficulty;
+        return Mathf.Clamp(difficultyLevel, 0f, 1f);
     }
 
 
@@ -287,12 +287,12 @@ public class GameMgr : MonoBehaviour
         }
         if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
         {
-            AdjustAdaptiveEntitySpeed();
+            Time.timeScale = 2f;
             AdjustAdaptiveUnitCounts();
         }
         else
         {
-            AdjustNonAdaptiveEntitySpeed();
+            Time.timeScale = 2f;
             AdjustNonAdaptiveUnitCounts();
         }
 
@@ -311,56 +311,76 @@ public class GameMgr : MonoBehaviour
             eq.unitCount = Mathf.RoundToInt(21.25f * difficultyLevel - 1.25f);
         }
         BuildEntityDictionary();
+
     }
 
-        // store the original stats so we only ever mutate from these values
-        
-
-        // call once (e.g. in Awake) to capture the prefab defaults
-        void AdjustAdaptiveEntitySpeed()
-        {
+    public void AdjustAdaptiveEntitySpeed()
+{
+    float range = 2f;
+    float speedFactor = 1f + difficultyLevel * range;
     
-            float range = 2f;
-            float speedRange    = 1f;
-            float speedFactor    = 1f + difficultyLevel * speedRange;
-            float accelFactor    = 1f + difficultyLevel * range;
-            float turnRateFactor = 1f + difficultyLevel * range;
+    foreach (GameObject prefabGo in EntityMgr.inst.entityPrefabs)
+    {
+        var prefab = prefabGo.GetComponent<Entity>();
+        if (prefab == null || prefab.entityType == EntityType.Rig_Balder) continue;
 
-            foreach (GameObject prefabGo in EntityMgr.inst.entityPrefabs)
+        SetAccelerationAndTurnRate(prefab, speedFactor);
+
+        Debug.Log($"Adaptive {prefab.entityType}: speed×{speedFactor:0.00}, accel={prefab.acceleration:0.00}, turn={prefab.turnRate:0.00}");
+    }
+}
+
+public void AdjustNonAdaptiveEntitySpeed()
+{
+    float baseFactor = currentDifficulty switch
+    {
+        Difficulty.Easy => 1f,
+        Difficulty.Medium => 2f,
+        Difficulty.Hard => 3f,
+        _ => 1f
+    };
+
+    foreach (GameObject prefabGo in EntityMgr.inst.entityPrefabs)
+    {
+        var prefab = prefabGo.GetComponent<Entity>();
+        if (prefab == null || prefab.entityType == EntityType.Rig_Balder) continue;
+
+        SetAccelerationAndTurnRate(prefab, baseFactor);
+
+        Debug.Log($"NonAdaptive {prefab.entityType}: speed×{baseFactor:0.00}, accel={prefab.acceleration:0.00}, turn={prefab.turnRate:0.00}");
+    }
+}
+
+private void SetAccelerationAndTurnRate(Entity entity, float speedFactor)
+{
+    // Adjust maxSpeed based on difficulty
+    entity.maxSpeed = entity.originalMaxSpeed * speedFactor;
+
+    // Set acceleration to stop from maxSpeed in a fixed distance (e.g., 100 units)
+    float stopDistance = 100f;
+    if (entity.maxSpeed > 0.01f)
+    {
+        entity.acceleration = (entity.maxSpeed * entity.maxSpeed) / (2f * stopDistance);
+            // Ensure acceleration is not negative
+        
+        // Set turn rate based on lateral acceleration logic
+            if (entity.entityType == EntityType.AntiShipMissile)
             {
-                var prefab = prefabGo.GetComponent<Entity>();
-                if (prefab == null || prefab.entityType == EntityType.Rig_Balder) continue;
-
-               
-                    prefab.maxSpeed     = prefab.originalMaxSpeed     * speedFactor;
-                    prefab.acceleration = prefab.originalAcceleration * accelFactor;
-                    prefab.turnRate     = prefab.originalTurnRate     * turnRateFactor;
-                    Debug.Log($"Adaptive {prefab.entityType}: speed×{speedFactor:0.00}, accel×{accelFactor:0.00}, turn×{turnRateFactor:0.00}");
+                entity.turnRate = entity.originalTurnRate;
             }
-        }
-
-        void AdjustNonAdaptiveEntitySpeed()
-        {
-            
-
-            float baseFactor = currentDifficulty switch
+            else
             {
-                Difficulty.Easy   => 1f,
-                Difficulty.Medium => 2f,
-                Difficulty.Hard   => 3f,
-                _                 => 1f
-            };
-
-            foreach (GameObject prefabGo in EntityMgr.inst.entityPrefabs)
-            {
-                var prefab = prefabGo.GetComponent<Entity>();
-                if (prefab == null || prefab.entityType == EntityType.Rig_Balder) continue;
-                    prefab.maxSpeed     = prefab.originalMaxSpeed     * baseFactor;
-                    prefab.acceleration = prefab.originalAcceleration * baseFactor;
-                    prefab.turnRate     = prefab.originalTurnRate     * baseFactor;
-                    Debug.Log($"NonAdaptive {prefab.entityType}: speed×{baseFactor:0.00}, accel×{baseFactor:0.00}, turn×{baseFactor:0.00}");
+                entity.turnRate = Mathf.Rad2Deg * (entity.acceleration / entity.maxSpeed);
             }
-        }
+    }
+    else
+    {
+        entity.acceleration = 0f;
+        entity.turnRate = 0f;
+    }
+}
+
+
     void AdjustNonAdaptiveUnitCounts()
     {
         foreach (EntityQuantity eq in entityQuantities)

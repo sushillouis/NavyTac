@@ -398,9 +398,12 @@ MonoBehaviour:
   range: 0
   fuelBurnRate: 0
   entityRole: 7
-  acceleration: 2
-  turnRate: 4
-  maxSpeed: 10
+  acceleration: 45
+  originalAcceleration: 45
+  turnRate: 85.94367
+  originalTurnRate: 85.94367
+  maxSpeed: 30
+  originalMaxSpeed: 30
   minSpeed: 0
   cruiseSpeed: 8
   mass: 800

@@ -163,8 +163,11 @@ public class EntityMgr : MonoBehaviour
                 {
                     // Parse and assign values with culture fix
                     entity.acceleration = float.Parse(cleanedFields[1], CultureInfo.InvariantCulture);
+                    entity.originalAcceleration = entity.acceleration; // Ensure originalAcceleration is set
                     entity.turnRate = float.Parse(cleanedFields[2], CultureInfo.InvariantCulture);
+                    entity.originalTurnRate = entity.turnRate; // Ensure originalTurnRate is set
                     entity.maxSpeed = float.Parse(cleanedFields[3], CultureInfo.InvariantCulture);
+                    entity.originalMaxSpeed = entity.maxSpeed; // Ensure originalMaxSpeed is set
                     entity.minSpeed = float.Parse(cleanedFields[4], CultureInfo.InvariantCulture);
                     entity.cruiseSpeed = float.Parse(cleanedFields[5], CultureInfo.InvariantCulture);
                     entity.mass = float.Parse(cleanedFields[6], CultureInfo.InvariantCulture);

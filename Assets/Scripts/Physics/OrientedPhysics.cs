@@ -25,12 +25,12 @@ public class OrientedPhysics : MonoBehaviour
     public virtual void FixedUpdate()
     {
         // Speed update
-        float speedChangeAmount = entity.acceleration * Time.fixedDeltaTime;
+        float speedChangeAmount = entity.acceleration * Time.fixedDeltaTime * Time.timeScale;
         entity.speed = Mathf.MoveTowards(entity.speed, entity.desiredSpeed, speedChangeAmount);
         entity.speed = Utils.Clamp(entity.speed, entity.minSpeed, entity.maxSpeed); // Ensure speed stays within defined limits
 
         // Heading update
-        float angleChangeAmount = entity.turnRate * Time.fixedDeltaTime;
+        float angleChangeAmount = entity.turnRate * Time.fixedDeltaTime * Time.timeScale; // Adjust angle change based on turn rate and time scale
         entity.heading = Mathf.MoveTowardsAngle(entity.heading, entity.desiredHeading, angleChangeAmount);
         entity.heading = Utils.Degrees360(entity.heading); // Normalize heading to 0-360 range
 
@@ -40,7 +40,7 @@ public class OrientedPhysics : MonoBehaviour
         entity.velocity.z = Mathf.Cos(entity.heading * Mathf.Deg2Rad) * entity.speed;
 
         // Update position
-        entity.position += entity.velocity * Time.fixedDeltaTime; // Use compound assignment
+        entity.position += entity.velocity * Time.fixedDeltaTime * Time.timeScale; // Use compound assignment
         entity.transform.localPosition = entity.position;
 
         // Update GameObject's rotation

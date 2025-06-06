@@ -260,12 +260,11 @@ public class EnemyAIMgr : MonoBehaviour
             }
             else
             {
-                targetDistance = CalculateDynamicTargetDistance(aiEntity, weaponRange, currentDistance);
                 entityCooldowns[aiEntity] = Time.time + adaptiveCooldown;
             }
         }
 
-        AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false, doneDistanceSq: targetDistance * targetDistance);
+        AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false);
     }
 }
 
@@ -314,7 +313,7 @@ public class EnemyAIMgr : MonoBehaviour
                 }
 
                 // Cooldown passed, check for enemies
-                Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange - 100f);
+                Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange);
                 if (nearestEnemy != null) // Enemy found
                 {
                     if (unitAIComponent != null) // Explicit null check
@@ -414,13 +413,14 @@ private void CreateBatches(List<Entity> allEntities)
 
     private IEnumerator RunLevel2CommandSequence()
     {
-        yield return new WaitForSecondsRealtime(BatchDelay);
+        IssueDirectCommand(_batch1, GetStagingPosition(1000f), true, false);  
+        yield return new WaitForSeconds(BatchDelay);
         IssueDirectCommand(_batch1, opponentBase.position, true);  
         IssueDirectCommand(_batch2, GetStagingPosition(1000f), true, false);  
        
 
         // Phase 2: T=45 seconds
-        yield return new WaitForSecondsRealtime(BatchDelay*2);
+        yield return new WaitForSeconds(BatchDelay*2);
         IssueDirectCommand(_batch2, opponentBase.position, true);  
     }
 

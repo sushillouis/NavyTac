@@ -163,7 +163,8 @@ public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, boo
 
                 ReplayCommand cmd = new()
                 {
-                    timestamp = Time.time,
+                    timestamp = Time.time ,
+                    timeScale = Time.timeScale,
                     commandType = commandType,
                     entityIds = selectedEntities.Select(e => e.entityId).ToArray(),
                     targetPosition = pos,
