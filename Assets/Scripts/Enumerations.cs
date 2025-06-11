@@ -161,19 +161,20 @@ public enum LobbyState
     Replay,
     MultiScorePanel,
     }
-    public enum TrainingState
-    {
-        None,
-        PreTest,
-        PostTest,
-        Adaptive,
-        NonAdaptive
+public enum TrainingState
+{
+    None,
+    PreTest,
+    PostTest,
+    Adaptive,
+    NonAdaptive,
+    Tutorial
     }
 
     public enum PathfindingState
-        {
-            RequestingPath,
-            FollowingPath,
-            PotentialFieldsOnly,
-            Finished
-        }
+{
+    RequestingPath,
+    FollowingPath,
+    PotentialFieldsOnly,
+    Finished
+}

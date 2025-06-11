@@ -125,7 +125,7 @@ public class OpenOceanMain : MonoBehaviour
     public TrainingState currentTrainingState = TrainingState.None;
     [SerializeField] private GameObject NetworkManagerGo;
 
-
+    private const string LOGIN_CODE_TUTORIAL = "TUT";
     private const string LOGIN_CODE_ADAPTIVE = "AAA";
     private const string LOGIN_CODE_NON_ADAPTIVE = "BBB";
     private const string LOGIN_CODE_PRE_TEST = "ABC";
@@ -210,8 +210,6 @@ public class OpenOceanMain : MonoBehaviour
         backButton.onClick.RemoveAllListeners();
         backButton.onClick.AddListener(BackButton);
     }
-
-
     void SetupIPAddressAndPort()
     {
         if (ipAddressInputField == null)
@@ -240,25 +238,19 @@ public class OpenOceanMain : MonoBehaviour
     public NetworkObject localNetSetupNetworkObject;
     public TactNetMgr localTactNetMgr;
     public NetworkObject localTactNetMgrNetworkObject;
-
     private bool ProcessLogin()
     {
         if (loginNameInputField == null || loginCodeInputField == null)
         {
-            Debug.LogError("Login input fields are not assigned.", this);
             return false;
         }
 
-        // Get raw inputs
         string rawPlayerName = loginNameInputField.text.Trim();
         string rawPlayerCode = loginCodeInputField.text.Trim();
 
-        // Clear previous error messages
         if (WrongNameText != null) WrongNameText.gameObject.SetActive(false);
         if (WrongCodeText != null) WrongCodeText.gameObject.SetActive(false);
 
-        // Validate and parse player name
-        // Regex for "Student" (case-insensitive) followed by optional spaces and one or more digits (captured).
         Regex playerNameParsingRegex = new Regex(@"^Student\s*(\d+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         Match nameParseMatch = playerNameParsingRegex.Match(rawPlayerName);
 
@@ -269,31 +261,24 @@ public class OpenOceanMain : MonoBehaviour
                 WrongNameText.text = INVALID_NAME_FORMAT_MSG;
                 StartCoroutine(ShowMessageForDuration(WrongNameText, 10f));
             }
-            Debug.LogWarning($"Invalid player name format: '{rawPlayerName}'. Expected 'Student <number>'.", this);
             return false;
         }
 
-        // Format playerName to "Student" + number and assign to class field
         string numberPart = nameParseMatch.Groups[1].Value;
-        this.playerName = "Student" + numberPart; // Ensures playerName is stored as "Student1", "Student123" etc.
+        playerName = "Student" + numberPart;
 
-        // Parse player number and assign to class field
         if (int.TryParse(numberPart, out int parsedPlayerNo))
         {
-            this.playerNo = parsedPlayerNo;
+            playerNo = parsedPlayerNo;
         }
         else
         {
-            // This case might occur if the number string is too large for an int.
-            if (IsDebugging) Debug.LogWarning($"Could not parse player number '{numberPart}' from name '{rawPlayerName}'. Defaulting to 0.", this);
-            this.playerNo = 0; // Default playerNo if parsing fails
+            playerNo = 0;
         }
 
-        // Format playerCode to uppercase and assign to class field
-        this.playerCode = rawPlayerCode.ToUpperInvariant(); // Ensures playerCode is stored as "AAA", "BBB" etc.
+        playerCode = rawPlayerCode.ToUpperInvariant();
 
-        // Validate player code (now using the uppercase class field this.playerCode)
-        switch (this.playerCode)
+        switch (playerCode)
         {
             case LOGIN_CODE_ADAPTIVE:
                 currentTrainingState = TrainingState.Adaptive;
@@ -308,30 +293,24 @@ public class OpenOceanMain : MonoBehaviour
             case LOGIN_CODE_POST_TEST:
                 currentTrainingState = TrainingState.PostTest;
                 break;
+            case LOGIN_CODE_TUTORIAL:
+                currentTrainingState = TrainingState.Tutorial;
+                break;
             default:
                 if (WrongCodeText != null)
                 {
                     WrongCodeText.text = INVALID_LOGIN_CODE_MSG;
                     StartCoroutine(ShowMessageForDuration(WrongCodeText, 10f));
                 }
-                Debug.LogWarning($"Invalid login code: '{this.playerCode}'.", this); // this.playerCode is already uppercase
                 return false;
         }
 
-        // Seed initialization
         if (GameMgr.inst != null)
         {
-            UnityEngine.Random.InitState(GameMgr.inst.GetSelectedSeed());
-            if (IsDebugging) Debug.Log($"Player Name: {this.playerName}, Player No set to: {this.playerNo}. Player Code: {this.playerCode}. Training State: {currentTrainingState}. GameMgr seed set to: {GameMgr.inst.GetSelectedSeed()}", this);
-        }
-        else
-        {
-            Debug.LogWarning("GameMgr.inst is null. Cannot set seed.", this);
-            if (IsDebugging) Debug.Log($"Player Name: {this.playerName}, Player No set to: {this.playerNo}. Player Code: {this.playerCode}. Training State: {currentTrainingState}. GameMgr seed NOT set.", this);
+            Random.InitState(GameMgr.inst.GetSelectedSeed());
         }
         return true;
     }
-
     private IEnumerator ShowMessageForDuration(TMP_Text textElement, float duration)
     {
         if (textElement != null)

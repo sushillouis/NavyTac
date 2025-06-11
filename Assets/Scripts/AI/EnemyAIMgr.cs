@@ -168,6 +168,9 @@ public class EnemyAIMgr : MonoBehaviour
     {
         switch (currentLevel)
         {
+            case 0 :
+                //Debug.LogWarning("AI level 0 is not implemented.");
+                break;
             case 1:
                 HandleLevel1CombatBehavior(aiEntities);
                 break;

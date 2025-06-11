@@ -218,12 +218,15 @@ public class AttackMove : Move
 
             if (hasExplicitTarget && targetToEngage == explicitTarget)
             {
-                base.Tick();
-                entity.desiredSpeed = targetToEngage.speed;
+            base.Tick();
+            entity.desiredSpeed = targetToEngage.speed;
             }
             else
             {
-                entity.desiredSpeed = 0f;
+            entity.desiredSpeed = 0f;
+
+            Vector3 directionToTarget = (targetToEngage.position - entity.position).normalized;
+            entity.desiredHeading = Mathf.Atan2(directionToTarget.x, directionToTarget.z) * Mathf.Rad2Deg;
             }
         }
         else
