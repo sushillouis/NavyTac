@@ -284,6 +284,7 @@ public class GameMgr : MonoBehaviour
             headingPlayer2 = 180f; // Facing South
             SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer1, headingPlayer1, PlayerMgr.inst.player1);
             SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer2, headingPlayer2, PlayerMgr.inst.player2);
+            EnemyAIMgr.inst.currentLevel = 0;
             // Optionally spawn player2 or other tutorial-specific entities as needed
         }
     }
@@ -303,12 +304,12 @@ public class GameMgr : MonoBehaviour
         }
         if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
         {
-            Time.timeScale = 2f;
+            Time.timeScale = 1f;
             AdjustAdaptiveUnitCounts();
         }
         else
         {
-            Time.timeScale = 2f;
+            Time.timeScale = 1f;
             AdjustNonAdaptiveUnitCounts();
         }
     }

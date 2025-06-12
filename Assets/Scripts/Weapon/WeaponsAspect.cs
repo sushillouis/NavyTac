@@ -41,13 +41,18 @@ public class WeaponsAspect : MonoBehaviour
         if (unitAI.commands.Count > 0 && unitAI.commands.Peek() != null) {
             if (unitAI.commands.Peek().GetType() == typeof(Move) ||
                 unitAI.commands.Peek().GetType() == typeof(AttackMove) ||
-                // unitAI.commands.Peek().GetType() == typeof(Follow) ||
+                unitAI.commands.Peek().GetType() == typeof(Follow) ||
                 unitAI.commands.Peek().GetType() == typeof(Intercept) ||
                 unitAI.commands.Peek().GetType() == typeof(Intercept3d) ||
                 unitAI.commands.Peek().GetType() == typeof(SmartIntercept))
             {
                 return;
             }
+        }
+        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial && entity.owner.name == "Ai")
+        {
+            // In training mode, we don't want to auto-fire weapons
+            return;
         }
 
         bool isAmmoDepleted = (weapon.ammoCount != -1 && weapon.ammoCount <= 0);

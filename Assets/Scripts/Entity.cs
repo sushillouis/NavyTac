@@ -71,6 +71,12 @@ public class Entity : MonoBehaviour
         entityCollisionRadius = length;
         fuel = maxFuel;
         health = maxHealth;
+        if (entityType != EntityType.AntiShipMissile && entityType != EntityType.Rig_Balder)
+        {
+            acceleration = maxSpeed * maxSpeed / 100f;
+            turnRate = (180f / Mathf.PI) * (maxSpeed / acceleration);
+
+        }
         isSelected = false;
         Renderer mainRenderer = GetComponent<Renderer>();
         Renderer[] childRenderers = GetComponentsInChildren<Renderer>(true);

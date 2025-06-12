@@ -30,6 +30,7 @@ public class OrientedPhysics : MonoBehaviour
         entity.speed = Utils.Clamp(entity.speed, entity.minSpeed, entity.maxSpeed); // Ensure speed stays within defined limits
 
         // Heading update
+        
         float angleChangeAmount = entity.turnRate * Time.fixedDeltaTime * Time.timeScale; // Adjust angle change based on turn rate and time scale
         entity.heading = Mathf.MoveTowardsAngle(entity.heading, entity.desiredHeading, angleChangeAmount);
         entity.heading = Utils.Degrees360(entity.heading); // Normalize heading to 0-360 range
