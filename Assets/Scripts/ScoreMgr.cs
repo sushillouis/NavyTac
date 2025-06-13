@@ -86,7 +86,7 @@ public class ScoreMgr : MonoBehaviour
             aiWon = false; 
             damageDealt = 1000; 
             damageTaken = 0; 
-            winReason = "tutorialCompleted"; 
+            winReason = "Tutorial Completed"; 
         }
         else if (GameMgr.inst == null || GameMgr.inst.entityQuantities == null || EntityMgr.inst == null || EntityMgr.inst.entities == null)
         {
