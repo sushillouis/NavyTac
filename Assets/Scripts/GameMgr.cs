@@ -284,6 +284,7 @@ public class GameMgr : MonoBehaviour
             headingPlayer2 = 180f; // Facing South
             SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer1, headingPlayer1, PlayerMgr.inst.player1);
             SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer2, headingPlayer2, PlayerMgr.inst.player2);
+            EntityMgr.inst.CreateEntity(EntityType.DDG51, new Vector3(0,0,3000), new Vector3(0,headingPlayer2,0), player: PlayerMgr.inst.player2);
             EnemyAIMgr.inst.currentLevel = 0;
             // Optionally spawn player2 or other tutorial-specific entities as needed
         }

@@ -63,7 +63,7 @@ public class SpawnEntityMgr : MonoBehaviour
         }
 
         // Spawn front units (JARIUSV) with multi-row support
-        SpawnMultiRowFormation(frontList, center, heading, 500f, -45f, 45f, player, 10, 200f);
+        SpawnMultiRowFormation(frontList, center, heading, 1000f, -45f, 45f, player, 10, 200f);
         
         // Spawn middle units with multi-row support
         SpawnMultiRowFormation(middleList, center, heading, 1000f, -90f, 90f, player, 10, 200f);

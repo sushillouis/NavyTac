@@ -60,6 +60,11 @@ public class EnemyAIMgr : MonoBehaviour
 
     private void Update()
     {
+
+        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial)
+        {
+            return; // Skip AI processing in tutorial mode
+        }
         if (Time.time - lastUpdateTime < updateInterval) return;
         lastUpdateTime = Time.time;
 

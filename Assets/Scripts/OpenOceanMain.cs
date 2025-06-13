@@ -656,6 +656,10 @@ public class OpenOceanMain : MonoBehaviour
             {
                 singleScoreButtonText.text = EXIT_BUTTON_TEXT;
             }
+            else if(currentTrainingState == TrainingState.Tutorial)
+            {
+                singleScoreButtonText.text = EXIT_BUTTON_TEXT;
+            }
             else
             {
                 singleScoreButtonText.text = NEXT_GAME_BUTTON_TEXT;

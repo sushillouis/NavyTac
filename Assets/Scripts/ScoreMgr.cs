@@ -79,7 +79,20 @@ public class ScoreMgr : MonoBehaviour
     public void CheckVictory()
     {
         if (OpenOceanMain.inst.lobbyState == LobbyState.Replay)
+            return ;
+        if(OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial)
+        {
+            playerWon = true; 
+            aiWon = false; 
+            damageDealt = 1000; 
+            damageTaken = 0; 
+            winReason = "tutorialCompleted"; 
+        }
+        else if (GameMgr.inst == null || GameMgr.inst.entityQuantities == null || EntityMgr.inst == null || EntityMgr.inst.entities == null)
+        {
+            Debug.LogWarning("GameMgr or EntityMgr is not initialized properly.");
             return;
+        }
         if (!playerWon && !aiWon) return;
 
         OpenOceanMain.inst.lobbyState = LobbyState.ScorePanel;
