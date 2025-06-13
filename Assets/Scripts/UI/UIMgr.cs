@@ -358,7 +358,10 @@ public class UIMgr : MonoBehaviour
         CameraMgr.inst.MoveCameraXZ(cameraXZMove.ReadValue<Vector2>());
 
         if (boxSelecting)
-            SelectionMgr.inst.UpdateSelectionBox(selectionCursorPosition.ReadValue<Vector2>());
+        {
+                Vector2 currentMousePos = Mouse.current.position.ReadValue();
+        SelectionMgr.inst.UpdateSelectionBox(currentMousePos);
+            }
 
 
         if(singleSelect.IsPressed())

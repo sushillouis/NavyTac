@@ -37,7 +37,7 @@ public class SelectionMgr : MonoBehaviour
         {
             DeselectEntity(selectedEntities.Find(x => x.entityType == EntityType.Rig_Balder));
         }
-        if(selectedEntities.Count > 0)
+        if (selectedEntities.Count > 0)
         {
             GroupUIMgr.inst.EntityControlPanel.isVisible = true;
         }
@@ -54,7 +54,7 @@ public class SelectionMgr : MonoBehaviour
     public float selectionSensitivity = 25;
     public void EndBoxSelecting()
     {
-        if((Input.mousePosition - startMousePosition).sqrMagnitude > selectionSensitivity)
+        if ((Input.mousePosition - startMousePosition).sqrMagnitude > selectionSensitivity)
             ClearSelection(); // if not small box, then clear selection
 
         SelectEntitiesInBox(startMousePosition, Input.mousePosition);
@@ -67,8 +67,8 @@ public class SelectionMgr : MonoBehaviour
         RectTransformUtility.ScreenPointToLocalPointInRectangle(UICanvas, startMousePosition, null, out localMousePosition);
         SelectionBoxPanel.localPosition = localMousePosition;
         SetPivotAndAnchors(startMousePosition, end);
-        SelectionBoxPanel.sizeDelta = 
-            new Vector2(Mathf.Abs(end.x - startMousePosition.x), Mathf.Abs(startMousePosition.y - end.y))/mainCanvas.scaleFactor;
+        SelectionBoxPanel.sizeDelta =
+            new Vector2(Mathf.Abs(end.x - startMousePosition.x), Mathf.Abs(startMousePosition.y - end.y)) / mainCanvas.scaleFactor;
     }
     public Vector2 anchorMin = Vector2.up;
     public Vector2 anchorMax = Vector2.up;
@@ -77,13 +77,20 @@ public class SelectionMgr : MonoBehaviour
     {
         Vector3 diff = end - start;
         // which quadrant?
-        if(diff.x >= 0 && diff.y >= 0) {//q1
+        if (diff.x >= 0 && diff.y >= 0)
+        {//q1
             SetPAValues(Vector2.zero);
-        } else if (diff.x < 0 && diff.y >= 0) { //q2
+        }
+        else if (diff.x < 0 && diff.y >= 0)
+        { //q2
             SetPAValues(Vector2.right);
-        } else if (diff.x < 0 && diff.y < 0) { //q3
+        }
+        else if (diff.x < 0 && diff.y < 0)
+        { //q3
             SetPAValues(Vector2.one);
-        } else { //q4
+        }
+        else
+        { //q4
             SetPAValues(Vector2.up);
         }
     }
@@ -106,8 +113,8 @@ public class SelectionMgr : MonoBehaviour
         max.z = Camera.main.farClipPlane;
         Bounds bounds = new Bounds();
         bounds.SetMinMax(min, max);
-        foreach(Entity ent in EntityMgr.inst.entities) 
-            if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition))) 
+        foreach (Entity ent in EntityMgr.inst.entities)
+            if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition)))
                 SelectEntity(ent, shouldClearSelection: false);
 
         TacticalAIMgr.inst.currentGroup = new Group(new List<Entity>());
@@ -121,36 +128,40 @@ public class SelectionMgr : MonoBehaviour
     public void SelectNextEntity(bool clearSelection)
     {
         List<Entity> ownedEntities = new List<Entity>();
-        foreach(Entity ent in EntityMgr.inst.entities)
-            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
+        foreach (Entity ent in EntityMgr.inst.entities)
+            if (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
                 ownedEntities.Add(ent);
 
-        selectedEntityIndex = 
+        selectedEntityIndex =
             (selectedEntityIndex >= ownedEntities.Count - 1 ? 0 : selectedEntityIndex + 1);
-        SelectEntity(ownedEntities[selectedEntityIndex], 
+        SelectEntity(ownedEntities[selectedEntityIndex],
             shouldClearSelection: !clearSelection);
     }
 
-    public void ClearSelection() {
-        foreach(Entity ent in EntityMgr.inst.entities)
+    public void ClearSelection()
+    {
+        foreach (Entity ent in EntityMgr.inst.entities)
             ent.isSelected = false;
         selectedEntities.Clear();
         selectedEntity = null;
         GroupUIMgr.inst.EntityControlPanel.isVisible = false;
-        
+
     }
 
 
 
 
-    public void DeselectEntity(Entity ent) {
-        if(ent != null 
-            && ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId 
-            && selectedEntities.Contains(ent)) {
-            
+    public void DeselectEntity(Entity ent)
+    {
+        if (ent != null
+            && ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId
+            && selectedEntities.Contains(ent))
+        {
+
             ent.isSelected = false;
-            if(selectedEntity == ent) {
-                if(selectedEntities.Count > 0)
+            if (selectedEntity == ent)
+            {
+                if (selectedEntities.Count > 0)
                     selectedEntity = selectedEntities.Find(x => x != ent);//could be null
                 else
                     selectedEntity = null;
@@ -161,15 +172,16 @@ public class SelectionMgr : MonoBehaviour
 
     public void SelectEntity(Entity ent, bool shouldClearSelection = true)
     {
-        if (ent != null&& ent.entityClass != EntityClass.Missile && (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
-            && (selectedEntityIndex = EntityMgr.inst.entities.FindIndex(x => (x == ent))) >= 0) {
-           
-            if (shouldClearSelection) 
+        if (ent != null && ent.entityClass != EntityClass.Missile && (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
+            && (selectedEntityIndex = EntityMgr.inst.entities.FindIndex(x => (x == ent))) >= 0)
+        {
+
+            if (shouldClearSelection)
                 ClearSelection();
 
             selectedEntity = ent;
             selectedEntity.isSelected = true;
-            if(!selectedEntities.Contains(ent))
+            if (!selectedEntities.Contains(ent))
                 selectedEntities.Add(ent);
         }
     }
@@ -205,47 +217,62 @@ public class SelectionMgr : MonoBehaviour
     }
     */
 
-    public void SelectEntity2(Vector2 mousePos, bool addSelection) {
-    RaycastHit hit;
-    Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
-    Entity ent = UIMgr.inst.FindClosestEntInRadius(hit.point);
+    public void SelectEntity2(Vector2 mousePos, bool addSelection)
+    {
+        RaycastHit hit;
+        Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, AIMgr.inst.layerMask);
+        Entity ent = UIMgr.inst.FindClosestEntInRadius(hit.point);
 
-    if(ent == null) {
-        ClearSelection();
-    } else {
-        if(addSelection) {
-            if(!selectedEntities.Contains(ent)) {
-                SelectEntity(ent, shouldClearSelection: false);
-            } else {
-                DeselectEntity(ent);
-            }
-        } else {
-            SelectEntity(ent, shouldClearSelection: true);
+        if (ent == null)
+        {
+            ClearSelection();
         }
+        else
+        {
+            if (addSelection)
+            {
+                if (!selectedEntities.Contains(ent))
+                {
+                    SelectEntity(ent, shouldClearSelection: false);
+                }
+                else
+                {
+                    DeselectEntity(ent);
+                }
+            }
+            else
+            {
+                SelectEntity(ent, shouldClearSelection: true);
+            }
 
-        // Show entity control panel if only one entity is selected
-        // if (selectedEntities.Count == 1) {
-        //     GroupUIMgr.inst.ShowEntityControlPanel(mousePos);
-        // }
+            // Show entity control panel if only one entity is selected
+            // if (selectedEntities.Count == 1) {
+            //     GroupUIMgr.inst.ShowEntityControlPanel(mousePos);
+            // }
+        }
     }
-}
 
 
     /// <summary>
     /// Assigns selected entities for control group given by groupNumber param
     /// </summary>
     /// <param name="groupNumber"></param>
-    public void SelectControlGroup(int groupNumber) {
-        if(TacticalAIMgr.inst.Exists(groupNumber)) {
+    public void SelectControlGroup(int groupNumber)
+    {
+        if (TacticalAIMgr.inst.Exists(groupNumber))
+        {
             ClearSelection();
             TacticalAIMgr.inst.SelectControlGroup(groupNumber);
         }
     }
 
-    public void SelectAll() {
+    public void SelectAll()
+    {
         ClearSelection();
-        foreach(Entity ent in EntityMgr.inst.entities) {
-            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId) {
+        foreach (Entity ent in EntityMgr.inst.entities)
+        {
+            if (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
+            {
                 SelectEntity(ent, shouldClearSelection: false);
             }
         }
@@ -253,8 +280,10 @@ public class SelectionMgr : MonoBehaviour
     public void SelectAllDDG51()
     {
         ClearSelection();
-        foreach(Entity ent in EntityMgr.inst.entities) {
-            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId && ent.entityType == EntityType.DDG51) {
+        foreach (Entity ent in EntityMgr.inst.entities)
+        {
+            if (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId && ent.entityType == EntityType.DDG51)
+            {
                 SelectEntity(ent, shouldClearSelection: false);
             }
         }
@@ -263,19 +292,23 @@ public class SelectionMgr : MonoBehaviour
     public void SelectALLJARIUSV()
     {
         ClearSelection();
-        foreach(Entity ent in EntityMgr.inst.entities) {
-            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId && ent.entityType == EntityType.JARIUSV) {
+        foreach (Entity ent in EntityMgr.inst.entities)
+        {
+            if (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId && ent.entityType == EntityType.JARIUSV)
+            {
                 SelectEntity(ent, shouldClearSelection: false);
             }
         }
-        
+
     }
 
     public void SelectALLSEAHUNTER()
     {
         ClearSelection();
-        foreach(Entity ent in EntityMgr.inst.entities) {
-            if(ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId && ent.entityType == EntityType.SeaHunter) {
+        foreach (Entity ent in EntityMgr.inst.entities)
+        {
+            if (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId && ent.entityType == EntityType.SeaHunter)
+            {
                 SelectEntity(ent, shouldClearSelection: false);
             }
         }
@@ -289,5 +322,63 @@ public class SelectionMgr : MonoBehaviour
         }
 
     }
+    
+  public void SimulateBoxSelection(Vector3 screenStart, Vector3 screenEnd, float duration = 1.5f)
+{
+    StartCoroutine(SimulateMouseDrag(screenStart, screenEnd, duration));
+}
+
+[SerializeField]
+private RectTransform cursorImage; // Assign a UI Image in the Inspector to represent the cursor
+
+private IEnumerator SimulateMouseDrag(Vector3 screenStart, Vector3 screenEnd, float duration)
+{
+    startMousePosition = screenStart;
+    isSelecting = true;
+    SelectionBoxPanel.gameObject.SetActive(true);
+
+    if (cursorImage != null)
+    {
+        cursorImage.gameObject.SetActive(true);
+    }
+
+    float elapsed = 0f;
+
+    while (elapsed < duration)
+    {
+        float t = elapsed / duration;
+        Vector3 current = Vector3.Lerp(screenStart, screenEnd, t);
+        UpdateSelectionBox(current);
+
+        // Move cursor image to current position
+        if (cursorImage != null)
+        {
+            Vector2 localCursorPos;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(UICanvas, current, null, out localCursorPos);
+            cursorImage.anchoredPosition = localCursorPos;
+        }
+
+        elapsed += Time.deltaTime;
+        yield return null;
+    }
+
+    UpdateSelectionBox(screenEnd);
+
+    if (cursorImage != null)
+    {
+        Vector2 localCursorPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(UICanvas, screenEnd, null, out localCursorPos);
+        cursorImage.anchoredPosition = localCursorPos;
+        cursorImage.gameObject.SetActive(false);
+    }
+
+    SelectEntitiesInBox(screenStart, screenEnd);
+    SelectionBoxPanel.gameObject.SetActive(false);
+
+    startMousePosition = Vector3.zero;
+    isSelecting = false;
+}
+
+
 
 }
