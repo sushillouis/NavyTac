@@ -133,7 +133,7 @@ public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, boo
             Vector3 pos = hit.point;
             pos.y = 0;
             Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
-            if (ent != null && !ent.isVisible && ent.entityClass == EntityClass.Missile) ent = null;
+            if (ent != null && !ent.isVisible && ent.entityClass == EntityClass.Missile && !ent.isGreyed) ent = null;
 
             // Record command
             if (ReplayMgr.inst != null)
@@ -271,6 +271,8 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
         {
             // Original log, kept inside the loop. If intended once per call, move outside.
             //Debug.Log("EntityCount: " + entities.Count); 
+            if(entity.isGreyed)
+                continue; // Skip greyed out entities
 
             float currentDoneDistanceSq;
 

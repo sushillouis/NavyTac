@@ -504,6 +504,7 @@ public class OpenOceanMain : MonoBehaviour
         if (lobbyState == LobbyState.Play)
         {
             totalPlayTime += Time.unscaledDeltaTime;
+            
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))

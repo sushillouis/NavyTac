@@ -65,6 +65,9 @@ public class Entity : MonoBehaviour
     public UIAspect ui = null;
     public WeaponsAspect weapons = null;
     private GameObject healthBarObject;
+    public bool isGreyed = false; // Used for greyed out entities in the UI
+
+    public float greyOverlayFadeDuration = 10f; // Duration for the grey overlay fade-out effect
 
     void Start()
     {

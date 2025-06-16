@@ -255,6 +255,7 @@ public class GameMgr : MonoBehaviour
         {
             InitializeScenario();
             SpawnEntities();
+            
         }
         if (CameraMgr.inst != null) CameraMgr.inst.SetCameraPosition();
         if (ReplayMgr.inst != null) ReplayMgr.inst.StartNewScenario();
@@ -451,6 +452,14 @@ public class GameMgr : MonoBehaviour
             SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(p1StartPos.position, p1StartPos.heading, PlayerMgr.inst.player1);
             SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(p2StartPos.position, p2StartPos.heading, PlayerMgr.inst.player2);
         }
+        List<Entity> allEntities = EntityMgr.inst.entities;
+        foreach (Entity e in allEntities)
+        {
+            if (e.TryGetComponent<GreyOverlayGenerator>(out var greyOverlay))
+            {
+                greyOverlay.ApplyGreyOverlay();
+            }
+}
     }
 
     List<int> GetValidPlayer2Positions(int player1Index)

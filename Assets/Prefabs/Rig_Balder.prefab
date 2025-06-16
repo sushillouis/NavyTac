@@ -660,6 +660,7 @@ GameObject:
   - component: {fileID: 8203159271001400738}
   - component: {fileID: 5619140976749383861}
   - component: {fileID: 6300673422323534070}
+  - component: {fileID: 1700333536502075409}
   m_Layer: 10
   m_Name: Rig_Balder
   m_TagString: Untagged
@@ -745,6 +746,8 @@ MonoBehaviour:
   ai: {fileID: 0}
   ui: {fileID: 0}
   weapons: {fileID: 0}
+  isGreyed: 0
+  greyOverlayFadeDuration: 0
 --- !u!65 &6300673422323534070
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -764,8 +767,21 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 600, y: 800, z: 540}
+  m_Size: {x: 400, y: 800, z: 400}
   m_Center: {x: -50, y: 0, z: 0}
+--- !u!114 &1700333536502075409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7514765405770568458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0c4db740d844ca4a90ca9e85e38c78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  grayOverlayMaterial: {fileID: 2100000, guid: 8771c4839e76c4912b8dc2cbf300dd4f, type: 2}
 --- !u!1 &8036105732478431344
 GameObject:
   m_ObjectHideFlags: 0
@@ -1061,6 +1077,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_RootOrder
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3034060244875282372, guid: b1b64573597ecf94e812fd9d518ac68f,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 450
+      objectReference: {fileID: 0}
+    - target: {fileID: 3034060244875282372, guid: b1b64573597ecf94e812fd9d518ac68f,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 450
       objectReference: {fileID: 0}
     - target: {fileID: 3034060244875282372, guid: b1b64573597ecf94e812fd9d518ac68f,
         type: 3}

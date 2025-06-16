@@ -114,7 +114,7 @@ public class SelectionMgr : MonoBehaviour
         Bounds bounds = new Bounds();
         bounds.SetMinMax(min, max);
         foreach (Entity ent in EntityMgr.inst.entities)
-            if (bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition)))
+            if (!ent.isGreyed && bounds.Contains(Camera.main.WorldToViewportPoint(ent.transform.localPosition)))
                 SelectEntity(ent, shouldClearSelection: false);
 
         TacticalAIMgr.inst.currentGroup = new Group(new List<Entity>());
@@ -172,19 +172,22 @@ public class SelectionMgr : MonoBehaviour
 
     public void SelectEntity(Entity ent, bool shouldClearSelection = true)
     {
-        if (ent != null && ent.entityClass != EntityClass.Missile && (ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId)
-            && (selectedEntityIndex = EntityMgr.inst.entities.FindIndex(x => (x == ent))) >= 0)
-        {
+        if (ent == null || ent.isGreyed) return;
 
+        if (ent.entityClass != EntityClass.Missile && ent.owner.playerId == PlayerMgr.inst.localPlayer.playerId
+            && (selectedEntityIndex = EntityMgr.inst.entities.FindIndex(x => x == ent)) >= 0)
+        {
             if (shouldClearSelection)
                 ClearSelection();
 
             selectedEntity = ent;
             selectedEntity.isSelected = true;
+
             if (!selectedEntities.Contains(ent))
                 selectedEntities.Add(ent);
         }
     }
+
 
     /*
     public void SelectEntity(Vector2 mousePos, bool shouldClearSelection = true)

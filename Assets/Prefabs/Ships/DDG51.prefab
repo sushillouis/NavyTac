@@ -182,6 +182,7 @@ GameObject:
   - component: {fileID: 2020023502598012820}
   - component: {fileID: 2020023502598012843}
   - component: {fileID: 2020023502598012840}
+  - component: {fileID: 5464629132886980971}
   m_Layer: 10
   m_Name: DDG51
   m_TagString: Untagged
@@ -268,6 +269,8 @@ MonoBehaviour:
   ai: {fileID: 0}
   ui: {fileID: 0}
   weapons: {fileID: 0}
+  isGreyed: 0
+  greyOverlayFadeDuration: 30
 --- !u!65 &2020023502598012840
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -289,6 +292,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 30, y: 50, z: 160}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5464629132886980971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2020023502598012821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0c4db740d844ca4a90ca9e85e38c78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  grayOverlayMaterial: {fileID: 2100000, guid: 8771c4839e76c4912b8dc2cbf300dd4f, type: 2}
 --- !u!1 &2020023502900363850
 GameObject:
   m_ObjectHideFlags: 0
