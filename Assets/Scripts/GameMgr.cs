@@ -286,7 +286,6 @@ public class GameMgr : MonoBehaviour
             SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer1, headingPlayer1, PlayerMgr.inst.player1);
             SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer2, headingPlayer2, PlayerMgr.inst.player2);
             EntityMgr.inst.CreateEntity(EntityType.DDG51, new Vector3(0,0,3000), new Vector3(0,headingPlayer2,0), player: PlayerMgr.inst.player2);
-            EnemyAIMgr.inst.currentLevel = 0;
             // Optionally spawn player2 or other tutorial-specific entities as needed
         }
     }
@@ -294,16 +293,7 @@ public class GameMgr : MonoBehaviour
     void InitializeScenario()
     {
         DetermineDifficulty();
-        if (EnemyAIMgr.inst != null)
-        {
-            EnemyAIMgr.inst.currentLevel = currentDifficulty switch
-            {
-                Difficulty.Easy => 1,
-                Difficulty.Medium => 2,
-                Difficulty.Hard => 3,
-                _ => 1
-            };
-        }
+       
         if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
         {
             Time.timeScale = 1f;

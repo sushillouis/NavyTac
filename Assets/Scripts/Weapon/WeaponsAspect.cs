@@ -49,7 +49,7 @@ public class WeaponsAspect : MonoBehaviour
                 return;
             }
         }
-        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial && entity.owner.name == "Ai")
+        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial && entity.owner == PlayerMgr.inst.player2)
         {
             // In training mode, we don't want to auto-fire weapons
             return;

@@ -61,7 +61,6 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField] public TMP_Text WrongCodeText;
     [SerializeField] public TMP_Text WrongNameText;
     [SerializeField] private Button loginButton;
-    [SerializeField] private Button LoginQuitButton;
 
     [Header("Map Select Screen")]
     [SerializeField] public TMP_Text mapNameText;
@@ -83,7 +82,6 @@ public class OpenOceanMain : MonoBehaviour
     [Header("MultiScorePanel")]
     [SerializeField] public GameObject MultiScoreList;
     [SerializeField] public GameObject Score;
-
     [SerializeField] public TMP_Text scenarioNumberText;
     [SerializeField] public TMP_Text totalUnitsText;
     [SerializeField] public TMP_Text totalUnitXText;
@@ -103,8 +101,6 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField] public TMP_Text scoreTextMulti;
     [SerializeField] public Button nextGameOrExitButton;
     [SerializeField] public Button backButton;
-
-
     public int gamesPlayedCount = 0;
     private const string SCORE_PANEL_TEXT_FEEDBACK = "Feedback";
     private const string NEXT_GAME_BUTTON_TEXT = "Next";
@@ -143,72 +139,103 @@ public class OpenOceanMain : MonoBehaviour
 
     private void SetupButtonListeners()
     {
-        hostButton.onClick.RemoveAllListeners();
-        hostButton.onClick.AddListener(() =>
+        if (hostButton != null)
         {
-            SetupIPAddressAndPort();
-            NetworkManager.Singleton.StartHost();
-            lobbyState = LobbyState.Login;
-        });
-
-        clientButton.onClick.RemoveAllListeners();
-        clientButton.onClick.AddListener(() =>
-        {
-            SetupIPAddressAndPort();
-            NetworkManager.Singleton.StartClient();
-            lobbyState = LobbyState.Login;
-        });
-
-        HostJoinQuitButton.onClick.RemoveAllListeners();
-        HostJoinQuitButton.onClick.AddListener(OnQuitButton);
-
-        LoginQuitButton.onClick.RemoveAllListeners();
-        LoginQuitButton.onClick.AddListener(OnQuitButton);
-
-        SinglePlayerButton.onClick.RemoveAllListeners();
-        SinglePlayerButton.onClick.AddListener(OnSinglePlayer);
-
-        MultiPlayerButton.onClick.RemoveAllListeners();
-        MultiPlayerButton.onClick.AddListener(OnMultiPlayer);
-
-        SingleMultiQuitButton.onClick.RemoveAllListeners();
-        SingleMultiQuitButton.onClick.AddListener(OnQuitButton);
-
-        resumeButton.onClick.RemoveAllListeners();
-        resumeButton.onClick.AddListener(OnResumeButton);
-
-        quitButton.onClick.RemoveAllListeners();
-        quitButton.onClick.AddListener(OnQuitButton);
-
-        foreach (Button button in menuButtons)
-        {
-            button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(OnMenuButton);
+            hostButton.onClick.RemoveAllListeners();
+            hostButton.onClick.AddListener(() =>
+            {
+                SetupIPAddressAndPort();
+                NetworkManager.Singleton.StartHost();
+                lobbyState = LobbyState.Login;
+            });
         }
 
+        if (clientButton != null)
+        {
+            clientButton.onClick.RemoveAllListeners();
+            clientButton.onClick.AddListener(() =>
+            {
+                SetupIPAddressAndPort();
+                NetworkManager.Singleton.StartClient();
+                lobbyState = LobbyState.Login;
+            });
+        }
+
+        if (HostJoinQuitButton != null)
+        {
+            HostJoinQuitButton.onClick.RemoveAllListeners();
+            HostJoinQuitButton.onClick.AddListener(OnQuitButton);
+        }
+
+        if (SinglePlayerButton != null)
+        {
+            SinglePlayerButton.onClick.RemoveAllListeners();
+            SinglePlayerButton.onClick.AddListener(OnSinglePlayer);
+        }
+
+        if (MultiPlayerButton != null)
+        {
+            MultiPlayerButton.onClick.RemoveAllListeners();
+            MultiPlayerButton.onClick.AddListener(OnMultiPlayer);
+        }
+
+        if (SingleMultiQuitButton != null)
+        {
+            SingleMultiQuitButton.onClick.RemoveAllListeners();
+            SingleMultiQuitButton.onClick.AddListener(OnQuitButton);
+        }
         if (startButton != null)
         {
             startButton.onClick.RemoveAllListeners();
-            startButton.onClick.AddListener(OnMapSelected);
+            startButton.onClick.AddListener(OnStartButton);
         }
-        else
+        if (resumeButton != null)
         {
-            Debug.LogError("StartButton is not assigned in the Inspector.", this);
+            resumeButton.onClick.RemoveAllListeners();
+            resumeButton.onClick.AddListener(OnResumeButton);
         }
 
+        if (quitButton != null)
+        {
+            quitButton.onClick.RemoveAllListeners();
+            quitButton.onClick.AddListener(OnQuitButton);
+        }
 
-        nextGameButton.onClick.RemoveAllListeners();
-        nextGameButton.onClick.AddListener(OnNextGameOrFeedbackClicked);
+        if (menuButtons != null)
+        {
+            foreach (Button button in menuButtons)
+            {
+                if (button != null)
+                {
+                    button.onClick.RemoveAllListeners();
+                    button.onClick.AddListener(OnMenuButton);
+                }
+            }
+        }
 
+        if (nextGameButton != null)
+        {
+            nextGameButton.onClick.RemoveAllListeners();
+            nextGameButton.onClick.AddListener(OnNextGameOrFeedbackClicked);
+        }
 
-        nextGameOrExitButton.onClick.RemoveAllListeners();
-        nextGameOrExitButton.onClick.AddListener(OnMultiScorePanelNextOrExitClicked);
+        if (nextGameOrExitButton != null)
+        {
+            nextGameOrExitButton.onClick.RemoveAllListeners();
+            nextGameOrExitButton.onClick.AddListener(OnMultiScorePanelNextOrExitClicked);
+        }
 
-        replayExitButton.onClick.RemoveAllListeners();
-        replayExitButton.onClick.AddListener(OnReplayExitClicked);
+        if (replayExitButton != null)
+        {
+            replayExitButton.onClick.RemoveAllListeners();
+            replayExitButton.onClick.AddListener(OnReplayExitClicked);
+        }
 
-        backButton.onClick.RemoveAllListeners();
-        backButton.onClick.AddListener(BackButton);
+        if (backButton != null)
+        {
+            backButton.onClick.RemoveAllListeners();
+            backButton.onClick.AddListener(BackButton);
+        }
     }
     void SetupIPAddressAndPort()
     {
@@ -381,27 +408,13 @@ public class OpenOceanMain : MonoBehaviour
 
         switch (currentTrainingState)
         {
-            case TrainingState.PreTest:
-                name = "Pre Test";
-                description = "This is a pre-test session.";
+            case TrainingState.Tutorial:
+                name = "Objective";
+                description = "Tutorial: Learn the basics of the game. Follow the instructions.";
                 break;
-            case TrainingState.PostTest:
-                name = "Post Test";
-                description = "This is a post-test session.";
-                break;
-            case TrainingState.Adaptive:
-                name = (playerNo % 2 == 0) ? "Training" : "Alternate Training";
-                description = (playerNo % 2 == 0) ? "This is a training session." : "This is an alternate training session.";
-                break;
-            case TrainingState.NonAdaptive:
-                name = (playerNo % 2 != 0) ? "Training" : "Alternate Training";
-                description = (playerNo % 2 != 0) ? "This is a training session." : "This is an alternate training session.";
-                break;
-            case TrainingState.None:
             default:
-                name = "Map Selection Pending";
-                description = "Please complete login to determine training type.";
-                Debug.LogWarning("UpdateMapSelectionUI called with TrainingState.None or unhandled state. Login might not be complete or code is invalid.", this);
+                name = "Objective";
+                description = "Destroy enemy base and entities while protecting your own. Attack!";
                 break;
         }
 
@@ -496,9 +509,6 @@ public class OpenOceanMain : MonoBehaviour
         }
     }
 
-
-
-
     void Update()
     {
         if (lobbyState == LobbyState.Play)
@@ -522,25 +532,11 @@ public class OpenOceanMain : MonoBehaviour
         }
     }
 
-    public void OnMapSelected()
+    public void OnStartButton()
     {
         totalPlayTime = 0f;
-
-
-        if (isSinglePlayer)
-        {
-            GameMgr.inst.OpenOcean1x1();
-        }
-        else if (localNetSetup != null)
-        {
-            localNetSetup.OnStartButton();
-        }
-        else
-        {
-            Debug.LogError("Cannot start map: Not single player and localNetSetup is null.");
-            lobbyState = LobbyState.MapSelect;
-            return;
-        }
+        Time.timeScale = 1; 
+        GameMgr.inst.OpenOcean1x1();
         lobbyState = LobbyState.Play;
     }
 
@@ -598,7 +594,12 @@ public class OpenOceanMain : MonoBehaviour
     {
         if (ReplayMgr.inst != null) ReplayMgr.inst.CompleteScenario();
 
-        if (currentTrainingState == TrainingState.Adaptive || currentTrainingState == TrainingState.NonAdaptive)
+        // If currentTrainingState is Tutorial, quit
+        if (currentTrainingState == TrainingState.Tutorial)
+        {
+            OnQuitButton();
+        }
+        else if (currentTrainingState == TrainingState.Adaptive || currentTrainingState == TrainingState.NonAdaptive)
         {
             lobbyState = LobbyState.MultiScorePanel;
         }
@@ -611,8 +612,6 @@ public class OpenOceanMain : MonoBehaviour
             StartNextGameSession();
         }
     }
-
-    // Button in MultiScorePanel to either proceed to next game or exit
     private bool hasReplayedOnce = false; // Track if a replay has already occurred
    public void OnMultiScorePanelNextOrExitClicked()
 {

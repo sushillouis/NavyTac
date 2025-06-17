@@ -114,7 +114,7 @@ public class ScoreMgr : MonoBehaviour
             data.totalDDG51 = initialCounts.GetValueOrDefault(EntityType.DDG51, 0);
 
             var destroyedPlayer = GetDestroyedUnits(PlayerMgr.inst.localPlayer);
-            var destroyedAI = GetDestroyedUnits(PlayerMgr.inst.players.Find(p => p.name == "Ai"));
+            var destroyedAI = GetDestroyedUnits(PlayerMgr.inst.player2);
             data.ourUnitsDestroyed = destroyedPlayer.Values.Sum(); 
             data.ourDestroyedJARI = destroyedPlayer.GetValueOrDefault(EntityType.JARIUSV, 0);
             data.ourDestroyedSeaHunter = destroyedPlayer.GetValueOrDefault(EntityType.SeaHunter, 0);
@@ -174,7 +174,7 @@ public class ScoreMgr : MonoBehaviour
             OpenOceanMain.inst.ourUnitsDestroyedText.text = $"{GetDestroyedUnits(PlayerMgr.inst.localPlayer).Values.Sum()}";
 
         if (OpenOceanMain.inst.enemyUnitsDestroyedText != null)
-            OpenOceanMain.inst.enemyUnitsDestroyedText.text = $"{GetDestroyedUnits(PlayerMgr.inst.players.Find(p => p.name == "Ai")).Values.Sum()}";
+            OpenOceanMain.inst.enemyUnitsDestroyedText.text = $"{GetDestroyedUnits(PlayerMgr.inst.player2).Values.Sum()}";
 
         if (OpenOceanMain.inst.winConditionText != null)
             OpenOceanMain.inst.winConditionText.text = winReason;
@@ -330,7 +330,7 @@ public class ScoreMgr : MonoBehaviour
 
 
         Dictionary<EntityType, int> destroyedPlayerUnits = GetDestroyedUnits(PlayerMgr.inst.localPlayer);
-        TactPlayer aiPlayer = PlayerMgr.inst.players.Find(p => p.name == "Ai"); 
+        TactPlayer aiPlayer = PlayerMgr.inst.player2;
         Dictionary<EntityType, int> destroyedAIUnits = (aiPlayer != null) ? GetDestroyedUnits(aiPlayer) : new Dictionary<EntityType, int>();
 
 
@@ -340,7 +340,7 @@ public class ScoreMgr : MonoBehaviour
 
         string winCondition = winReason; 
         float timeTaken = OpenOceanMain.inst.playSessionDuration; 
-        int aiLevel = (EnemyAIMgr.inst != null) ? EnemyAIMgr.inst.currentLevel : -1; 
+        int aiLevel = GameMgr.inst.difficultyLevel < 0.33f ? 1 : (GameMgr.inst.difficultyLevel < 0.66f ? 2 : 3);
         float aiDifficulty = GameMgr.inst.difficultyLevel; 
 
         string gameTypeFolder = GetGameTypeFolder(); 

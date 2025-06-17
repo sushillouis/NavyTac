@@ -12,8 +12,6 @@ public class EnemyAIMgr : MonoBehaviour
     private Entity opponentBase; 
     public List<Entity> aiBases = new List<Entity>(); 
     private Dictionary<Entity, float> entityCooldowns = new Dictionary<Entity, float>(); 
-
-    private const string AiOwnerName = "Ai"; 
     private const float DefaultUpdateInterval = 0.5f; 
     private const float DefaultInitialStopDistance = 6000f; 
     private const float DefaultMinDistanceReduction = 200f; 
@@ -33,7 +31,7 @@ public class EnemyAIMgr : MonoBehaviour
     private float lastUpdateTime; 
     private readonly float initialStopDistance = DefaultInitialStopDistance; 
     private readonly float minDistanceReduction = DefaultMinDistanceReduction; 
-    private readonly System.StringComparison aiOwnerNameComparison = System.StringComparison.OrdinalIgnoreCase; 
+
 
     private List<Entity> _reusableAiEntitiesList = new List<Entity>();
     private List<Entity> _reusableEnemyTargetsList = new List<Entity>();
@@ -141,7 +139,7 @@ public class EnemyAIMgr : MonoBehaviour
         foreach (Entity e in EntityMgr.inst.entities)
         {
             if (e == null || e.owner == null ||
-                !e.owner.name.Equals(AiOwnerName, aiOwnerNameComparison) ||
+                e.owner != PlayerMgr.inst.player2 ||
                 e.entityRole != EntityRole.Base)
             {
                 continue;
@@ -699,7 +697,7 @@ private void IssueDirectCommand(List<Entity> entities, Vector3 position, bool is
         foreach (Entity e in EntityMgr.inst.entities)
         {
             if (e == null || e.owner == null || 
-                e.owner.name.Equals(AiOwnerName, aiOwnerNameComparison) ||
+                e.owner != PlayerMgr.inst.player2 ||
                 e.entityClass == EntityClass.Missile) 
             {
                 continue;
@@ -738,7 +736,7 @@ private void IssueDirectCommand(List<Entity> entities, Vector3 position, bool is
             Entity potentialEnemy = hitCollider.GetComponentInParent<Entity>();
 
             if (potentialEnemy == null || potentialEnemy.owner == null ||
-                potentialEnemy.owner.name.Equals(AiOwnerName, aiOwnerNameComparison) ||
+                potentialEnemy.owner != PlayerMgr.inst.player2 ||
                 potentialEnemy.entityClass == EntityClass.Missile ||
                 potentialEnemy == aiEntity) 
             {
@@ -761,7 +759,7 @@ private void IssueDirectCommand(List<Entity> entities, Vector3 position, bool is
         foreach (Entity e in EntityMgr.inst.entities)
         {
             if (e == null || e.owner == null ||
-                e.owner.name.Equals(AiOwnerName, aiOwnerNameComparison) || 
+                e.owner != PlayerMgr.inst.player2 ||
                 e.entityRole != EntityRole.Base)
             {
                 continue;
@@ -777,7 +775,7 @@ private void IssueDirectCommand(List<Entity> entities, Vector3 position, bool is
         foreach (Entity e in EntityMgr.inst.entities)
         {
             if (e == null || e.owner == null ||
-                !e.owner.name.Equals(AiOwnerName, aiOwnerNameComparison) ||
+                e.owner != PlayerMgr.inst.player2 ||
                 e.entityClass == EntityClass.Missile) 
             {
                 continue;

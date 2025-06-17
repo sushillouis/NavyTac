@@ -264,51 +264,70 @@ TutorialText.text = "Now you try! Drag to select multiple units.";
         inputs.Selection.SelectAll, 
         inputs.Selection.SelectAllDDG51, 
         inputs.Selection.SelectAllSEAHUNTER, 
-        inputs.Selection.SelectAllJARIUSV
+        inputs.Selection.SelectAllJARIUSV,
+        inputs.Camera.XZMove,
+        inputs.Camera.YMove,
+        inputs.Camera.Yaw,
+        inputs.Camera.Pitch,
+        inputs.Camera.RTSView
     );
     yield return new WaitUntil(() => SelectionMgr.inst.selectedEntities.Count >= 1);
 
-        // Use a prefab capsule from the inspector
-        Vector3 targetWorldPos = new Vector3(500, 30, 3000); // Example offset
-        GameObject capsule = null;
-        if (capsulePrefab != null)
+    // Use a prefab capsule from the inspector
+    Vector3 targetWorldPos = new Vector3(500, 30, 3000); // Example offset
+    GameObject capsule = null;
+    if (capsulePrefab != null)
+    {
+        capsule = Instantiate(capsulePrefab, targetWorldPos, Quaternion.identity);
+        capsule.name = "TutorialTargetCapsule";
+        var collider = capsule.GetComponent<Collider>();
+        if (collider != null) collider.enabled = false; // Prevent interaction
+    }
+
+    // Move command instruction
+    TutorialText.text = $"Now <sprite name=mr> on the red capsule to move your units there.\n\nWhen you use move, your units will not stop for any opponent entity on the way, but will attack only if you stop near an enemy.";
+
+    EnableOnly(
+        inputs.Entities.Command, 
+        inputs.Selection.CursorPosition,
+        inputs.Camera.XZMove,
+        inputs.Camera.YMove,
+        inputs.Camera.Yaw,
+        inputs.Camera.Pitch,
+        inputs.Camera.RTSView
+    );
+
+    // Wait for player to issue a move command within a 500x500 box centered on the capsule
+    bool commandIssued = false;
+    while (!commandIssued)
+    {
+        if (inputs.Entities.Command.WasPressedThisFrame())
         {
-            capsule = Instantiate(capsulePrefab, targetWorldPos, Quaternion.identity);
-            capsule.name = "TutorialTargetCapsule";
-            var collider = capsule.GetComponent<Collider>();
-            if (collider != null) collider.enabled = false; // Prevent interaction
-        }
-
-        // Move command instruction
-        TutorialText.text = $"Now <sprite name=mr> on the red capsule to move your units there.\n\nWhen you use move, your units will not stop for any opponent entity on the way, but will attack only if you stop near an enemy.";
-
-        EnableOnly(inputs.Entities.Command, inputs.Selection.CursorPosition);
-
-        // Wait for player to issue a move command within a 500x500 box centered on the capsule
-        bool commandIssued = false;
-        while (!commandIssued)
-        {
-            if (inputs.Entities.Command.WasPressedThisFrame())
+            // Raycast from mouse position to world
+            Vector3 mousePos = inputs.Selection.CursorPosition.ReadValue<Vector2>();
+            Ray ray = Camera.main.ScreenPointToRay(mousePos);
+            if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                // Raycast from mouse position to world
-                Vector3 mousePos = inputs.Selection.CursorPosition.ReadValue<Vector2>();
-                Ray ray = Camera.main.ScreenPointToRay(mousePos);
-                if (Physics.Raycast(ray, out RaycastHit hit))
+                Vector3 hitPoint = hit.point;
+                // Check if hitPoint is within 250 units in X and Z from targetWorldPos (500x500 box)
+                if (Mathf.Abs(hitPoint.x - targetWorldPos.x) <= 250f &&
+                    Mathf.Abs(hitPoint.z - targetWorldPos.z) <= 250f)
                 {
-                    Vector3 hitPoint = hit.point;
-                    // Check if hitPoint is within 250 units in X and Z from targetWorldPos (500x500 box)
-                    if (Mathf.Abs(hitPoint.x - targetWorldPos.x) <= 250f &&
-                        Mathf.Abs(hitPoint.z - targetWorldPos.z) <= 250f)
-                    {
-                        commandIssued = true;
-                        if (capsule != null)
-                            GameObject.Destroy(capsule);
-                            DisableAllInputMaps(); // Disable all inputs after command is issued
-                    }
+                    commandIssued = true;
+                    if (capsule != null)
+                        GameObject.Destroy(capsule);
+                    EnableOnly(
+                        inputs.Camera.XZMove,
+                        inputs.Camera.YMove,
+                        inputs.Camera.Yaw,
+                        inputs.Camera.Pitch,
+                        inputs.Camera.RTSView
+                    ); // Enable camera controls after command is issued
                 }
             }
-            yield return null;
         }
+        yield return null;
+    }
 
     // Store selected entities at the time of command
     List<Entity> selectedEntities = new List<Entity>(SelectionMgr.inst.selectedEntities);
@@ -334,12 +353,10 @@ TutorialText.text = "Now you try! Drag to select multiple units.";
         GameObject.Destroy(capsule);
 
     yield return new WaitForSeconds(2f); // Allow command to complete
-    
     // Attack Move (A + Right Click)
     SelectionMgr.inst.ClearSelection();
     TutorialHeaderText.text = "Tutorial: Attack Move";
     TutorialText.text = "Select a unit or multiple units.";
-
     // Wait for unit selection
     EnableOnly(
         inputs.Selection.SingleSelect, 
@@ -348,7 +365,12 @@ TutorialText.text = "Now you try! Drag to select multiple units.";
         inputs.Selection.SelectAll, 
         inputs.Selection.SelectAllDDG51, 
         inputs.Selection.SelectAllSEAHUNTER, 
-        inputs.Selection.SelectAllJARIUSV
+        inputs.Selection.SelectAllJARIUSV,
+        inputs.Camera.XZMove,
+        inputs.Camera.YMove,
+        inputs.Camera.Yaw,
+        inputs.Camera.Pitch,
+        inputs.Camera.RTSView
     );
     yield return new WaitUntil(() => 
         SelectionMgr.inst.selectedEntities.Count >= 1);
@@ -366,12 +388,37 @@ TutorialText.text = "Now you try! Drag to select multiple units.";
 
     // Attack move command
     TutorialText.text = "Now hold <sprite name=a> and <sprite name=mr> on the red capsule to attack move.\n\nWhen you use attack move, your units will stop and destroy any enemy they encounter, then continue moving forward.\n\nTip: If you attack move and select an opponent entity, all your selected units will attack that target entity.";
-    EnableOnly(inputs.Attacks.Attack1, inputs.Entities.Command, inputs.Selection.CursorPosition);
+    EnableOnly(
+        inputs.Attacks.Attack1, 
+        inputs.Entities.Command, 
+        inputs.Selection.CursorPosition,
+        inputs.Camera.XZMove,
+        inputs.Camera.YMove,
+        inputs.Camera.Yaw,
+        inputs.Camera.Pitch,
+        inputs.Camera.RTSView
+    );
 
     // Wait for player to issue an attack move command within a 500x500 box centered on the capsule
     bool attackMoveIssued = false;
     while (!attackMoveIssued)
     {
+        // If player gives a move command instead of attack move, nullify the move command for selected units
+        if (!inputs.Attacks.Attack1.IsPressed() && inputs.Entities.Command.WasPressedThisFrame())
+        {
+            // Nullify the move command by clearing the command queue for selected units
+            foreach (var entity in SelectionMgr.inst.selectedEntities)
+            {
+                var ai = entity.GetComponentInChildren<UnitAI>();
+                if (ai != null)
+                    ai.commands.Clear();
+            }
+            if (attackCapsule != null)
+                GameObject.Destroy(attackCapsule);
+            DisableAllInputMaps();
+            yield break; // Exit the coroutine early
+        }
+
         if (inputs.Attacks.Attack1.IsPressed() && inputs.Entities.Command.WasPressedThisFrame())
         {
             Vector3 mousePos = inputs.Selection.CursorPosition.ReadValue<Vector2>();
@@ -385,7 +432,13 @@ TutorialText.text = "Now you try! Drag to select multiple units.";
                     attackMoveIssued = true;
                     if (attackCapsule != null)
                         GameObject.Destroy(attackCapsule);
-                    DisableAllInputMaps(); // Disable all inputs after command is issued
+                    EnableOnly(
+                        inputs.Camera.XZMove,
+                        inputs.Camera.YMove,
+                        inputs.Camera.Yaw,
+                        inputs.Camera.Pitch,
+                        inputs.Camera.RTSView
+                    ); // Enable camera controls after command is issued
                 }
             }
         }
@@ -394,9 +447,6 @@ TutorialText.text = "Now you try! Drag to select multiple units.";
 
     // Store selected entities at the time of command
     List<Entity> attackMoveEntities = new List<Entity>(SelectionMgr.inst.selectedEntities);
-
-
-
     // Wait until all selected entities have finished their commands (queue is empty)
     yield return new WaitUntil(() =>
         attackMoveEntities.TrueForAll(entity => 

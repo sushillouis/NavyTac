@@ -19,18 +19,18 @@ public class WeaponCollisionHandler : MonoBehaviour
         }
 
         if (otherEntity != null && otherEntity != entity.creatorsEntity && 
-            otherEntity.owner != entity.owner && otherEntity.entityType != entity.entityType && otherEntity.isVisible) {
+            otherEntity.owner != entity.owner && otherEntity.entityType != entity.entityType && otherEntity.isVisible && !otherEntity.isGreyed) {
             
             float damage = WeaponsMgr.inst.damageMatrix.GetDamage(entity.entityType, otherEntity.entityType);
             
             // Track damage before applying
             bool isPlayerAttacker = entity.owner != null && 
-                !entity.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase);
+                entity.owner != PlayerMgr.inst.player2;
             bool isPlayerTarget = otherEntity.owner != null && 
-                !otherEntity.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase);
-                if (ScoreMgr.inst == null)
-                {
-                    //Debug.LogWarning("ScoreMgr instance is null, cannot track damage.");
+                otherEntity.owner != PlayerMgr.inst.player2;
+            if (ScoreMgr.inst == null)
+            {
+                //Debug.LogWarning("ScoreMgr instance is null, cannot track damage.");
                 }
                 else
                 {

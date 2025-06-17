@@ -32,7 +32,7 @@ public class WeaponsMgr : MonoBehaviour
             // Find the closest entity using a physics overlap sphere
             Entity targetEntity = FindClosestEntityWithCollider(hit.point, 5f); // 5f is an example radius, adjust as needed
 
-            if (targetEntity != null && targetEntity.entityClass!= EntityClass.Missile) handleWeapon(selectedEnt, targetEntity);
+            if (targetEntity != null && targetEntity.entityClass!= EntityClass.Missile && !targetEntity.isGreyed) handleWeapon(selectedEnt, targetEntity);
         }
     }
 
@@ -46,7 +46,7 @@ public class WeaponsMgr : MonoBehaviour
         foreach (var hitCollider in hitColliders)
         {
             Entity entity = hitCollider.GetComponentInParent<Entity>(); // Or GetComponent<Entity>() if Entity is on the same GameObject as the collider
-            if (entity != null)
+            if (entity != null && !entity.isGreyed)
             {
                 float distanceSqr = (entity.transform.position - position).sqrMagnitude;
                 if (distanceSqr < minDistanceSqr)
@@ -66,7 +66,7 @@ public class WeaponsMgr : MonoBehaviour
         WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
         if (weaponsAspect == null || weaponsAspect.weapon == null) return;
 
-        if (targetEntity != null && targetEntity.owner != entity.owner&& targetEntity.entityClass!= EntityClass.Missile)
+        if (targetEntity != null && targetEntity.owner != entity.owner&& targetEntity.entityClass!= EntityClass.Missile && !targetEntity.isGreyed)
         {
             LaunchWeapon(entity, weaponsAspect.weapon, targetEntity, targetEntity.transform.position);
         }
@@ -315,7 +315,7 @@ public class WeaponsMgr : MonoBehaviour
             {
                 if (entity.owner != null)
                 {
-                    bool wasAIBase = entity.owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase);
+                    bool wasAIBase = entity.owner == PlayerMgr.inst.player2;
 
                     if (wasAIBase)
             {
@@ -348,7 +348,7 @@ public class WeaponsMgr : MonoBehaviour
                             ScoreMgr.inst.aiWon = true;
                             ScoreMgr.inst.winReason = "Lost All Friendly Combat Entities";
                         }
-                        else if (owner.name.Equals("Ai", System.StringComparison.OrdinalIgnoreCase))
+                        else if (owner == PlayerMgr.inst.player2)
                         {
                             ScoreMgr.inst.playerWon = true;
                             ScoreMgr.inst.winReason = "Opponent Lost All Combat Entities";
