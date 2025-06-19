@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.3865354, g: 0.4779775, b: 0.5743237, a: 1}
+  m_IndirectSpecularColor: {r: 0.38653484, g: 0.47797692, b: 0.5743225, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1222,6 +1222,16 @@ MonoBehaviour:
   entitiesRoot: {fileID: 1142393662}
   entities: []
   entityId: 0
+  brightGreenOverrides:
+  - prefab: {fileID: 2020023502598012821, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
+      type: 3}
+    replacement: {fileID: 2100000, guid: 0c13c6a3fa85ff242b31894beb5ccf7b, type: 2}
+  - prefab: {fileID: 1101535870444392007, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
+      type: 3}
+    replacement: {fileID: 2100000, guid: 73404b85e73a32a4ebeb9263a727d22f, type: 2}
+  - prefab: {fileID: 3381456826221025453, guid: d51d8d0dda5552c478afc7674abdd037,
+      type: 3}
+    replacement: {fileID: 2100000, guid: 7b6b33733b9e75144aecf923cb1e447d, type: 2}
 --- !u!1 &404090925
 GameObject:
   m_ObjectHideFlags: 0
@@ -7407,17 +7417,17 @@ PrefabInstance:
     - target: {fileID: 3389967461626569529, guid: d51d8d0dda5552c478afc7674abdd037,
         type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3389967461626569529, guid: d51d8d0dda5552c478afc7674abdd037,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3389967461626569529, guid: d51d8d0dda5552c478afc7674abdd037,
         type: 3}
       propertyPath: m_AnchorMin.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7540985511424937849, guid: d51d8d0dda5552c478afc7674abdd037,
         type: 3}
@@ -7991,21 +8001,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: DDG51
-      objectReference: {fileID: 0}
-    - target: {fileID: 3922861415598738677, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3922861415598738677, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3922861415598738677, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
-        type: 3}
-      propertyPath: m_AnchorMin.x
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7889022459961425211, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
         type: 3}

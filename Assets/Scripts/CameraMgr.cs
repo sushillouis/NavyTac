@@ -38,6 +38,52 @@ public class CameraMgr : MonoBehaviour
 
     public void SetCameraPosition()
     {
+        // Perform a B-roll of the complete scenario before setting the camera position
+        StartCoroutine(BRollAndSetCameraPosition());
+    }
+
+    private IEnumerator BRollAndSetCameraPosition()
+    {
+        // Slowly orbit halfway (semi-circle) around the scenario center for 6 seconds (slower B-roll)
+        float duration = 12f;
+        float elapsed = 0f;
+        Vector3 scenarioCenter = GameMgr.inst.posPlayer1; // Or use a more appropriate center if needed
+        float radius = 4000f;
+        float height = 2500f;
+
+        // Start angle (e.g., 0 degrees) to end angle (e.g., 180 degrees) for a semi-circle
+        float startAngle = 0f;
+        float endAngle = 180f;
+
+        while (elapsed < duration)
+        {
+            float angle = Mathf.Lerp(startAngle, endAngle, elapsed / duration);
+            float rad = angle * Mathf.Deg2Rad;
+            Vector3 offset = new Vector3(Mathf.Sin(rad) * radius, height, Mathf.Cos(rad) * radius);
+            RTSCameraRig.transform.position = scenarioCenter + offset;
+            RTSCameraRig.transform.LookAt(scenarioCenter);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // B-roll of the complete map: orbit around the map center at a higher altitude and larger radius
+        float mapBRollDuration = 12f;
+        float mapElapsed = 0f;
+        Vector3 mapCenter = Vector3.zero;
+        float mapRadius = 9125f; // Half of 18250
+        float mapHeight = 6000f;
+
+        while (mapElapsed < mapBRollDuration)
+        {
+            float angle = Mathf.Lerp(0, 360, mapElapsed / mapBRollDuration);
+            float rad = angle * Mathf.Deg2Rad;
+            Vector3 offset = new Vector3(Mathf.Sin(rad) * mapRadius, mapHeight, Mathf.Cos(rad) * mapRadius);
+            RTSCameraRig.transform.position = mapCenter + offset;
+            RTSCameraRig.transform.LookAt(mapCenter);
+            mapElapsed += Time.deltaTime;
+            yield return null;
+        }
+        ResetCamera();
         // Position camera 1500 units above and 2000 units behind Player 1
         Vector3 baseOffset = new Vector3(0, 2000, -3000);
         Quaternion headingRotation = Quaternion.Euler(0, GameMgr.inst.headingPlayer1, 0);

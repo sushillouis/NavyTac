@@ -6,6 +6,7 @@ using System.Text;
 using System.Globalization;
 using System;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 
 public class EntityMgr : MonoBehaviour
 {
@@ -262,5 +263,80 @@ public class EntityMgr : MonoBehaviour
             return null;
         }
     }
+   
+[System.Serializable]
+    public struct PrefabMaterialPair
+    {
+        public GameObject prefab;     // exact prefab asset (drag-and-drop)
+        public Material replacement;  // e.g. “DDG51_Hull”
+    }
 
+    [Header("Bright-Green ➜ Replacement list")]
+    [SerializeField] private List<PrefabMaterialPair> brightGreenOverrides = new();
+
+    /* ─────────────────────────────────────────────────────────────
+     * 2.  Context-menu command
+     * ──────────────────────────────────────────────────────────── */
+    [ContextMenu("🟢 Replace Bright-Green Materials")]
+    private void ReplaceBrightGreenMaterials()
+    {
+        if (brightGreenOverrides.Count == 0)
+        {
+            Debug.LogWarning("No overrides set.  Populate ‘Bright-Green → Replacement list’ first.");
+            return;
+        }
+
+        Color target = new Color(0.196f, 1f, 0.196f);     // #32FF32
+        const float tol = 0.01f;
+        int changeCount = 0;
+
+        foreach (var pair in brightGreenOverrides)
+        {
+            if (pair.prefab == null || pair.replacement == null) continue;
+
+            // Fetch all renderers inside the prefab asset
+            var renderers = pair.prefab.GetComponentsInChildren<Renderer>(true);
+            foreach (Renderer rend in renderers)
+            {
+                var mats = rend.sharedMaterials;
+                for (int i = 0; i < mats.Length; ++i)
+                {
+                    var mat = mats[i];
+                    if (mat == null) continue;
+
+                    if (IsApproximately(mat.color, target, tol))
+                    {
+                        // Record for undo + prefab dirtying
+                        Undo.RecordObject(rend, "Replace Bright-Green Material");
+                        mats[i] = pair.replacement;
+                        rend.sharedMaterials = mats;
+                        changeCount++;
+
+                        // If the renderer's GameObject is untagged, set its color to bright green and tag it
+                        if (rend.gameObject.tag == "Untagged")
+                        {
+                            
+                            rend.gameObject.tag = "BrightGreenColor";
+                        }
+                    }
+                }
+            }
+
+            // Mark the prefab asset dirty so the change is saved
+            EditorUtility.SetDirty(pair.prefab);
+        }
+
+        AssetDatabase.SaveAssets();
+        EditorSceneManager.MarkAllScenesDirty();
+
+        Debug.Log($"✅ Replaced {changeCount} bright-green material(s).");
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+     * 3.  Helper
+     * ──────────────────────────────────────────────────────────── */
+    private static bool IsApproximately(Color a, Color b, float t) =>
+        Mathf.Abs(a.r - b.r) < t &&
+        Mathf.Abs(a.g - b.g) < t &&
+        Mathf.Abs(a.b - b.b) < t;
 }

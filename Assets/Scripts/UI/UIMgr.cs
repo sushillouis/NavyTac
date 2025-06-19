@@ -32,7 +32,6 @@ public class UIMgr : MonoBehaviour
     public static UIMgr inst;
     public GameObject ToggleMultiSelect;
     public bool isActive;
-
     public GameInputs inputs;
 
     private InputAction yawCamera;
@@ -40,34 +39,26 @@ public class UIMgr : MonoBehaviour
     private InputAction cameraYMove;
     private InputAction cameraXZMove;
     private InputAction toggleRTSCam;
-
     private InputAction mouseDelta;
     private InputAction mouseScroll;
     private InputAction toggleMap;
-
     private InputAction selectionBox;
     private InputAction singleSelect;
     private InputAction selectionCursorPosition;
     private InputAction selectNextEntity;
     private InputAction addSelection;
-
     private InputAction command;
     private InputAction intercept;
     private InputAction attackMove;
     private InputAction addCommand;
-
     private InputAction changeSpeed;
     private InputAction changeHeading;
-
     private InputAction create100;
-
     private InputAction selectAll;
     private InputAction selectAllDDG51;
     private InputAction selectAllSEAHUNTER;
     private InputAction selectAllJARIUSV;
     private InputAction selectGroup1;
-
-
     // private InputAction attack1;
     private InputAction attack2;
     private InputAction attack3;
@@ -99,20 +90,15 @@ public class UIMgr : MonoBehaviour
         cameraXZMove = inputs.Camera.XZMove;
         cameraXZMove.Enable();
 
-
-        //moves camera or minimap - bound to middle mouse + mouse move
         mouseDelta = inputs.Camera.MiddleMouseMove;
         mouseDelta.Enable();
 
-        //changes cam height and zooms in cam - bound to mouse scroll
         mouseScroll = inputs.Camera.MouseScroll;
         mouseScroll.Enable();
 
-        //toggles whether map is mini or big - bound to M
         toggleMap = inputs.Camera.Map;
         toggleMap.Enable();
         toggleMap.performed += ToggleMap;
-
 
         selectionBox = inputs.Selection.BoxSelect;
         selectionBox.Enable();
@@ -142,7 +128,6 @@ public class UIMgr : MonoBehaviour
 
         attackMove = inputs.Attacks.Attack1;
         attackMove.Enable();
-        
 
         addCommand = inputs.Entities.AddCommand;
         addCommand.Enable();
@@ -159,8 +144,6 @@ public class UIMgr : MonoBehaviour
         create100.Enable();
         create100.performed += Create100;
 
-        //Groups
-
         selectAll = inputs.Selection.SelectAll;
         selectAll.Enable();
         selectAll.performed += OnSelectAllPerformed;
@@ -176,11 +159,8 @@ public class UIMgr : MonoBehaviour
         selectAllSEAHUNTER = inputs.Selection.SelectAllSEAHUNTER;
         selectAllSEAHUNTER.Enable();
         selectAllSEAHUNTER.performed += OnSelectAllSEAHUNTERPerformed;
-        //Ctrl key signifies group commands so when we do right mouse button we run only if ctrl is not pressed
+
         inputs.Entities.ControlKey.Enable();
-
-
-        
 
         attack2 = inputs.Attacks.Attack2;
         attack2.Enable();
@@ -197,6 +177,7 @@ public class UIMgr : MonoBehaviour
         modifiers = inputs.Attacks.Modifers;
         modifiers.Enable();
     }
+
     private void OnDisable()
     {
         toggleRTSCam.Disable();
@@ -204,11 +185,9 @@ public class UIMgr : MonoBehaviour
         pitchCamera.Disable();
         cameraYMove.Disable();
         cameraXZMove.Disable();
-        //
         mouseDelta.Disable();
         mouseScroll.Disable();
         toggleMap.Disable();
-        //
         selectionBox.Disable();
         singleSelect.Disable();
         selectionCursorPosition.Disable();
@@ -221,53 +200,41 @@ public class UIMgr : MonoBehaviour
         changeSpeed.Disable();
         changeHeading.Disable();
         create100.Disable();
-
         selectAll.Disable();
         selectAllDDG51.Disable();
         selectAllJARIUSV.Disable();
         selectAllSEAHUNTER.Disable();
         inputs.Entities.ControlKey.Disable();
-
-        // attack1.Disable();
         attack2.Disable();
         attack3.Disable();
         attack4.Disable();
         modifiers.Disable();
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         ToggleMultiSelect.SetActive(false);
 #if UNITY_ANDROID
-            ToggleMultiSelect.SetActive(true);
+        ToggleMultiSelect.SetActive(true);
 #endif
 #if UNITY_ANDROID
-            ToggleMultiSelect.SetActive(true);
+        ToggleMultiSelect.SetActive(true);
 #endif
-
-       
-
     }
-    public TextMeshProUGUI entityName;
-    
-    public Slider healthSlider;
 
+    public TextMeshProUGUI entityName;
+    public Slider healthSlider;
     public TextMeshProUGUI fuel;
     public TextMeshProUGUI range;
-
     public TextMeshProUGUI speed;
     public TextMeshProUGUI desiredSpeed;
     public TextMeshProUGUI heading;
     public TextMeshProUGUI desiredHeading;
-
     public TextMeshProUGUI altitude;
     public TextMeshProUGUI desiredAltitude;
-
     public TextMeshProUGUI target;
     public TextMeshProUGUI timeOnTarget;
     public TextMeshProUGUI targetRange;
-
     [SerializeField]
     private Image healthImage;
     [SerializeField]
@@ -284,98 +251,146 @@ public class UIMgr : MonoBehaviour
     private float lastAltitude = -1;
     // private float lastDesiredAltitude = -1;
 
-
-    // Update is called once per frame
     void Update()
     {
-        if (SelectionMgr.inst.selectedEntity != null)
+        UpdateSelectedEntityUI();
+        UpdateMultiSelectToggle();
+        UpdateCameraControls();
+        UpdateSelectionBox();
+        UpdateMinimapAndCamera();
+    }
+
+    private void UpdateSelectedEntityUI()
+    {
+        var selectedEntity = SelectionMgr.inst.selectedEntity;
+        if (selectedEntity == null)
         {
-            Entity ent = SelectionMgr.inst.selectedEntity;
-            if (ent.name != lastEntityName)
-            {
-                if(ent.entityRole == EntityRole.Base)
-                {
-                    lastEntityName = "Command Center";
-                    entityName.text = "Command Center";
-                }
-                    
-                else
-                {
-                    lastEntityName = ent.name;
-                    entityName.text = ent.name;
-                }
-            }
-            if (ent.speed != lastSpeed)
-            {
-                lastSpeed = ent.speed;
-                speed.text = ent.speed.ToString("F2") + " m/s";
-            }
-            if (ent.desiredSpeed != lastDesiredSpeed)
-            {
-                lastDesiredSpeed = ent.desiredSpeed;
-                desiredSpeed.text = ent.desiredSpeed.ToString("F2") + " m/s";
-            }
-            if (ent.heading != lastHeading)
-            {
-                lastHeading = ent.heading;
-                heading.text = ent.heading.ToString("F1") + " deg";
-            }
-            if (ent.desiredHeading != lastDesiredHeading)
-            {
-                lastDesiredHeading = ent.desiredHeading;
-                desiredHeading.text = ent.desiredHeading.ToString("F1") + " deg";
-            }
-
-            DisplayAIInformation(ent);
-            UpdateHealth(ent);
-
-            Oriented3dPhysics phx3d = ent.GetComponentInChildren<Oriented3dPhysics>();
-            if(phx3d != null)  {
-                if(phx3d.altitude != lastAltitude) {
-                    lastAltitude = phx3d.altitude;
-                    altitude.text = phx3d.altitude.ToString("F2") + "m";
-                }
-            }
-            if(lastFuel != ent.fuel) {
-                lastFuel = ent.fuel;
-                fuel.text = ent.fuel.ToString("F0");
-            }
-            if(lastRange != ent.range) {
-                lastRange = ent.range;
-                range.text = (ent.range * Utils.ToNautialMiles).ToString("F1") + " nm";
-            }
-
+            lastEntityName = "";
+            entityName.text = "";
+            lastSpeed = -1;
+            speed.text = "";
+            lastDesiredSpeed = -1;
+            desiredSpeed.text = "";
+            lastHeading = -1;
+            heading.text = "";
+            lastDesiredHeading = -1;
+            desiredHeading.text = "";
+            lastHealth = -1;
+            healthText.text = "";
+            healthImage.fillAmount = 0;
+            lastFuel = -1;
+            fuel.text = "";
+            lastRange = -1;
+            range.text = "";
+            lastAltitude = -1;
+            altitude.text = "";
+            target.text = "";
+            timeOnTarget.text = "";
+            targetRange.text = "";
+            return;
         }
 
+        Entity ent = selectedEntity;
+        if (ent.name != lastEntityName)
+        {
+            if (ent.entityRole == EntityRole.Base)
+            {
+                lastEntityName = "Command Center";
+                entityName.text = "Command Center";
+            }
+            else
+            {
+                lastEntityName = ent.name;
+                entityName.text = ent.name;
+            }
+        }
+        if (ent.speed != lastSpeed)
+        {
+            lastSpeed = ent.speed;
+            speed.text = ent.speed.ToString("F2") + " m/s";
+        }
+        if (ent.desiredSpeed != lastDesiredSpeed)
+        {
+            lastDesiredSpeed = ent.desiredSpeed;
+            desiredSpeed.text = ent.desiredSpeed.ToString("F2") + " m/s";
+        }
+        if (ent.heading != lastHeading)
+        {
+            lastHeading = ent.heading;
+            heading.text = ent.heading.ToString("F1") + " deg";
+        }
+        if (ent.desiredHeading != lastDesiredHeading)
+        {
+            lastDesiredHeading = ent.desiredHeading;
+            desiredHeading.text = ent.desiredHeading.ToString("F1") + " deg";
+        }
+
+        DisplayAIInformation(ent);
+        UpdateHealth(ent);
+
+        Oriented3dPhysics phx3d = ent.GetComponentInChildren<Oriented3dPhysics>();
+        if (phx3d != null)
+        {
+            if (phx3d.altitude != lastAltitude)
+            {
+                lastAltitude = phx3d.altitude;
+                altitude.text = phx3d.altitude.ToString("F2") + "m";
+            }
+        }
+        if (lastFuel != ent.fuel)
+        {
+            lastFuel = ent.fuel;
+            fuel.text = ent.fuel.ToString("F0");
+        }
+        if (lastRange != ent.range)
+        {
+            lastRange = ent.range;
+            range.text = (ent.range * Utils.ToNautialMiles).ToString("F1") + " nm";
+        }
+    }
+
+    private void UpdateMultiSelectToggle()
+    {
         if (ToggleMultiSelect.activeSelf)
             isActive = ToggleMultiSelect.GetComponent<Toggle>().isOn;
         else
             isActive = false;
-        
+    }
+
+    private void UpdateCameraControls()
+    {
         CameraMgr.inst.YawCamera(yawCamera.ReadValue<float>());
         CameraMgr.inst.PitchCamera(pitchCamera.ReadValue<float>());
         CameraMgr.inst.MoveCameraY(cameraYMove.ReadValue<Vector2>().y);
         CameraMgr.inst.MoveCameraXZ(cameraXZMove.ReadValue<Vector2>());
+    }
 
+    private void UpdateSelectionBox()
+    {
         if (boxSelecting)
         {
-                Vector2 currentMousePos = Mouse.current.position.ReadValue();
-        SelectionMgr.inst.UpdateSelectionBox(currentMousePos);
-            }
+            Vector2 currentMousePos = Mouse.current.position.ReadValue();
+            SelectionMgr.inst.UpdateSelectionBox(currentMousePos);
+        }
+    }
 
-
-        if(singleSelect.IsPressed())
+    private void UpdateMinimapAndCamera()
+    {
+        if (singleSelect.IsPressed())
+        {
             // MinimapMgr.inst.MoveCameraViaMinimap(selectionCursorPosition.ReadValue<Vector2>());
+        }
 
-        if(MinimapMgr.inst.CursorOverMap(selectionCursorPosition.ReadValue<Vector2>())) {
+        if (MinimapMgr.inst.CursorOverMap(selectionCursorPosition.ReadValue<Vector2>()))
+        {
             MinimapMgr.inst.ChangeZoom(mouseScroll.ReadValue<Vector2>().y);
             // MinimapMgr.inst.ChangeCenter(mouseDelta.ReadValue<Vector2>());
-        } else {
+        }
+        else
+        {
             CameraMgr.inst.MoveCameraY(mouseScroll.ReadValue<Vector2>().y);
             CameraMgr.inst.MoveCameraXZ(mouseDelta.ReadValue<Vector2>());
         }
-
-
     }
 
     private float greenHealth = 67;
@@ -383,14 +398,10 @@ public class UIMgr : MonoBehaviour
     private void UpdateHealth(Entity ent) {
         if(ent.health == lastHealth)
             return;
-        
         lastHealth = ent.health;
         float health = 100f * ent.health / ent.maxHealth;
-        //text
         healthText.text = health.ToString("000");
-        //fill
         healthImage.fillAmount = health/100;
-        //Color
         if(health >= greenHealth)
             healthImage.color = Color.green;
         else if (health > orangeHealth && health < greenHealth)
@@ -418,10 +429,7 @@ public class UIMgr : MonoBehaviour
             target.text = move.movePosition.ToString();
 
             Follow follow = uai.commands.Peek() as Follow;
-
             if(follow != null){
-
-
                 if(follow.targetEntity != null){
                     if(follow.targetEntity.name != lastTargetName){
                         lastTargetName = follow.targetEntity.name;
@@ -429,12 +437,8 @@ public class UIMgr : MonoBehaviour
                     }
                 }
             } 
-
         }
-
-
     }
-
 
     private void ToggleRTSView(InputAction.CallbackContext context)
     {
@@ -467,7 +471,6 @@ public class UIMgr : MonoBehaviour
 
     private void HandleCommand(InputAction.CallbackContext context)
     {
-        
         if (!inputs.Entities.ControlKey.IsPressed() &&
         !Keyboard.current.oKey.isPressed &&
         !Keyboard.current.pKey.isPressed &&
@@ -492,11 +495,9 @@ public class UIMgr : MonoBehaviour
         // GameMgr.inst.Create100();
     }
 
-
     private void ToggleMap(InputAction.CallbackContext context) {
         // MinimapMgr.inst.ResizeMap();
     }
-
 
     private void OnSelectAllPerformed(InputAction.CallbackContext context) {
         SelectionMgr.inst.SelectAll();
@@ -504,7 +505,6 @@ public class UIMgr : MonoBehaviour
     private void OnSelectAllDDG51Performed(InputAction.CallbackContext context) {
         SelectionMgr.inst.SelectAllDDG51();
     }
-    
     private void OnSelectAllJARIUSVPerformed(InputAction.CallbackContext context) {
         SelectionMgr.inst.SelectALLJARIUSV();
     }
@@ -518,10 +518,9 @@ public class UIMgr : MonoBehaviour
         int layerMask = 512; //Ocean layer = 9, 2^9 = 512
         if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
         {
-            ////Debug.DrawLine(Camera.main.transform.position, hit.point, Color.yellow, 2); //for debugging
             Vector3 pos = hit.point;
             pos.y = 0;
-            Entity ent = FindClosestEntInRadius(pos);//, rClickRadiusSq);//
+            Entity ent = FindClosestEntInRadius(pos);
             WorldPosEntity wpe = new WorldPosEntity(pos, ent);
             return wpe;
         }
@@ -538,7 +537,7 @@ public class UIMgr : MonoBehaviour
 
         foreach (var hitCollider in hitColliders)
         {
-            Entity entity = hitCollider.GetComponentInParent<Entity>(); // Or GetComponent<Entity>() if Entity is on the same GameObject as the collider
+            Entity entity = hitCollider.GetComponentInParent<Entity>();
             if (entity != null)
             {
                 float distanceSqr = (entity.transform.position - position).sqrMagnitude;
@@ -558,7 +557,6 @@ public class UIMgr : MonoBehaviour
         else
             inputs.Entities.Disable();
     }
-
 
     private void Attack1(InputAction.CallbackContext context)
     {
@@ -581,6 +579,5 @@ public class UIMgr : MonoBehaviour
     {
         //Debug.Log("Smart Weapon");
         // WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.Smart);
-
     }
 }

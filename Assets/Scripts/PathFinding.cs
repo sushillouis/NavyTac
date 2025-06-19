@@ -112,12 +112,5 @@ public class Pathfinding : MonoBehaviour
     public Vector3[] gizmoPath;
 
     // draw it in the editor
-    void OnDrawGizmos() {
-        if (gizmoPath == null || gizmoPath.Length < 2) return;
-        Gizmos.color = Color.green;
-        for (int i = 0; i < gizmoPath.Length - 1; i++) {
-            Gizmos.DrawSphere(gizmoPath[i], 0.1f);
-            Gizmos.DrawLine(gizmoPath[i], gizmoPath[i + 1]);
-        }
-    }
+   
 }

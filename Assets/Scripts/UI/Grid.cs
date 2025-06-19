@@ -87,24 +87,5 @@ public class Grid : MonoBehaviour
     }
 
     public int MaxSize => gridSizeX * gridSizeY;
-    // void OnDrawGizmos() {
-    //     // draw the overall grid bounds
-    //     Gizmos.color = Color.green;
-    //     Gizmos.DrawWireCube(
-    //         transform.position,
-    //         new Vector3(gridWorldSize.x, 1f, gridWorldSize.y)
-    //     );
-
-    //     if (grid == null) return;
-
-    //     // draw each node
-    //     for (int x = 0; x < gridSizeX; x++) {
-    //         for (int y = 0; y < gridSizeY; y++) {
-    //             Node node = grid[x, y];
-    //             Gizmos.color = node.walkable ? Color.white : Color.red;
-    //             Vector3 size = Vector3.one * (nodeDiameter - 0.1f);
-    //             Gizmos.DrawCube(node.worldPosition, size);
-    //         }
-    //     }
-    // }
+   
 }
