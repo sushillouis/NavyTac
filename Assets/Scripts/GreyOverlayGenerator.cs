@@ -63,12 +63,36 @@ public class GreyOverlayGenerator : MonoBehaviour
         {
             entity.isGreyed = true;
             StartCoroutine(FadeOutOverlay(entity.greyOverlayFadeDuration));
+            StartCoroutine(MoveEntityToOriginalPosition());
         }
         else
         {
             Debug.LogWarning("Entity not assigned — using default fade duration of 10s.");
             StartCoroutine(FadeOutOverlay(10f)); // Fallback
         }
+    }
+
+    private IEnumerator MoveEntityToOriginalPosition()
+    {
+        Vector3 originalPosition = entity.transform.position;
+        Vector3 targetPosition = new Vector3(originalPosition.x, -150f, originalPosition.z);
+
+        // Move entity to -150f
+        entity.transform.position = targetPosition;
+
+        float duration = entity.greyOverlayFadeDuration; // Adjust duration as needed
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            float t = elapsed / duration;
+            entity.transform.position = Vector3.Lerp(targetPosition, originalPosition, t);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // Ensure the entity is exactly at its original position
+        entity.transform.position = originalPosition;
     }
 
     public void RemoveGreyOverlay()
@@ -130,18 +154,5 @@ public class GreyOverlayGenerator : MonoBehaviour
         isFading = false;
     }
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.G) && !isFading)
-        {
-            ApplyGreyOverlay();
-        }
-
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            StopAllCoroutines();
-            RemoveGreyOverlay();
-            isFading = false;
-        }
-    }
+ 
 }

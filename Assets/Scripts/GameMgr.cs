@@ -66,7 +66,7 @@ public class GameMgr : MonoBehaviour
     public float headingPlayer2;
 
     [Range(0f, 1f)]
-    public float difficultyLevel = 0.2f;
+    public float difficultyLevel;
     public Dictionary<string, float> difficultyRanges = new()
     {
         {"easy", 0.333f},
@@ -132,7 +132,7 @@ public class GameMgr : MonoBehaviour
         if (displayedSpeedValue != lastDisplayedSpeedValue)
         {
             lastDisplayedSpeedValue = displayedSpeedValue;
-            float relativeDisplay = displayedSpeedValue - min + 1f;
+            float relativeDisplay = displayedSpeedValue;
             foreach (TextMeshProUGUI text in simSpeedButtonText)
             {
                 text.text = relativeDisplay.ToString("0");
@@ -185,26 +185,10 @@ public class GameMgr : MonoBehaviour
 
     void DetermineDifficulty()
     {
-        if (OpenOceanMain.inst == null)
-        {
-            difficultyLevel = difficultyRanges["easy"];
-            currentDifficulty = Difficulty.Easy;
-            return;
-        }
-
-        if (OpenOceanMain.inst.lobbyState == LobbyState.Replay)
-        {
-            if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
-            else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
-            else currentDifficulty = Difficulty.Hard;
-            return;
-        }
+        
 
         switch (OpenOceanMain.inst.currentTrainingState)
         {
-            case TrainingState.PreTest:
-                difficultyLevel = 0.2f;
-                break;
             case TrainingState.PostTest:
                 if (OpenOceanMain.inst.gamePlayCountMAX > 0)
                 {
@@ -219,9 +203,7 @@ public class GameMgr : MonoBehaviour
             case TrainingState.Adaptive:
                 difficultyLevel = ComputeAdaptiveDifficulty();
                 break;
-            case TrainingState.NonAdaptive:
             default:
-                difficultyLevel = 0.2f;
                 break;
         }
 

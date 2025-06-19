@@ -28,8 +28,15 @@ public class HealthBarMgr : MonoBehaviour
         transform.Rotate(0, 180, 0);
 
         // Visibility check
-        gameObject.SetActive(entity.isVisible);
-        
+        if (entity.isGreyed || !entity.isVisible)
+        {
+            
+            gameObject.SetActive(false);
+            return;
+        }
+        else {
+            gameObject.SetActive(true);
+        }
         SetHealthBar();
     }
 

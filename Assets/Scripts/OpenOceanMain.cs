@@ -309,7 +309,6 @@ public class OpenOceanMain : MonoBehaviour
         {
             case LOGIN_CODE_ADAPTIVE:
                 currentTrainingState = TrainingState.Adaptive;
-                if (GameMgr.inst != null) GameMgr.inst.difficultyLevel = 0.2f;
                 break;
             case LOGIN_CODE_NON_ADAPTIVE:
                 currentTrainingState = TrainingState.NonAdaptive;
