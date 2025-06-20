@@ -65,6 +65,8 @@ public class EnemyAIMgr : MonoBehaviour
         {
             return; // Skip AI processing in tutorial mode
         }
+        if (GameMgr.inst.isIntroPlaying) return;
+
         if (Time.time - lastUpdateTime < updateInterval) return;
         lastUpdateTime = Time.time;
 

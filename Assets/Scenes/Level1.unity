@@ -4180,7 +4180,7 @@ MonoBehaviour:
   headingPlayer1: 0
   posPlayer2: {x: 0, y: 0, z: 7000}
   headingPlayer2: 180
-  difficultyLevel: 0.57
+  difficultyLevel: 0.2
   allScenarios: []
 --- !u!114 &1129782063
 MonoBehaviour:
@@ -4948,6 +4948,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: MapSelectPanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 5664203522044234669, guid: 237a1a63acdb71544844a930ca79d548,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -35.00006
       objectReference: {fileID: 0}
     - target: {fileID: 8627727354957610720, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
@@ -6815,6 +6820,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ScorePanel
       objectReference: {fileID: 0}
+    - target: {fileID: 7736597981213494469, guid: 80bce631b4c42184898a37f5096c046b,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -35.00006
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8049,6 +8059,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1491763689}
     m_Modifications:
+    - target: {fileID: 1307002314760046593, guid: e0cbdce17e98e4e8994efdfde155618b,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -14.999939
+      objectReference: {fileID: 0}
     - target: {fileID: 2890244647486948354, guid: e0cbdce17e98e4e8994efdfde155618b,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -8177,6 +8192,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1491763689}
     m_Modifications:
+    - target: {fileID: 925161622609447559, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -35.00006
+      objectReference: {fileID: 0}
     - target: {fileID: 2576317505240213592, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -8759,6 +8779,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1491763689}
     m_Modifications:
+    - target: {fileID: 2154912725876448436, guid: d43bf3f91e83f364f921f8d7955a2b67,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -35.00006
+      objectReference: {fileID: 0}
     - target: {fileID: 4165066258349059795, guid: d43bf3f91e83f364f921f8d7955a2b67,
         type: 3}
       propertyPath: m_Pivot.x
@@ -9487,6 +9512,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 978792415911458728, guid: 3769d37cb4868da47b56c4040c02c3a9,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -14.999939
       objectReference: {fileID: 0}
     - target: {fileID: 1656525270814400324, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}

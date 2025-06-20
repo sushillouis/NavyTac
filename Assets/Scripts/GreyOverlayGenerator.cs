@@ -22,6 +22,8 @@ public class GreyOverlayGenerator : MonoBehaviour
 
     public void ApplyGreyOverlay()
     {
+        if (GameMgr.inst.isIntroPlaying) return;
+
         if (grayOverlayMaterial == null)
         {
             grayOverlayMaterial = CreateGreyOverlayMaterial();

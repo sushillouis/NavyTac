@@ -69,7 +69,7 @@ public class SpawnEntityMgr : MonoBehaviour
         SpawnMultiRowFormation(middleList, center, heading, 1000f, -90f, 90f, player, 10, 200f);
         
         // Spawn back units (DDG51/SeaHunter) with multi-row support
-        SpawnMultiRowFormation(backList, center, heading, 1000f, 135f, 225f, player, 10, 200f);
+        SpawnMultiRowFormation(backList, center, heading, 1000f, 135f, 225f, player, 10, 500f);
         
         // Spawn other units in standard rings
         SpawnOtherEntities(otherList, center, heading, player);

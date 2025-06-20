@@ -45,7 +45,7 @@ public class CameraMgr : MonoBehaviour
     private IEnumerator BRollAndSetCameraPosition()
     {
         // Slowly orbit halfway (semi-circle) around the scenario center for 6 seconds (slower B-roll)
-        float duration = 12f;
+        float duration = 5f;
         float elapsed = 0f;
         Vector3 scenarioCenter = GameMgr.inst.posPlayer1; // Or use a more appropriate center if needed
         float radius = 4000f;
@@ -67,19 +67,31 @@ public class CameraMgr : MonoBehaviour
         }
 
         // B-roll of the complete map: orbit around the map center at a higher altitude and larger radius
-        float mapBRollDuration = 12f;
+        float mapBRollDuration = 10f;
         float mapElapsed = 0f;
         Vector3 mapCenter = Vector3.zero;
         float mapRadius = 9125f; // Half of 18250
         float mapHeight = 6000f;
 
+        // Calculate direction from map center to Player 1
+        Vector3 toPlayer = (GameMgr.inst.posPlayer1 - mapCenter).normalized;
+        // Get the forward direction (z axis) and right direction (x axis) on the XZ plane
+        Vector3 forward = new Vector3(toPlayer.x, 0, toPlayer.z).normalized;
+        Vector3 right = Vector3.Cross(Vector3.up, forward);
+
+        // Start at -90 degrees (left of player) to +90 degrees (right of player), so the semi-circle faces Player 1
+        float mapStartAngle = -180f;
+        float mapEndAngle = 180f;
+
         while (mapElapsed < mapBRollDuration)
         {
-            float angle = Mathf.Lerp(0, 360, mapElapsed / mapBRollDuration);
+            float angle = Mathf.Lerp(mapStartAngle, mapEndAngle, mapElapsed / mapBRollDuration);
             float rad = angle * Mathf.Deg2Rad;
-            Vector3 offset = new Vector3(Mathf.Sin(rad) * mapRadius, mapHeight, Mathf.Cos(rad) * mapRadius);
+            // Offset is rotated around the forward/right axes so the semi-circle faces Player 1
+            Vector3 offset = (Mathf.Cos(rad) * forward + Mathf.Sin(rad) * right) * mapRadius;
+            offset.y = mapHeight;
             RTSCameraRig.transform.position = mapCenter + offset;
-            RTSCameraRig.transform.LookAt(mapCenter);
+            RTSCameraRig.transform.LookAt(GameMgr.inst.posPlayer1);
             mapElapsed += Time.deltaTime;
             yield return null;
         }
@@ -95,6 +107,16 @@ public class CameraMgr : MonoBehaviour
 
         // Look directly at Player 1's spawn point
         PitchNode.transform.LookAt(GameMgr.inst.posPlayer1);
+        GameMgr.inst.isIntroPlaying = false;
+        foreach (Entity e in EntityMgr.inst.entities)
+{
+    if (e != null && e.TryGetComponent<GreyOverlayGenerator>(out var greyOverlay))
+    {
+        greyOverlay.ApplyGreyOverlay();
+    }
+}
+
+
 
         // Store the base transform values
         baseYawLocalPosition = YawNode.transform.localPosition;
@@ -263,15 +285,18 @@ public class CameraMgr : MonoBehaviour
     }
     public void ResetCamera()
     {
-        // Reset all nodes to their initial transforms
-        YawNode.transform.localPosition = startYawLocalPosition;
-        YawNode.transform.localRotation = startYawLocalRotation;
+        // Reset all nodes and RTSCameraRig to zero position and rotation
+        RTSCameraRig.transform.position = Vector3.zero;
+        RTSCameraRig.transform.rotation = Quaternion.identity;
 
-        PitchNode.transform.localPosition = startPitchLocalPosition;
-        PitchNode.transform.localRotation = startPitchLocalRotation;
+        YawNode.transform.localPosition = Vector3.zero;
+        YawNode.transform.localRotation = Quaternion.identity;
 
-        RollNode.transform.localPosition = startRollLocalPosition;
-        RollNode.transform.localRotation = startRollLocalRotation;
+        PitchNode.transform.localPosition = Vector3.zero;
+        PitchNode.transform.localRotation = Quaternion.identity;
+
+        RollNode.transform.localPosition = Vector3.zero;
+        RollNode.transform.localRotation = Quaternion.identity;
     }
     private void HandleEdgeScrolling()
     {

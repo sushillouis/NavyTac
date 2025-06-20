@@ -64,6 +64,7 @@ public class GameMgr : MonoBehaviour
     public float headingPlayer1;
     public Vector3 posPlayer2;
     public float headingPlayer2;
+    public bool isIntroPlaying = true;
 
     [Range(0f, 1f)]
     public float difficultyLevel;
@@ -226,21 +227,24 @@ public class GameMgr : MonoBehaviour
     }
 
     public void OpenOcean1x1()
+{
+    isIntroPlaying = true;
+
+    if (OpenOceanMain.inst != null && OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial)
     {
-        if (OpenOceanMain.inst != null && OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial)
-        {
-            InitializeTrainingScenario();
-            SpawnTrainingEntities();
-        }
-        else
-        {
-            InitializeScenario();
-            SpawnEntities();
-            
-        }
-        if (CameraMgr.inst != null) CameraMgr.inst.SetCameraPosition();
-        if (ReplayMgr.inst != null) ReplayMgr.inst.StartNewScenario();
+        InitializeTrainingScenario();
+        SpawnTrainingEntities();
     }
+    else
+    {
+        InitializeScenario();
+        SpawnEntities();
+    }
+
+    if (CameraMgr.inst != null) CameraMgr.inst.SetCameraPosition();
+    if (ReplayMgr.inst != null) ReplayMgr.inst.StartNewScenario();
+}
+
 
     // Called when in Tutorial training state
     public void InitializeTrainingScenario()
