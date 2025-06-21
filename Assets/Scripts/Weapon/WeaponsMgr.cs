@@ -66,7 +66,11 @@ public class WeaponsMgr : MonoBehaviour
         WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
         if (weaponsAspect == null || weaponsAspect.weapon == null) return;
 
-        if (targetEntity != null && targetEntity.owner != entity.owner&& targetEntity.entityClass!= EntityClass.Missile && !targetEntity.isGreyed)
+        if (targetEntity != null && targetEntity.owner != entity.owner && 
+            targetEntity.entityClass != EntityClass.Missile && 
+            !targetEntity.isGreyed && 
+            targetEntity.owner != PlayerMgr.inst.neutral && 
+            entity.owner != PlayerMgr.inst.neutral)
         {
             LaunchWeapon(entity, weaponsAspect.weapon, targetEntity, targetEntity.transform.position);
         }
@@ -311,6 +315,7 @@ public class WeaponsMgr : MonoBehaviour
             EntityMgr.inst.entities.Remove(entity);
             DistanceMgr.inst.Initialize();
             Destroy(entity.gameObject);
+            FXMgr.inst.CreateExplosionAt(entity.position, 1, entity.transform.localScale.x);
             if (entity.entityRole == EntityRole.Base)
             {
                 if (entity.owner != null)
@@ -318,27 +323,27 @@ public class WeaponsMgr : MonoBehaviour
                     bool wasAIBase = entity.owner == PlayerMgr.inst.player2;
 
                     if (wasAIBase)
-            {
-                ScoreMgr.inst.playerWon = true;
-                ScoreMgr.inst.winReason = "Opponent Base Destroyed"; // Set win reason
+                    {
+                        ScoreMgr.inst.playerWon = true;
+                        ScoreMgr.inst.winReason = "Opponent Base Destroyed"; // Set win reason
+                    }
+                    else
+                    {
+                        ScoreMgr.inst.aiWon = true;
+                        ScoreMgr.inst.winReason = "Your Base Was Destroyed";
+                    }
+                    ScoreMgr.inst.CheckVictory();
+                }
             }
-            else
-            {
-                ScoreMgr.inst.aiWon = true;
-                ScoreMgr.inst.winReason = "Your Base Was Destroyed";
-            }
-            ScoreMgr.inst.CheckVictory();
-            }
-            }   
             else if (entity.entityClass != EntityClass.Missile)
             {
                 // Check if owner has any combat entities left (non-missile, non-base)
                 TactPlayer owner = entity.owner;
                 if (owner != null)
                 {
-                    bool hasCombatEntities = EntityMgr.inst.entities.Any(e => 
-                        e.owner == owner && 
-                        e.entityClass != EntityClass.Missile && 
+                    bool hasCombatEntities = EntityMgr.inst.entities.Any(e =>
+                        e.owner == owner &&
+                        e.entityClass != EntityClass.Missile &&
                         e.entityRole != EntityRole.Base);
 
                     if (!hasCombatEntities)

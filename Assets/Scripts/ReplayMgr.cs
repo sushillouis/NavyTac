@@ -50,15 +50,7 @@ public class ReplayMgr : MonoBehaviour
 
     private void Awake()
     {
-        if (inst == null)
-        {
-            inst = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        inst = this;
     }
 
     public void StartNewScenario()

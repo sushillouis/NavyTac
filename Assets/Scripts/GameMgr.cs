@@ -23,10 +23,10 @@ public class ScenarioData
 {
     public int scenarioNumber;
     public List<EntityQuantity> entityQuantities;
-    public Vector3 posPlayer1;
-    public float headingPlayer1;
-    public Vector3 posPlayer2;
-    public float headingPlayer2;
+    public List<Vector3> Player1Positions = new();
+    public List<float> Player1Headings = new();
+    public List<Vector3> Player2Positions = new();
+    public List<float> Player2Headings = new();
     public float difficultyLevel;
     public string timestamp;
     public bool winLoss;
@@ -60,10 +60,10 @@ public class GameMgr : MonoBehaviour
     [SerializeField] public List<EntityQuantity> entityQuantities = new();
     public Dictionary<EntityType, int> entityDict;
     [Header("Player Start Positions")]
-    public Vector3 posPlayer1;
-    public float headingPlayer1;
-    public Vector3 posPlayer2;
-    public float headingPlayer2;
+    public List<Vector3> posPlayer1List = new();
+    public List<float> headingPlayer1List = new();
+    public List<Vector3> posPlayer2List = new();
+    public List<float> headingPlayer2List = new();
     public bool isIntroPlaying = true;
 
     [Range(0f, 1f)]
@@ -264,13 +264,20 @@ public class GameMgr : MonoBehaviour
                 eq.unitCount = 1;
             }
             BuildEntityDictionary();
-            posPlayer1 = new Vector3(0, 0, 0);
-            headingPlayer1 = 0f; // Facing North
-            posPlayer2 = new Vector3(0, 0, 7000);
-            headingPlayer2 = 180f; // Facing South
-            SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer1, headingPlayer1, PlayerMgr.inst.player1);
-            SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer2, headingPlayer2, PlayerMgr.inst.player2);
-            EntityMgr.inst.CreateEntity(EntityType.DDG51, new Vector3(0,0,3000), new Vector3(0,headingPlayer2,0), player: PlayerMgr.inst.player2);
+
+            posPlayer1List.Clear();
+            headingPlayer1List.Clear();
+            posPlayer1List.Add(new Vector3(0, 0, 0));
+            headingPlayer1List.Add(0f); // Facing North
+
+            posPlayer2List.Clear();
+            headingPlayer2List.Clear();
+            posPlayer2List.Add(new Vector3(0, 0, 7000));
+            headingPlayer2List.Add(180f); // Facing South
+
+            SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer1List[0], headingPlayer1List[0], PlayerMgr.inst.player1);
+            SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer2List[0], headingPlayer2List[0], PlayerMgr.inst.player2);
+            EntityMgr.inst.CreateEntity(EntityType.DDG51, new Vector3(0,0,3000), new Vector3(0,headingPlayer2List[0],0), player: PlayerMgr.inst.player2);
             // Optionally spawn player2 or other tutorial-specific entities as needed
         }
     }
@@ -395,10 +402,15 @@ public class GameMgr : MonoBehaviour
             new() { position = new(7000, 0, 0),  heading = 270 }
         };
 
+        posPlayer1List.Clear();
+        headingPlayer1List.Clear();
+        posPlayer2List.Clear();
+        headingPlayer2List.Clear();
+
         int player1Index = UnityEngine.Random.Range(0, allPositions.Length);
         StartingPosition p1StartPos = allPositions[player1Index];
-        posPlayer1 = p1StartPos.position;
-        headingPlayer1 = p1StartPos.heading;
+        posPlayer1List.Add(p1StartPos.position);
+        headingPlayer1List.Add(p1StartPos.heading);
 
         List<int> player2ValidIndices = GetValidPlayer2Positions(player1Index);
         int player2AssignedIndex = player1Index;
@@ -419,14 +431,39 @@ public class GameMgr : MonoBehaviour
         }
 
         StartingPosition p2StartPos = allPositions[player2AssignedIndex];
-        posPlayer2 = p2StartPos.position;
-        headingPlayer2 = p2StartPos.heading;
+        posPlayer2List.Add(p2StartPos.position);
+        headingPlayer2List.Add(p2StartPos.heading);
 
-        if (PlayerMgr.inst != null)
+        // Find the third available index for neutral entities
+        List<int> usedIndices = new() { player1Index, player2AssignedIndex };
+        int neutralIndex = -1;
+        for (int i = 0; i < allPositions.Length; ++i)
         {
-            SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(p1StartPos.position, p1StartPos.heading, PlayerMgr.inst.player1);
-            SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(p2StartPos.position, p2StartPos.heading, PlayerMgr.inst.player2);
+            if (!usedIndices.Contains(i))
+            {
+                neutralIndex = i;
+                break;
+            }
         }
+
+        // Spawn neutral entities at the third starting point if available
+        if (neutralIndex != -1 && SpawnEntityMgr.inst != null)
+        {
+            // You may want to define what "neutral" means in your context.
+            // Here, we assume you have a PlayerMgr.inst.neutral or similar.
+            var neutralPlayer = PlayerMgr.inst != null ? PlayerMgr.inst.neutral : null;
+            if (neutralPlayer != null)
+            {
+                SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(
+                    allPositions[neutralIndex].position,
+                    allPositions[neutralIndex].heading,
+                    neutralPlayer
+                );
+            }
+        }
+
+        SpawnWithExistingPositions();
+
         List<Entity> allEntities = EntityMgr.inst.entities;
         foreach (Entity e in allEntities)
         {
@@ -434,7 +471,7 @@ public class GameMgr : MonoBehaviour
             {
                 greyOverlay.ApplyGreyOverlay();
             }
-}
+        }
     }
 
     List<int> GetValidPlayer2Positions(int player1Index)
@@ -479,10 +516,10 @@ public class GameMgr : MonoBehaviour
         {
             scenarioNumber = allScenarios.Count + 1,
             entityQuantities = new(entityQuantities),
-            posPlayer1 = posPlayer1,
-            headingPlayer1 = headingPlayer1,
-            posPlayer2 = posPlayer2,
-            headingPlayer2 = headingPlayer2,
+            Player1Positions = new(posPlayer1List),
+            Player1Headings = new(headingPlayer1List),
+            Player2Positions = new(posPlayer2List),
+            Player2Headings = new(headingPlayer2List),
             difficultyLevel = difficultyLevel,
             winLoss = ScoreMgr.inst != null && ScoreMgr.inst.playerWon,
             winReason = ScoreMgr.inst != null ? ScoreMgr.inst.winReason : "Unknown",
@@ -497,10 +534,10 @@ public class GameMgr : MonoBehaviour
     public void InitializeScenarioFromData(ScenarioData data)
     {
         entityQuantities = new(data.entityQuantities);
-        posPlayer1 = data.posPlayer1;
-        headingPlayer1 = data.headingPlayer1;
-        posPlayer2 = data.posPlayer2;
-        headingPlayer2 = data.headingPlayer2;
+        posPlayer1List = new(data.Player1Positions);
+        headingPlayer1List = new(data.Player1Headings);
+        posPlayer2List = new(data.Player2Positions);
+        headingPlayer2List = new(data.Player2Headings);
         difficultyLevel = data.difficultyLevel;
         InitializeScenario();
         SpawnWithExistingPositions();
@@ -510,8 +547,14 @@ public class GameMgr : MonoBehaviour
     {
         if (PlayerMgr.inst != null)
         {
-            SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer1, headingPlayer1, PlayerMgr.inst.player1);
-            SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer2, headingPlayer2, PlayerMgr.inst.player2);
+            for (int i = 0; i < posPlayer1List.Count; i++)
+            {
+                SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer1List[i], headingPlayer1List[i], PlayerMgr.inst.player1);
+            }
+            for (int i = 0; i < posPlayer2List.Count; i++)
+            {
+                SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer2List[i], headingPlayer2List[i], PlayerMgr.inst.player2);
+            }
         }
     }
 
@@ -520,5 +563,48 @@ public class GameMgr : MonoBehaviour
     public ScenarioData GetScenario(int scenarioNumber) =>
         allScenarios.Find(s => s.scenarioNumber == scenarioNumber);
 
-    public void Create100() { }
+    public void CreateTwoVsTwoScenario()
+    {
+        isIntroPlaying = true;
+
+        // Define all possible starting positions and headings
+        StartingPosition northStart = new() { position = new(0, 0, -7000), heading = 0 };
+        StartingPosition southStart = new() { position = new(0, 0, 7000), heading = 180 };
+        StartingPosition westStart = new() { position = new(-7000, 0, 0), heading = 90 };
+        StartingPosition eastStart = new() { position = new(7000, 0, 0), heading = 270 };
+
+        // Clear existing lists to prepare for the new scenario
+        posPlayer1List.Clear();
+        headingPlayer1List.Clear();
+        posPlayer2List.Clear();
+        headingPlayer2List.Clear();
+
+        // Assign two starting positions and headings for Player 1
+        Vector3 player1pos = northStart.position;
+        float player1heading = northStart.heading;
+        posPlayer1List.Add(player1pos);
+        headingPlayer1List.Add(player1heading);
+
+        player1pos = westStart.position;
+        player1heading = westStart.heading;
+        posPlayer1List.Add(player1pos);
+        headingPlayer1List.Add(player1heading);
+
+        // Assign the remaining two starting positions and headings for Player 2
+        Vector3 player2pos = southStart.position;
+        float player2heading = southStart.heading;
+        posPlayer2List.Add(player2pos);
+        headingPlayer2List.Add(player2heading);
+
+        player2pos = eastStart.position;
+        player2heading = eastStart.heading;
+        posPlayer2List.Add(player2pos);
+        headingPlayer2List.Add(player2heading);
+
+        // Ensure the entity dictionary reflects the current unit counts
+        BuildEntityDictionary();
+
+        // Spawn the entities for both players at their designated starting locations
+        SpawnWithExistingPositions();
+    }
 }

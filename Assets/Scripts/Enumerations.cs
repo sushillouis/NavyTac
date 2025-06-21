@@ -31,13 +31,14 @@ public enum EntityType
 public enum PlayerSide
 {
     SideOne = 0,
-    SideTwo, 
+    SideTwo,
     SideThree,
     SideFour,
     SideFive,
     SideSix,
     SideSeven,
     SideEight,
+    Neutral, 
 }
 
 [Serializable]

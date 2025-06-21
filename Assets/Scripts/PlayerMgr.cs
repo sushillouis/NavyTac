@@ -50,6 +50,7 @@ public class PlayerMgr : MonoBehaviour
     //For testing;
     public TactPlayer player1;
     public TactPlayer player2;
+    public TactPlayer neutral;
     public TactPlayer localPlayer;
 
 

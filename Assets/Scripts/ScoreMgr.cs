@@ -334,8 +334,8 @@ public class ScoreMgr : MonoBehaviour
         Dictionary<EntityType, int> destroyedAIUnits = (aiPlayer != null) ? GetDestroyedUnits(aiPlayer) : new Dictionary<EntityType, int>();
 
 
-        string playerBaseLocation = GetCardinalDirection(GameMgr.inst.posPlayer1);
-        string aiBaseLocation = GetCardinalDirection(GameMgr.inst.posPlayer2);
+        string playerBaseLocation = GetCardinalDirection(GameMgr.inst.posPlayer1List[0]);
+        string aiBaseLocation = GetCardinalDirection(GameMgr.inst.posPlayer2List[0]);
 
 
         string winCondition = winReason; 

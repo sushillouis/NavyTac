@@ -11,11 +11,12 @@ public class FXMgr : MonoBehaviour
 
     public ExplosionSmall explosionSmallPrefab;
 
-    public void CreateExplosionAt(Vector3 pos, float interval = 1) {
-        // //Debug.Log("Exploding at: " + pos);
-        ExplosionSmall et = Instantiate(explosionSmallPrefab, pos, Quaternion.identity, transform);
-        StartCoroutine(ExplodeAndDestroy(et, interval));
-    }
+    public void CreateExplosionAt(Vector3 pos, float interval = 1, float scaleMultiplier = 1f) {
+    ExplosionSmall et = Instantiate(explosionSmallPrefab, pos, Quaternion.identity, transform);
+    et.transform.localScale *= scaleMultiplier; // ← Increase size
+    StartCoroutine(ExplodeAndDestroy(et, interval));
+}
+
 
     IEnumerator ExplodeAndDestroy(ExplosionSmall et, float interval) {
         yield return new WaitForFixedUpdate();

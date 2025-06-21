@@ -66,40 +66,54 @@ public class WeaponsAspect : MonoBehaviour
         }
     }
 
+private Entity lastTarget;
+private float lastTargetTime;
+public float targetStickinessDuration = 2f;
+
 public Entity FindImmediateThreatInRange()
-{
-    Vector3 entityPos = entity.position;
-    Entity nearest = null;
-    float nearestDistSq = float.MaxValue;
-
-    Collider[] hitColliders = Physics.OverlapSphere(entityPos, weapon.range);
-
-    foreach (Collider hitCollider in hitColliders)
     {
-        Entity potentialEnemy = hitCollider.GetComponentInParent<Entity>();
-
-        if (potentialEnemy == null || potentialEnemy.owner == null ||
-            potentialEnemy.owner == entity.owner || // Check if the owner is the same
-            potentialEnemy.entityClass == EntityClass.Missile ||
-            potentialEnemy == entity)
-        {
-            continue;
-        }
-        
-        if (!IsTargetValid(potentialEnemy)) // Use existing IsTargetValid for additional checks
-        {
-            continue;
-        }
-
-        float distSq = (potentialEnemy.position - entityPos).sqrMagnitude;
-        if (distSq < nearestDistSq)
-        {
-            nearest = potentialEnemy;
-            nearestDistSq = distSq;
-        }
+         if (lastTarget != null && Time.time - lastTargetTime < targetStickinessDuration && IsTargetValid(lastTarget))
+    {
+        return lastTarget;
     }
-    return nearest;
-}
+
+        Vector3 entityPos = entity.position;
+        Entity nearest = null;
+        float nearestDistSq = float.MaxValue;
+
+        Collider[] hitColliders = Physics.OverlapSphere(entityPos, weapon.range);
+
+        foreach (Collider hitCollider in hitColliders)
+        {
+            Entity potentialEnemy = hitCollider.GetComponentInParent<Entity>();
+
+            if (potentialEnemy == null || potentialEnemy.owner == null ||
+                potentialEnemy.owner == entity.owner || // Check if the owner is the same
+                potentialEnemy.entityClass == EntityClass.Missile ||
+                potentialEnemy == entity)
+            {
+                continue;
+            }
+
+            if (!IsTargetValid(potentialEnemy)) // Use existing IsTargetValid for additional checks
+            {
+                continue;
+            }
+
+            float distSq = (potentialEnemy.position - entityPos).sqrMagnitude;
+            if (distSq < nearestDistSq)
+            {
+                nearest = potentialEnemy;
+                nearestDistSq = distSq;
+            }
+        }
+        if (nearest != null)
+    {
+        lastTarget = nearest;
+        lastTargetTime = Time.time;
+    }
+        return nearest;
+    }
     
     public bool IsTargetValid(Entity target)
     {

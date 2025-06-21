@@ -47,7 +47,7 @@ public class CameraMgr : MonoBehaviour
         // Slowly orbit halfway (semi-circle) around the scenario center for 6 seconds (slower B-roll)
         float duration = 5f;
         float elapsed = 0f;
-        Vector3 scenarioCenter = GameMgr.inst.posPlayer1; // Or use a more appropriate center if needed
+        Vector3 scenarioCenter = GameMgr.inst.posPlayer1List[0]; // Or use a more appropriate center if needed
         float radius = 4000f;
         float height = 2500f;
 
@@ -74,7 +74,7 @@ public class CameraMgr : MonoBehaviour
         float mapHeight = 6000f;
 
         // Calculate direction from map center to Player 1
-        Vector3 toPlayer = (GameMgr.inst.posPlayer1 - mapCenter).normalized;
+        Vector3 toPlayer = (GameMgr.inst.posPlayer1List[0] - mapCenter).normalized;
         // Get the forward direction (z axis) and right direction (x axis) on the XZ plane
         Vector3 forward = new Vector3(toPlayer.x, 0, toPlayer.z).normalized;
         Vector3 right = Vector3.Cross(Vector3.up, forward);
@@ -91,22 +91,22 @@ public class CameraMgr : MonoBehaviour
             Vector3 offset = (Mathf.Cos(rad) * forward + Mathf.Sin(rad) * right) * mapRadius;
             offset.y = mapHeight;
             RTSCameraRig.transform.position = mapCenter + offset;
-            RTSCameraRig.transform.LookAt(GameMgr.inst.posPlayer1);
+            RTSCameraRig.transform.LookAt(GameMgr.inst.posPlayer1List[0]);
             mapElapsed += Time.deltaTime;
             yield return null;
         }
         ResetCamera();
         // Position camera 1500 units above and 2000 units behind Player 1
         Vector3 baseOffset = new Vector3(0, 2000, -3000);
-        Quaternion headingRotation = Quaternion.Euler(0, GameMgr.inst.headingPlayer1, 0);
-        Vector3 cameraPosition = GameMgr.inst.posPlayer1 + headingRotation * baseOffset;
+        Quaternion headingRotation = Quaternion.Euler(0, GameMgr.inst.headingPlayer1List[0], 0);
+        Vector3 cameraPosition = GameMgr.inst.posPlayer1List[0] + headingRotation * baseOffset;
 
         // Set camera position and orientation
         RTSCameraRig.transform.position = cameraPosition;
         YawNode.transform.rotation = headingRotation;
 
         // Look directly at Player 1's spawn point
-        PitchNode.transform.LookAt(GameMgr.inst.posPlayer1);
+        PitchNode.transform.LookAt(GameMgr.inst.posPlayer1List[0]);
         GameMgr.inst.isIntroPlaying = false;
         foreach (Entity e in EntityMgr.inst.entities)
 {

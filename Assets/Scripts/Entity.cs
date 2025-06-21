@@ -90,9 +90,12 @@ public class Entity : MonoBehaviour
 
         isSelected = false;
     }
-
-    void SetEntityColors()
+    public void SetEntityColors()
     {
+        if (owner == null || owner == PlayerMgr.inst.neutral)
+        {
+            return; // Do not set any colors for neutral or undefined owner
+        }
         Renderer[] childRenderers = GetComponentsInChildren<Renderer>(true);
         foreach (var renderer in childRenderers)
         {
