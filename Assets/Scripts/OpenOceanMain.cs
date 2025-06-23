@@ -112,6 +112,7 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField] private Button resumeButton;
     [SerializeField] private Button quitButton;
     [SerializeField] private List<Button> menuButtons;
+    [SerializeField] public Button SkipButton;
 
     [Header("Replay Panel")]
     [SerializeField] private Button replayExitButton;

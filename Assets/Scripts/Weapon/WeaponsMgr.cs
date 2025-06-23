@@ -320,19 +320,36 @@ public class WeaponsMgr : MonoBehaviour
             {
                 if (entity.owner != null)
                 {
-                    bool wasAIBase = entity.owner == PlayerMgr.inst.player2;
+                    bool wasAIBase = entity.owner != PlayerMgr.inst.localPlayer;
 
                     if (wasAIBase)
                     {
-                        ScoreMgr.inst.playerWon = true;
-                        ScoreMgr.inst.winReason = "Opponent Base Destroyed"; // Set win reason
+                        // Check if all AI bases are destroyed
+                        bool allAIBasesDestroyed = !EntityMgr.inst.entities.Any(e =>
+                            e.entityRole == EntityRole.Base &&
+                            e.owner == PlayerMgr.inst.player2);
+
+                        if (allAIBasesDestroyed)
+                        {
+                            ScoreMgr.inst.playerWon = true;
+                            ScoreMgr.inst.winReason = "All Opponent Bases Destroyed"; // Set win reason
+                            ScoreMgr.inst.CheckVictory();
+                        }
                     }
                     else
                     {
-                        ScoreMgr.inst.aiWon = true;
-                        ScoreMgr.inst.winReason = "Your Base Was Destroyed";
+                        // Check if all player bases are destroyed
+                        bool allPlayerBasesDestroyed = !EntityMgr.inst.entities.Any(e =>
+                            e.entityRole == EntityRole.Base &&
+                            e.owner == PlayerMgr.inst.player1);
+
+                        if (allPlayerBasesDestroyed)
+                        {
+                            ScoreMgr.inst.aiWon = true;
+                            ScoreMgr.inst.winReason = "All Your Bases Were Destroyed";
+                            ScoreMgr.inst.CheckVictory();
+                        }
                     }
-                    ScoreMgr.inst.CheckVictory();
                 }
             }
             else if (entity.entityClass != EntityClass.Missile)

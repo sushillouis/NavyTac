@@ -18,6 +18,8 @@ public class CameraMgr : MonoBehaviour
     private Vector3 startRollLocalPosition;
     private Quaternion startRollLocalRotation;
 
+    private Coroutine bRollCoroutine;
+
 
     private void Awake()
     {
@@ -38,8 +40,21 @@ public class CameraMgr : MonoBehaviour
 
     public void SetCameraPosition()
     {
+        // Stop any existing B-roll to prevent multiple instances
+        if (bRollCoroutine != null)
+        {
+            StopCoroutine(bRollCoroutine);
+        }
+
+        // Show skip button and add listener
+        if (OpenOceanMain.inst != null && OpenOceanMain.inst.SkipButton != null) {
+            OpenOceanMain.inst.SkipButton.gameObject.SetActive(true);
+            OpenOceanMain.inst.SkipButton.onClick.RemoveAllListeners(); // Clear existing listeners
+            OpenOceanMain.inst.SkipButton.onClick.AddListener(ExitBRollAndStartGame);
+        }
+
         // Perform a B-roll of the complete scenario before setting the camera position
-        StartCoroutine(BRollAndSetCameraPosition());
+        bRollCoroutine = StartCoroutine(BRollAndSetCameraPosition());
     }
 
     private IEnumerator BRollAndSetCameraPosition()
@@ -95,6 +110,35 @@ public class CameraMgr : MonoBehaviour
             mapElapsed += Time.deltaTime;
             yield return null;
         }
+        
+        // When the B-roll completes, call the exit function to clean up and start the game.
+        ExitBRollAndStartGame();
+        yield break;
+    }
+
+    /// <summary>
+    /// Exits the B-Roll sequence and sets the camera to the initial game position.
+    /// </summary>
+    public void ExitBRollAndStartGame()
+    {
+        if (bRollCoroutine != null)
+        {
+            StopCoroutine(bRollCoroutine);
+            bRollCoroutine = null;
+        }
+
+        // Hide the skip button and remove listeners
+        if (OpenOceanMain.inst != null && OpenOceanMain.inst.SkipButton!= null)
+        {
+            OpenOceanMain.inst.SkipButton.gameObject.SetActive(false);
+            OpenOceanMain.inst.SkipButton.onClick.RemoveAllListeners();
+        }
+
+        SetupInitialGameCamera();
+    }
+
+    private void SetupInitialGameCamera()
+    {
         ResetCamera();
         // Position camera 1500 units above and 2000 units behind Player 1
         Vector3 baseOffset = new Vector3(0, 2000, -3000);
@@ -109,14 +153,12 @@ public class CameraMgr : MonoBehaviour
         PitchNode.transform.LookAt(GameMgr.inst.posPlayer1List[0]);
         GameMgr.inst.isIntroPlaying = false;
         foreach (Entity e in EntityMgr.inst.entities)
-{
-    if (e != null && e.TryGetComponent<GreyOverlayGenerator>(out var greyOverlay))
-    {
-        greyOverlay.ApplyGreyOverlay();
-    }
-}
-
-
+        {
+            if (e != null && e.TryGetComponent<GreyOverlayGenerator>(out var greyOverlay))
+            {
+                greyOverlay.ApplyGreyOverlay();
+            }
+        }
 
         // Store the base transform values
         baseYawLocalPosition = YawNode.transform.localPosition;

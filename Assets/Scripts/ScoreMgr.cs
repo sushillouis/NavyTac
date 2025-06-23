@@ -430,11 +430,22 @@ public class ScoreMgr : MonoBehaviour
         {
             return destroyed; 
         }
+
+        // Get the current counts of entities owned by the player
+        Dictionary<EntityType, int> currentCounts = EntityMgr.inst.entities
+            .Where(e => e.owner == owner)
+            .GroupBy(e => e.entityType)
+            .ToDictionary(g => g.Key, g => g.Count());
+
         foreach (EntityQuantity eq in GameMgr.inst.entityQuantities)
         {
-            int remaining = EntityMgr.inst.entities.Count(e => e.entityType == eq.entityType && e.owner == owner);
-            destroyed[eq.entityType] = eq.unitCount - remaining;
+            int initialCount = eq.unitCount;
+            int currentCount = currentCounts.GetValueOrDefault(eq.entityType, 0);
+
+            // Calculate destroyed units based on the difference
+            destroyed[eq.entityType] = Math.Max(0, initialCount - currentCount);
         }
+
         return destroyed; 
     }
 

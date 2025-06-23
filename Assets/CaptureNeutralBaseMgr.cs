@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 public class CaptureNeutralBaseMgr : MonoBehaviour
 {
@@ -112,25 +113,47 @@ public class CaptureNeutralBaseMgr : MonoBehaviour
         return false;
     }
 
-    private void ChangeOwnership(TactPlayer owner)
+   private void ChangeOwnership(TactPlayer newOwner)
+{
+    foreach (Entity entity in EnemyAIMgr.inst.neutralBases)
     {
-        foreach (Entity entity in EnemyAIMgr.inst.neutralBases)
+        if (entity != null && entity.owner != newOwner)
         {
-            if (entity != null && entity.owner != owner)
-            {
-                entity.owner = owner;
-                entity.SetEntityColors();
-            }
-        }
-        foreach (Entity entity in EnemyAIMgr.inst.neutralEntitiesList)
-        {
-            if (entity != null && entity.owner != owner)
-            {
-                entity.owner = owner;
-                entity.SetEntityColors();
-            }
+            entity.owner = newOwner;
+            entity.SetEntityColors();
+            UpdateEntityQuantities(newOwner, entity.entityType);
         }
     }
+
+    foreach (Entity entity in EnemyAIMgr.inst.neutralEntitiesList)
+    {
+        if (entity != null && entity.owner != newOwner)
+        {
+            entity.owner = newOwner;
+            entity.SetEntityColors();
+            UpdateEntityQuantities(newOwner, entity.entityType);
+        }
+    }
+}
+private void UpdateEntityQuantities(TactPlayer owner, EntityType type)
+{
+    if (owner == PlayerMgr.inst.player1 || owner == PlayerMgr.inst.player2)
+    {
+        var eqList = GameMgr.inst.entityQuantities;
+        var entry = eqList.FirstOrDefault(eq => eq.entityType == type);
+        if (entry != null)
+        {
+            entry.unitCount += 1;
+        }
+        else
+        {
+            eqList.Add(new EntityQuantity { entityType = type, unitCount = 1 });
+        }
+
+        GameMgr.inst.BuildEntityDictionary();
+    }
+}
+
 
     private void ActivateUIElements()
     {
@@ -188,7 +211,7 @@ public class CaptureNeutralBaseMgr : MonoBehaviour
     private bool IsNeutralEntityVisible()
     {
         Entity neutralBase = EnemyAIMgr.inst?.neutralBases?.Count > 0 ? EnemyAIMgr.inst.neutralBases[0] : null;
-        if (neutralBase == null || neutralBase.transform == null || Camera.main == null || isCaptured)
+        if (neutralBase == null || neutralBase.transform == null || Camera.main == null || isCaptured || !neutralBase.isVisible)
         {
             return false;
         }
