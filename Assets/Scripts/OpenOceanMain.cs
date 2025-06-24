@@ -1,4 +1,4 @@
-    using System.Threading;
+using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,7 +23,7 @@ public class OpenOceanMain : MonoBehaviour
     private float savedTimeScale = 1f;
     private float totalPlayTime = 0f;
 
-    
+
     [SerializeField]
     private ushort port = 7777;
 
@@ -445,15 +445,15 @@ public class OpenOceanMain : MonoBehaviour
             if (UIMgr.inst != null) UIMgr.inst.gameObject.SetActive(value == LobbyState.Play);
             if (GroupUIMgr.inst != null) GroupUIMgr.inst.gameObject.SetActive(value == LobbyState.Play);
 
-            if (value == LobbyState.MultiScorePanel )
+            if (value == LobbyState.MultiScorePanel)
             {
                 UpdateMultiScorePanelButtonTexts();
                 if (previousState != LobbyState.Replay)
                 {
-                    UpdateMultiScoreDisplay(); 
+                    UpdateMultiScoreDisplay();
                 }
             }
-        
+
         }
     }
 
@@ -514,7 +514,7 @@ public class OpenOceanMain : MonoBehaviour
         if (lobbyState == LobbyState.Play)
         {
             totalPlayTime += Time.unscaledDeltaTime;
-            
+
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -535,7 +535,7 @@ public class OpenOceanMain : MonoBehaviour
     public void OnStartButton()
     {
         totalPlayTime = 0f;
-        Time.timeScale = 1; 
+        Time.timeScale = 1;
         GameMgr.inst.OpenOcean1x1();
         lobbyState = LobbyState.Play;
     }
@@ -584,7 +584,7 @@ public class OpenOceanMain : MonoBehaviour
         if (currentTrainingState == TrainingState.NonAdaptive || currentTrainingState == TrainingState.Adaptive)
         {
             Debug.Log(totalTrainingTime + " >= " + TrainingTime * 60f + " ? " + (totalTrainingTime >= TrainingTime * 60f));
-            return totalTrainingTime>= TrainingTime * 60f;
+            return totalTrainingTime >= TrainingTime * 60f;
         }
         return gamesPlayedCount >= gamePlayCountMAX;
     }
@@ -613,12 +613,12 @@ public class OpenOceanMain : MonoBehaviour
         }
     }
     private bool hasReplayedOnce = false; // Track if a replay has already occurred
-   public void OnMultiScorePanelNextOrExitClicked()
-{
-    UpdateMultiScorePanelButtonTexts();
-    float lastScore = ScoreMgr.inst.LastScenarioScore();
-    
-    // Enforce one replay if score < 60 and in Adaptive mode
+    public void OnMultiScorePanelNextOrExitClicked()
+    {
+        UpdateMultiScorePanelButtonTexts();
+        float lastScore = ScoreMgr.inst.LastScenarioScore();
+
+        // Enforce one replay if score < 60 and in Adaptive mode
         if (lastScore < 60f && currentTrainingState == TrainingState.Adaptive && !hasReplayedOnce)
         {
             hasReplayedOnce = true;
@@ -638,10 +638,10 @@ public class OpenOceanMain : MonoBehaviour
             hasReplayedOnce = false; // Reset for next scenario
             StartNextGameSession();
         }
-}
+    }
 
-    
-     private void UpdateScorePanelButtonTexts()
+
+    private void UpdateScorePanelButtonTexts()
     {
         // This method relies on a private class field `_isMandatoryReplayPending`.
 
@@ -656,7 +656,7 @@ public class OpenOceanMain : MonoBehaviour
             {
                 singleScoreButtonText.text = EXIT_BUTTON_TEXT;
             }
-            else if(currentTrainingState == TrainingState.Tutorial)
+            else if (currentTrainingState == TrainingState.Tutorial)
             {
                 singleScoreButtonText.text = EXIT_BUTTON_TEXT;
             }
@@ -666,7 +666,7 @@ public class OpenOceanMain : MonoBehaviour
             }
         }
 
-        
+
     }
     private void UpdateMultiScorePanelButtonTexts()
     {
@@ -687,7 +687,7 @@ public class OpenOceanMain : MonoBehaviour
             }
         }
     }
-    
+
 
     private void UpdateMultiScoreDisplay()
     {

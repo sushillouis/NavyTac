@@ -324,29 +324,24 @@ public class WeaponsMgr : MonoBehaviour
 
                     if (wasAIBase)
                     {
-                        // Check if all AI bases are destroyed
-                        bool allAIBasesDestroyed = !EntityMgr.inst.entities.Any(e =>
-                            e.entityRole == EntityRole.Base &&
-                            e.owner == PlayerMgr.inst.player2);
-
-                        if (allAIBasesDestroyed)
+                        EnemyAIMgr.inst.UpdateAllBasesLists();
+                        EnemyAIMgr.inst.UpdateAllEntityLists();
+                        if (EnemyAIMgr.inst.OpponentBases.Count == 0)
                         {
-                            ScoreMgr.inst.playerWon = true;
-                            ScoreMgr.inst.winReason = "All Opponent Bases Destroyed"; // Set win reason
+                            ScoreMgr.inst.aiWon = true;
+                            ScoreMgr.inst.winReason = "All Opponent Bases Were Destroyed";
                             ScoreMgr.inst.CheckVictory();
                         }
                     }
                     else
                     {
                         // Check if all player bases are destroyed
-                        bool allPlayerBasesDestroyed = !EntityMgr.inst.entities.Any(e =>
-                            e.entityRole == EntityRole.Base &&
-                            e.owner == PlayerMgr.inst.player1);
-
-                        if (allPlayerBasesDestroyed)
+                        EnemyAIMgr.inst.UpdateAllBasesLists();
+                        EnemyAIMgr.inst.UpdateAllEntityLists();
+                        if (EnemyAIMgr.inst.aiBases.Count == 0)
                         {
-                            ScoreMgr.inst.aiWon = true;
-                            ScoreMgr.inst.winReason = "All Your Bases Were Destroyed";
+                            ScoreMgr.inst.playerWon = true;
+                            ScoreMgr.inst.winReason = "All AI Bases Were Destroyed";
                             ScoreMgr.inst.CheckVictory();
                         }
                     }

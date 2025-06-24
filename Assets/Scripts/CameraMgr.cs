@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.XR;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
@@ -19,6 +20,10 @@ public class CameraMgr : MonoBehaviour
     private Quaternion startRollLocalRotation;
 
     private Coroutine bRollCoroutine;
+    public bool isBrollActive = false;
+    public bool isEdgeScrollingEnabled = true;
+    public bool isMiddleMouseDragEnabled = true;
+    public bool isReplayScrollEnabled = true;
 
 
     private void Awake()
@@ -40,12 +45,19 @@ public class CameraMgr : MonoBehaviour
 
     public void SetCameraPosition()
     {
-        // Stop any existing B-roll to prevent multiple instances
+        // Stop any existing B-roll to prevent multiple instance
         if (bRollCoroutine != null)
         {
             StopCoroutine(bRollCoroutine);
         }
-
+        if(OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial)
+        {
+            // Reset camera to initial position
+            OpenOceanMain.inst.SkipButton.gameObject.SetActive(false);
+            ResetCamera();
+            SetupInitialGameCamera();
+            return;
+        }
         // Show skip button and add listener
         if (OpenOceanMain.inst != null && OpenOceanMain.inst.SkipButton != null) {
             OpenOceanMain.inst.SkipButton.gameObject.SetActive(true);
@@ -59,61 +71,77 @@ public class CameraMgr : MonoBehaviour
 
     private IEnumerator BRollAndSetCameraPosition()
     {
-        // Slowly orbit halfway (semi-circle) around the scenario center for 6 seconds (slower B-roll)
-        float duration = 5f;
-        float elapsed = 0f;
-        Vector3 scenarioCenter = GameMgr.inst.posPlayer1List[0]; // Or use a more appropriate center if needed
-        float radius = 4000f;
-        float height = 2500f;
+        yield return new WaitForSeconds(.1f); // Optional delay before starting B-roll
+        isBrollActive = true;
+        isEdgeScrollingEnabled = false;
+        isMiddleMouseDragEnabled = false;
+        UIMgr.inst.inputs.Disable();
 
-        // Start angle (e.g., 0 degrees) to end angle (e.g., 180 degrees) for a semi-circle
-        float startAngle = 0f;
-        float endAngle = 180f;
-
-        while (elapsed < duration)
+        try
         {
-            float angle = Mathf.Lerp(startAngle, endAngle, elapsed / duration);
-            float rad = angle * Mathf.Deg2Rad;
-            Vector3 offset = new Vector3(Mathf.Sin(rad) * radius, height, Mathf.Cos(rad) * radius);
-            RTSCameraRig.transform.position = scenarioCenter + offset;
-            RTSCameraRig.transform.LookAt(scenarioCenter);
-            elapsed += Time.deltaTime;
-            yield return null;
+            // Slowly orbit halfway (semi-circle) around the scenario center for 6 seconds (slower B-roll)
+            float duration = 5f;
+            float elapsed = 0f;
+            Vector3 scenarioCenter = GameMgr.inst.posPlayer1List[0]; // Or use a more appropriate center if needed
+            float radius = 4000f;
+            float height = 2500f;
+
+            // Start angle (e.g., 0 degrees) to end angle (e.g., 180 degrees) for a semi-circle
+            float startAngle = 0f;
+            float endAngle = 180f;
+
+            while (elapsed < duration)
+            {
+                float angle = Mathf.Lerp(startAngle, endAngle, elapsed / duration);
+                float rad = angle * Mathf.Deg2Rad;
+                Vector3 offset = new Vector3(Mathf.Sin(rad) * radius, height, Mathf.Cos(rad) * radius);
+                RTSCameraRig.transform.position = scenarioCenter + offset;
+                RTSCameraRig.transform.LookAt(scenarioCenter);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            // B-roll of the complete map: orbit around the map center at a higher altitude and larger radius
+            float mapBRollDuration = 10f;
+            float mapElapsed = 0f;
+            Vector3 mapCenter = Vector3.zero;
+            float mapRadius = 9125f; // Half of 18250
+            float mapHeight = 6000f;
+
+            // Calculate direction from map center to Player 1
+            Vector3 toPlayer = (GameMgr.inst.posPlayer1List[0] - mapCenter).normalized;
+            // Get the forward direction (z axis) and right direction (x axis) on the XZ plane
+            Vector3 forward = new Vector3(toPlayer.x, 0, toPlayer.z).normalized;
+            Vector3 right = Vector3.Cross(Vector3.up, forward);
+
+            // Start at -90 degrees (left of player) to +90 degrees (right of player), so the semi-circle faces Player 1
+            float mapStartAngle = -180f;
+            float mapEndAngle = 180f;
+
+            while (mapElapsed < mapBRollDuration)
+            {
+                float angle = Mathf.Lerp(mapStartAngle, mapEndAngle, mapElapsed / mapBRollDuration);
+                float rad = angle * Mathf.Deg2Rad;
+                // Offset is rotated around the forward/right axes so the semi-circle faces Player 1
+                Vector3 offset = (Mathf.Cos(rad) * forward + Mathf.Sin(rad) * right) * mapRadius;
+                offset.y = mapHeight;
+                RTSCameraRig.transform.position = mapCenter + offset;
+                RTSCameraRig.transform.LookAt(GameMgr.inst.posPlayer1List[0]);
+                mapElapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            // When the B-roll completes, call the exit function to clean up and start the game.
+            ExitBRollAndStartGame();
+            yield break;
         }
-
-        // B-roll of the complete map: orbit around the map center at a higher altitude and larger radius
-        float mapBRollDuration = 10f;
-        float mapElapsed = 0f;
-        Vector3 mapCenter = Vector3.zero;
-        float mapRadius = 9125f; // Half of 18250
-        float mapHeight = 6000f;
-
-        // Calculate direction from map center to Player 1
-        Vector3 toPlayer = (GameMgr.inst.posPlayer1List[0] - mapCenter).normalized;
-        // Get the forward direction (z axis) and right direction (x axis) on the XZ plane
-        Vector3 forward = new Vector3(toPlayer.x, 0, toPlayer.z).normalized;
-        Vector3 right = Vector3.Cross(Vector3.up, forward);
-
-        // Start at -90 degrees (left of player) to +90 degrees (right of player), so the semi-circle faces Player 1
-        float mapStartAngle = -180f;
-        float mapEndAngle = 180f;
-
-        while (mapElapsed < mapBRollDuration)
+        finally
         {
-            float angle = Mathf.Lerp(mapStartAngle, mapEndAngle, mapElapsed / mapBRollDuration);
-            float rad = angle * Mathf.Deg2Rad;
-            // Offset is rotated around the forward/right axes so the semi-circle faces Player 1
-            Vector3 offset = (Mathf.Cos(rad) * forward + Mathf.Sin(rad) * right) * mapRadius;
-            offset.y = mapHeight;
-            RTSCameraRig.transform.position = mapCenter + offset;
-            RTSCameraRig.transform.LookAt(GameMgr.inst.posPlayer1List[0]);
-            mapElapsed += Time.deltaTime;
-            yield return null;
+            isBrollActive = false;
+            isEdgeScrollingEnabled = true;
+            isMiddleMouseDragEnabled = true;
+            UIMgr.inst.inputs.Enable();
         }
-        
-        // When the B-roll completes, call the exit function to clean up and start the game.
-        ExitBRollAndStartGame();
-        yield break;
     }
 
     /// <summary>
@@ -133,7 +161,10 @@ public class CameraMgr : MonoBehaviour
             OpenOceanMain.inst.SkipButton.gameObject.SetActive(false);
             OpenOceanMain.inst.SkipButton.onClick.RemoveAllListeners();
         }
-
+        isBrollActive = false;
+                isEdgeScrollingEnabled = true;
+                isMiddleMouseDragEnabled = true;
+                UIMgr.inst.inputs.Enable();
         SetupInitialGameCamera();
     }
 
@@ -292,7 +323,7 @@ public class CameraMgr : MonoBehaviour
 
     public void ToggleRTSView()
     {
-        YawNode.transform.SetParent(RTSCameraRig.transform);
+        //
         YawNode.transform.localPosition = baseYawLocalPosition; // Restore saved position
         YawNode.transform.localRotation = baseYawLocalRotation; // Restore saved rotation
 
@@ -342,7 +373,7 @@ public class CameraMgr : MonoBehaviour
     }
     private void HandleEdgeScrolling()
     {
-        if (!isRTSMode) return;
+        if (!isEdgeScrollingEnabled) return;
         Vector2 mousePos = Mouse.current.position.ReadValue();
         #if UNITY_EDITOR
             if (mousePos.x < 0 || mousePos.x > Screen.width || mousePos.y < 0 || mousePos.y > Screen.height)
@@ -381,6 +412,7 @@ public class CameraMgr : MonoBehaviour
     }
     private void HandleMiddleMouseDrag()
     {
+        if (!isMiddleMouseDragEnabled ) return;
         if (ReplayMgr.inst.isReplaying) return;
         if (Mouse.current.middleButton.isPressed)
         {

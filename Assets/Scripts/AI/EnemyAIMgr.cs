@@ -55,7 +55,7 @@ public class EnemyAIMgr : MonoBehaviour
 
         // Ensure there is an opponent base to target.
         opponentBase = FindOpponentBase();
-        if (opponentBase == null)
+        if (OpponentBases.Count == 0 || opponentBase == null)
         {
             HandleNoOpponentBase();
             return;
@@ -150,9 +150,10 @@ public class EnemyAIMgr : MonoBehaviour
     }
     public void UpdateAllBasesLists()
     {
-        OpponentBases.Clear();
-        aiBases.Clear();
-        neutralBases.Clear();
+        // Remove unavailable or owner-changed bases
+        OpponentBases.RemoveAll(entity => entity == null || entity.owner != PlayerMgr.inst.player1 || entity.entityRole != EntityRole.Base);
+        aiBases.RemoveAll(entity => entity == null || entity.owner != PlayerMgr.inst.player2 || entity.entityRole != EntityRole.Base);
+        neutralBases.RemoveAll(entity => entity == null || entity.owner != PlayerMgr.inst.neutral || entity.entityRole != EntityRole.Base);
 
         foreach (var entity in EntityMgr.inst.entities)
         {
@@ -163,15 +164,24 @@ public class EnemyAIMgr : MonoBehaviour
 
             if (entity.owner == PlayerMgr.inst.player1)
             {
-                OpponentBases.Add(entity);
+                if (!OpponentBases.Contains(entity))
+                {
+                    OpponentBases.Add(entity);
+                }
             }
             else if (entity.owner == PlayerMgr.inst.player2)
             {
-                aiBases.Add(entity);
+                if (!aiBases.Contains(entity))
+                {
+                    aiBases.Add(entity);
+                }
             }
             else if (entity.owner == PlayerMgr.inst.neutral)
             {
-                neutralBases.Add(entity);
+                if (!neutralBases.Contains(entity))
+                {
+                    neutralBases.Add(entity);
+                }
             }
         }
     }

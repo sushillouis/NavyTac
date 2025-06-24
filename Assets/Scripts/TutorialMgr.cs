@@ -69,9 +69,8 @@ public class TutorialMgr : MonoBehaviour
     
     // === CAMERA CONTROLS SECTION ===
     currentStep = TutorialStep.MoveCamera;
-    DisableAllInputMaps(); // Ensure all inputs are disabled at the start
-    // Camera Movement (Arrow Keys)
-    // === CAMERA MOVEMENT ===
+    DisableAllInputMaps(); 
+    yield return new WaitForSeconds(.1f);
     TutorialHeaderText.text = "Tutorial: Camera Movement";
     TutorialText.text = 
         "Use <sprite name=ku>, <sprite name=kd>, <sprite name=kl>, <sprite name=kr> to move the camera.\n" +
