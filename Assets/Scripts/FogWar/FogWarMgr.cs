@@ -110,19 +110,20 @@ public class FogWarMgr : MonoBehaviour
 
     void Update()
     {
-
+        // Remove forced FOW = true logic, only set FOW = false if replaying
         if (ReplayMgr.inst != null && ReplayMgr.inst.isReplaying)
         {
             FOW = false;
         }
-        else
-        {
-            FOW = true;
-        }
+        // else
+        // {
+        //     FOW = true;
+        // }
+        // Now, FOW can be toggled freely in the Inspector or via code
+
         // Handle runtime changes of the FOW flag
         if (FOW != lastFOWState)
         {
-
             if (FOW) // FOW has been turned ON
             {
                 if (!isInitialized)
@@ -159,15 +160,12 @@ public class FogWarMgr : MonoBehaviour
         if (!FOW)
         {
             // Defensive check: if FOW is false, ensure plane is off.
-            // This handles cases where fogPlane might be activated by other means
-            // while FOW is false, or if it was pre-assigned and active.
             if (isInitialized && fogPlane != null && fogPlane.activeSelf)
             {
                 fogPlane.SetActive(false);
             }
             
             // Ensure all entities are visible if FOW is off
-            // This handles the case where FOW is initially false or turned off during runtime
             if (EntityMgr.inst != null && EntityMgr.inst.entities != null)
             {
                 foreach (var entity in EntityMgr.inst.entities)
@@ -184,22 +182,16 @@ public class FogWarMgr : MonoBehaviour
         // If FOW is enabled, but the system isn't initialized.
         if (!isInitialized)
         {
-            // This could happen if FOW was true at start but PerformInitialization failed,
-            // or if FOW was toggled true and PerformInitialization failed.
-            // Attempt initialization again.
             PerformInitialization();
-            if (!isInitialized) // If still not initialized after attempt, abort.
+            if (!isInitialized)
             {
-                // Debug.LogWarning("FogWarMgr: FOW is active but system failed to initialize. Fog updates skipped.");
                 return;
             }
         }
         
         // At this point, FOW is true and isInitialized should be true.
-        // The fogPlane should be active. This is a defensive check/correction.
         if (fogPlane != null && !fogPlane.activeSelf)
         {
-            // Debug.LogWarning("FogWarMgr: FOW is active and initialized, but fogPlane was inactive. Reactivating.");
             fogPlane.SetActive(true);
         }
 

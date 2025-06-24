@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.3865354, g: 0.4779775, b: 0.5743237, a: 1}
+  m_IndirectSpecularColor: {r: 0.38653484, g: 0.47797692, b: 0.5743225, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -907,7 +907,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65cfb1489ff408b4abaedfa9abb7f27d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FOW: 0
+  FOW: 1
   playerSide: 00000000
   fogMaterial: {fileID: 2100000, guid: 043fa474478025747b66fd0c85b9458c, type: 2}
   fogPlaneSize: {x: 18520, y: 18520}

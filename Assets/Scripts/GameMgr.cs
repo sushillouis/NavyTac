@@ -434,32 +434,43 @@ public class GameMgr : MonoBehaviour
         posPlayer2List.Add(p2StartPos.position);
         headingPlayer2List.Add(p2StartPos.heading);
 
-        // Find the third available index for neutral entities
+        // Find the available indices for neutral entities
         List<int> usedIndices = new() { player1Index, player2AssignedIndex };
-        int neutralIndex = -1;
+        List<int> neutralIndices = new();
         for (int i = 0; i < allPositions.Length; ++i)
         {
             if (!usedIndices.Contains(i))
             {
-                neutralIndex = i;
-                break;
+                neutralIndices.Add(i);
             }
         }
 
-        // Spawn neutral entities at the third starting point if available
-        if (neutralIndex != -1 && SpawnEntityMgr.inst != null)
+        // Spawn neutral entities based on difficulty
+        var neutralPlayer = PlayerMgr.inst != null ? PlayerMgr.inst.neutral : null;
+        if (neutralPlayer != null && SpawnEntityMgr.inst != null)
         {
-            // You may want to define what "neutral" means in your context.
-            // Here, we assume you have a PlayerMgr.inst.neutral or similar.
-            var neutralPlayer = PlayerMgr.inst != null ? PlayerMgr.inst.neutral : null;
-            if (neutralPlayer != null)
+            if (currentDifficulty == Difficulty.Medium && neutralIndices.Count > 0)
             {
+                // Medium: spawn at one place
                 SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(
-                    allPositions[neutralIndex].position,
-                    allPositions[neutralIndex].heading,
+                    allPositions[neutralIndices[0]].position,
+                    allPositions[neutralIndices[0]].heading,
                     neutralPlayer
                 );
             }
+            else if (currentDifficulty == Difficulty.Hard && neutralIndices.Count > 0)
+            {
+                // Hard: spawn at two places if possible
+                for (int i = 0; i < Mathf.Min(2, neutralIndices.Count); i++)
+                {
+                    SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(
+                        allPositions[neutralIndices[i]].position,
+                        allPositions[neutralIndices[i]].heading,
+                        neutralPlayer
+                    );
+                }
+            }
+            // Easy: do not spawn neutral entities
         }
 
         SpawnWithExistingPositions();
