@@ -279,7 +279,6 @@ public class WeaponsMgr : MonoBehaviour
 
     public void DestroyEntity(Entity entity)
     {
-        
         try
         {
             EntityMgr.inst.entitiesDict.Remove(entity.entityId);
@@ -315,36 +314,37 @@ public class WeaponsMgr : MonoBehaviour
             EntityMgr.inst.entities.Remove(entity);
             DistanceMgr.inst.Initialize();
             Destroy(entity.gameObject);
-            FXMgr.inst.CreateExplosionAt(entity.position, 1, entity.transform.localScale.x);
+
+            // Explicitly remove from base lists before updating
             if (entity.entityRole == EntityRole.Base)
             {
-                if (entity.owner != null)
-                {
-                    bool wasAIBase = entity.owner != PlayerMgr.inst.localPlayer;
+                bool removedOpponent = EnemyAIMgr.inst.OpponentBases.Remove(entity);
+                bool removedAI = EnemyAIMgr.inst.aiBases.Remove(entity);
+                Debug.Log($"[DestroyEntity] Removed from OpponentBases: {removedOpponent}, Removed from aiBases: {removedAI}");
+            }
 
-                    if (wasAIBase)
-                    {
-                        EnemyAIMgr.inst.UpdateAllBasesLists();
-                        EnemyAIMgr.inst.UpdateAllEntityLists();
-                        if (EnemyAIMgr.inst.OpponentBases.Count == 0)
-                        {
-                            ScoreMgr.inst.aiWon = true;
-                            ScoreMgr.inst.winReason = "All Opponent Bases Were Destroyed";
-                            ScoreMgr.inst.CheckVictory();
-                        }
-                    }
-                    else
-                    {
-                        // Check if all player bases are destroyed
-                        EnemyAIMgr.inst.UpdateAllBasesLists();
-                        EnemyAIMgr.inst.UpdateAllEntityLists();
-                        if (EnemyAIMgr.inst.aiBases.Count == 0)
-                        {
-                            ScoreMgr.inst.playerWon = true;
-                            ScoreMgr.inst.winReason = "All AI Bases Were Destroyed";
-                            ScoreMgr.inst.CheckVictory();
-                        }
-                    }
+            EnemyAIMgr.inst.UpdateAllBasesLists();
+            EnemyAIMgr.inst.UpdateAllEntityLists();
+            Debug.Log(EnemyAIMgr.inst.OpponentBases.Count + " Opponent Bases Left");
+            Debug.Log(EnemyAIMgr.inst.aiBases.Count + " AI Bases Left");
+            FXMgr.inst.CreateExplosionAt(entity.position, 1, entity.transform.localScale.x);
+
+            if (entity.entityRole == EntityRole.Base)
+            {
+                Debug.Log("[DestroyEntity] Checking base victory conditions...");
+                if (EnemyAIMgr.inst.OpponentBases.Count == 0)
+                {
+                    ScoreMgr.inst.aiWon = true;
+                    ScoreMgr.inst.winReason = "All Opponent Bases Were Destroyed";
+                    Debug.Log("[DestroyEntity] All Opponent Bases destroyed, AI wins. Scheduling CheckVictory.");
+                    StartCoroutine(DelayedCheckVictory());
+                }
+                else if (EnemyAIMgr.inst.aiBases.Count == 0)
+                {
+                    ScoreMgr.inst.playerWon = true;
+                    ScoreMgr.inst.winReason = "All AI Bases Were Destroyed";
+                    Debug.Log("[DestroyEntity] All AI Bases destroyed, Player wins. Scheduling CheckVictory.");
+                    StartCoroutine(DelayedCheckVictory());
                 }
             }
             else if (entity.entityClass != EntityClass.Missile)
@@ -364,25 +364,31 @@ public class WeaponsMgr : MonoBehaviour
                         {
                             ScoreMgr.inst.aiWon = true;
                             ScoreMgr.inst.winReason = "Lost All Friendly Combat Entities";
+                            Debug.Log("[DestroyEntity] Local player lost all combat entities. Scheduling CheckVictory.");
                         }
                         else if (owner == PlayerMgr.inst.player2)
                         {
                             ScoreMgr.inst.playerWon = true;
                             ScoreMgr.inst.winReason = "Opponent Lost All Combat Entities";
+                            Debug.Log("[DestroyEntity] Opponent lost all combat entities. Scheduling CheckVictory.");
                         }
-                        ScoreMgr.inst.CheckVictory();
+                        StartCoroutine(DelayedCheckVictory());
                     }
                 }
             }
         }
-        
         catch (System.Exception e)
         {
             string entityName = entity != null ? entity.name : "null";
             //Debug.LogError($"Error in DestroyEntity for entity: {entityName}. Exception: {e.Message}");
-
         }
-        
+    }
+
+    // Coroutine to call CheckVictory after end of frame
+    private IEnumerator DelayedCheckVictory()
+    {
+        yield return new WaitForEndOfFrame();
+        ScoreMgr.inst.CheckVictory();
     }
     public class EntityTypes{
         public EntityType entityType;

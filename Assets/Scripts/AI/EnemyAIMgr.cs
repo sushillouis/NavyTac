@@ -55,11 +55,6 @@ public class EnemyAIMgr : MonoBehaviour
 
         // Ensure there is an opponent base to target.
         opponentBase = FindOpponentBase();
-        if (OpponentBases.Count == 0 || opponentBase == null)
-        {
-            HandleNoOpponentBase();
-            return;
-        }
 
         UpdateAllEntityLists();
 
@@ -134,11 +129,11 @@ public class EnemyAIMgr : MonoBehaviour
     {
         // Logic when no AI bases are found
     }
-    private void HandleNoOpponentBase()
-    {
-        ScoreMgr.inst.aiWon = true;
-        ScoreMgr.inst.CheckVictory();
-    }
+    // private void HandleNoOpponentBase()
+    // {
+    //     ScoreMgr.inst.aiWon = true;
+    //     ScoreMgr.inst.CheckVictory();
+    // }
     private Entity FindOpponentBase()
     {
         if (OpponentBases.Count > 0)
