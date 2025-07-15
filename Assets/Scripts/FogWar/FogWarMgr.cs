@@ -1,147 +1,194 @@
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using Unity.Mathematics;
 using UnityEngine;
-
 
 public class FogWarMgr : MonoBehaviour
 {
-    
+    public static FogWarMgr inst;
+
+    [Header("Fog of War Settings")]
     public bool FOW;
-    public List<PlayerSide> playerSide;
-    
+    public List<PlayerSide> playerSide; // List of player sides that reveal fog
+
     [Header("Fog Plane Settings")]
-    public Material fogMaterial;
-    public Vector2 fogPlaneSize = new Vector3(18250f, 18250f,18250f);
+    public Material fogMaterial; // Material with Unlit/FogOfWar shader
+    public Vector2 fogPlaneSize = new Vector2(18250f, 18250f);
     public float heightAboveMap = 50f;
-    public Color previouslyRevealedColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-    public Color fogColor = new Color(0.05f, 0.05f, 0.05f, 0f);
+    public Color previouslyRevealedColor = new Color(0f, 0f, 0f, 0.7f); // Transparent dull state
+    public Color fogColor = Color.black; // Hidden state (opaque black)
+
     [Header("Grid Settings")]
-    [Min(0.1f)] public float gridCellSize = 10f;
+    [Min(0.1f)] public float gridCellSize = 142.578125f; // 18250 / 128 for 128x128 grid
     public List<Entity> revelers = new List<Entity>();
     private List<Entity> _nonRevelers = new List<Entity>();
-    public List<Entity> nonRevelers {
-    get {
-        // Remove null and destroyed entities before returning
-        _nonRevelers.RemoveAll(e => e == null || e.Equals(null));
-        return _nonRevelers;
+    public List<Entity> nonRevelers
+    {
+        get
+        {
+            _nonRevelers.RemoveAll(e => e == null || e.Equals(null));
+            return _nonRevelers;
+        }
+        private set => _nonRevelers = value;
     }
-    private set => _nonRevelers = value;
-}
-    [Range(0,10000f)]
-    public float fogRevealRadius = 150f;
-    [Header("Compute Shader")]
-    public ComputeShader fogComputeShader;
-    [SerializeField] private float updateInterval = 0.1f;
+    [Range(0, 10000f)] public float fogRevealRadius = 150f;
+    [SerializeField] private float updateInterval = 0.2f; // Reduced frequency for WebGL
     [SerializeField] private float visibilityCheckInterval = 0.2f;
-    
-    private ComputeBuffer gridBuffer;
-    private ComputeBuffer entitiesBuffer;
-    private ComputeBuffer visitedGridBuffer;
-    private ComputeBuffer nonRevelersBuffer;
-    private ComputeBuffer visibilityResultsBuffer;
-    private RenderTexture fogRenderTexture;
-    private int clearKernel;
-    private int revealKernel;
-    private int updateKernel;
-    private int visibilityKernel;
-    
 
     private GameObject fogPlane;
     private Vector2 gridOrigin;
     private int gridWidth;
     private int gridHeight;
+    private float[,] fogGrid; // Current visibility (0 = not visible, 1 = visible)
+    private bool[,] exploredGrid; // Tracks if cell was ever visible
+    private Mesh mesh;
+    private Vector3[] vertices;
+    private Color[] colors;
+    private int[] triangles;
+    private bool[] dirtyCells;
     private float updateTimer;
     private float visibilityCheckTimer;
-    // private bool[] visibilityResults; // Original code had this, assuming it's managed or unused as intended
-    // private PlayerSide lastPlayerSide; // Original code had this, assuming it's managed or unused as intended
-
-    struct EntityComputeData
-    {
-        public Vector3 position;
-        public float radius;
-    }
-    public static FogWarMgr inst;
-
-    // Added for FOW toggling logic
     private bool isInitialized = false;
     private bool lastFOWState;
+    private HashSet<Entity> revealedRigBalders = new HashSet<Entity>();
 
     private void Awake()
     {
         inst = this;
-        lastFOWState = FOW; // Initialize with the value set in Inspector or by default
-
+        lastFOWState = FOW;
         if (FOW)
         {
             PerformInitialization();
         }
-        // If FOW is false initially, PerformInitialization is not called,
-        // and fogPlane (being private) will be null.
     }
-    
+
     void PerformInitialization()
     {
         if (isInitialized) return;
 
-        InitializeFogPlane(); 
-        // InitializeFogPlane creates the fogPlane GameObject. If it fails, fogPlane might be null.
-        if (fogPlane == null) {
-             Debug.LogError("FogWarMgr: FogPlane is null after InitializeFogPlane. Cannot initialize FOW.");
-             return; // Do not set isInitialized = true if essential components are missing
+        InitializeFogPlane();
+        if (fogPlane == null)
+        {
+            Debug.LogError("FogWarMgr: FogPlane is null after InitializeFogPlane.");
+            return;
         }
-        
-        InitializeGrid(); 
-        InitializeComputeResources(); 
-        
-        isInitialized = true; 
-        
-        // Ensure the fog plane is active since FOW is being enabled/is enabled.
-        // InitializeFogPlane creates an active GameObject by default, but this is an explicit confirmation.
+
+        InitializeGrid();
+        InitializeMesh();
+        isInitialized = true;
         if (fogPlane != null)
         {
             fogPlane.SetActive(true);
         }
     }
 
-    void Start() {
-        // Original Start method is empty
+    void InitializeFogPlane()
+    {
+        if (fogPlane == null)
+        {
+            fogPlane = new GameObject("FogOfWarPlane");
+            fogPlane.AddComponent<MeshFilter>();
+            fogPlane.AddComponent<MeshRenderer>();
+        }
+
+        fogPlane.transform.position = new Vector3(0, heightAboveMap, 0);
+        fogPlane.transform.rotation = Quaternion.identity;
+
+        if (fogMaterial != null)
+        {
+            fogPlane.GetComponent<MeshRenderer>().material = fogMaterial;
+        }
+        else
+        {
+            Debug.LogError("FogWarMgr: fogMaterial is null.");
+        }
+    }
+
+    void InitializeGrid()
+    {
+        gridWidth = Mathf.Max(1, Mathf.CeilToInt(fogPlaneSize.x / gridCellSize));
+        gridHeight = Mathf.Max(1, Mathf.CeilToInt(fogPlaneSize.y / gridCellSize));
+        gridOrigin = new Vector2(-fogPlaneSize.x / 2, -fogPlaneSize.y / 2);
+        fogGrid = new float[gridWidth, gridHeight];
+        exploredGrid = new bool[gridWidth, gridHeight];
+        dirtyCells = new bool[gridWidth * gridHeight];
+    }
+
+    void InitializeMesh()
+    {
+        mesh = new Mesh();
+        mesh.MarkDynamic();
+        fogPlane.GetComponent<MeshFilter>().mesh = mesh;
+
+        int vertexCount = (gridWidth + 1) * (gridHeight + 1);
+        vertices = new Vector3[vertexCount];
+        colors = new Color[vertexCount];
+        triangles = new int[gridWidth * gridHeight * 6];
+
+        float offsetX = fogPlaneSize.x / 2f;
+        float offsetZ = fogPlaneSize.y / 2f;
+
+        // Generate vertices on XZ plane
+        for (int x = 0; x <= gridWidth; x++)
+        {
+            for (int z = 0; z <= gridHeight; z++)
+            {
+                int index = x + z * (gridWidth + 1);
+                vertices[index] = new Vector3(x * gridCellSize - offsetX, heightAboveMap, z * gridCellSize - offsetZ);
+                colors[index] = fogColor; // Hidden
+            }
+        }
+
+        // Generate triangles
+        int triIndex = 0;
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int z = 0; z < gridHeight; z++)
+            {
+                int v0 = x + z * (gridWidth + 1);
+                int v1 = v0 + 1;
+                int v2 = v0 + (gridWidth + 1);
+                int v3 = v2 + 1;
+
+                triangles[triIndex++] = v0;
+                triangles[triIndex++] = v2;
+                triangles[triIndex++] = v1;
+                triangles[triIndex++] = v1;
+                triangles[triIndex++] = v2;
+                triangles[triIndex++] = v3;
+            }
+        }
+
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.colors = colors;
+        mesh.RecalculateNormals();
     }
 
     void Update()
     {
-        // Remove forced FOW = true logic, only set FOW = false if replaying
         if (ReplayMgr.inst != null && ReplayMgr.inst.isReplaying)
         {
             FOW = false;
         }
-        // else
-        // {
-        //     FOW = true;
-        // }
-        // Now, FOW can be toggled freely in the Inspector or via code
 
-        // Handle runtime changes of the FOW flag
         if (FOW != lastFOWState)
         {
-            if (FOW) // FOW has been turned ON
+            if (FOW)
             {
                 if (!isInitialized)
                 {
-                    PerformInitialization(); // This will also attempt to activate the fogPlane
+                    PerformInitialization();
                 }
-                else if (fogPlane != null) // Already initialized, just ensure plane is active
+                else if (fogPlane != null)
                 {
                     fogPlane.SetActive(true);
                 }
             }
-            else // FOW has been turned OFF
+            else
             {
-                if (fogPlane != null) // If plane exists, deactivate it
+                if (fogPlane != null)
                 {
                     fogPlane.SetActive(false);
                 }
-                // When FOW is turned off, make all entities visible
                 if (EntityMgr.inst != null && EntityMgr.inst.entities != null)
                 {
                     foreach (var entity in EntityMgr.inst.entities)
@@ -153,19 +200,15 @@ public class FogWarMgr : MonoBehaviour
                     }
                 }
             }
-            lastFOWState = FOW; // Update the stored state
+            lastFOWState = FOW;
         }
 
-        // If Fog of War is disabled, do nothing further in Update.
         if (!FOW)
         {
-            // Defensive check: if FOW is false, ensure plane is off.
             if (isInitialized && fogPlane != null && fogPlane.activeSelf)
             {
                 fogPlane.SetActive(false);
             }
-            
-            // Ensure all entities are visible if FOW is off
             if (EntityMgr.inst != null && EntityMgr.inst.entities != null)
             {
                 foreach (var entity in EntityMgr.inst.entities)
@@ -179,30 +222,24 @@ public class FogWarMgr : MonoBehaviour
             return;
         }
 
-        // If FOW is enabled, but the system isn't initialized.
         if (!isInitialized)
         {
             PerformInitialization();
-            if (!isInitialized)
-            {
-                return;
-            }
+            if (!isInitialized) return;
         }
-        
-        // At this point, FOW is true and isInitialized should be true.
+
         if (fogPlane != null && !fogPlane.activeSelf)
         {
             fogPlane.SetActive(true);
         }
 
-        // --- Original Update logic for when FOW is active and initialized ---
         updateTimer -= Time.deltaTime;
         if (updateTimer <= 0)
         {
             UpdateFog();
             updateTimer = updateInterval;
         }
-        
+
         visibilityCheckTimer -= Time.deltaTime;
         if (visibilityCheckTimer <= 0)
         {
@@ -212,336 +249,297 @@ public class FogWarMgr : MonoBehaviour
         }
     }
 
-    void InitializeFogPlane()
-    {
-        if (fogPlane == null)
-        {
-            fogPlane = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            fogPlane.name = "FogOfWarPlane";
-            Destroy(fogPlane.GetComponent<MeshCollider>());
-        }
-
-        float scaleX = fogPlaneSize.x / 10f;
-        float scaleZ = fogPlaneSize.y / 10f;
-        fogPlane.transform.localScale = new Vector3(scaleX, 1f, scaleZ);
-        fogPlane.transform.position = new Vector3(0, heightAboveMap, 0);
-        fogPlane.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
-
-        if (fogMaterial != null)
-        {
-            Renderer planeRenderer = fogPlane.GetComponent<Renderer>();
-            planeRenderer.material = fogMaterial;
-        }
-    }
-
-    void InitializeGrid()
-    {
-        gridWidth = Mathf.Max(1, Mathf.CeilToInt(fogPlaneSize.x / gridCellSize));
-        gridHeight = Mathf.Max(1, Mathf.CeilToInt(fogPlaneSize.y / gridCellSize));
-        gridOrigin = new Vector2(
-            fogPlane.transform.position.x - fogPlaneSize.x / 2,
-            fogPlane.transform.position.z - fogPlaneSize.y / 2
-        );
-    }
-
-    void InitializeComputeResources()
-    {
-        gridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(float));
-        visitedGridBuffer = new ComputeBuffer(gridWidth * gridHeight, sizeof(float));
-        // Ensure nonRevelersBuffer is initialized with a minimum size if nonRevelers can be empty initially
-        // Or handle its creation/recreation in UpdateNonRevealerVisibility more dynamically.
-        // Original code initializes with size 1, which might be okay if shader handles 0 entities.
-        int initialNonRevelerBufferSize = Mathf.Max(1, nonRevelers.Count > 0 ? nonRevelers.Count : 1);
-        nonRevelersBuffer = new ComputeBuffer(initialNonRevelerBufferSize, Marshal.SizeOf<EntityComputeData>());
-        visibilityResultsBuffer = new ComputeBuffer(initialNonRevelerBufferSize, sizeof(uint));
-
-
-        float[] gridData = new float[gridWidth * gridHeight];
-        gridBuffer.SetData(gridData);
-        visitedGridBuffer.SetData(gridData);
-
-        fogRenderTexture = new RenderTexture(gridWidth, gridHeight, 0, RenderTextureFormat.ARGB32)
-        {
-            enableRandomWrite = true,
-            filterMode = FilterMode.Point
-        };
-        fogRenderTexture.Create();
-
-        if (fogMaterial != null) // Check fogMaterial before using it
-        {
-            fogMaterial.SetTexture("_FogTex", fogRenderTexture);
-        }
-
-
-        clearKernel = fogComputeShader.FindKernel("ClearGrid");
-        revealKernel = fogComputeShader.FindKernel("RevealAreas");
-        updateKernel = fogComputeShader.FindKernel("ApplyToTexture");
-        visibilityKernel = fogComputeShader.FindKernel("CalculateVisibility");
-
-        fogComputeShader.SetBuffer(clearKernel, "Grid", gridBuffer);
-        fogComputeShader.SetBuffer(revealKernel, "Grid", gridBuffer);
-        fogComputeShader.SetBuffer(updateKernel, "Grid", gridBuffer);
-        fogComputeShader.SetBuffer(revealKernel, "VisitedGrid", visitedGridBuffer);
-        fogComputeShader.SetBuffer(updateKernel, "VisitedGrid", visitedGridBuffer);
-        fogComputeShader.SetBuffer(visibilityKernel, "Grid", gridBuffer);
-        fogComputeShader.SetBuffer(visibilityKernel, "NonRevelers", nonRevelersBuffer);
-        fogComputeShader.SetBuffer(visibilityKernel, "VisibilityResults", visibilityResultsBuffer);
-
-        fogComputeShader.SetVector("FogColor", new Color(0.05f, 0.05f, 0.05f, 0.5f));
-        fogComputeShader.SetVector("PreviouslyRevealedColor", previouslyRevealedColor);
-    }
-
     void UpdateFog()
     {
-        revelers = EntityMgr.inst.entities.FindAll(entity => 
-            entity != null && 
-            entity.owner != null && 
+        revelers = EntityMgr.inst.entities.FindAll(entity =>
+            entity != null &&
+            entity.owner != null &&
             entity.gameObject.activeInHierarchy &&
-            playerSide.Contains(entity.owner.playerSide) && 
+            playerSide.Contains(entity.owner.playerSide) &&
             entity.entityClass != EntityClass.Missile);
 
-        // _nonRevelers is updated directly here, bypassing the property setter's null check temporarily.
-        // The getter will clean it up when accessed.
-        _nonRevelers = EntityMgr.inst.entities.FindAll(entity => 
-            entity != null && 
-            entity.owner != null && 
+        _nonRevelers = EntityMgr.inst.entities.FindAll(entity =>
+            entity != null &&
+            entity.owner != null &&
             entity.gameObject.activeInHierarchy &&
-            !playerSide.Contains(entity.owner.playerSide) && 
+            !playerSide.Contains(entity.owner.playerSide) &&
             entity.entityClass != EntityClass.Missile);
-        
 
         if (revelers.Count == 0)
         {
-            // If there are no revealers, we still need to clear the grid and apply to texture
-            // to show full fog or previously revealed areas.
-            // The original code returns here, which might leave stale fog if all revealers disappear.
-            // Consider clearing and updating texture even with 0 revealers.
-            // For now, keeping original behavior:
-             return;
+            // Clear fogGrid to show previously revealed areas
+            for (int x = 0; x < gridWidth; x++)
+            {
+                for (int z = 0; z < gridHeight; z++)
+                {
+                    if (fogGrid[x, z] > 0)
+                    {
+                        fogGrid[x, z] = 0;
+                        dirtyCells[x + z * gridWidth] = true;
+                    }
+                }
+            }
+            UpdateMeshColors();
+            return;
         }
 
-        fogComputeShader.SetInt("EntitiesCount", revelers.Count);
-        fogComputeShader.SetInt("GridWidth", gridWidth);
-        fogComputeShader.SetInt("GridHeight", gridHeight);
-        fogComputeShader.SetFloat("GridCellSize", gridCellSize);
-        fogComputeShader.SetVector("GridOrigin", gridOrigin);
+        // Clear visibility
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int z = 0; z < gridHeight; z++)
+            {
+                if (fogGrid[x, z] > 0)
+                {
+                    fogGrid[x, z] = Mathf.Lerp(fogGrid[x, z], 0f, Time.deltaTime * 5f);
+                    if (fogGrid[x, z] < 0.01f) fogGrid[x, z] = 0f;
+                    dirtyCells[x + z * gridWidth] = true;
+                }
+            }
+        }
 
-        DispatchCompute(clearKernel);
-        UpdateEntityBuffer(); // This updates entitiesBuffer based on revelers list
-        if (entitiesBuffer == null) return; // entitiesBuffer might be null if revelers.Count was 0 and UpdateEntityBuffer bailed.
-                                            // However, UpdateEntityBuffer creates it if revelers.Count > 0.
-                                            // If revelers.Count is 0, we returned above.
+        // Reveal areas
+        foreach (var reveler in revelers)
+        {
+            if (reveler == null || reveler.transform == null) continue;
+            RevealArea(reveler.transform.position, Mathf.Max(reveler.length, fogRevealRadius));
+        }
 
-        fogComputeShader.SetBuffer(revealKernel, "Entities", entitiesBuffer);
-        DispatchCompute(revealKernel);
-        fogComputeShader.SetTexture(updateKernel, "FogTexture", fogRenderTexture);
-        DispatchCompute(updateKernel);
+        UpdateMeshColors();
     }
 
-    private HashSet<Entity> revealedRigBalders = new HashSet<Entity>();
+    void RevealArea(Vector3 worldPos, float radius)
+    {
+        int centerX = Mathf.FloorToInt((worldPos.x - gridOrigin.x) / gridCellSize);
+        int centerZ = Mathf.FloorToInt((worldPos.z - gridOrigin.y) / gridCellSize);
+        int radiusCells = Mathf.CeilToInt(radius / gridCellSize);
+
+        for (int x = centerX - radiusCells; x <= centerX + radiusCells; x++)
+        {
+            for (int z = centerZ - radiusCells; z <= centerZ + radiusCells; z++)
+            {
+                if (x >= 0 && x < gridWidth && z >= 0 && z < gridHeight)
+                {
+                    float dist = Vector2.Distance(new Vector2(centerX, centerZ), new Vector2(x, z)) * gridCellSize;
+                    if (dist <= radius)
+                    {
+                        fogGrid[x, z] = 1f;
+                        exploredGrid[x, z] = true;
+                        dirtyCells[x + z * gridWidth] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    void UpdateMeshColors()
+    {
+        bool needsUpdate = false;
+        for (int i = 0; i < dirtyCells.Length; i++)
+        {
+            if (dirtyCells[i]) { needsUpdate = true; break; }
+        }
+        if (!needsUpdate) return;
+
+        for (int x = 0; x <= gridWidth; x++)
+        {
+            for (int z = 0; z <= gridHeight; z++)
+            {
+                int index = x + z * (gridWidth + 1);
+                float visibility = 0f;
+                bool isExplored = false;
+                int count = 0;
+
+                if (x < gridWidth && z < gridHeight)
+                {
+                    visibility = Mathf.Max(visibility, fogGrid[x, z]);
+                    isExplored |= exploredGrid[x, z];
+                    count++;
+                }
+                if (x > 0 && z < gridHeight)
+                {
+                    visibility = Mathf.Max(visibility, fogGrid[x - 1, z]);
+                    isExplored |= exploredGrid[x - 1, z];
+                    count++;
+                }
+                if (z > 0 && x < gridWidth)
+                {
+                    visibility = Mathf.Max(visibility, fogGrid[x, z - 1]);
+                    isExplored |= exploredGrid[x, z - 1];
+                    count++;
+                }
+                if (x > 0 && z > 0)
+                {
+                    visibility = Mathf.Max(visibility, fogGrid[x - 1, z - 1]);
+                    isExplored |= exploredGrid[x - 1, z - 1];
+                    count++;
+                }
+
+                if (visibility > 0.5f)
+                    colors[index] = Color.clear; // Visible
+                else if (isExplored)
+                    colors[index] = previouslyRevealedColor; // Revealed but not visible
+                else
+                    colors[index] = fogColor; // Hidden
+            }
+        }
+        mesh.colors = colors;
+        for (int i = 0; i < dirtyCells.Length; i++) dirtyCells[i] = false;
+    }
+
     private void UpdateRevealerVisibility()
     {
         foreach (Entity reveler in revelers)
         {
             if (reveler == null || reveler.transform == null) continue;
-            reveler.isVisible = true; // Revelers are always visible to their side
+            reveler.isVisible = true;
         }
     }
 
     private void UpdateNonRevealerVisibility()
     {
-        // Use the property to get a cleaned list
-        List<Entity> currentNonRevelers = this.nonRevelers;
-
-        if (currentNonRevelers.Count == 0)
+        List<Entity> currentNonRevelers = nonRevelers;
+        foreach (var entity in currentNonRevelers)
         {
-            // If there are no non-revelers to check, ensure any previously processed entities
-            // that might now be revelers or destroyed are handled.
-            // For simplicity, if no non-revelers, nothing to make visible/invisible via this path.
-            return;
-        }
+            if (entity == null || entity.transform == null) continue;
 
-        EntityComputeData[] nonRevealerData = new EntityComputeData[currentNonRevelers.Count];
-        for (int i = 0; i < currentNonRevelers.Count; i++)
-        {
-            Entity entity = currentNonRevelers[i];
-            // Entity list from property is already null-checked.
-            // if (entity == null || entity.transform == null) continue; // Redundant due to property getter
-            
+            bool isVisible = false;
             Vector3 pos = entity.transform.position;
-            nonRevealerData[i] = new EntityComputeData
+            int gridX = Mathf.FloorToInt((pos.x - gridOrigin.x) / gridCellSize);
+            int gridZ = Mathf.FloorToInt((pos.z - gridOrigin.y) / gridCellSize);
+
+            if (gridX >= 0 && gridX < gridWidth && gridZ >= 0 && gridZ < gridHeight)
             {
-                position = pos,
-                radius = 10f // This radius seems fixed, ensure it's intended.
-            };
-        }
+                isVisible = fogGrid[gridX, gridZ] > 0.5f;
+            }
 
-        // Resize buffers if necessary
-        if (nonRevelersBuffer == null || nonRevelersBuffer.count < currentNonRevelers.Count)
-        {
-            nonRevelersBuffer?.Release();
-            nonRevelersBuffer = new ComputeBuffer(currentNonRevelers.Count, Marshal.SizeOf<EntityComputeData>());
-            
-            visibilityResultsBuffer?.Release();
-            visibilityResultsBuffer = new ComputeBuffer(currentNonRevelers.Count, sizeof(uint));
-
-            // Rebind to kernel if buffers were recreated
-            fogComputeShader.SetBuffer(visibilityKernel, "NonRevelers", nonRevelersBuffer);
-            fogComputeShader.SetBuffer(visibilityKernel, "VisibilityResults", visibilityResultsBuffer);
-        }
-        
-        nonRevelersBuffer.SetData(nonRevealerData, 0, 0, currentNonRevelers.Count);
-
-
-        fogComputeShader.SetInt("NonRevealerCount", currentNonRevelers.Count);
-        // Grid parameters should already be set by UpdateFog or PerformInitialization
-        // fogComputeShader.SetFloat("GridCellSize", gridCellSize); 
-        // fogComputeShader.SetVector("GridOrigin", gridOrigin);
-
-        fogComputeShader.GetKernelThreadGroupSizes(visibilityKernel, out uint threadGroupSize, out _, out _);
-        int groups = Mathf.CeilToInt(currentNonRevelers.Count / (float)threadGroupSize);
-        if (groups > 0) // Only dispatch if there are entities to process
-        {
-            fogComputeShader.Dispatch(visibilityKernel, groups, 1, 1);
-
-            uint[] results = new uint[currentNonRevelers.Count];
-            visibilityResultsBuffer.GetData(results, 0, 0, currentNonRevelers.Count);
-
-            for (int i = 0; i < currentNonRevelers.Count; i++)
+            if (entity.entityType == EntityType.Rig_Balder)
             {
-                Entity entity = currentNonRevelers[i];
-                // if (entity == null) continue; // Should be handled by property getter
-
-                bool isVisible = results[i] != 0;
-
-                if (entity.entityType == EntityType.Rig_Balder)
+                if (revealedRigBalders.Contains(entity))
                 {
-                    if (revealedRigBalders.Contains(entity))
-                    {
-                        entity.isVisible = true;
-                    }
-                    else if (isVisible)
-                    {
-                        revealedRigBalders.Add(entity);
-                        entity.isVisible = true; 
-                    }
-                    else
-                    {
-                        entity.isVisible = false; 
-                    }
+                    entity.isVisible = true;
+                }
+                else if (isVisible)
+                {
+                    revealedRigBalders.Add(entity);
+                    entity.isVisible = true;
                 }
                 else
                 {
-                    entity.isVisible = isVisible;
+                    entity.isVisible = false;
                 }
+            }
+            else
+            {
+                entity.isVisible = isVisible;
             }
         }
     }
 
-    void DispatchCompute(int kernel)
-    {
-        if (!isInitialized || fogComputeShader == null) return; // Guard against calls if not ready
-        fogComputeShader.GetKernelThreadGroupSizes(kernel, out uint x, out uint y, out _);
-        int groupsX = Mathf.CeilToInt(gridWidth / (float)x);
-        int groupsY = Mathf.CeilToInt(gridHeight / (float)y);
-        if (groupsX > 0 && groupsY > 0) // Ensure groups are valid
-        {
-            fogComputeShader.Dispatch(kernel, groupsX, groupsY, 1);
-        }
-    }
     public void CleanupEntities()
     {
         revelers.RemoveAll(e => e == null || e.Equals(null));
         _nonRevelers.RemoveAll(e => e == null || e.Equals(null));
     }
-    void UpdateEntityBuffer()
-    {
-        if (revelers.Count == 0)
-        {
-            // If entitiesBuffer exists, we might want to clear it or handle it.
-            // For now, if no revelers, perhaps no buffer update is needed or it should be sized to 1 with dummy data.
-            // Or, ensure entitiesBuffer is released if not used.
-            // Releasing and re-creating buffers frequently can be a performance hit.
-            // Consider resizing or having a max-sized buffer.
-            // For simplicity, matching original implication: if no revelers, buffer might not be needed for revealKernel.
-            // However, revealKernel expects "Entities" buffer.
-            // Let's ensure it's always valid if revealKernel is dispatched.
-            // The UpdateFog method returns if revelers.Count == 0 before calling this.
-            return;
-        }
 
-        EntityComputeData[] entityData = new EntityComputeData[revelers.Count];
-        for (int i = 0; i < revelers.Count; i++)
-        {
-            // revelers list should be clean from UpdateFog
-            Vector3 pos = revelers[i].transform.position;
-            entityData[i] = new EntityComputeData
-            {
-                position = pos,
-                radius = Mathf.Max(revelers[i].length, fogRevealRadius)
-            };
-        }
-
-        if (entitiesBuffer == null || entitiesBuffer.count < revelers.Count)
-        {
-            entitiesBuffer?.Release();
-            entitiesBuffer = new ComputeBuffer(revelers.Count, Marshal.SizeOf<EntityComputeData>());
-            // If buffer is recreated, it needs to be set on the kernel again if not already handled
-            // fogComputeShader.SetBuffer(revealKernel, "Entities", entitiesBuffer); // This is done in UpdateFog
-        }
-        entitiesBuffer.SetData(entityData);
-    }
-
-    void CleanupComputeResources()
-    {
-        gridBuffer?.Release();
-        entitiesBuffer?.Release();
-        visitedGridBuffer?.Release();
-        nonRevelersBuffer?.Release();
-        visibilityResultsBuffer?.Release();
-        if (fogRenderTexture != null) // Check if it's not null before releasing
-        {
-            if (fogRenderTexture.IsCreated()) // Check if it's created before releasing
-            {
-                fogRenderTexture.Release();
-            }
-            fogRenderTexture = null; // Set to null after release
-        }
-    }
     public void ResetFog()
     {
-        if (!FOW || !isInitialized) return; // Also check if initialized
+        if (!FOW || !isInitialized) return;
 
-        float[] gridData = new float[gridWidth * gridHeight];
-        if (gridBuffer != null && gridBuffer.IsValid()) gridBuffer.SetData(gridData);
-        if (visitedGridBuffer != null && visitedGridBuffer.IsValid()) visitedGridBuffer.SetData(gridData);
-        
-        // Update the fog texture to show fully obscured areas
-        if (fogComputeShader != null && fogRenderTexture != null && fogRenderTexture.IsCreated())
+        for (int x = 0; x < gridWidth; x++)
         {
-             fogComputeShader.SetTexture(updateKernel, "FogTexture", fogRenderTexture);
-             DispatchCompute(updateKernel);
+            for (int z = 0; z < gridHeight; z++)
+            {
+                fogGrid[x, z] = 0f;
+                exploredGrid[x, z] = false;
+                dirtyCells[x + z * gridWidth] = true;
+            }
         }
-
-
+        UpdateMeshColors();
         revealedRigBalders.Clear();
-        UpdateNonRevealerVisibility(); // Force update visibility
+        UpdateNonRevealerVisibility();
     }
+
     void OnDisable()
     {
-        // Clearing lists here might be okay, but consider if the component is just disabled temporarily.
-        // If re-enabled, it might need to repopulate these lists.
-        // revelers.Clear();
-        // _nonRevelers.Clear(); // Access private field directly for clearing
+        if (fogPlane != null)
+        {
+            fogPlane.SetActive(false);
+        }
     }
 
     void OnDestroy()
     {
-        CleanupComputeResources();
-        // Lists will be garbage collected with the object if not cleared,
-        // but explicit clearing can help if there are external references or for clarity.
         revelers.Clear();
         _nonRevelers.Clear();
+        if (mesh != null)
+        {
+            Destroy(mesh);
+        }
+        if (fogPlane != null)
+        {
+            Destroy(fogPlane);
+        }
+    }
+
+    // Serialization for persistence
+    [System.Serializable]
+    private class FogData
+    {
+        public float[] fog;
+    }
+
+    [System.Serializable]
+    private class ExploredData
+    {
+        public bool[] explored;
+    }
+
+    public void SaveFogState()
+    {
+        if (!isInitialized) return;
+
+        FogData fogData = new FogData { fog = new float[gridWidth * gridHeight] };
+        ExploredData exploredData = new ExploredData { explored = new bool[gridWidth * gridHeight] };
+
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int z = 0; z < gridHeight; z++)
+            {
+                int index = x + z * gridWidth;
+                fogData.fog[index] = fogGrid[x, z];
+                exploredData.explored[index] = exploredGrid[x, z];
+            }
+        }
+
+        PlayerPrefs.SetString("FogOfWarState", JsonUtility.ToJson(fogData));
+        PlayerPrefs.SetString("ExploredState", JsonUtility.ToJson(exploredData));
+        PlayerPrefs.Save();
+    }
+
+    void LoadFogState()
+    {
+        if (PlayerPrefs.HasKey("FogOfWarState") && PlayerPrefs.HasKey("ExploredState"))
+        {
+            string jsonFog = PlayerPrefs.GetString("FogOfWarState");
+            string jsonExplored = PlayerPrefs.GetString("ExploredState");
+
+            FogData fogData = JsonUtility.FromJson<FogData>(jsonFog);
+            ExploredData exploredData = JsonUtility.FromJson<ExploredData>(jsonExplored);
+
+            if (fogData != null && exploredData != null && fogData.fog.Length == gridWidth * gridHeight && exploredData.explored.Length == gridWidth * gridHeight)
+            {
+                for (int x = 0; x < gridWidth; x++)
+                {
+                    for (int z = 0; z < gridHeight; z++)
+                    {
+                        int index = x + z * gridWidth;
+                        fogGrid[x, z] = fogData.fog[index];
+                        exploredGrid[x, z] = exploredData.explored[index];
+                        dirtyCells[index] = true;
+                    }
+                }
+                UpdateMeshColors();
+            }
+        }
     }
 }
-
