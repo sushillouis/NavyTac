@@ -7,8 +7,10 @@ public class FogOfWarMesh : MonoBehaviour
     public float revealRadius = 500f; // Example vision radius
     public float fadeSpeed = 2f; // Smooth transition speed
     public float fogHeight = 100f; // The Y-level of the fog mesh
+    private Color revealedColor = new Color(0f, 0f, 0f, 0.7f); // Grey with 50% opacity for revealed but not visible
 
-    private float[,] fogGrid;
+    private float[,] fogGrid; // Current visibility (0 = not visible, 1 = visible)
+    private bool[,] exploredGrid; // Tracks if cell was ever visible
     private Mesh mesh;
     private Vector3[] vertices;
     private Color[] colors;
@@ -18,18 +20,18 @@ public class FogOfWarMesh : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("FogOfWarMesh: Start() called. Initializing...");
         cellSize = mapSize / gridSize;
         fogGrid = new float[gridSize, gridSize];
+        exploredGrid = new bool[gridSize, gridSize];
         dirtyCells = new bool[gridSize * gridSize];
         InitializeMesh();
-        Debug.Log("FogOfWarMesh: Initialization complete.");
+        // LoadFogState(); // Optionally load saved state
     }
 
     void InitializeMesh()
     {
-        Debug.Log("FogOfWarMesh: InitializeMesh() called.");
         mesh = new Mesh();
+        mesh.MarkDynamic(); // Optimize for dynamic updates
         GetComponent<MeshFilter>().mesh = mesh;
 
         // Initialize vertices and colors
@@ -37,9 +39,6 @@ public class FogOfWarMesh : MonoBehaviour
         vertices = new Vector3[vertexCount];
         colors = new Color[vertexCount];
         triangles = new int[gridSize * gridSize * 6];
-
-        Debug.Log($"FogOfWarMesh: Grid Size: {gridSize}, Map Size: {mapSize}, Cell Size: {cellSize}");
-        Debug.Log($"FogOfWarMesh: Vertex Count: {vertexCount}, Triangle Count: {triangles.Length}");
 
         float offset = mapSize / 2f;
 
@@ -78,20 +77,16 @@ public class FogOfWarMesh : MonoBehaviour
         mesh.triangles = triangles;
         mesh.colors = colors;
         mesh.RecalculateNormals();
-        Debug.Log("FogOfWarMesh: Mesh created and assigned.");
     }
 
     public void RevealArea(Vector3 worldPos, float radius)
     {
-        Debug.Log($"FogOfWarMesh: RevealArea called at World Pos: {worldPos} with Radius: {radius}");
         float offset = mapSize / 2f;
         int centerX = Mathf.FloorToInt((worldPos.x + offset) / cellSize);
         int centerZ = Mathf.FloorToInt((worldPos.z + offset) / cellSize);
         int radiusCells = Mathf.CeilToInt(radius / cellSize);
-        Debug.Log($"FogOfWarMesh: Calculated Center Cell: ({centerX}, {centerZ}), Radius in Cells: {radiusCells}");
 
-        int revealedCells = 0;
-        // Mark affected cells as dirty
+        // Mark cells as visible and explored
         for (int x = centerX - radiusCells; x <= centerX + radiusCells; x++)
         {
             for (int z = centerZ - radiusCells; z <= centerZ + radiusCells; z++)
@@ -102,23 +97,33 @@ public class FogOfWarMesh : MonoBehaviour
                     if (dist <= radius)
                     {
                         fogGrid[x, z] = 1f; // Fully visible
+                        if (!exploredGrid[x, z])
+                        {
+                            exploredGrid[x, z] = true; // Mark as explored
+                        }
                         dirtyCells[x + z * gridSize] = true;
-                        revealedCells++;
                     }
                 }
             }
-        }
-        if (revealedCells > 0)
-        {
-            Debug.Log($"FogOfWarMesh: Marked {revealedCells} cells as dirty for reveal.");
         }
     }
 
     void Update()
     {
-        // Smoothly update visibility
         bool needsUpdate = false;
-        int dirtyCellCount = 0;
+        // First, reset all cells that were previously visible but are no longer
+        for (int x = 0; x < gridSize; x++)
+        {
+            for (int z = 0; z < gridSize; z++)
+            {
+                if (fogGrid[x, z] > 0)
+                {
+                    dirtyCells[x + z * gridSize] = true;
+                }
+            }
+        }
+
+        // Then, fade out visibility for all dirty cells
         for (int x = 0; x < gridSize; x++)
         {
             for (int z = 0; z < gridSize; z++)
@@ -126,39 +131,119 @@ public class FogOfWarMesh : MonoBehaviour
                 if (dirtyCells[x + z * gridSize])
                 {
                     needsUpdate = true;
-                    dirtyCellCount++;
-                    // Interpolate for smooth transitions
-                    fogGrid[x, z] = Mathf.Lerp(fogGrid[x, z], 1f, Time.deltaTime * fadeSpeed);
-                    if (Mathf.Abs(fogGrid[x, z] - 1f) < 0.01f)
-                        dirtyCells[x + z * gridSize] = false;
+                    // Fade out visibility
+                    fogGrid[x, z] = Mathf.Lerp(fogGrid[x, z], 0f, Time.deltaTime * fadeSpeed);
+                    if (Mathf.Abs(fogGrid[x, z]) < 0.01f)
+                    {
+                        fogGrid[x, z] = 0f; // Snap to 0 for stability
+                        dirtyCells[x + z * gridSize] = false; // Stop updating this cell once it's faded
+                    }
                 }
             }
         }
 
         if (needsUpdate)
         {
-            // This log can be spammy. It's useful for checking if updates are happening.
-            // You might want to remove it after confirming it works.
-            // Debug.Log($"FogOfWarMesh: Updating mesh with {dirtyCellCount} dirty cells.");
+            UpdateMeshColors();
+        }
+    }
 
-            // Update vertex colors
-            for (int x = 0; x <= gridSize; x++)
+    void UpdateMeshColors()
+    {
+        // Update vertex colors
+        for (int x = 0; x <= gridSize; x++)
+        {
+            for (int z = 0; z <= gridSize; z++)
             {
-                for (int z = 0; z <= gridSize; z++)
+                int index = x + z * (gridSize + 1);
+                float visibility = 0f;
+                bool isExplored = false;
+                int count = 0;
+
+                // Average visibility and check explored state from adjacent cells
+                if (x < gridSize && z < gridSize) { visibility += fogGrid[x, z]; isExplored |= exploredGrid[x, z]; count++; }
+                if (x > 0 && z < gridSize) { visibility += fogGrid[x - 1, z]; isExplored |= exploredGrid[x - 1, z]; count++; }
+                if (z > 0 && x < gridSize) { visibility += fogGrid[x, z - 1]; isExplored |= exploredGrid[x, z - 1]; count++; }
+                if (x > 0 && z > 0) { visibility += fogGrid[x - 1, z - 1]; isExplored |= exploredGrid[x - 1, z - 1]; count++; }
+                
+                if (count > 0)
                 {
-                    int index = x + z * (gridSize + 1);
-                    float visibility = 0f;
-                    // Average visibility from adjacent cells
-                    int count = 0;
-                    if (x < gridSize && z < gridSize) { visibility += fogGrid[x, z]; count++; }
-                    if (x > 0 && z < gridSize) { visibility += fogGrid[x - 1, z]; count++; }
-                    if (z > 0 && x < gridSize) { visibility += fogGrid[x, z - 1]; count++; }
-                    if (x > 0 && z > 0) { visibility += fogGrid[x - 1, z - 1]; count++; }
-                    visibility = count > 0 ? visibility / count : 0f;
-                    colors[index] = new Color(0, 0, 0, 1 - visibility); // Alpha = 1 for fogged
+                    visibility /= count;
                 }
+
+                // Set color based on state
+                if (visibility > 0.01f)
+                    colors[index] = new Color(0, 0, 0, 1 - visibility); // Visible: fade to transparent
+                else if (isExplored)
+                    colors[index] = revealedColor; // Revealed but not visible: grey
+                else
+                    colors[index] = Color.black; // Hidden: fully fogged
             }
-            mesh.colors = colors;
+        }
+        mesh.colors = colors;
+    }
+
+    // Helper classes for serialization of 2D arrays
+    [System.Serializable]
+    private class FogData
+    {
+        public float[] fog;
+    }
+
+    [System.Serializable]
+    private class ExploredData
+    {
+        public bool[] explored;
+    }
+
+    // Save fog state for persistence
+    public void SaveFogState()
+    {
+        FogData fogData = new FogData { fog = new float[gridSize * gridSize] };
+        ExploredData exploredData = new ExploredData { explored = new bool[gridSize * gridSize] };
+
+        for (int x = 0; x < gridSize; x++)
+        {
+            for (int z = 0; z < gridSize; z++)
+            {
+                int index = x + z * gridSize;
+                fogData.fog[index] = fogGrid[x, z];
+                exploredData.explored[index] = exploredGrid[x, z];
+            }
+        }
+
+        string jsonFog = JsonUtility.ToJson(fogData);
+        string jsonExplored = JsonUtility.ToJson(exploredData);
+        PlayerPrefs.SetString("FogOfWarState", jsonFog);
+        PlayerPrefs.SetString("ExploredState", jsonExplored);
+        PlayerPrefs.Save();
+    }
+
+    // Load fog state
+    void LoadFogState()
+    {
+        if (PlayerPrefs.HasKey("FogOfWarState") && PlayerPrefs.HasKey("ExploredState"))
+        {
+            string jsonFog = PlayerPrefs.GetString("FogOfWarState");
+            string jsonExplored = PlayerPrefs.GetString("ExploredState");
+
+            FogData fogData = JsonUtility.FromJson<FogData>(jsonFog);
+            ExploredData exploredData = JsonUtility.FromJson<ExploredData>(jsonExplored);
+
+            if (fogData != null && exploredData != null && fogData.fog.Length == gridSize * gridSize && exploredData.explored.Length == gridSize * gridSize)
+            {
+                for (int x = 0; x < gridSize; x++)
+                {
+                    for (int z = 0; z < gridSize; z++)
+                    {
+                        int index = x + z * gridSize;
+                        fogGrid[x, z] = fogData.fog[index];
+                        exploredGrid[x, z] = exploredData.explored[index];
+                    }
+                }
+                // Force a full mesh update after loading
+                UpdateMeshColors();
+            }
         }
     }
 }
