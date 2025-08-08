@@ -70,7 +70,8 @@ public class ResetScene : MonoBehaviour
     public void ResetGameState()
     {
         Time.timeScale = 1f;
-        GameMgr.inst.BuildEntityDictionary();
+        ScenarioGenerator.inst?.BuildEntityDictionary();
+        // GameMgr.inst.BuildEntityDictionary();
         AIMgr.inst?.StopAllCoroutines();
         DistanceMgr.inst?.Initialize();
         FogWarMgr.inst?.ResetFog();

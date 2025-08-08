@@ -500,11 +500,15 @@ public class OpenOceanMain : MonoBehaviour
     {
         if (currentLobbyState == LobbyState.ScorePanel && previousState == LobbyState.Play)
         {
-            playSessionDuration = totalPlayTime;
-            if (IsDebugging) Debug.Log($"Play session ended. Duration: {playSessionDuration:F2}s. Total Training Time: {totalTrainingTime / 60f:F2}m.", this);
-            totalPlayTime = 0f;
+            // Don't increment games played count during replay
+            if (!(ReplayMgr.inst != null && ReplayMgr.inst.isReplaying))
+            {
+                playSessionDuration = totalPlayTime;
+                if (IsDebugging) Debug.Log($"Play session ended. Duration: {playSessionDuration:F2}s. Total Training Time: {totalTrainingTime / 60f:F2}m.", this);
+                totalPlayTime = 0f;
 
-            gamesPlayedCount++;
+                gamesPlayedCount++;
+            }
             UpdateScorePanelButtonTexts();
         }
     }

@@ -37,6 +37,11 @@ public abstract class BaseEnemyAI
         entityCooldowns.Clear();
     }
 
+    public virtual void SetEntityCooldowns(Dictionary<Entity, float> cooldowns)
+    {
+        entityCooldowns = cooldowns;
+    }
+
     public virtual void PruneEntityCooldowns(List<Entity> activeAiEntities)
     {
         _activeEntitiesSetCache.Clear();
@@ -58,7 +63,7 @@ public abstract class BaseEnemyAI
             }
         }
 
-        foreach (var key in _keysToRemoveCache)
+        foreach (Entity key in _keysToRemoveCache)
         {
             entityCooldowns.Remove(key);
         }

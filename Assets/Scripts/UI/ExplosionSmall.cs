@@ -13,8 +13,14 @@ public class ExplosionSmall : MonoBehaviour
     }
 
     public void Explode() {
-        effect.Play();
-        sound.Play();
+        if (effect != null)
+        {
+            effect.Play();
+        }
+        if (sound != null)
+        {
+            sound.Play();
+        }
     }
 
     // Update is called once per frame
@@ -22,8 +28,7 @@ public class ExplosionSmall : MonoBehaviour
     {
         if (play)
         {
-            effect.Play();
-            sound.Play();
+            Explode();
             play = false;
         }
     }

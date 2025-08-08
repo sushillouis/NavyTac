@@ -48,7 +48,7 @@ public class ScenarioDataMgr : MonoBehaviour
     }
     public ScenarioData GetScenarioData(int scenarioNumber)
     {
-        var data = scenarioDataList.Find(s => s.scenarioNumber == scenarioNumber);
+        ScenarioData data = scenarioDataList.Find(s => s.scenarioNumber == scenarioNumber);
         if (data == null)
         {
             data = new ScenarioData { scenarioNumber = scenarioNumber };

@@ -3,40 +3,54 @@ using UnityEngine;
 
 public class Level1EnemyAI : BaseEnemyAI
 {
-    private const float DefaultInitialStopDistance = 6000f;
-    private const float DefaultWeaponRangeFallback = 600f;
-    private const float EntityMoveCooldownDuration = 0.5f;
-    private const float InitialMoveTargetBuffer = 50f;
+    // Constants for adaptive AI
+    private const float AdaptiveBaseInitialStopDistanceEasy = 11000f;
+    private const float AdaptiveBaseInitialStopDistanceHard = 6000f;
+    private const float AdaptiveBaseWeaponRangeFallbackEasy = 800f;
+    private const float AdaptiveBaseWeaponRangeFallbackHard = 400f;
+    private const float AdaptiveBaseCooldownEasy = 1f;
+    private const float AdaptiveBaseCooldownHard = 0.25f;
+    private const float AdaptiveBaseInitialBufferEasy = 100f;
+    private const float AdaptiveBaseInitialBufferHard = 25f;
+
+    // Constants for static AI
+    private const float StaticInitialStopDistance = 6000f;
+    private const float StaticWeaponRangeFallback = 600f;
+    private const float StaticEntityMoveCooldownDuration = 0.5f;
+    private const float StaticInitialMoveTargetBuffer = 50f;
+    
+    // Common constants
     private const float FirstMoveSentinel = -1f;
-    private readonly float initialStopDistance = DefaultInitialStopDistance;
 
     public override void ProcessCombatBehavior(List<Entity> aiEntities)
     {
         if (opponentBase == null) return;
         if (aiEntities.Count == 0) return;
 
+        // Delegate to appropriate AI implementation based on training state
         if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
         {
-            HandleLevel1CombatAdaptiveBehavior(aiEntities);
+            ProcessAdaptiveBehavior(aiEntities);
         }
         else
         {
-            HandleLevel1CombatNonAdaptiveBehavior(aiEntities);
+            ProcessStaticBehavior(aiEntities);
         }
     }
 
-    private void HandleLevel1CombatAdaptiveBehavior(List<Entity> aiEntities)
+    #region Adaptive AI Implementation
+    private void ProcessAdaptiveBehavior(List<Entity> aiEntities)
     {
         if (opponentBase == null) return;
         Vector3 opponentPos = opponentBase.position;
 
         float diff = GameMgr.inst.difficultyLevel;
 
-        // Adaptive values
-        float adaptiveInitialStopDistance = Mathf.Lerp(11000f, 6000f, diff);
-        float adaptiveWeaponRangeFallback = Mathf.Lerp(800f, 400f, diff);
-        float adaptiveCooldown = Mathf.Lerp(1f, 0.25f, diff);
-        float adaptiveInitialBuffer = Mathf.Lerp(100f, 25f, diff);
+        // Calculate adaptive values based on difficulty level
+        float adaptiveInitialStopDistance = Mathf.Lerp(AdaptiveBaseInitialStopDistanceEasy, AdaptiveBaseInitialStopDistanceHard, diff);
+        float adaptiveWeaponRangeFallback = Mathf.Lerp(AdaptiveBaseWeaponRangeFallbackEasy, AdaptiveBaseWeaponRangeFallbackHard, diff);
+        float adaptiveCooldown = Mathf.Lerp(AdaptiveBaseCooldownEasy, AdaptiveBaseCooldownHard, diff);
+        float adaptiveInitialBuffer = Mathf.Lerp(AdaptiveBaseInitialBufferEasy, AdaptiveBaseInitialBufferHard, diff);
 
         for (int i = aiEntities.Count - 1; i >= 0; i--)
         {
@@ -52,17 +66,18 @@ public class Level1EnemyAI : BaseEnemyAI
 
             float weaponRange = baseRange;
 
+            // Initialize entity cooldown if not present
             if (!entityCooldowns.ContainsKey(aiEntity))
             {
                 entityCooldowns[aiEntity] = FirstMoveSentinel;
             }
 
             float currentDistance = Vector3.Distance(aiEntity.position, opponentPos);
-
             bool isInitialMovePhase = entityCooldowns[aiEntity] == FirstMoveSentinel;
 
             if (isInitialMovePhase)
             {
+                // Initial movement phase - move until within adaptive stop distance
                 if (currentDistance <= adaptiveInitialStopDistance + adaptiveInitialBuffer)
                 {
                     entityCooldowns[aiEntity] = Time.time + adaptiveCooldown;
@@ -70,29 +85,35 @@ public class Level1EnemyAI : BaseEnemyAI
             }
             else
             {
+                // Regular combat phase with cooldown management
                 if (Time.time < entityCooldowns[aiEntity])
                 {
-                    continue;
+                    continue; // Still on cooldown
                 }
 
                 Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange);
                 if (nearestEnemy != null)
                 {
+                    // Enemy found within range - stop and engage
                     unitAIComponent?.StopAndRemoveAllCommands();
                     entityCooldowns[aiEntity] = Time.time + adaptiveCooldown;
                     continue;
                 }
                 else
                 {
+                    // No enemy in range - prepare for next move
                     entityCooldowns[aiEntity] = Time.time + adaptiveCooldown;
                 }
             }
 
+            // Execute movement command
             AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false);
         }
     }
+    #endregion
 
-    private void HandleLevel1CombatNonAdaptiveBehavior(List<Entity> aiEntities)
+    #region Static AI Implementation
+    private void ProcessStaticBehavior(List<Entity> aiEntities)
     {
         if (opponentBase == null) return;
         Vector3 opponentPos = opponentBase.position;
@@ -105,51 +126,59 @@ public class Level1EnemyAI : BaseEnemyAI
             WeaponsAspect weaponAspect = aiEntity.GetComponentInChildren<WeaponsAspect>();
             UnitAI unitAIComponent = aiEntity.GetComponentInChildren<UnitAI>();
 
-            float weaponRange = DefaultWeaponRangeFallback;
+            // Use static weapon range or fallback
+            float weaponRange = StaticWeaponRangeFallback;
             if (weaponAspect != null && weaponAspect.weapon != null)
             {
                 weaponRange = weaponAspect.weapon.range;
             }
 
+            // Initialize entity cooldown if not present
             if (!entityCooldowns.ContainsKey(aiEntity))
             {
                 entityCooldowns[aiEntity] = FirstMoveSentinel;
             }
 
             float currentDistance = Vector3.Distance(aiEntity.position, opponentPos);
-
             bool isInitialMovePhase = entityCooldowns[aiEntity] == FirstMoveSentinel;
 
             if (isInitialMovePhase)
             {
-                if (currentDistance <= initialStopDistance - InitialMoveTargetBuffer)
+                // Initial movement phase - move until within static stop distance
+                if (currentDistance <= StaticInitialStopDistance - StaticInitialMoveTargetBuffer)
                 {
-                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
+                    entityCooldowns[aiEntity] = Time.time + StaticEntityMoveCooldownDuration;
                 }
             }
             else
             {
+                // Regular combat phase with cooldown management
                 if (Time.time < entityCooldowns[aiEntity])
                 {
-                    continue;
+                    continue; // Still on cooldown
                 }
 
                 Entity nearestEnemy = FindNearestEnemy(aiEntity, weaponRange);
                 if (nearestEnemy != null)
                 {
+                    // Enemy found within range - stop and engage
                     if (unitAIComponent != null)
                     {
                         unitAIComponent.StopAndRemoveAllCommands();
                     }
-                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
+                    entityCooldowns[aiEntity] = Time.time + StaticEntityMoveCooldownDuration;
                     continue;
                 }
                 else
                 {
-                    entityCooldowns[aiEntity] = Time.time + EntityMoveCooldownDuration;
+                    // No enemy in range - prepare for next move
+                    entityCooldowns[aiEntity] = Time.time + StaticEntityMoveCooldownDuration;
                 }
             }
+
+            // Execute movement command
             AIMgr.inst.HandleMove(new List<Entity> { aiEntity }, opponentBase.position, false);
         }
     }
+    #endregion
 }

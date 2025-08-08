@@ -1,39 +1,42 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class FXMgr : MonoBehaviour
 {
     public static FXMgr inst;
-    private void Awake() {
+    private void Awake()
+    {
         inst = this;
     }
 
-    public ExplosionSmall explosionSmallPrefab;
+    public GameObject explosionLargePrefab; // Your large explosion prefab
 
-    public void CreateExplosionAt(Vector3 pos, float interval = 1, float scaleMultiplier = 1f) {
-    ExplosionSmall et = Instantiate(explosionSmallPrefab, pos, Quaternion.identity, transform);
-    et.transform.localScale *= scaleMultiplier; // ← Increase size
-    StartCoroutine(ExplodeAndDestroy(et, interval));
-}
+    public void CreateExplosionAt(Vector3 pos, float interval = 1f, float scaleMultiplier = 1f)
+    {
+        // Spawn explosion
+        GameObject explosion = Instantiate(explosionLargePrefab, pos, Quaternion.identity, transform);
+        // explosion.transform.localScale *= scaleMultiplier; // Apply scale multiplier
 
+        // Start coroutine to manage timing
+        StartCoroutine(ExplodeAndDestroy(explosion, interval));
+    }
 
-    IEnumerator ExplodeAndDestroy(ExplosionSmall et, float interval) {
+    IEnumerator ExplodeAndDestroy(GameObject explosion, float interval)
+    {
         yield return new WaitForFixedUpdate();
-        et.SetExplosionInterval(interval);
-        et.Explode();
-        yield return new WaitForSeconds(interval+1);
-        Destroy(et.gameObject);
+        // Explosion plays automatically via ExplosionEffect.cs
+        explosion.GetComponent<ExplosionSmall>().Explode();
+        yield return new WaitForSeconds(interval + 1f);
+        // Destroy explosion (if not already destroyed by ExplosionEffect.cs)
+        if (explosion != null) Destroy(explosion);
     }
 
-    public void ResetEffects() {
-    StopAllCoroutines(); // Stops any pending ExplodeAndDestroy coroutines
-    foreach (Transform child in transform) {
-        Destroy(child.gameObject); // Destroys any still-active explosion effects
+    public void ResetEffects()
+    {
+        StopAllCoroutines(); // Stop any pending coroutines
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject); // Destroy all active effects
+        }
     }
-}
-
-
-    //Need smoke
-
 }

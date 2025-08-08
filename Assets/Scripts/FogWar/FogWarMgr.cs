@@ -17,7 +17,8 @@ public class FogWarMgr : MonoBehaviour
     public Color fogColor = Color.black; // Hidden state (opaque black)
 
     [Header("Grid Settings")]
-    [Min(0.1f)] public float gridCellSize = 142.578125f; // 18250 / 128 for 128x128 grid
+    [Range(1, 1000)] public int gridWidthOverride = 128; // Override for grid width
+    [Min(0.1f)] public float gridCellSize; // 18250 / 128 for 128x128 grid
     public List<Entity> revelers = new List<Entity>();
     private List<Entity> _nonRevelers = new List<Entity>();
     public List<Entity> nonRevelers
@@ -104,6 +105,7 @@ public class FogWarMgr : MonoBehaviour
 
     void InitializeGrid()
     {
+        gridCellSize = fogPlaneSize.x / gridWidthOverride;
         gridWidth = Mathf.Max(1, Mathf.CeilToInt(fogPlaneSize.x / gridCellSize));
         gridHeight = Mathf.Max(1, Mathf.CeilToInt(fogPlaneSize.y / gridCellSize));
         gridOrigin = new Vector2(-fogPlaneSize.x / 2, -fogPlaneSize.y / 2);
@@ -309,9 +311,14 @@ public class FogWarMgr : MonoBehaviour
 
     void RevealArea(Vector3 worldPos, float radius)
     {
+        // Convert world position to grid coordinates
         int centerX = Mathf.FloorToInt((worldPos.x - gridOrigin.x) / gridCellSize);
         int centerZ = Mathf.FloorToInt((worldPos.z - gridOrigin.y) / gridCellSize);
         int radiusCells = Mathf.CeilToInt(radius / gridCellSize);
+
+        // Define falloff range for smooth edges (e.g., last 10% of radius)
+        float falloffDistance = radius * 0.1f; // Adjust this for sharper or smoother falloff
+        float innerRadius = radius - falloffDistance;
 
         for (int x = centerX - radiusCells; x <= centerX + radiusCells; x++)
         {
@@ -319,10 +326,32 @@ public class FogWarMgr : MonoBehaviour
             {
                 if (x >= 0 && x < gridWidth && z >= 0 && z < gridHeight)
                 {
-                    float dist = Vector2.Distance(new Vector2(centerX, centerZ), new Vector2(x, z)) * gridCellSize;
+                    // Calculate the world position of the current grid cell's center
+                    Vector2 cellWorldPos = new Vector2(
+                        gridOrigin.x + (x + 0.5f) * gridCellSize,
+                        gridOrigin.y + (z + 0.5f) * gridCellSize
+                    );
+                    // Calculate the actual distance from the reveal center to the cell center
+                    float dist = Vector2.Distance(
+                        new Vector2(worldPos.x, worldPos.z),
+                        cellWorldPos
+                    );
+                    // Apply smooth falloff
                     if (dist <= radius)
                     {
-                        fogGrid[x, z] = 1f;
+                        float visibility;
+                        if (dist <= innerRadius)
+                        {
+                            visibility = 1f; // Fully visible inside inner radius
+                        }
+                        else
+                        {
+                            // Linear falloff between innerRadius and radius
+                            float t = (dist - innerRadius) / falloffDistance;
+                            visibility = Mathf.Lerp(1f, 0f, t);
+                        }
+                        // Update fogGrid with the maximum visibility value
+                        fogGrid[x, z] = Mathf.Max(fogGrid[x, z], visibility);
                         exploredGrid[x, z] = true;
                         dirtyCells[x + z * gridWidth] = true;
                     }

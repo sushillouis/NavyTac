@@ -717,30 +717,3 @@ public class Move : Command
         }
     }
 }
-
-// Helper enum for pathfinding state, if not already defined elsewhere
-
-
-// Helper struct for Desired Heading and Desired Speed, if not already defined
-// public struct DHDS
-// {
-//     public float dh; // Desired Heading
-//     public float ds; // Desired Speed
-//
-//     public DHDS(float heading, float speed)
-//     {
-//         dh = heading;
-//         ds = speed;
-//     }
-// }
-
-// You would also need to add `isRVOMovementEnabled` to your AIMgr class:
-// public class AIMgr : MonoBehaviour
-// {
-//     public static AIMgr inst;
-//     public bool isPotentialFieldsMovement = true; // Existing
-//     public bool isRVOMovementEnabled = true; // New toggle for RVO
-//     // ... other AIMgr fields ...
-//
-//     void Awake() { inst = this; }
-// }

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.XR;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -25,19 +26,24 @@ public class CameraMgr : MonoBehaviour
     public bool isMiddleMouseDragEnabled = true;
     public bool isReplayScrollEnabled = true;
 
+    // New B-roll control flags
+    public bool playBrollOnce = false; // Play B-roll only once per game session
+    public bool neverPlayBroll = false; // Never play B-roll
+    public bool playBrollEveryScenario = true; // Play B-roll before every scenario
+    private bool hasBrollPlayed = false; // Tracks if B-roll has played in this session
 
     private void Awake()
     {
         inst = this;
     }
-    // Start is called before the first frame update
+
     void Start()
     {
         StoreInitialTransforms();
     }
+
     private Vector3 baseYawLocalPosition;
     private Quaternion baseYawLocalRotation;
-
     private Vector3 basePitchLocalPosition;
     private Quaternion basePitchLocalRotation;
     private Vector3 baseRollLocalPosition;
@@ -45,12 +51,13 @@ public class CameraMgr : MonoBehaviour
 
     public void SetCameraPosition()
     {
-        // Stop any existing B-roll to prevent multiple instance
+        // Stop any existing B-roll to prevent multiple instances
         if (bRollCoroutine != null)
         {
             StopCoroutine(bRollCoroutine);
         }
-        if(OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial)
+
+        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial)
         {
             // Reset camera to initial position
             OpenOceanMain.inst.SkipButton.gameObject.SetActive(false);
@@ -58,15 +65,48 @@ public class CameraMgr : MonoBehaviour
             SetupInitialGameCamera();
             return;
         }
+
+        // Check B-roll settings
+        if (neverPlayBroll)
+        {
+            // Skip B-roll and go straight to game camera setup
+            OpenOceanMain.inst.SkipButton.gameObject.SetActive(false);
+            ResetCamera();
+            SetupInitialGameCamera();
+            return;
+        }
+
+        if (playBrollOnce && hasBrollPlayed)
+        {
+            // Skip B-roll if it has already played once
+            OpenOceanMain.inst.SkipButton.gameObject.SetActive(false);
+            ResetCamera();
+            SetupInitialGameCamera();
+            return;
+        }
+
         // Show skip button and add listener
-        if (OpenOceanMain.inst != null && OpenOceanMain.inst.SkipButton != null) {
+        if (OpenOceanMain.inst != null && OpenOceanMain.inst.SkipButton != null)
+        {
             OpenOceanMain.inst.SkipButton.gameObject.SetActive(true);
             OpenOceanMain.inst.SkipButton.onClick.RemoveAllListeners(); // Clear existing listeners
             OpenOceanMain.inst.SkipButton.onClick.AddListener(ExitBRollAndStartGame);
         }
 
-        // Perform a B-roll of the complete scenario before setting the camera position
-        bRollCoroutine = StartCoroutine(BRollAndSetCameraPosition());
+        // Perform a B-roll if allowed
+        if (playBrollEveryScenario || (playBrollOnce && !hasBrollPlayed))
+        {
+            bRollCoroutine = StartCoroutine(BRollAndSetCameraPosition());
+            if (playBrollOnce)
+            {
+                hasBrollPlayed = true; // Mark B-roll as played for this session
+            }
+        }
+        else
+        {
+            // No B-roll, set up game camera directly
+            SetupInitialGameCamera();
+        }
     }
 
     private IEnumerator BRollAndSetCameraPosition()
@@ -82,7 +122,7 @@ public class CameraMgr : MonoBehaviour
             // Slowly orbit halfway (semi-circle) around the scenario center for 6 seconds (slower B-roll)
             float duration = 5f;
             float elapsed = 0f;
-            Vector3 scenarioCenter = GameMgr.inst.posPlayer1List[0]; // Or use a more appropriate center if needed
+            Vector3 scenarioCenter = ScenarioGenerator.inst?.posPlayer1List?.FirstOrDefault() ?? Vector3.zero; // Or use a more appropriate center if needed
             float radius = 4000f;
             float height = 2500f;
 
@@ -109,12 +149,13 @@ public class CameraMgr : MonoBehaviour
             float mapHeight = 6000f;
 
             // Calculate direction from map center to Player 1
-            Vector3 toPlayer = (GameMgr.inst.posPlayer1List[0] - mapCenter).normalized;
+            Vector3 playerPos = ScenarioGenerator.inst?.posPlayer1List?.FirstOrDefault() ?? Vector3.zero;
+            Vector3 toPlayer = (playerPos - mapCenter).normalized;
             // Get the forward direction (z axis) and right direction (x axis) on the XZ plane
             Vector3 forward = new Vector3(toPlayer.x, 0, toPlayer.z).normalized;
             Vector3 right = Vector3.Cross(Vector3.up, forward);
 
-            // Start at -90 degrees (left of player) to +90 degrees (right of player), so the semi-circle faces Player 1
+            // Start at -180 degrees (left of player) to +180 degrees (right of player), so the semi-circle faces Player 1
             float mapStartAngle = -180f;
             float mapEndAngle = 180f;
 
@@ -126,7 +167,8 @@ public class CameraMgr : MonoBehaviour
                 Vector3 offset = (Mathf.Cos(rad) * forward + Mathf.Sin(rad) * right) * mapRadius;
                 offset.y = mapHeight;
                 RTSCameraRig.transform.position = mapCenter + offset;
-                RTSCameraRig.transform.LookAt(GameMgr.inst.posPlayer1List[0]);
+                Vector3 player1Pos = ScenarioGenerator.inst?.posPlayer1List?.FirstOrDefault() ?? Vector3.zero;
+                RTSCameraRig.transform.LookAt(player1Pos);
                 mapElapsed += Time.deltaTime;
                 yield return null;
             }
@@ -156,15 +198,15 @@ public class CameraMgr : MonoBehaviour
         }
 
         // Hide the skip button and remove listeners
-        if (OpenOceanMain.inst != null && OpenOceanMain.inst.SkipButton!= null)
+        if (OpenOceanMain.inst != null && OpenOceanMain.inst.SkipButton != null)
         {
             OpenOceanMain.inst.SkipButton.gameObject.SetActive(false);
             OpenOceanMain.inst.SkipButton.onClick.RemoveAllListeners();
         }
         isBrollActive = false;
-                isEdgeScrollingEnabled = true;
-                isMiddleMouseDragEnabled = true;
-                UIMgr.inst.inputs.Enable();
+        isEdgeScrollingEnabled = true;
+        isMiddleMouseDragEnabled = true;
+        UIMgr.inst.inputs.Enable();
         SetupInitialGameCamera();
     }
 
@@ -173,15 +215,18 @@ public class CameraMgr : MonoBehaviour
         ResetCamera();
         // Position camera 1500 units above and 2000 units behind Player 1
         Vector3 baseOffset = new Vector3(0, 2000, -3000);
-        Quaternion headingRotation = Quaternion.Euler(0, GameMgr.inst.headingPlayer1List[0], 0);
-        Vector3 cameraPosition = GameMgr.inst.posPlayer1List[0] + headingRotation * baseOffset;
+        float playerHeading = ScenarioGenerator.inst?.headingPlayer1List?.FirstOrDefault() ?? 0f;
+        Vector3 player1Position = ScenarioGenerator.inst?.posPlayer1List?.FirstOrDefault() ?? Vector3.zero;
+        Quaternion headingRotation = Quaternion.Euler(0, playerHeading, 0);
+        Vector3 cameraPosition = player1Position + headingRotation * baseOffset;
 
         // Set camera position and orientation
         RTSCameraRig.transform.position = cameraPosition;
         YawNode.transform.rotation = headingRotation;
 
         // Look directly at Player 1's spawn point
-        PitchNode.transform.LookAt(GameMgr.inst.posPlayer1List[0]);
+        Vector3 lookAtPosition = ScenarioGenerator.inst?.posPlayer1List?.FirstOrDefault() ?? Vector3.zero;
+        PitchNode.transform.LookAt(lookAtPosition);
         GameMgr.inst.isIntroPlaying = false;
         foreach (Entity e in EntityMgr.inst.entities)
         {
@@ -289,9 +334,9 @@ public class CameraMgr : MonoBehaviour
         }
         else
         {
-           moveVector.z += moveValue.y * moveCoefficent; 
+            moveVector.z += moveValue.y * moveCoefficent;
         }
-        
+
         YawNode.transform.Translate(moveVector * Time.deltaTime * cameraMoveSpeed);
     }
 
@@ -323,38 +368,12 @@ public class CameraMgr : MonoBehaviour
 
     public void ToggleRTSView()
     {
-        //
         YawNode.transform.localPosition = baseYawLocalPosition; // Restore saved position
         YawNode.transform.localRotation = baseYawLocalRotation; // Restore saved rotation
-
         PitchNode.transform.localPosition = basePitchLocalPosition; // Restore saved position
         PitchNode.transform.localRotation = basePitchLocalRotation; // Restore saved rotation
-
         RollNode.transform.localPosition = baseRollLocalPosition; // Restore saved position
         RollNode.transform.localRotation = baseRollLocalRotation; // Restore saved rotation
-        // if (isRTSMode)
-        // {
-        //     if (SelectionMgr.inst.selectedEntity != null) 
-        //     {
-        //         YawNode.transform.SetParent(SelectionMgr.inst.selectedEntity.cameraRig.transform);
-        //         YawNode.transform.localPosition = Vector3.zero;
-        //         YawNode.transform.localEulerAngles = Vector3.zero;
-        //     }
-        //     else{
-        //         YawNode.transform.SetParent(RTSCameraRig.transform);
-        //         YawNode.transform.localPosition = baseYawLocalPosition; // Restore saved position
-        //         YawNode.transform.localRotation = baseYawLocalRotation;
-        //         isRTSMode = !isRTSMode;
-        //     }
-        // }
-        // else
-        // {
-        //     // Restore the base RTS position and rotation
-        //     YawNode.transform.SetParent(RTSCameraRig.transform);
-        //     YawNode.transform.localPosition = baseYawLocalPosition; // Restore saved position
-        //     YawNode.transform.localRotation = baseYawLocalRotation; // Restore saved rotation
-        // }
-        // isRTSMode = !isRTSMode;
     }
     public void ResetCamera()
     {
@@ -375,10 +394,10 @@ public class CameraMgr : MonoBehaviour
     {
         if (!isEdgeScrollingEnabled) return;
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        #if UNITY_EDITOR
-            if (mousePos.x < 0 || mousePos.x > Screen.width || mousePos.y < 0 || mousePos.y > Screen.height)
-                return;
-        #endif
+#if UNITY_EDITOR
+        if (mousePos.x < 0 || mousePos.x > Screen.width || mousePos.y < 0 || mousePos.y > Screen.height)
+            return;
+#endif
 
         Vector2 mousePosition = Mouse.current.position.ReadValue();
         Vector2 moveInput = Vector2.zero;
@@ -394,7 +413,7 @@ public class CameraMgr : MonoBehaviour
         }
         if (ReplayMgr.inst.isReplaying)
         {
-            
+
         }
         if (mousePosition.y <= edgeScrollMargin)
         {
@@ -412,7 +431,7 @@ public class CameraMgr : MonoBehaviour
     }
     private void HandleMiddleMouseDrag()
     {
-        if (!isMiddleMouseDragEnabled ) return;
+        if (!isMiddleMouseDragEnabled) return;
         if (ReplayMgr.inst.isReplaying) return;
         if (Mouse.current.middleButton.isPressed)
         {
@@ -443,7 +462,7 @@ public class CameraMgr : MonoBehaviour
         YawNode.transform.localPosition = new Vector3(0f, 14000f, 0f);
         YawNode.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
         PitchNode.transform.localPosition = Vector3.zero;
-        PitchNode.transform.localRotation = Quaternion.Euler(0f, 0f, 0f); 
+        PitchNode.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
     }
 
 }

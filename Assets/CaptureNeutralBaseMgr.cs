@@ -150,10 +150,10 @@ private void UpdateEntityQuantities(TactPlayer owner, EntityType type)
             eqList.Add(new EntityQuantity { entityType = type, unitCount = 1 });
         }
 
-        GameMgr.inst.BuildEntityDictionary();
+        ScenarioGenerator.inst.BuildEntityDictionary();
     }
 }
-
+    
 
     private void ActivateUIElements()
     {

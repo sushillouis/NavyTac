@@ -20,48 +20,25 @@ public class ScoreMgr : MonoBehaviour
     private string sessionStartTimeString; 
     private const string CommonLogFileName = "AllGamesLog.csv"; 
 
-    private static readonly List<string> generalFeedbacks = new List<string>
+    [System.Serializable]
+    public class FeedbackData
     {
-        "JARI USVs can force the enemy to reveal positions — use them early.",
-        "Attack-Move (A + Right Click) prevents surprise deaths.",
-        "SeaHunters can help protect DDG51s from flank attacks.",
-        "Use SeaHunters to flank or intercept weakened enemies.",
-        "Use JARIs to spot for missiles or long-range units.",
-        "Let SeaHunters scout while DDG51s prepare to strike.",
-        "Group SeaHunters separately for quick response tasks.",
-        "Use Ctrl + 1–9 to assign units to control groups.",
-        "Use high-speed units for map control and harassment.",
-        "Diversify your formation — don’t overuse one unit type.",
-        "JARI USVs are expendable — use them to test enemy defenses.",
-        "Position DDG51s at the rear for cover fire support.",
-        "Don’t stack all SeaHunters — spread them out.",
-        "Keep SeaHunters close to the action but not in the front line.",
-        "Maintain pressure with SeaHunters while rotating DDG51s.",
-        "Always leave some units behind to defend your base.",
-        "Send JARI USVs to scout ahead before moving main units.",
-        "Build combined waves — scouts, support, then heavy hitters.",
-        "Destroyers are slow — plan their movement ahead of time.",
-        "Mix units to cover weaknesses — scouts reveal, heavies attack.",
-        "Don’t let JARI USVs idle — keep them active on flanks.",
-        "Avoid chasing fleeing enemies if your base is exposed.",
-        "SeaHunters are balanced — use them to bridge between scouts and firepower.",
-        "Don’t lead with SeaHunters — support your heavier ships.",
-        "JARI USVs are fast — use them to bait or distract.",
-        "Pair DDG51s with SeaHunters to create layered firepower.",
-        "Use DDG51s to finish high-value targets, not to chase scouts.",
-        "SeaHunters are versatile — don’t waste them on suicide runs.",
-        "Destroyers are valuable — don’t lead the charge with them.",
-        "Scout then retreat — don’t lose JARI USVs to unnecessary combat.",
-        "Use a scout to trigger enemy fire before sending in DDG51s.",
-        "Use SeaHunters to maintain battlefield vision.",
-        "Adapt your unit use depending on who you're facing.",
-        "Protect your base even when dominating offensively.",
-        "Never clump all units — area attacks punish tight formations.",
-        "Attack from two sides — it splits the enemy’s attention.",
-        "Micro-manage each group for better survival rates.",
-        "Don’t send your whole fleet down one route.",
-        "Use JARI USVs for hit-and-run tactics."
-    };
+        public List<string> generalFeedbacks;
+        public VictoryFeedbacks victoryFeedbacks;
+        public List<string> defeatFeedbacks;
+        public List<string> baseDestroyedFeedbacks;
+    }
+
+    [System.Serializable]
+    public class VictoryFeedbacks
+    {
+        public List<string> highScore;
+        public List<string> mediumScore;
+        public List<string> lowScore;
+        public List<string> allDestroyed;
+    }
+
+    private FeedbackData feedbackData;
 
     private void Awake()
     {
@@ -73,12 +50,59 @@ public class ScoreMgr : MonoBehaviour
         {
             inst = this; 
             sessionStartTimeString = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm");
+            LoadFeedbackData();
         }
+    }
+
+    private void LoadFeedbackData()
+    {
+        try
+        {
+            TextAsset feedbackJson = Resources.Load<TextAsset>("feedback");
+            if (feedbackJson != null)
+            {
+                feedbackData = JsonUtility.FromJson<FeedbackData>(feedbackJson.text);
+            }
+            else
+            {
+                Debug.LogWarning("Feedback JSON file not found in Resources folder. Using fallback data.");
+                CreateFallbackFeedbackData();
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Error loading feedback data: {e.Message}. Using fallback data.");
+            CreateFallbackFeedbackData();
+        }
+    }
+
+    private void CreateFallbackFeedbackData()
+    {
+        feedbackData = new FeedbackData
+        {
+            generalFeedbacks = new List<string>
+            {
+                "JARI USVs can force the enemy to reveal positions — use them early.",
+                "Attack-Move (A + Right Click) prevents surprise deaths.",
+                "Use terrain and spacing to avoid ambushes."
+            },
+            victoryFeedbacks = new VictoryFeedbacks
+            {
+                highScore = new List<string> { "Excellent performance!" },
+                mediumScore = new List<string> { "Good job, but room for improvement." },
+                lowScore = new List<string> { "Focus on unit preservation." },
+                allDestroyed = new List<string> { "Try to minimize damage next time." }
+            },
+            defeatFeedbacks = new List<string> { "Analyze your strategy and try again." },
+            baseDestroyedFeedbacks = new List<string> { "Protect your base better." }
+        };
     }
 
     public void CheckVictory()
     {
         if (OpenOceanMain.inst.lobbyState == LobbyState.Replay)
+            return ;
+        if (ReplayMgr.inst != null && ReplayMgr.inst.isReplaying)
             return ;
         if(OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial)
         {
@@ -88,33 +112,37 @@ public class ScoreMgr : MonoBehaviour
             damageTaken = 0; 
             winReason = "Tutorial Completed"; 
         }
-        else if (GameMgr.inst == null || GameMgr.inst.entityQuantities == null || EntityMgr.inst == null || EntityMgr.inst.entities == null)
+        else if (ScenarioGenerator.inst == null || ScenarioGenerator.inst.entityQuantities == null || EntityMgr.inst == null || EntityMgr.inst.entities == null)
         {
             Debug.LogWarning("GameMgr or EntityMgr is not initialized properly.");
             return;
         }
         if (!playerWon && !aiWon) return;
 
-        OpenOceanMain.inst.lobbyState = LobbyState.ScorePanel;
+        // Don't change lobby state during replay - let ReplayMgr handle it
+        if (!(ReplayMgr.inst != null && ReplayMgr.inst.isReplaying))
+        {
+            OpenOceanMain.inst.lobbyState = LobbyState.ScorePanel;
+        }
 
         score = (float)(0.3 * (playerWon ? 1 : 0)) * 100 + 0.7f * (damageDealt / (damageDealt + damageTaken)) * 100;
-        if (ReplayMgr.inst != null && ReplayMgr.inst.isRecording)
+        if (ReplayMgr.inst != null && ReplayMgr.inst.isRecording && !ReplayMgr.inst.isReplaying)
         {
             playerScores.Add(score); 
         }
-        if (OpenOceanMain.inst.lobbyState != LobbyState.Replay)
+        if (OpenOceanMain.inst.lobbyState != LobbyState.Replay && !(ReplayMgr.inst != null && ReplayMgr.inst.isReplaying))
         {
             ScenarioDataMgr.ScenarioData data = new ScenarioDataMgr.ScenarioData();
             data.scenarioNumber = OpenOceanMain.inst.gamesPlayedCount;
-            data.totalUnits = GameMgr.inst.entityQuantities.Sum(eq => eq.unitCount); 
-                                                                                     
-            var initialCounts = GameMgr.inst.entityQuantities.ToDictionary(eq => eq.entityType, eq => eq.unitCount);
+            data.totalUnits = ScenarioGenerator.inst.entityQuantities.Sum(eq => eq.unitCount); 
+
+            Dictionary<EntityType, int> initialCounts = ScenarioGenerator.inst.entityQuantities.ToDictionary(eq => eq.entityType, eq => eq.unitCount);
             data.totalJARI = initialCounts.GetValueOrDefault(EntityType.JARIUSV, 0);
             data.totalSeaHunter = initialCounts.GetValueOrDefault(EntityType.SeaHunter, 0);
             data.totalDDG51 = initialCounts.GetValueOrDefault(EntityType.DDG51, 0);
 
-            var destroyedPlayer = GetDestroyedUnits(PlayerMgr.inst.localPlayer);
-            var destroyedAI = GetDestroyedUnits(PlayerMgr.inst.player2);
+            Dictionary<EntityType, int> destroyedPlayer = GetDestroyedUnits(PlayerMgr.inst.localPlayer);
+            Dictionary<EntityType, int> destroyedAI = GetDestroyedUnits(PlayerMgr.inst.player2);
             data.ourUnitsDestroyed = destroyedPlayer.Values.Sum(); 
             data.ourDestroyedJARI = destroyedPlayer.GetValueOrDefault(EntityType.JARIUSV, 0);
             data.ourDestroyedSeaHunter = destroyedPlayer.GetValueOrDefault(EntityType.SeaHunter, 0);
@@ -141,8 +169,6 @@ public class ScoreMgr : MonoBehaviour
             FXMgr.inst.ResetEffects();
             GameMgr.inst.StoreCurrentScenario();
         }
-        
-
     }
 
     private void UpdateScoreDisplay()
@@ -181,49 +207,48 @@ public class ScoreMgr : MonoBehaviour
 
         if (OpenOceanMain.inst.feedbackText != null)
         {
-
             OpenOceanMain.inst.feedbackText.text = ""; 
         }
     }
 
     public string GetFeedback()
     {
+        if (feedbackData == null)
+        {
+            return string.Empty;
+        }
+
         List<string> selectedFeedbacks = new();
+        
         if (playerWon)
         {
             if (score >= 85)
             {
-                selectedFeedbacks.Add("Avoid direct fights with JARI USVs — they’re scouts, not tanks.");
-                selectedFeedbacks.Add("Flank with JARI USVs while heavier ships press forward.");
+                selectedFeedbacks.AddRange(feedbackData.victoryFeedbacks.highScore);
                 if (winReason.Contains("allDestroyed"))
-                    selectedFeedbacks.Add("Next time, see if you can do this while taking even less damage.");
+                    selectedFeedbacks.AddRange(feedbackData.victoryFeedbacks.allDestroyed);
             }
             else if (score >= 70)
             {
-                selectedFeedbacks.Add("Use DDG51s for decisive strikes, not continuous harassment.");
-                selectedFeedbacks.Add("Spread out your DDG51s to avoid splash damage.");
+                selectedFeedbacks.AddRange(feedbackData.victoryFeedbacks.mediumScore);
             }
             else 
             {
-                selectedFeedbacks.Add("Retreat and regroup instead of losing all at once.");
-                selectedFeedbacks.Add("Keep Destroyers protected behind lighter units.");
+                selectedFeedbacks.AddRange(feedbackData.victoryFeedbacks.lowScore);
             }
         }
         else 
         {
-            selectedFeedbacks.Add("Avoid moving DDG51s without a scout — they’re not expendable.");
-            selectedFeedbacks.Add("Use terrain and spacing to avoid ambushes.");
-            selectedFeedbacks.Add("Don’t clump Destroyers — it makes them vulnerable to area attacks.");
-            selectedFeedbacks.Add("Send scouts before committing large units.");
+            selectedFeedbacks.AddRange(feedbackData.defeatFeedbacks);
         }
 
         if (winReason.Contains("baseDestroyed"))
-            selectedFeedbacks.Add("Try combining base attacks with flanking units to distract defenders.");
+            selectedFeedbacks.AddRange(feedbackData.baseDestroyedFeedbacks);
 
         int feedbacksToPotentiallyAdd = 3 - selectedFeedbacks.Count;
-        if (feedbacksToPotentiallyAdd > 0 && generalFeedbacks.Count > 0)
+        if (feedbacksToPotentiallyAdd > 0 && feedbackData.generalFeedbacks != null && feedbackData.generalFeedbacks.Count > 0)
         {
-            List<string> availableGeneralFeedbacks = generalFeedbacks.Except(selectedFeedbacks).ToList();
+            List<string> availableGeneralFeedbacks = feedbackData.generalFeedbacks.Except(selectedFeedbacks).ToList();
 
             for (int i = 0; i < feedbacksToPotentiallyAdd && availableGeneralFeedbacks.Count > 0; i++)
             {
@@ -251,13 +276,11 @@ public class ScoreMgr : MonoBehaviour
         }
     }
 
-
     private void LogVictoryMessage()
     {
         string message = playerWon ?
             $"PLAYER VICTORY! Damage Dealt: {damageDealt} | Taken: {damageTaken}" :
             $"AI VICTORY! Damage Dealt: {damageDealt} | Taken: {damageTaken}";
-
     }
 
     public void ResetScores()
@@ -317,7 +340,6 @@ public class ScoreMgr : MonoBehaviour
         {
         }
 
-
         string gameType = OpenOceanMain.inst.currentTrainingState.ToString(); 
         string result = playerWon ? "Win" : "Loss"; 
         float scorePercent = score; 
@@ -325,23 +347,20 @@ public class ScoreMgr : MonoBehaviour
         float damageTaken = this.damageTaken; 
         float damageDealt = this.damageDealt; 
 
-        Dictionary<EntityType, int> initialUnitCounts = GameMgr.inst.entityQuantities
+        Dictionary<EntityType, int> initialUnitCounts = ScenarioGenerator.inst.entityQuantities
             .ToDictionary(eq => eq.entityType, eq => eq.unitCount);
-
 
         Dictionary<EntityType, int> destroyedPlayerUnits = GetDestroyedUnits(PlayerMgr.inst.localPlayer);
         TactPlayer aiPlayer = PlayerMgr.inst.player2;
         Dictionary<EntityType, int> destroyedAIUnits = (aiPlayer != null) ? GetDestroyedUnits(aiPlayer) : new Dictionary<EntityType, int>();
 
-
-        string playerBaseLocation = GetCardinalDirection(GameMgr.inst.posPlayer1List[0]);
-        string aiBaseLocation = GetCardinalDirection(GameMgr.inst.posPlayer2List[0]);
-
+        string playerBaseLocation = GetCardinalDirection(ScenarioGenerator.inst?.posPlayer1List?.FirstOrDefault() ?? Vector3.zero);
+        string aiBaseLocation = GetCardinalDirection(ScenarioGenerator.inst?.posPlayer2List?.FirstOrDefault() ?? Vector3.zero);
 
         string winCondition = winReason; 
         float timeTaken = OpenOceanMain.inst.playSessionDuration; 
-        int aiLevel = GameMgr.inst.difficultyLevel < 0.33f ? 1 : (GameMgr.inst.difficultyLevel < 0.66f ? 2 : 3);
-        float aiDifficulty = GameMgr.inst.difficultyLevel; 
+        int aiLevel = ScenarioGenerator.inst.CurrentDifficultyLevel < 0.33f ? 1 : (ScenarioGenerator.inst.CurrentDifficultyLevel < 0.66f ? 2 : 3);
+        float aiDifficulty = ScenarioGenerator.inst.CurrentDifficultyLevel; 
 
         string gameTypeFolder = GetGameTypeFolder(); 
 
@@ -363,7 +382,6 @@ public class ScoreMgr : MonoBehaviour
 
             bool fileExists = File.Exists(csvPath); 
             bool isEmpty = !fileExists || new FileInfo(csvPath).Length == 0; 
-
 
             using (var writer = new StreamWriter(csvPath, true)) 
             {
@@ -398,11 +416,10 @@ public class ScoreMgr : MonoBehaviour
             }
             Debug.Log($"Game data logged to {csvPath}"); 
         }
-        catch (System.Exception ex)
+        catch (System.Exception)
         {
         }
     }
-
 
     private string GetCardinalDirection(Vector3 position, float threshold = 10.0f)
     {
@@ -426,7 +443,7 @@ public class ScoreMgr : MonoBehaviour
     private Dictionary<EntityType, int> GetDestroyedUnits(TactPlayer owner)
     {
         Dictionary<EntityType, int> destroyed = new(); 
-        if (GameMgr.inst == null || GameMgr.inst.entityQuantities == null || EntityMgr.inst == null || EntityMgr.inst.entities == null)
+        if (ScenarioGenerator.inst == null || ScenarioGenerator.inst.entityQuantities == null || EntityMgr.inst == null || EntityMgr.inst.entities == null)
         {
             return destroyed; 
         }
@@ -437,7 +454,7 @@ public class ScoreMgr : MonoBehaviour
             .GroupBy(e => e.entityType)
             .ToDictionary(g => g.Key, g => g.Count());
 
-        foreach (EntityQuantity eq in GameMgr.inst.entityQuantities)
+        foreach (EntityQuantity eq in ScenarioGenerator.inst.entityQuantities)
         {
             int initialCount = eq.unitCount;
             int currentCount = currentCounts.GetValueOrDefault(eq.entityType, 0);
@@ -459,6 +476,7 @@ public class ScoreMgr : MonoBehaviour
             .FirstOrDefault(e => e.owner == owner && e.entityRole == EntityRole.Base);
         return baseEntity?.transform.position ?? Vector3.zero;
     }
+    
     private IEnumerator UploadToServer(string csvPath)
     {
         string url = "164.90.151.175/upload/";
@@ -497,4 +515,3 @@ public class ScoreMgr : MonoBehaviour
         return playerScores.Count > 0 ? playerScores.Last() : 0f;
     }
 }
-

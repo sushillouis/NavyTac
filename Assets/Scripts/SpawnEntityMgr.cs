@@ -13,7 +13,7 @@ public class SpawnEntityMgr : MonoBehaviour
         // Build spawn queue from entity dictionary
         List<EntityType> spawnQueue = new();
         foreach (EntityType type in priorityList)
-            if (GameMgr.inst.entityDict.TryGetValue(type, out int count))
+            if (ScenarioGenerator.inst?.EntityDictionary?.TryGetValue(type, out int count) == true)
                 for (int j = 0; j < count; j++)
                     spawnQueue.Add(type);
         

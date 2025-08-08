@@ -6,7 +6,7 @@ using System.Text;
 using System.Globalization;
 using System;
 using UnityEditor;
-using UnityEditor.SceneManagement;
+// using UnityEditor.SceneManagement;
 
 public class EntityMgr : MonoBehaviour
 {
@@ -307,7 +307,7 @@ public class EntityMgr : MonoBehaviour
                     if (IsApproximately(mat.color, target, tol))
                     {
                         // Record for undo + prefab dirtying
-                        Undo.RecordObject(rend, "Replace Bright-Green Material");
+                        // Undo.RecordObject(rend, "Replace Bright-Green Material");
                         mats[i] = pair.replacement;
                         rend.sharedMaterials = mats;
                         changeCount++;
@@ -323,11 +323,11 @@ public class EntityMgr : MonoBehaviour
             }
 
             // Mark the prefab asset dirty so the change is saved
-            EditorUtility.SetDirty(pair.prefab);
+            // EditorUtility.SetDirty(pair.prefab);
         }
 
-        AssetDatabase.SaveAssets();
-        EditorSceneManager.MarkAllScenesDirty();
+        // AssetDatabase.SaveAssets();
+        // EditorSceneManager.MarkAllScenesDirty();
 
         Debug.Log($"✅ Replaced {changeCount} bright-green material(s).");
     }
