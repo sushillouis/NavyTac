@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.38653484, g: 0.47797692, b: 0.5743225, a: 1}
+  m_IndirectSpecularColor: {r: 0.3865354, g: 0.4779775, b: 0.5743237, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -465,6 +465,88 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!1 &186052310
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 186052311}
+  - component: {fileID: 186052312}
+  m_Layer: 0
+  m_Name: GeminiMgr
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &186052311
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 186052310}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1708907977}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &186052312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 186052310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1edb8ba0c18bd5d45b7b066b700f8e5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  apiKey: 
+  jsonLog: {fileID: 0}
+  csvStats: {fileID: 0}
+  promptTemplate: "You are an AI assistant tasked with analyzing a naval real-time
+    strategy (RTS) game scenario to provide targeted feedback for a player, but only
+    if valid JSON and CSV data are provided. If the JSON or CSV data is missing,
+    empty, or invalid, respond with: \"Error: Cannot generate feedback due to missing
+    or invalid JSON or CSV data.\"\r\nThe game involves commanding a fleet of naval
+    units\u2014JariUSV (fast, nimble vessels for scouting and harassment), SeaHunter
+    (balanced units with moderate speed and firepower), DDG51 (heavily armed and
+    armored destroyers for sustained combat), and Rig Balder (a stationary base)\u2014to
+    achieve victory by destroying the enemy\u2019s base or eliminating all their
+    units (red-colored), while protecting your own base and units (blue-colored).
+    The battlefield is a 2D map divided into four quadrants, with the player\u2019s
+    base randomly placed in one quadrant and the enemy\u2019s base hidden in another,
+    obscured by a fog of war that requires scouting to reveal enemy positions and
+    movements.\r\nDamage taken is the total damage received by the player\u2019s
+    units (JariUSV, SeaHunter, DDG51) and base (Rig Balder), while damage dealt is
+    the total damage inflicted on the opponent\u2019s units and base. The score is
+    calculated as: `score = (0.3 * (playerWon ? 1 : 0)) * 100 + 0.7 * (damageDealt
+    / (damageDealt + damageTaken)) * 100`.\r\nPlayers use selection controls and
+    unit action commands (Move, AttackMoveToPosition, AttackMoveToEntity). Do not
+    include camera controls in feedback.\r\n\r\nYou are provided with:\r\n1) A JSON
+    command log (timestamp, timeScale, commandType, entityIds, targetPosition, targetEntityId,
+    targetEntityName, targetOwnerName, add).\r\n2) A CSV with scenario stats (DateTime,
+    StudentID, Group, GameType, Result, DamageTaken, DamageDealt, ScorePercent, TimeTaken,
+    AILevel, AIDifficulty, WinCondition, PlayerBaseLocation, AIBaseLocation, unit
+    counts).\r\n\r\n\r\n\r\nRules:\r\n- Be concise; each point is a single sentence.\r\n-
+    Use rounded time references (early/mid/late game), not raw timestamps or coordinates.\r\n-
+    Don\u2019t surface specific JSON coordinates/timestamps or raw data values.\r\n-
+    Base strategy on mechanics, CSV outcome/metrics, and JSON command patterns.\r\n-
+    Emphasize minimizing DamageTaken, maximizing DamageDealt, protecting Rig Balder,
+    improving ScorePercent.\r\n- Reference actionable inputs (F1/F2/F3/F4, A+Right
+    Click, CTRL+0\u20139) when helpful.\r\n- Include strategies: JariUSV scouting,
+    DDG51 anchoring for damage mitigation, SeaHunter support, optimized Attack-Move
+    usage, control-group discipline.\r\n- Consider AI behavior (Adaptive, AIDifficulty/AILevel).\r\n-
+    If the player won, start with one positive reinforcement.\r\n- Do NOT give camera
+    controls in feedback."
 --- !u!1 &194918367
 GameObject:
   m_ObjectHideFlags: 0
@@ -916,6 +998,7 @@ MonoBehaviour:
   heightAboveMap: 1
   previouslyRevealedColor: {r: 0, g: 0, b: 0, a: 0.28235295}
   fogColor: {r: 0.05, g: 0.05, b: 0.05, a: 1}
+  gridWidthOverride: 128
   gridCellSize: 142.57812
   revelers: []
   fogRevealRadius: 1700
@@ -1134,17 +1217,17 @@ PrefabInstance:
     - target: {fileID: 7245392690385120580, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
         type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7245392690385120580, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7245392690385120580, guid: c8004372dfb0fe04b9bbdc6347b3d8fd,
         type: 3}
       propertyPath: m_AnchorMin.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2575,6 +2658,9 @@ MonoBehaviour:
   isEdgeScrollingEnabled: 1
   isMiddleMouseDragEnabled: 1
   isReplayScrollEnabled: 1
+  playBrollOnce: 0
+  neverPlayBroll: 0
+  playBrollEveryScenario: 1
   RTSCameraRig: {fileID: 1991371576}
   YawNode: {fileID: 358051248}
   PitchNode: {fileID: 1576919499}
@@ -4321,22 +4407,7 @@ MonoBehaviour:
   - {fileID: 6012287531714796467}
   - {fileID: 1317231639}
   timeScale: 1
-  entityQuantities:
-  - entityType: 16
-    unitCount: 1
-  - entityType: 0
-    unitCount: 8
-  - entityType: 10
-    unitCount: 8
-  - entityType: 9
-    unitCount: 8
-  posPlayer1List: []
-  headingPlayer1List: []
-  posPlayer2List: []
-  headingPlayer2List: []
   isIntroPlaying: 1
-  difficultyLevel: 0.2
-  allScenarios: []
 --- !u!114 &1129782063
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5414,6 +5485,37 @@ MonoBehaviour:
     isControl: 0
     tactics: []
     formations: []
+--- !u!1 &1398965871
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1398965872}
+  m_Layer: 0
+  m_Name: SpatialMgre
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1398965872
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1398965871}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1708907977}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1400719258 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6968091888672601445, guid: 3769d37cb4868da47b56c4040c02c3a9,
@@ -6116,6 +6218,7 @@ MonoBehaviour:
   isReplaying: 0
   currentScenarioNumber: 1
   isRecording: 0
+  snapshotInterval: 5
   actualPlayerWon: 0
   actualWinReason: 
   actualTimeTaken: 0
@@ -6167,8 +6270,70 @@ Transform:
   - {fileID: 538399508}
   - {fileID: 623739381}
   - {fileID: 1689841943}
+  - {fileID: 186052311}
+  - {fileID: 1711261877}
+  - {fileID: 1398965872}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1711261876
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1711261877}
+  - component: {fileID: 1711261878}
+  m_Layer: 0
+  m_Name: ScenarioMgr
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1711261877
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1711261876}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1708907977}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1711261878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1711261876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6303bab120c9e644ac0cd2e3d01775f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entityQuantities:
+  - entityType: 0
+    unitCount: 0
+  - entityType: 16
+    unitCount: 0
+  - entityType: 9
+    unitCount: 0
+  - entityType: 10
+    unitCount: 0
+  posPlayer1List: []
+  headingPlayer1List: []
+  posPlayer2List: []
+  headingPlayer2List: []
+  difficultyLevel: 0
+  allScenarios: []
 --- !u!1 &1717877730
 GameObject:
   m_ObjectHideFlags: 0
@@ -7881,7 +8046,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b81674723c2fed489450d06b432f984, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosionSmallPrefab: {fileID: 3888679192407598147, guid: 50d8eef569573eb4ab070eacb58fa91b,
+  explosionLargePrefab: {fileID: 2080342723596643198, guid: c2854eb8bf9e1a641a6941da3cb292ff,
     type: 3}
 --- !u!1001 &2125724150
 PrefabInstance:
@@ -8223,17 +8388,17 @@ PrefabInstance:
     - target: {fileID: 3922861415598738677, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
         type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3922861415598738677, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3922861415598738677, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
         type: 3}
       propertyPath: m_AnchorMin.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7889022459961425211, guid: 4eadb14a1eece2a44a7ae893943f3d9f,
         type: 3}
@@ -9489,17 +9654,17 @@ PrefabInstance:
     - target: {fileID: 142528373031242438, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 142528373031242438, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 142528373031242438, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}
       propertyPath: m_AnchorMin.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 150818983409639681, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}
@@ -9749,17 +9914,17 @@ PrefabInstance:
     - target: {fileID: 1172818824606993678, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1172818824606993678, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1172818824606993678, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}
       propertyPath: m_AnchorMin.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1525601475161197866, guid: 3769d37cb4868da47b56c4040c02c3a9,
         type: 3}
