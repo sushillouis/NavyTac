@@ -42,11 +42,7 @@ public class Move : Command
     public static float MaxTotalRepulsiveForceMagnitude = 20.0f;
     public static float PotentialSumDampingFactor = 0.5f;
 
-    // RVO related parameters (can be moved to AIMgr or entity properties)
-    public static float RVO_TimeHorizon = 2.0f;
-    private static float RVO_AgentRadius = 200f; // Example radius, should be entity-specific
-    public static float RVO_MaxNeighbors = 10;
-    public static float RVO_NeighborDist = 50.0f;
+    // (RVO removed) Keep smoothing for heading/speed to avoid jitter
     private float smoothedHeading;
     private float smoothedSpeed;
     private const float HeadingLerp = 0.18f;   // 0.0 → no smoothing, 1.0 → instant
@@ -172,7 +168,6 @@ public class Move : Command
                 line.SetPosition(1, movePosition);
         }
 
-        Vector3 desiredVelocityBeforeRVO;
         DHDS dhds;
 
         switch (currentState)
@@ -197,25 +192,9 @@ public class Move : Command
                 break;
         }
 
-        // Convert DHDS to a velocity vector
-        float speed = dhds.ds;
-        float headingRad = dhds.dh * Mathf.Deg2Rad;
-        desiredVelocityBeforeRVO = new Vector3(Mathf.Sin(headingRad), 0, Mathf.Cos(headingRad)) * speed;
-
-        // Apply RVO
-        Vector3 rvoAdjustedVelocity = ComputeRVOAdjustedVelocity(desiredVelocityBeforeRVO);
-
-        // Convert RVO-adjusted velocity back to DHDS
-        entity.desiredSpeed = rvoAdjustedVelocity.magnitude;
-        if (entity.desiredSpeed > 0.01f) // Avoid Atan2(0,0)
-        {
-            entity.desiredHeading = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(rvoAdjustedVelocity.x, rvoAdjustedVelocity.z));
-        }
-        // If speed is near zero, maintain current heading or heading towards target
-        else if (desiredVelocityBeforeRVO.sqrMagnitude > 0.01f)
-        {
-             entity.desiredHeading = dhds.dh;
-        }
+        // Use DHDS directly (RVO removed)
+        entity.desiredSpeed = dhds.ds;
+        entity.desiredHeading = dhds.dh;
 
         smoothedHeading = Mathf.LerpAngle(smoothedHeading, entity.desiredHeading, HeadingLerp);
         smoothedSpeed   = Mathf.Lerp(smoothedSpeed,   entity.desiredSpeed,   SpeedLerp);
@@ -225,130 +204,6 @@ public class Move : Command
     }
 
  
-    private Vector3 ComputeRVOAdjustedVelocity(Vector3 preferredVelocity)
-    {
-        if (entity == null )
-            return preferredVelocity;
-
-        List<Entity> neighbors = GetNearbyEntities(RVO_NeighborDist);
-        if (neighbors.Count == 0)
-            return preferredVelocity;
-
-        // Step 1: Gather ORCA half-planes (lines) from neighbors
-        List<ORCALine> orcaLines = new List<ORCALine>();
-        Vector3 pos = entity.position;
-        Vector3 vel = entity.GetComponent<Rigidbody>() ? entity.GetComponent<Rigidbody>().velocity : Vector3.zero;
-        float radius = RVO_AgentRadius;
-        float invTimeHorizon = 1.0f / RVO_TimeHorizon;
-
-        foreach (var neighbor in neighbors)
-        {
-            if (neighbor == entity) continue;
-            Vector3 neighborPos = neighbor.position;
-            Vector3 neighborVel = neighbor.GetComponent<Rigidbody>() ? neighbor.GetComponent<Rigidbody>().velocity : Vector3.zero;
-
-            Vector3 relPos = neighborPos - pos;
-            Vector3 relVel = vel - neighborVel;
-            float distSq = relPos.sqrMagnitude;
-            float combinedRadius = radius + RVO_AgentRadius;
-            float combinedRadiusSq = combinedRadius * combinedRadius;
-
-            Vector3 u;
-            if (distSq > combinedRadiusSq)
-            {
-                // No collision, create ORCA line
-                Vector3 w = relVel - invTimeHorizon * relPos;
-                float wLength = w.magnitude;
-                Vector3 unitW = w / (wLength + 1e-6f);
-                Vector3 lineDir = new Vector3(-unitW.z, 0, unitW.x);
-                u = (combinedRadius * invTimeHorizon - wLength) * unitW;
-                orcaLines.Add(new ORCALine
-                {
-                    point = vel + 0.5f * u,
-                    direction = lineDir
-                });
-            }
-            else
-            {
-                // Agents are colliding, create separating line
-                Vector3 unitRelPos = relPos.normalized;
-                Vector3 lineDir = new Vector3(-unitRelPos.z, 0, unitRelPos.x);
-                u = (combinedRadius - Mathf.Sqrt(distSq)) * unitRelPos;
-                orcaLines.Add(new ORCALine
-                {
-                    point = vel + 0.5f * u,
-                    direction = lineDir
-                });
-            }
-        }
-
-        // Step 2: Linear program to find the closest velocity outside all ORCA lines
-        Vector3 result = preferredVelocity;
-        float maxSpeed = entity.maxSpeed;
-        for (int i = 0; i < orcaLines.Count; ++i)
-        {
-            if (IsOnOrcaSide(result, orcaLines[i])) continue;
-
-            // Project result onto the ORCA line
-            result = ProjectOnOrcaLine(result, orcaLines[i], maxSpeed);
-
-            // After projection, check all previous lines
-            for (int j = 0; j < i; ++j)
-            {
-                if (!IsOnOrcaSide(result, orcaLines[j]))
-                {
-                    // If not feasible, project onto intersection
-                    result = ProjectOnOrcaLine(result, orcaLines[j], maxSpeed);
-                }
-            }
-        }
-
-        // Clamp to max speed
-        if (result.sqrMagnitude > maxSpeed * maxSpeed)
-            result = result.normalized * maxSpeed;
-
-        return result;
-    }
-
-    // ORCA line structure
-    private struct ORCALine
-    {
-        public Vector3 point;     // A point on the line (in velocity space)
-        public Vector3 direction; // The direction of the line (normalized)
-    }
-
-    // Returns true if velocity is on the allowed side of the ORCA line
-    private bool IsOnOrcaSide(Vector3 velocity, ORCALine line)
-    {
-        Vector3 rel = velocity - line.point;
-        return Vector3.Dot(line.direction, rel) >= 0;
-    }
-
-    // Projects velocity onto the allowed side of the ORCA line, clamped to maxSpeed
-    private Vector3 ProjectOnOrcaLine(Vector3 velocity, ORCALine line, float maxSpeed)
-    {
-        Vector3 rel = velocity - line.point;
-        float dot = Vector3.Dot(rel, line.direction);
-        Vector3 proj = line.point + line.direction * dot;
-        if (proj.sqrMagnitude > maxSpeed * maxSpeed)
-            proj = proj.normalized * maxSpeed;
-        return proj;
-    }
-
-    private List<Entity> GetNearbyEntities(float radius)
-    {
-        List<Entity> nearbyEntities = new List<Entity>();
-        Collider[] hitColliders = Physics.OverlapSphere(entity.position, radius, entityLayerMask);
-        foreach (var hitCollider in hitColliders)
-        {
-            Entity otherEntity = hitCollider.GetComponent<Entity>();
-            if (otherEntity != null && otherEntity != entity)
-            {
-                nearbyEntities.Add(otherEntity);
-            }
-        }
-        return nearbyEntities;
-    }
 
 
     private DHDS FollowPath()
@@ -439,8 +294,11 @@ public class Move : Command
                    ComputePotentialDHDS(target) :
                    ComputeDHDS(target);
 
-        // entity.desiredHeading = dhds.dh; // Will be set in Tick after RVO
-        // entity.desiredSpeed = dhds.ds;   // Will be set in Tick after RVO
+        if (AIMgr.inst.isPotentialFieldsMovement)
+        {
+            entity.desiredHeading = dhds.dh;
+            entity.desiredSpeed = dhds.ds;
+        }
         return dhds;
     }
 

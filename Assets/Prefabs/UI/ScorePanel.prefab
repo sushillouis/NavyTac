@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1696638610816056625}
   - component: {fileID: 2926773953781465556}
   m_Layer: 5
-  m_Name: OurUnitsDestroyed
+  m_Name: OurUnitsDestroyedOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -375,7 +375,7 @@ GameObject:
   - component: {fileID: 2162329380011241458}
   - component: {fileID: 773903675822771193}
   m_Layer: 5
-  m_Name: DamageTaken (2)
+  m_Name: DamageTaken
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -727,7 +727,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &644449929447839691
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1524,7 +1524,7 @@ GameObject:
   - component: {fileID: 5946540528921147168}
   - component: {fileID: 685059647045424642}
   m_Layer: 5
-  m_Name: Winning
+  m_Name: WinningOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1659,7 +1659,7 @@ GameObject:
   - component: {fileID: 477977259157615874}
   - component: {fileID: 4778741333516993206}
   m_Layer: 5
-  m_Name: WinningCondition
+  m_Name: WinningConditionOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1794,7 +1794,7 @@ GameObject:
   - component: {fileID: 8433343983304388368}
   - component: {fileID: 4254755279225712481}
   m_Layer: 5
-  m_Name: DamageGiven (2)
+  m_Name: DamageDone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1931,7 +1931,7 @@ GameObject:
   - component: {fileID: 4180976233167220704}
   - component: {fileID: 5138586677850369185}
   m_Layer: 5
-  m_Name: Score
+  m_Name: ScoreOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2201,7 +2201,7 @@ GameObject:
   - component: {fileID: 4689461518418394027}
   - component: {fileID: 1270254081061199817}
   m_Layer: 5
-  m_Name: DamageTaken (3)
+  m_Name: DamageTakenOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2336,7 +2336,7 @@ GameObject:
   - component: {fileID: 3212936761315489550}
   - component: {fileID: 3204695244425786648}
   m_Layer: 5
-  m_Name: EnemyUnitsDestroyed
+  m_Name: EnemyUnitsDestroyedOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2471,7 +2471,7 @@ GameObject:
   - component: {fileID: 8991671697773942949}
   - component: {fileID: 4368212571611436784}
   m_Layer: 5
-  m_Name: DamageGiven (3)
+  m_Name: DamageDoneOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

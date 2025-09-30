@@ -10,11 +10,11 @@ public class GeminiRtsFeedback : MonoBehaviour
     [Tooltip("DO NOT commit this to source control. Consider using an env var or a secure config.")]
     public string apiKey;
 
-    [Header("Scenario Data")]
-    public TextAsset jsonLog;   // your scenarioNN.json
-    public TextAsset csvStats;  // your Student....csv
+    [Header("Scenario Data (optional)")]
+    public TextAsset jsonLog;   // optional for inspector testing
+    public TextAsset csvStats;  // optional for inspector testing
 
-    [Header("Prompt (kept same as your Python version)")]
+    [Header("Prompt (kept same as your Python version, customized for output format and no-commands case)")]
     [TextArea(8, 30)]
     public string promptTemplate = @"You are an AI assistant tasked with analyzing a naval real-time strategy (RTS) game scenario to provide targeted feedback for a player, but only if valid JSON and CSV data are provided. If the JSON or CSV data is missing, empty, or invalid, respond with: ""Error: Cannot generate feedback due to missing or invalid JSON or CSV data.""
 The game involves commanding a fleet of naval units—JariUSV (fast, nimble vessels for scouting and harassment), SeaHunter (balanced units with moderate speed and firepower), DDG51 (heavily armed and armored destroyers for sustained combat), and Rig Balder (a stationary base)—to achieve victory by destroying the enemy’s base or eliminating all their units (red-colored), while protecting your own base and units (blue-colored). The battlefield is a 2D map divided into four quadrants, with the player’s base randomly placed in one quadrant and the enemy’s base hidden in another, obscured by a fog of war that requires scouting to reveal enemy positions and movements.
@@ -28,6 +28,7 @@ You are provided with:
 
 
 Rules:
+- Output format: Return exactly three lines numbered as a list: ""1. ...\n2. ...\n3. ..."" with no extra text before or after.
 - Be concise; each point is a single sentence.
 - Use rounded time references (early/mid/late game), not raw timestamps or coordinates.
 - Don’t surface specific JSON coordinates/timestamps or raw data values.
@@ -37,42 +38,45 @@ Rules:
 - Include strategies: JariUSV scouting, DDG51 anchoring for damage mitigation, SeaHunter support, optimized Attack-Move usage, control-group discipline.
 - Consider AI behavior (Adaptive, AIDifficulty/AILevel).
 - If the player won, start with one positive reinforcement.
-- Do NOT give camera controls in feedback.";
+- Do NOT give camera controls in feedback.
+- Treat a player command as any JSON item with commandType in {Move, AttackMoveToPosition, AttackMoveToEntity} and entityIds length > 0.
+- If there are zero such player commands, do not describe player actions. Instead, acknowledge that no unit commands were issued and provide
+";
 
-    const string Model = "gemini-1.5-flash"; // same as your Python
+    // Additional constraints appended to the prompt to avoid fabricated actions:
+    //   three actionable tips to begin: selecting units (F1–F4), moving/attack-moving (Right Click or A+Right Click), and assigning control groups (CTRL+0–9).
+
+    const string Model = "gemini-2.5-flash"; // same as your Python
     string Endpoint(string key) => $"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={key}";
 
     // Timing variables
     private float requestStartTime;
     private float responseTime;
 
-    [ContextMenu("Run ▶ Generate Feedback")]
-    public void GenerateFeedback() => _ = GenerateFeedbackAsync();
+    [ContextMenu("Run ▶ Generate Feedback (Inspector data)")]
+    public void GenerateFeedback() => _ = GenerateFeedbackAsync(
+        jsonLog != null ? jsonLog.text : string.Empty,
+        csvStats != null ? csvStats.text : string.Empty,
+        (text) => Debug.Log("Feedback:\n" + text)
+    );
 
-    private void Start()
-    {
-        Debug.Log("Game started - initiating feedback generation...");
-        _ = GenerateFeedbackAsync();
-    }
+    private void Start() { /* do not auto-run; ScoreMgr will call when needed */ }
 
-    private async Task GenerateFeedbackAsync()
+    public async Task<string> GenerateFeedbackAsync(string jsonData, string csvData, System.Action<string> onFeedbackReady = null)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             Debug.LogError("API key missing.");
-            return;
+            return "Error: API key missing.";
         }
-        // if (jsonLog == null || csvStats == null)
-        // {
-        //     Debug.LogError("Assign JSON and CSV TextAssets in the Inspector.");
-        //     return;
-        // }
-
-        string jsonData = "";
-        string csvData  = "csvStats.text";
+        if (string.IsNullOrWhiteSpace(jsonData) || string.IsNullOrWhiteSpace(csvData))
+        {
+            Debug.LogError("JSON or CSV data is missing or empty.");
+            return "Error: Cannot generate feedback due to missing or invalid JSON or CSV data.";
+        }
 
         // Compose final prompt (same concatenation as your Python script)
-        string finalPrompt = $"{promptTemplate}";
+        string finalPrompt = $"{promptTemplate}\n\nJSON Command Log:\n{jsonData}\n\nCSV Stats:\n{csvData}";
 
         // Build request body per Google Generative Language API
         var body = new JObject {
@@ -94,7 +98,7 @@ Rules:
 
         // Record start time
         requestStartTime = Time.time;
-        Debug.Log($"Sending Gemini request at time: {requestStartTime}");
+    Debug.Log($"Sending Gemini request at time: {requestStartTime}");
 
         var op = req.SendWebRequest();
         while (!op.isDone) { await Task.Yield(); }
@@ -107,7 +111,7 @@ Rules:
         if (req.result != UnityWebRequest.Result.Success)
         {
             Debug.LogError($"Gemini request failed: {req.responseCode} {req.error}\n{req.downloadHandler.text}");
-            return;
+            return $"Error: Gemini request failed ({req.responseCode}).";
         }
 
         try
@@ -119,16 +123,19 @@ Rules:
             if (string.IsNullOrWhiteSpace(text))
             {
                 Debug.LogWarning("No text returned. Full response:\n" + resp.ToString());
+                return "Error: No feedback generated.";
             }
             else
             {
                 Debug.Log("Feedback:\n" + text);
-                // TODO: route `text` to your UI (e.g., TMP_Text) or split by lines for display.
+                onFeedbackReady?.Invoke(text);
+                return text;
             }
         }
         catch (System.Exception e)
         {
             Debug.LogError("Failed to parse Gemini response: " + e);
+            return "Error: Failed to parse Gemini response.";
         }
     }
 }

@@ -431,6 +431,53 @@ public class ReplayMgr : MonoBehaviour
         public List<Snapshot> snapshots;
     }
 
+    // Ensure we have the latest state captured before exporting JSON
+    public void ForceSnapshotNow()
+    {
+        if (isRecording && !isReplaying)
+        {
+            TakeSnapshot();
+        }
+    }
+
+    // Serialize the current scenario's replay data (commands + snapshots) to JSON in-memory.
+    // Returns empty string if no data is available.
+    public string GetCurrentScenarioReplayJson()
+    {
+        ScenarioReplayData replayData = scenarioReplayDataList.Find(d => d.scenarioNumber == currentScenarioNumber);
+        if (replayData == null)
+        {
+            return string.Empty;
+        }
+        ReplayCommandList list = new ReplayCommandList
+        {
+            commands = replayData.commands ?? new List<ReplayCommand>(),
+            snapshots = replayData.snapshots ?? new List<Snapshot>()
+        };
+        return JsonUtility.ToJson(list, false);
+    }
+
+    // Find the most recent saved replay JSON file for a given scenario number.
+    // Returns null if directory or files are missing.
+    public string GetLatestReplayFilePath(int scenarioNumber)
+    {
+        string studentID = OpenOceanMain.inst.playerName ?? "UnknownStudent";
+        string gameType = GetGameTypeFolder();
+        string directoryPath = Path.Combine(Application.persistentDataPath, studentID, gameType);
+
+        if (!Directory.Exists(directoryPath))
+        {
+            return null;
+        }
+
+        var files = Directory.GetFiles(directoryPath, $"scenario{scenarioNumber}_*.json");
+        if (files.Length > 0)
+        {
+            return files.OrderByDescending(f => new FileInfo(f).CreationTime).First();
+        }
+        return null;
+    }
+
     public void CompleteScenario()
     {
         // Take final snapshot before stopping recording

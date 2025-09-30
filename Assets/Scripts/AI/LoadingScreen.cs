@@ -1,0 +1,28 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[RequireComponent(typeof(UnityEngine.UI.Slider))]
+public class LoadingScreen : MonoBehaviour
+{
+    public float sliderValue = 0f;
+    public float fillSpeed = 0.1f; // Adjust this value for speed
+
+    public UnityEngine.UI.Slider rotationSpeedSlider;
+
+    void Awake()
+    {
+        rotationSpeedSlider = GetComponent<UnityEngine.UI.Slider>();
+        sliderValue = 0f; // Reset slider value when a new slider is generated
+        if (rotationSpeedSlider != null)
+            rotationSpeedSlider.value = sliderValue;
+    }
+    void Update()
+    {
+        rotationSpeedSlider.value = 0.45f;
+
+        // Rotate the GameObject based on sliderValue
+        transform.Rotate(Vector3.forward, 360f * sliderValue * Time.unscaledDeltaTime);
+    }
+}
+

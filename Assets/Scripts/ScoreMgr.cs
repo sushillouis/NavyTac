@@ -5,6 +5,8 @@ using System;
 using System.IO;
 using UnityEngine.Networking;
 using System.Collections;
+using System.Text;
+using System.Threading.Tasks;
 
 public class ScoreMgr : MonoBehaviour
 {
@@ -19,6 +21,8 @@ public class ScoreMgr : MonoBehaviour
 
     private string sessionStartTimeString; 
     private const string CommonLogFileName = "AllGamesLog.csv"; 
+
+    [SerializeField] private GeminiRtsFeedback geminiFeedback; // assign in Inspector or auto-find in Awake
 
     [System.Serializable]
     public class FeedbackData
@@ -51,6 +55,10 @@ public class ScoreMgr : MonoBehaviour
             inst = this; 
             sessionStartTimeString = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm");
             LoadFeedbackData();
+            if (geminiFeedback == null)
+            {
+                geminiFeedback = FindObjectOfType<GeminiRtsFeedback>();
+            }
         }
     }
 
@@ -58,14 +66,13 @@ public class ScoreMgr : MonoBehaviour
     {
         try
         {
-            TextAsset feedbackJson = Resources.Load<TextAsset>("feedback");
+            TextAsset feedbackJson = Resources.Load<TextAsset>("Scoring");
             if (feedbackJson != null)
             {
                 feedbackData = JsonUtility.FromJson<FeedbackData>(feedbackJson.text);
             }
             else
             {
-                Debug.LogWarning("Feedback JSON file not found in Resources folder. Using fallback data.");
                 CreateFallbackFeedbackData();
             }
         }
@@ -158,7 +165,7 @@ public class ScoreMgr : MonoBehaviour
             data.winReason = winReason; 
                                         
             data.score = score;
-            data.feedback = GetFeedback(); 
+            data.feedback = GetFeedback(); // fallback until AI feedback arrives
 
 
             ScenarioDataMgr.inst.scenarioDataList.Add(data);
@@ -168,6 +175,8 @@ public class ScoreMgr : MonoBehaviour
             LogVictoryMessage(); 
             FXMgr.inst.ResetEffects();
             GameMgr.inst.StoreCurrentScenario();
+
+            GenerateDynamicFeedbackForScenario(data);
         }
     }
 
@@ -209,6 +218,138 @@ public class ScoreMgr : MonoBehaviour
         {
             OpenOceanMain.inst.feedbackText.text = ""; 
         }
+    }
+
+    private async void GenerateDynamicFeedbackForScenario(ScenarioDataMgr.ScenarioData data)
+    {
+        if (geminiFeedback == null)
+        {
+            return;
+        }
+
+        try
+        {
+            string csvData = BuildCsvForCurrentScenario();
+            string jsonData = string.Empty;
+
+            if (ReplayMgr.inst != null)
+            {
+                // Capture a snapshot right now to avoid empty snapshot set
+                ReplayMgr.inst.ForceSnapshotNow();
+
+                // Prefer in-memory JSON for the current scenario
+                jsonData = ReplayMgr.inst.GetCurrentScenarioReplayJson();
+
+                // If unavailable, try the latest saved replay file as a fallback
+                if (string.IsNullOrEmpty(jsonData))
+                {
+                    string path = ReplayMgr.inst.GetLatestReplayFilePath(OpenOceanMain.inst.gamesPlayedCount);
+                    if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                    {
+                        jsonData = File.ReadAllText(path);
+                    }
+                }
+            }
+
+            // Provide minimal valid JSON if nothing was recorded
+            if (string.IsNullOrWhiteSpace(jsonData))
+            {
+                jsonData = "{\"commands\":[],\"snapshots\":[]}";
+            }
+
+            // If either input is empty, skip AI feedback
+            if (string.IsNullOrWhiteSpace(jsonData) || string.IsNullOrWhiteSpace(csvData))
+            {
+                Debug.Log("Skipping AI feedback: missing JSON or CSV data.");
+                return;
+            }
+
+            // Show progress only when making the call
+            if (OpenOceanMain.inst.feedbackText != null)
+            {
+                OpenOceanMain.inst.feedbackText.text = "Generating AI feedback...";
+            }
+
+            string feedback = await geminiFeedback.GenerateFeedbackAsync(jsonData, csvData, (fb) =>
+            {
+                if (OpenOceanMain.inst.feedbackText != null)
+                {
+                    OpenOceanMain.inst.feedbackText.text = fb;
+                }
+            });
+
+            if (!string.IsNullOrWhiteSpace(feedback))
+            {
+                data.feedback = feedback;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Dynamic feedback generation failed: {e.Message}");
+        }
+    }
+
+    private string BuildCsvForCurrentScenario()
+    {
+        string dateTimeNow = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"); 
+        string studentID = OpenOceanMain.inst.playerName ?? "UnknownStudent"; 
+
+        string group = "Non-Adaptive"; 
+        if (studentID != null && studentID.StartsWith("Student", StringComparison.OrdinalIgnoreCase))
+        {
+            string numericPart = studentID.Substring("Student".Length);
+            if (int.TryParse(numericPart, out int studentIdNumber))
+            {
+                group = (studentIdNumber % 2 == 0) ? "Adaptive" : "Non-Adaptive";
+            }
+        }
+
+        string gameType = OpenOceanMain.inst.currentTrainingState.ToString(); 
+        string result = playerWon ? "Win" : "Loss"; 
+        float scorePercent = score; 
+        float dmgTaken = this.damageTaken; 
+        float dmgDealt = this.damageDealt; 
+
+        Dictionary<EntityType, int> initialUnitCounts = ScenarioGenerator.inst.entityQuantities
+            .ToDictionary(eq => eq.entityType, eq => eq.unitCount);
+
+        Dictionary<EntityType, int> destroyedPlayerUnits = GetDestroyedUnits(PlayerMgr.inst.localPlayer);
+        TactPlayer aiPlayer = PlayerMgr.inst.player2;
+        Dictionary<EntityType, int> destroyedAIUnits = (aiPlayer != null) ? GetDestroyedUnits(aiPlayer) : new Dictionary<EntityType, int>();
+
+        string playerBaseLocation = GetCardinalDirection(ScenarioGenerator.inst?.posPlayer1List?.FirstOrDefault() ?? Vector3.zero);
+        string aiBaseLocation = GetCardinalDirection(ScenarioGenerator.inst?.posPlayer2List?.FirstOrDefault() ?? Vector3.zero);
+
+        string winCondition = winReason; 
+        float timeTaken = OpenOceanMain.inst.playSessionDuration; 
+        int aiLevel = ScenarioGenerator.inst.CurrentDifficultyLevel < 0.33f ? 1 : (ScenarioGenerator.inst.CurrentDifficultyLevel < 0.66f ? 2 : 3);
+        float aiDifficulty = ScenarioGenerator.inst.CurrentDifficultyLevel; 
+
+        var allEntityTypes = initialUnitCounts.Keys
+                            .Union(destroyedPlayerUnits.Keys)
+                            .Union(destroyedAIUnits.Keys)
+                            .Distinct()
+                            .OrderBy(et => et.ToString())
+                            .ToList();
+
+        StringBuilder header = new StringBuilder();
+        header.Append("DateTime,StudentID,Group,GameType,Result,DamageTaken,DamageDealt,ScorePercent,TimeTaken,AILevel,AIDifficulty,WinCondition,PlayerBaseLocation,AIBaseLocation");
+        foreach (var unitType in allEntityTypes)
+        {
+            header.Append($",Initial_{unitType},DestroyedPlayer_{unitType},DestroyedAI_{unitType}");
+        }
+
+        StringBuilder row = new StringBuilder();
+        row.Append($"{dateTimeNow},{studentID},{group},{gameType},{result},{dmgTaken:0.##},{dmgDealt:0.##},{scorePercent:0.##},{timeTaken:0.##},{aiLevel},{aiDifficulty:0.##},{winCondition},{playerBaseLocation},{aiBaseLocation}");
+        foreach (var unitType in allEntityTypes)
+        {
+            int initialCount = initialUnitCounts.TryGetValue(unitType, out var ic) ? ic : 0;
+            int destroyedPlayerCount = destroyedPlayerUnits.TryGetValue(unitType, out var dpc) ? dpc : 0;
+            int destroyedAICount = destroyedAIUnits.TryGetValue(unitType, out var dac) ? dac : 0;
+            row.Append($",{initialCount},{destroyedPlayerCount},{destroyedAICount}");
+        }
+
+        return header.ToString() + "\n" + row.ToString();
     }
 
     public string GetFeedback()

@@ -102,7 +102,7 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField] public Button nextGameOrExitButton;
     [SerializeField] public Button backButton;
     public int gamesPlayedCount = 0;
-    private const string SCORE_PANEL_TEXT_FEEDBACK = "Feedback";
+    private const string SCORE_PANEL_TEXT_FEEDBACK = "Scoring";
     private const string NEXT_GAME_BUTTON_TEXT = "Next";
     private const string EXIT_BUTTON_TEXT = "Exit";
 

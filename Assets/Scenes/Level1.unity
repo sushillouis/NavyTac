@@ -285,6 +285,81 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad5fc58a93dc0dc47a926d701c60790a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &67174312
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 67174313}
+  - component: {fileID: 67174315}
+  - component: {fileID: 67174314}
+  m_Layer: 10
+  m_Name: Fill
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &67174313
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 67174312}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 220049737}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 10, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &67174314
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 67174312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &67174315
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 67174312}
+  m_CullTransparentMesh: 1
 --- !u!1 &106180666
 GameObject:
   m_ObjectHideFlags: 0
@@ -513,40 +588,40 @@ MonoBehaviour:
   jsonLog: {fileID: 0}
   csvStats: {fileID: 0}
   promptTemplate: "You are an AI assistant tasked with analyzing a naval real-time
-    strategy (RTS) game scenario to provide targeted feedback for a player, but only
-    if valid JSON and CSV data are provided. If the JSON or CSV data is missing,
-    empty, or invalid, respond with: \"Error: Cannot generate feedback due to missing
-    or invalid JSON or CSV data.\"\r\nThe game involves commanding a fleet of naval
-    units\u2014JariUSV (fast, nimble vessels for scouting and harassment), SeaHunter
-    (balanced units with moderate speed and firepower), DDG51 (heavily armed and
-    armored destroyers for sustained combat), and Rig Balder (a stationary base)\u2014to
-    achieve victory by destroying the enemy\u2019s base or eliminating all their
-    units (red-colored), while protecting your own base and units (blue-colored).
-    The battlefield is a 2D map divided into four quadrants, with the player\u2019s
-    base randomly placed in one quadrant and the enemy\u2019s base hidden in another,
-    obscured by a fog of war that requires scouting to reveal enemy positions and
-    movements.\r\nDamage taken is the total damage received by the player\u2019s
-    units (JariUSV, SeaHunter, DDG51) and base (Rig Balder), while damage dealt is
-    the total damage inflicted on the opponent\u2019s units and base. The score is
-    calculated as: `score = (0.3 * (playerWon ? 1 : 0)) * 100 + 0.7 * (damageDealt
-    / (damageDealt + damageTaken)) * 100`.\r\nPlayers use selection controls and
-    unit action commands (Move, AttackMoveToPosition, AttackMoveToEntity). Do not
-    include camera controls in feedback.\r\n\r\nYou are provided with:\r\n1) A JSON
-    command log (timestamp, timeScale, commandType, entityIds, targetPosition, targetEntityId,
-    targetEntityName, targetOwnerName, add).\r\n2) A CSV with scenario stats (DateTime,
-    StudentID, Group, GameType, Result, DamageTaken, DamageDealt, ScorePercent, TimeTaken,
-    AILevel, AIDifficulty, WinCondition, PlayerBaseLocation, AIBaseLocation, unit
-    counts).\r\n\r\n\r\n\r\nRules:\r\n- Be concise; each point is a single sentence.\r\n-
-    Use rounded time references (early/mid/late game), not raw timestamps or coordinates.\r\n-
-    Don\u2019t surface specific JSON coordinates/timestamps or raw data values.\r\n-
-    Base strategy on mechanics, CSV outcome/metrics, and JSON command patterns.\r\n-
-    Emphasize minimizing DamageTaken, maximizing DamageDealt, protecting Rig Balder,
-    improving ScorePercent.\r\n- Reference actionable inputs (F1/F2/F3/F4, A+Right
-    Click, CTRL+0\u20139) when helpful.\r\n- Include strategies: JariUSV scouting,
-    DDG51 anchoring for damage mitigation, SeaHunter support, optimized Attack-Move
-    usage, control-group discipline.\r\n- Consider AI behavior (Adaptive, AIDifficulty/AILevel).\r\n-
-    If the player won, start with one positive reinforcement.\r\n- Do NOT give camera
-    controls in feedback."
+    strategy (RTS) game scenario and generating an After Action Review (AAR) for
+    the player, but only if valid JSON and CSV data are provided. If the JSON or
+    CSV data is missing, empty, or invalid, respond only with:\nError: Cannot generate
+    feedback due to missing or invalid JSON or CSV data.\n\nScenario Context\n\nThe
+    game involves commanding naval units\u2014JariUSV (fast scouts), SeaHunter (balanced
+    support), DDG51 (armored destroyers), and Rig Balder (stationary base)\u2014to
+    destroy the enemy base or eliminate all enemy units (red) while protecting your
+    own (blue). The battlefield is a 2D map of four quadrants with fog of war hiding
+    the enemy base.\n\nDamage Taken: total damage received by player\u2019s units
+    and base.\n\nDamage Dealt: total damage inflicted on enemy units and base.\n\nScore:\n\nscore
+    = (0.3 * (playerWon ? 1 : 0)) * 100 \n      + 0.7 * (damageDealt / (damageDealt
+    + damageTaken)) * 100\n\n\nPlayers issue commands (Move, AttackMoveToPosition,
+    AttackMoveToEntity) to units via selection controls; camera controls must never
+    be mentioned.\n\nInputs Provided:\n\nJSON command log: (timestamp, timeScale,
+    commandType, entityIds, targetPosition, targetEntityId, targetEntityName, targetOwnerName,
+    add).\n\nCSV stats: (DateTime, StudentID, Group, GameType, Result, DamageTaken,
+    DamageDealt, ScorePercent, TimeTaken, AILevel, AIDifficulty, WinCondition, PlayerBaseLocation,
+    AIBaseLocation, unit counts).\n\nOutput Rules\n\nStructure output as four Q&A
+    items exactly matching the Navy AAR questions:\n\nWhat did we expect to happen?\n\nOne
+    clear sentence describing the intended win condition or plan.\n\nWhat actually
+    happened?\n\nOne clear sentence stating whether the player won or lost and what
+    occurred.\n\nIf no unit commands (commandType in {Move, AttackMoveToPosition,
+    AttackMoveToEntity} with entityIds > 0), explicitly acknowledge that.\n\nWhy
+    did it happen?\n\nProvide 2\u20134 numbered reasons for the outcome.\n\nReasons
+    should tie to strategy, unit usage, command discipline, scouting, and AI behavior.\n\nNever
+    mention \u201Cadaptive\u201D or \u201Cnon-adaptive\u201D AI.\n\nWhat will we
+    do to improve?\n\nProvide 2\u20134 numbered improvements as actionable steps.\n\nEmphasize
+    minimizing DamageTaken, maximizing DamageDealt, protecting Rig Balder, and improving
+    ScorePercent.\n\nWhen relevant, mention actionable inputs (F1/F2/F3/F4, A+Right
+    Click, CTRL+0\u20139) but not camera controls.\n\nUse rounded phases (\u201Cearly/mid/late
+    game\u201D), not raw data, timestamps, or coordinates.\n\nDo not show raw JSON/CSV
+    values.\n\nIf the player won, the first section should still recognize the expectation
+    of a win condition.\n\nKeep responses concise, objective, and actionable.\nAlways
+    mention rig balder as Oil Rig \n"
 --- !u!1 &194918367
 GameObject:
   m_ObjectHideFlags: 0
@@ -634,6 +709,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &220049736
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 220049737}
+  m_Layer: 10
+  m_Name: Fill Area
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &220049737
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 220049736}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 67174313}
+  m_Father: {fileID: 1229462426}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0.25}
+  m_AnchorMax: {x: 1, y: 0.75}
+  m_AnchoredPosition: {x: -5, y: 0}
+  m_SizeDelta: {x: -20, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &224765858
 GameObject:
   m_ObjectHideFlags: 0
@@ -3168,6 +3279,42 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 690747839}
   m_CullTransparentMesh: 1
+--- !u!1 &705534636
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 705534637}
+  m_Layer: 10
+  m_Name: Handle Slide Area
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &705534637
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705534636}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 995430524}
+  m_Father: {fileID: 1229462426}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -20, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &772865853 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5230200808471013758, guid: 3769d37cb4868da47b56c4040c02c3a9,
@@ -3952,6 +4099,81 @@ LineRenderer:
     type: 3}
   m_PrefabInstance: {fileID: 988294860}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &995430523
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 995430524}
+  - component: {fileID: 995430525}
+  - component: {fileID: 995430526}
+  m_Layer: 10
+  m_Name: Handle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &995430524
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 995430523}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 705534637}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 20, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &995430525
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 995430523}
+  m_CullTransparentMesh: 1
+--- !u!114 &995430526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 995430523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &1013935664 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7203265176799761052, guid: b89ba6f4b759a464da93e95fbafe480f,
@@ -4182,6 +4404,81 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1117703550
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1117703551}
+  - component: {fileID: 1117703553}
+  - component: {fileID: 1117703552}
+  m_Layer: 10
+  m_Name: Background
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1117703551
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1117703550}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1229462426}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0.25}
+  m_AnchorMax: {x: 1, y: 0.75}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1117703552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1117703550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1117703553
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1117703550}
+  m_CullTransparentMesh: 1
 --- !u!1 &1123679744
 GameObject:
   m_ObjectHideFlags: 0
@@ -4548,6 +4845,96 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1229462424
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1229462426}
+  - component: {fileID: 1229462425}
+  m_Layer: 10
+  m_Name: Slider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1229462425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1229462424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 995430526}
+  m_FillRect: {fileID: 67174313}
+  m_HandleRect: {fileID: 995430524}
+  m_Direction: 0
+  m_MinValue: 0
+  m_MaxValue: 1
+  m_WholeNumbers: 0
+  m_Value: 0
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!224 &1229462426
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1229462424}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -332}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1117703551}
+  - {fileID: 220049737}
+  - {fileID: 705534637}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 16.75, y: -211.5}
+  m_SizeDelta: {x: 160, y: 20}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1229635575
 GameObject:
   m_ObjectHideFlags: 0
@@ -5485,37 +5872,6 @@ MonoBehaviour:
     isControl: 0
     tactics: []
     formations: []
---- !u!1 &1398965871
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1398965872}
-  m_Layer: 0
-  m_Name: SpatialMgre
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1398965872
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1398965871}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1708907977}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1400719258 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6968091888672601445, guid: 3769d37cb4868da47b56c4040c02c3a9,
@@ -5609,6 +5965,107 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 836140739}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1489324512
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1489324516}
+  - component: {fileID: 1489324515}
+  - component: {fileID: 1489324514}
+  - component: {fileID: 1489324513}
+  m_Layer: 5
+  m_Name: TooltipCanvas
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1489324513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1489324512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &1489324514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1489324512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_UiScaleMode: 1
+  m_ReferencePixelsPerUnit: 100
+  m_ScaleFactor: 1
+  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ScreenMatchMode: 0
+  m_MatchWidthOrHeight: 0
+  m_PhysicalUnit: 3
+  m_FallbackScreenDPI: 96
+  m_DefaultSpriteDPI: 96
+  m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 0
+--- !u!223 &1489324515
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1489324512}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 32652
+  m_TargetDisplay: 0
+--- !u!224 &1489324516
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1489324512}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 0}
 --- !u!1 &1491763685
 GameObject:
   m_ObjectHideFlags: 0
@@ -6272,7 +6729,6 @@ Transform:
   - {fileID: 1689841943}
   - {fileID: 186052311}
   - {fileID: 1711261877}
-  - {fileID: 1398965872}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1711261876
@@ -7762,6 +8218,7 @@ MonoBehaviour:
   aiWon: 0
   winReason: 
   playerScores: []
+  geminiFeedback: {fileID: 186052312}
 --- !u!114 &2108933782 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4992333878655647106, guid: 25a77a5a7d309544b9cdd76bf96382f5,
@@ -8580,11 +9037,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1491763689}
     m_Modifications:
-    - target: {fileID: 925161622609447559, guid: b89ba6f4b759a464da93e95fbafe480f,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -35
-      objectReference: {fileID: 0}
     - target: {fileID: 2576317505240213592, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -8598,6 +9050,16 @@ PrefabInstance:
     - target: {fileID: 2576317505240213592, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
       propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047909960654147613, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3047909960654147613, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4556064537169487735, guid: b89ba6f4b759a464da93e95fbafe480f,
@@ -10920,6 +11382,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1491763689}
+  - {fileID: 1489324516}
   - {fileID: 1579351797}
   - {fileID: 1991371577}
   - {fileID: 170076735}
@@ -10932,3 +11395,4 @@ SceneRoots:
   - {fileID: 404090926}
   - {fileID: 551206834}
   - {fileID: 5420463431784776878}
+  - {fileID: 1229462426}
