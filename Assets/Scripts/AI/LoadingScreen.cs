@@ -13,9 +13,7 @@ public class LoadingScreen : MonoBehaviour
     void Awake()
     {
         rotationSpeedSlider = GetComponent<UnityEngine.UI.Slider>();
-        sliderValue = 0f; // Reset slider value when a new slider is generated
-        if (rotationSpeedSlider != null)
-            rotationSpeedSlider.value = sliderValue;
+       
     }
     void Update()
     {
@@ -23,6 +21,7 @@ public class LoadingScreen : MonoBehaviour
 
         // Rotate the GameObject based on sliderValue
         transform.Rotate(Vector3.forward, 360f * sliderValue * Time.unscaledDeltaTime);
+        Debug.Log($"Slider Value: {sliderValue}, Rotation Speed: {360f * sliderValue}");
     }
 }
 

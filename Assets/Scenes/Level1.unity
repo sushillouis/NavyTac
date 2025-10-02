@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.3865354, g: 0.4779775, b: 0.5743237, a: 1}
+  m_IndirectSpecularColor: {r: 0.38653484, g: 0.47797692, b: 0.5743225, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -9037,6 +9037,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1491763689}
     m_Modifications:
+    - target: {fileID: 1284306933514881644, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_text
+      value: Generating After Action Review...
+      objectReference: {fileID: 0}
+    - target: {fileID: 1894091480827403943, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: sliderValue
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 2576317505240213592, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -9085,7 +9095,7 @@ PrefabInstance:
     - target: {fileID: 5863179367802377115, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
       propertyPath: m_Name
-      value: FeedbackPanel
+      value: MultiScorePanel
       objectReference: {fileID: 0}
     - target: {fileID: 6347363474440040677, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
