@@ -8,6 +8,7 @@ using Unity.Netcode.Transports.UTP;
 using TMPro;
 using System.Text.RegularExpressions;
 using System.Net;
+using System.Linq;
 
 public class OpenOceanMain : MonoBehaviour
 {
@@ -43,6 +44,7 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField] private PanelPlus GamePausePanel;
     [SerializeField] private PanelPlus MultiScorePanel;
     [SerializeField] private PanelPlus ReplayPanel;
+    [SerializeField] private PanelPlus AARPanel;
 
     [Header("Single / Multi player Screen")]
     [SerializeField] private Button SinglePlayerButton;
@@ -106,6 +108,9 @@ public class OpenOceanMain : MonoBehaviour
     private const string NEXT_GAME_BUTTON_TEXT = "Next";
     private const string EXIT_BUTTON_TEXT = "Exit";
 
+    [Header("Loaders")]
+    [SerializeField] public GameObject multiScoreLoader;
+
     public float playSessionDuration { get; private set; }
 
     [Header("Game Pause Panel")]
@@ -113,6 +118,15 @@ public class OpenOceanMain : MonoBehaviour
     [SerializeField] private Button quitButton;
     [SerializeField] private List<Button> menuButtons;
     [SerializeField] public Button SkipButton;
+
+    [Header("AAR Panel")]
+    [SerializeField] public TMP_Text aarScenarioTitleText;
+    [SerializeField] public Button aarBackButton;
+    [SerializeField] public TMP_Text aarObjectiveText;
+    [SerializeField] public TMP_Text aarResultText;
+    [SerializeField] public TMP_Text aarCauseText;
+    [SerializeField] public TMP_Text aarActionText;
+
 
     [Header("Replay Panel")]
     [SerializeField] private Button replayExitButton;
@@ -136,6 +150,16 @@ public class OpenOceanMain : MonoBehaviour
     {
         inst = this;
         SetupButtonListeners();
+    }
+
+    public void SetMultiScoreLoading(bool isLoading)
+    {
+        if (multiScoreLoader == null)
+        {
+            return;
+        }
+
+        multiScoreLoader.SetActive(isLoading);
     }
 
     private void SetupButtonListeners()
@@ -236,6 +260,11 @@ public class OpenOceanMain : MonoBehaviour
         {
             backButton.onClick.RemoveAllListeners();
             backButton.onClick.AddListener(BackButton);
+        }
+        if (aarBackButton != null)
+        {
+            aarBackButton.onClick.RemoveAllListeners();
+            aarBackButton.onClick.AddListener(() => { lobbyState = LobbyState.MultiScorePanel; });
         }
     }
     void SetupIPAddressAndPort()
@@ -469,6 +498,7 @@ public class OpenOceanMain : MonoBehaviour
         GamePausePanel.isVisible = (currentLobbyState == LobbyState.GamePaused);
         MultiScorePanel.isVisible = (currentLobbyState == LobbyState.MultiScorePanel);
         ReplayPanel.isVisible = (currentLobbyState == LobbyState.Replay);
+        AARPanel.isVisible = (currentLobbyState == LobbyState.AAR);
     }
 
     private void HandleTimeScale(LobbyState currentLobbyState, LobbyState previousState)
@@ -692,6 +722,17 @@ public class OpenOceanMain : MonoBehaviour
         }
     }
 
+    public void RefreshMultiScorePanel()
+    {
+        if (lobbyState != LobbyState.MultiScorePanel)
+        {
+            return;
+        }
+
+        UpdateMultiScorePanelButtonTexts();
+        UpdateMultiScoreDisplay();
+    }
+
 
     private void UpdateMultiScoreDisplay()
     {
@@ -756,7 +797,46 @@ public class OpenOceanMain : MonoBehaviour
             SetTextOnChild(entryInstance.transform, "EntryDamageTakenText", scenarioData.damageTaken.ToString("F0"));
             SetTextOnChild(entryInstance.transform, "EntryWinLossText", scenarioData.winLoss ? "Win" : "Loss");
             SetTextOnChild(entryInstance.transform, "EntryScoreText", scenarioData.score.ToString("F0") + "%");
-            SetTextOnChild(entryInstance.transform, "FeedbackText", scenarioData.feedback);
+            if (currentTrainingState == TrainingState.Adaptive)
+            {
+                if (scenarioData.isGeminiFeedbackReady)
+                {
+                    SetTextOnChild(entryInstance.transform, "FeedbackGenerationText", "Generated After Action Review for Scenario " + scenarioData.scenarioNumber);
+                    GameObject loader = FindDeepChild(entryInstance.transform, "Loading")?.gameObject;
+                    if (loader != null) loader.SetActive(false);
+                    GameObject AARBut = FindDeepChild(entryInstance.transform, "AARButton")?.gameObject;
+                    if (AARBut != null)
+                    {
+                        AARBut.SetActive(true);
+                        AARBut.GetComponent<AARScenarioValue>().scenarioNumber = scenarioData.scenarioNumber;
+
+                    }
+                }
+                else
+                {
+                    SetTextOnChild(entryInstance.transform, "FeedbackGenerationText", "Generating After Action Review for Scenario " + scenarioData.scenarioNumber + "...");
+
+                    GameObject loader = FindDeepChild(entryInstance.transform, "Loading")?.gameObject;
+                    if (loader != null) loader.SetActive(true);
+                    GameObject AARButton = FindDeepChild(entryInstance.transform, "AARButton")?.gameObject;
+                    if (AARButton != null) AARButton.SetActive(false);
+
+                }
+
+
+            }
+            else if (currentTrainingState == TrainingState.NonAdaptive)
+            {
+                GameObject feedbackObj = FindDeepChild(entryInstance.transform, "FeedbackText")?.gameObject;
+                if (feedbackObj != null) feedbackObj.SetActive(true);
+                GameObject FeedbackGenerationObj = FindDeepChild(entryInstance.transform, "FeedbackGenerationText")?.gameObject;
+                if (FeedbackGenerationObj != null) FeedbackGenerationObj.SetActive(false);
+                SetTextOnChild(entryInstance.transform, "FeedbackText", scenarioData.feedback);
+                GameObject loader = FindDeepChild(entryInstance.transform, "Loading")?.gameObject;
+                if (loader != null) loader.SetActive(false);
+                GameObject AARButton = FindDeepChild(entryInstance.transform, "AARButton")?.gameObject;
+                if (AARButton != null) AARButton.SetActive(false);
+            }
         }
     }
 
@@ -819,5 +899,33 @@ public class OpenOceanMain : MonoBehaviour
     public void ResetGameState()
     {
         lobbyState = LobbyState.Play;
+    }
+
+    public void AARPanelSetTexts(int ScenarioNumber)
+    {
+        ScenarioDataMgr.ScenarioData scenarioData = ScenarioDataMgr.inst.GetScenarioData(ScenarioNumber);
+        if (scenarioData == null)
+        {
+            Debug.LogError($"AARPanelSetTexts: No scenario data found for scenario number {ScenarioNumber}.", this);
+            return;
+        }
+
+        if (aarScenarioTitleText != null)
+            aarScenarioTitleText.text = $"After Action Review - Scenario {scenarioData.scenarioNumber}";
+        string feedbackText = scenarioData.feedback.Replace("*", "");
+        string[] parts = Regex.Split(feedbackText, @"What did we expect to happen\?|What actually happened\?|Why did it happen\?|What will we do to improve\?")
+                  .Where(p => !string.IsNullOrWhiteSpace(p))
+                  .Select(p => p.Trim())
+                  .ToArray();
+        if (parts.Length >= 1 && aarObjectiveText != null)
+            aarObjectiveText.text = parts[0];
+        if (parts.Length >= 2 && aarResultText != null)
+            aarResultText.text = parts[1];
+        if (parts.Length >= 3 && aarCauseText != null)
+            aarCauseText.text = parts[2];
+        if (parts.Length >= 4 && aarActionText != null)
+            aarActionText.text = parts[3];
+       
+       
     }
 }

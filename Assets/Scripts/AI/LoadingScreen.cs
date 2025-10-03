@@ -20,8 +20,8 @@ public class LoadingScreen : MonoBehaviour
         rotationSpeedSlider.value = 0.45f;
 
         // Rotate the GameObject based on sliderValue
-        transform.Rotate(Vector3.forward, 360f * sliderValue * Time.unscaledDeltaTime);
-        Debug.Log($"Slider Value: {sliderValue}, Rotation Speed: {360f * sliderValue}");
+        transform.Rotate(Vector3.forward, 360f * -sliderValue * Time.unscaledDeltaTime);
+        
     }
 }
 

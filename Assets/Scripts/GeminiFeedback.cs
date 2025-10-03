@@ -6,16 +6,10 @@ using Newtonsoft.Json.Linq;
 
 public class GeminiRtsFeedback : MonoBehaviour
 {
-    [Header("Google Generative Language API")]
-    [Tooltip("DO NOT commit this to source control. Consider using an env var or a secure config.")]
     public string apiKey;
+    public TextAsset jsonLog;
+    public TextAsset csvStats;
 
-    [Header("Scenario Data (optional)")]
-    public TextAsset jsonLog;   // optional for inspector testing
-    public TextAsset csvStats;  // optional for inspector testing
-
-    [Header("Prompt (kept same as your Python version, customized for output format and no-commands case)")]
-    [TextArea(8, 30)]
     public string promptTemplate = @"You are an AI assistant tasked with analyzing a naval real-time strategy (RTS) game scenario to provide targeted feedback for a player, but only if valid JSON and CSV data are provided. If the JSON or CSV data is missing, empty, or invalid, respond with: ""Error: Cannot generate feedback due to missing or invalid JSON or CSV data.""
 The game involves commanding a fleet of naval units—JariUSV (fast, nimble vessels for scouting and harassment), SeaHunter (balanced units with moderate speed and firepower), DDG51 (heavily armed and armored destroyers for sustained combat), and Rig Balder (a stationary base)—to achieve victory by destroying the enemy’s base or eliminating all their units (red-colored), while protecting your own base and units (blue-colored). The battlefield is a 2D map divided into four quadrants, with the player’s base randomly placed in one quadrant and the enemy’s base hidden in another, obscured by a fog of war that requires scouting to reveal enemy positions and movements.
 Damage taken is the total damage received by the player’s units (JariUSV, SeaHunter, DDG51) and base (Rig Balder), while damage dealt is the total damage inflicted on the opponent’s units and base. The score is calculated as: `score = (0.3 * (playerWon ? 1 : 0)) * 100 + 0.7 * (damageDealt / (damageDealt + damageTaken)) * 100`.
@@ -24,8 +18,6 @@ Players use selection controls and unit action commands (Move, AttackMoveToPosit
 You are provided with:
 1) A JSON command log (timestamp, timeScale, commandType, entityIds, targetPosition, targetEntityId, targetEntityName, targetOwnerName, add).
 2) A CSV with scenario stats (DateTime, StudentID, Group, GameType, Result, DamageTaken, DamageDealt, ScorePercent, TimeTaken, AILevel, AIDifficulty, WinCondition, PlayerBaseLocation, AIBaseLocation, unit counts).
-
-
 
 Rules:
 - Output format: Return exactly three lines numbered as a list: ""1. ...\n2. ...\n3. ..."" with no extra text before or after.
@@ -43,13 +35,9 @@ Rules:
 - If there are zero such player commands, do not describe player actions. Instead, acknowledge that no unit commands were issued and provide
 ";
 
-    // Additional constraints appended to the prompt to avoid fabricated actions:
-    //   three actionable tips to begin: selecting units (F1–F4), moving/attack-moving (Right Click or A+Right Click), and assigning control groups (CTRL+0–9).
-
-    const string Model = "gemini-2.5-flash"; // same as your Python
+    const string Model = "gemini-2.5-flash";
     string Endpoint(string key) => $"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={key}";
 
-    // Timing variables
     private float requestStartTime;
     private float responseTime;
 
@@ -60,7 +48,7 @@ Rules:
         (text) => Debug.Log("Feedback:\n" + text)
     );
 
-    private void Start() { /* do not auto-run; ScoreMgr will call when needed */ }
+    private void Start() { }
 
     public async Task<string> GenerateFeedbackAsync(string jsonData, string csvData, System.Action<string> onFeedbackReady = null)
     {
@@ -75,10 +63,8 @@ Rules:
             return "Error: Cannot generate feedback due to missing or invalid JSON or CSV data.";
         }
 
-        // Compose final prompt (same concatenation as your Python script)
         string finalPrompt = $"{promptTemplate}\n\nJSON Command Log:\n{jsonData}\n\nCSV Stats:\n{csvData}";
 
-        // Build request body per Google Generative Language API
         var body = new JObject {
             ["contents"] = new JArray {
                 new JObject {
@@ -96,14 +82,12 @@ Rules:
         req.downloadHandler = new DownloadHandlerBuffer();
         req.SetRequestHeader("Content-Type", "application/json");
 
-        // Record start time
         requestStartTime = Time.time;
-    Debug.Log($"Sending Gemini request at time: {requestStartTime}");
+        Debug.Log($"Sending Gemini request at time: {requestStartTime}");
 
         var op = req.SendWebRequest();
         while (!op.isDone) { await Task.Yield(); }
 
-        // Record response time
         responseTime = Time.time;
         float totalTime = responseTime - requestStartTime;
         Debug.Log($"Gemini request completed at time: {responseTime}, Total time: {totalTime} seconds");
@@ -117,7 +101,6 @@ Rules:
         try
         {
             var resp = JObject.Parse(req.downloadHandler.text);
-            // Expected path: candidates[0].content.parts[0].text
             string text = (string)resp["candidates"]?[0]?["content"]?["parts"]?[0]?["text"];
 
             if (string.IsNullOrWhiteSpace(text))

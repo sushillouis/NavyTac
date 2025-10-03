@@ -222,13 +222,27 @@ public class ScoreMgr : MonoBehaviour
 
     private async void GenerateDynamicFeedbackForScenario(ScenarioDataMgr.ScenarioData data)
     {
-        if (geminiFeedback == null)
+        if (data == null)
         {
+            return;
+        }
+
+        data.isGeminiFeedbackReady = false;
+        EnsureFallbackFeedback(data);
+
+        if (!ShouldUseGeminiFeedback() || geminiFeedback == null)
+        {
+            data.isGeminiFeedbackReady = true;
+            OpenOceanMain.inst?.SetMultiScoreLoading(false);
+            UpdateScorePanelFeedback(data.feedback);
+            RefreshMultiScorePanelIfVisible();
             return;
         }
 
         try
         {
+            OpenOceanMain.inst?.SetMultiScoreLoading(true);
+
             string csvData = BuildCsvForCurrentScenario();
             string jsonData = string.Empty;
 
@@ -261,31 +275,62 @@ public class ScoreMgr : MonoBehaviour
             if (string.IsNullOrWhiteSpace(jsonData) || string.IsNullOrWhiteSpace(csvData))
             {
                 Debug.Log("Skipping AI feedback: missing JSON or CSV data.");
+                data.isGeminiFeedbackReady = true;
                 return;
             }
 
             // Show progress only when making the call
-            if (OpenOceanMain.inst.feedbackText != null)
-            {
-                OpenOceanMain.inst.feedbackText.text = "Generating AI feedback...";
-            }
+            UpdateScorePanelFeedback("Generating AI feedback...");
 
-            string feedback = await geminiFeedback.GenerateFeedbackAsync(jsonData, csvData, (fb) =>
-            {
-                if (OpenOceanMain.inst.feedbackText != null)
-                {
-                    OpenOceanMain.inst.feedbackText.text = fb;
-                }
-            });
+            string feedback = await geminiFeedback.GenerateFeedbackAsync(jsonData, csvData, UpdateScorePanelFeedback);
 
             if (!string.IsNullOrWhiteSpace(feedback))
             {
                 data.feedback = feedback;
             }
+
+            data.isGeminiFeedbackReady = true;
         }
         catch (Exception e)
         {
             Debug.LogError($"Dynamic feedback generation failed: {e.Message}");
+            EnsureFallbackFeedback(data);
+            data.isGeminiFeedbackReady = true;
+        }
+        finally
+        {
+            OpenOceanMain.inst?.SetMultiScoreLoading(false);
+            UpdateScorePanelFeedback(data.feedback);
+            RefreshMultiScorePanelIfVisible();
+        }
+    }
+
+    private static void RefreshMultiScorePanelIfVisible()
+    {
+        if (OpenOceanMain.inst != null && OpenOceanMain.inst.lobbyState == LobbyState.MultiScorePanel)
+        {
+            OpenOceanMain.inst.RefreshMultiScorePanel();
+        }
+    }
+
+    private static bool ShouldUseGeminiFeedback()
+    {
+        return OpenOceanMain.inst != null && OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive;
+    }
+
+    private static void UpdateScorePanelFeedback(string feedback)
+    {
+        if (OpenOceanMain.inst?.feedbackText != null)
+        {
+            OpenOceanMain.inst.feedbackText.text = string.IsNullOrWhiteSpace(feedback) ? string.Empty : feedback;
+        }
+    }
+
+    private void EnsureFallbackFeedback(ScenarioDataMgr.ScenarioData data)
+    {
+        if (string.IsNullOrWhiteSpace(data.feedback))
+        {
+            data.feedback = GetFeedback();
         }
     }
 

@@ -161,6 +161,7 @@ public enum LobbyState
     GamePaused,
     Replay,
     MultiScorePanel,
+    AAR
     }
 public enum TrainingState
 {

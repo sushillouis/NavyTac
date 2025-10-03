@@ -27,6 +27,7 @@ public class ScenarioDataMgr : MonoBehaviour
         public float score;
         public string winReason;
         public string feedback;
+        public bool isGeminiFeedbackReady;
     }
 
     public static ScenarioDataMgr inst;
