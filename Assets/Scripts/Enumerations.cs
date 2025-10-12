@@ -115,6 +115,7 @@ public enum WeaponBehaviors
 public enum TactCommandTypes
 {
     Move = 0,
+    AttackMove,
     Follow,
     Intercept,
     Intercept3d,

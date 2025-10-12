@@ -32,8 +32,9 @@ public class LineMgr : MonoBehaviour
     public LineRenderer AttackMovePrefab;
 
     public List<LineRenderer> lines = new List<LineRenderer>();
-    public LineRenderer CreateMoveLine(Vector3 p1, Vector3 p2)
+    public LineRenderer CreateMoveLine(Vector3 p1, Vector3 p2, bool isAI)
     {
+        if (isAI) return null;
         
         LineRenderer lr = Instantiate<LineRenderer>(MovePrefab, transform);
         lr.SetPosition(0, p1);
@@ -41,8 +42,9 @@ public class LineMgr : MonoBehaviour
         lines.Add(lr);
         return lr;
     }
-     public LineRenderer CreateAttackMoveLine(Vector3 p1, Vector3 p2)
+     public LineRenderer CreateAttackMoveLine(Vector3 p1, Vector3 p2, bool isAI)
     {
+        if (isAI) return null;
         
         LineRenderer lr = Instantiate<LineRenderer>(AttackMovePrefab, transform);
         lr.SetPosition(0, p1);
@@ -50,8 +52,10 @@ public class LineMgr : MonoBehaviour
         lines.Add(lr);
         return lr;
     }
-    public LineRenderer CreatePotentialLine(Vector3 p1)
-    {if (isDebug)
+    public LineRenderer CreatePotentialLine(Vector3 p1, bool isAI)
+    {
+        if (isAI) return null;
+        if (isDebug)
         {
             //Debug.Log("Creating potential line");
             LineRenderer lr = Instantiate<LineRenderer>(PotentialPrefab, transform);
@@ -67,8 +71,9 @@ public class LineMgr : MonoBehaviour
         
     }
 
-    public LineRenderer CreateFollowLine(Vector3 p1, Vector3 p2, Vector3 p3)
+    public LineRenderer CreateFollowLine(Vector3 p1, Vector3 p2, Vector3 p3, bool isAI)
     {
+        if (isAI) return null;
         LineRenderer lr = Instantiate<LineRenderer>(FollowPrefab, transform);
         lr.SetPosition(0, p1);
         lr.SetPosition(1, p2);
@@ -77,8 +82,9 @@ public class LineMgr : MonoBehaviour
         return lr;
     }
 
-    public LineRenderer CreateInterceptLine(Vector3 p1, Vector3 p2, Vector2 p3)
+    public LineRenderer CreateInterceptLine(Vector3 p1, Vector3 p2, Vector2 p3, bool isAI)
     {
+        if (isAI) return null;
         LineRenderer lr = Instantiate<LineRenderer>(InterceptPrefab, transform);
         lr.SetPosition(0, p1);
         lr.SetPosition(1, p2);

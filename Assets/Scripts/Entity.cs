@@ -56,6 +56,7 @@ public class Entity : MonoBehaviour
     public GameObject selectionCircle;
     public TactPlayer owner;
     public Entity creatorsEntity;
+    public bool isAI = false;
 
 
     [Header("Aspect references")]
@@ -74,6 +75,7 @@ public class Entity : MonoBehaviour
         InitializeEntityValues();
         SetEntityColors();
         SetupHealthBar();
+        
     }
 
     void InitializeEntityValues()

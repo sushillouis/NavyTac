@@ -23,7 +23,8 @@ public class AttackMove : Move
     private float timeSinceLastPathUpdate = 0f;
     private const float SignificantMovementThresholdSq = 1.0f; // 1 unit squared
 
-    public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false, float doneDistanceSq = 100000f) : base(ent, pos, maxSpeed, doneDistanceSq)
+    public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false, float doneDistanceSq = 100000f, bool isWaypoint = false) 
+        : base(ent, pos, maxSpeed, doneDistanceSq, isWaypoint)
     {
         InitializeWeaponsAspect();
         hasExplicitTarget = false;
@@ -39,8 +40,8 @@ public class AttackMove : Move
         lastKnownCommandedTargetPosition = pos;
     }
 
-    public AttackMove(Entity ent, Entity target, bool acquireTargetsOnWay = false, bool maxSpeed = false, float doneDistanceSq = 100000f)
-        : base(ent, target != null ? target.position : ent.position, maxSpeed, doneDistanceSq)
+    public AttackMove(Entity ent, Entity target, bool acquireTargetsOnWay = false, bool maxSpeed = false, float doneDistanceSq = 100000f, bool isWaypoint = false)
+        : base(ent, target != null ? target.position : ent.position, maxSpeed, doneDistanceSq, isWaypoint)
     {
         InitializeWeaponsAspect();
         explicitTarget = target;
@@ -89,8 +90,11 @@ public class AttackMove : Move
 
         if (!FogWarMgr.inst.nonRevelers.Contains(entity))
         {
-            line = LineMgr.inst.CreateAttackMoveLine(entity.position, movePosition);
-            line.gameObject.SetActive(false);
+            line = LineMgr.inst.CreateAttackMoveLine(entity.position, movePosition,entity.isAI);
+            if (line != null)
+            {
+                line.gameObject.SetActive(false);
+            }
         }
     }
 

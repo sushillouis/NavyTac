@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.3865354, g: 0.4779775, b: 0.5743237, a: 1}
+  m_IndirectSpecularColor: {r: 0.38653484, g: 0.47797692, b: 0.5743225, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -596,6 +596,48 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1edb8ba0c18bd5d45b7b066b700f8e5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  apiKey: 
+  jsonLog: {fileID: 0}
+  csvStats: {fileID: 0}
+  promptTemplate: "You are an AI assistant tasked with analyzing a naval real-time
+    strategy (RTS) game scenario to provide targeted feedback for a player, but only
+    if valid JSON and CSV data are provided. If the JSON or CSV data is missing,
+    empty, or invalid, respond with: \"Error: Cannot generate feedback due to missing
+    or invalid JSON or CSV data.\"\nThe game involves commanding a fleet of naval
+    units\u2014JariUSV (fast, nimble vessels for scouting and harassment), SeaHunter
+    (balanced units with moderate speed and firepower), DDG51 (heavily armed and
+    armored destroyers for sustained combat), and Rig Balder (a stationary base)\u2014to
+    achieve victory by destroying the enemy\u2019s base or eliminating all their
+    units (red-colored), while protecting your own base and units (blue-colored).
+    The battlefield is a 2D map divided into four quadrants, with the player\u2019s
+    base randomly placed in one quadrant and the enemy\u2019s base hidden in another,
+    obscured by a fog of war that requires scouting to reveal enemy positions and
+    movements.\nDamage taken is the total damage received by the player\u2019s units
+    (JariUSV, SeaHunter, DDG51) and base (Rig Balder), while damage dealt is the
+    total damage inflicted on the opponent\u2019s units and base. The score is calculated
+    as: `score = (0.3 * (playerWon ? 1 : 0)) * 100 + 0.7 * (damageDealt / (damageDealt
+    + damageTaken)) * 100`.\nPlayers use selection controls and unit action commands
+    (Move, AttackMoveToPosition, AttackMoveToEntity). Do not include camera controls
+    in feedback.\n\nYou are provided with:\n1) A JSON command log (timestamp, timeScale,
+    commandType, entityIds, targetPosition, targetEntityId, targetEntityName, targetOwnerName,
+    add).\n2) A CSV with scenario stats (DateTime, StudentID, Group, GameType, Result,
+    DamageTaken, DamageDealt, ScorePercent, TimeTaken, AILevel, AIDifficulty, WinCondition,
+    PlayerBaseLocation, AIBaseLocation, unit counts).\n\nRules:\n- Output format:
+    Return exactly three lines numbered as a list: \"1. ...\\n2. ...\\n3. ...\" with
+    no extra text before or after.\n- Be concise; each point is a single sentence.\n-
+    Use rounded time references (early/mid/late game), not raw timestamps or coordinates.\n-
+    Don\u2019t surface specific JSON coordinates/timestamps or raw data values.\n-
+    Base strategy on mechanics, CSV outcome/metrics, and JSON command patterns.\n-
+    Emphasize minimizing DamageTaken, maximizing DamageDealt, protecting Rig Balder,
+    improving ScorePercent.\n- Reference actionable inputs (F1/F2/F3/F4, A+Right
+    Click, CTRL+0\u20139) when helpful.\n- Include strategies: JariUSV scouting,
+    DDG51 anchoring for damage mitigation, SeaHunter support, optimized Attack-Move
+    usage, control-group discipline.\n- Consider AI behavior (Adaptive, AIDifficulty/AILevel).\n-
+    If the player won, start with one positive reinforcement.\n- Do NOT give camera
+    controls in feedback.\n- Treat a player command as any JSON item with commandType
+    in {Move, AttackMoveToPosition, AttackMoveToEntity} and entityIds length > 0.\n-
+    If there are zero such player commands, do not describe player actions. Instead,
+    acknowledge that no unit commands were issued and provide\n"
 --- !u!1 &194918367
 GameObject:
   m_ObjectHideFlags: 0
@@ -1336,6 +1378,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Terrain_(-30000.00, -298.00, 10000.00)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4113880460325427447, guid: cbf6f84983fceb94a9b3c1d388487d20,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5712129262306686070, guid: cbf6f84983fceb94a9b3c1d388487d20,
         type: 3}
@@ -2697,6 +2744,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Terrain_(10000.00, -298.00, -10000.00)
       objectReference: {fileID: 0}
+    - target: {fileID: 8379146012089745263, guid: f81482aad997a494a890f83f9d40ca1a,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2988,6 +3040,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Terrain_(-10000.00, -298.00, 10000.00)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6119188276778500785, guid: 75c028f89171a104d9a3ca718b529e08,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8939549905578031010, guid: 75c028f89171a104d9a3ca718b529e08,
         type: 3}
@@ -3413,6 +3470,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Terrain_(-30000.00, -298.00, -30000.00)
       objectReference: {fileID: 0}
+    - target: {fileID: 3487462379163890897, guid: 642b181edacc11f40b587b9612525921,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3642,6 +3704,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Terrain_(10000.00, -298.00, -30000.00)
       objectReference: {fileID: 0}
+    - target: {fileID: 280011789855444044, guid: 653098a62a73c3b40a2acf5a9e955383,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1747822214698177727, guid: 653098a62a73c3b40a2acf5a9e955383,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -3824,6 +3891,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Terrain_(-30000.00, -298.00, -10000.00)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7269961004746814341, guid: 93b661fd7339861439842a2dab57bbba,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7551549073538681599, guid: 93b661fd7339861439842a2dab57bbba,
         type: 3}
@@ -5545,6 +5617,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Terrain_(10000.00, -298.00, 10000.00)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5909371959421954580, guid: 787521c5759df1f4c8e25bfc47c5f4e7,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8934163086049571543, guid: 787521c5759df1f4c8e25bfc47c5f4e7,
         type: 3}
@@ -7316,6 +7393,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Terrain_(-10000.00, -298.00, -30000.00)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3028762165089210732, guid: 4b15dd373f570b541b1f40a4bb09ba3e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4993821288003899362, guid: 4b15dd373f570b541b1f40a4bb09ba3e,
         type: 3}

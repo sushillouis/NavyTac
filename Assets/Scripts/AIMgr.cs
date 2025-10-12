@@ -203,61 +203,91 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
 {
     if (isLocalCommand)
     {
-        NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
+        NetTellAllClients(TactCommandTypes.AttackMove, entities, point, target, add);
     }
 
     foreach (Entity entity in entities)
     {
-        if (entity == null || entity.gameObject == null)
+        if (entity == null || entity.gameObject == null || entity.isGreyed)
             continue;
-        
-        if (target != null && (target.gameObject == null))
-            target = null;
-
-        if (target != null)
-        {
-            if (entity.GetComponentInChildren<WeaponsAspect>() == null)
-            {
-                doneDistanceSq = 100000f;
-            }
-            else
-            {
-                WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-                doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null)
-                    ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range) - 100f * 100f
-                    : 100000f;
-            }
-        }
-        else
-        {
-            if (entities.Count == 1)
-            {
-                if (doneDistanceSq <= 0f)
-                    doneDistanceSq = 200f * 200f;
-            }
-            else if (entities.Count < 5)
-            {
-                doneDistanceSq = 500f * 500f;
-            }
-            else if (entities.Count >= 10)
-            {
-                WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-                doneDistanceSq = (weaponsAspect != null && weaponsAspect.weapon != null)
-                    ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range)
-                    : 100000f;
-            }
-            else
-            {
-                doneDistanceSq = StoppingDistanceSq(entity.entityType);
-            }
-        }
-
-        AttackMove am = target != null
-            ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, doneDistanceSq)
-            : new AttackMove(entity, point, maxSpeedMovement, doneDistanceSq);
 
         UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+        var startPos = (add && uai != null) ? uai.GetQueueTailPosition() : entity.position;
+
+        Pathfinding.inst.StartFindPath(startPos, point, (waypoints, success) => {
+            if (success && waypoints.Length > 0)
+            {
+                if (uai == null) uai = entity.GetComponentInChildren<UnitAI>();
+                if (uai != null)
+                {
+                    if (!add)
+                    {
+                        uai.StopAndRemoveAllCommands();
+                    }
+
+                    for (int i = 0; i < waypoints.Length; i++)
+                    {
+                        Vector3 waypoint = waypoints[i];
+                        bool isLastWaypoint = (i == waypoints.Length - 1);
+
+                        float currentDoneDistanceSq = isLastWaypoint 
+                            ? GetAttackMoveDoneDistanceSq(entity, target, entities.Count, doneDistanceSq)
+                            : 100f * 100f;
+
+                        AttackMove am = isLastWaypoint && target != null
+                            ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq)
+                            : new AttackMove(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, !isLastWaypoint);
+                        
+                        uai.AddCommand(am);
+                    }
+                }
+            }
+            else
+            {
+                // Fallback to direct attack-move if pathfinding fails
+                HandleDirectAttackMove(entity, point, target, add, maxSpeedMovement, acquireTarget, doneDistanceSq, entities.Count);
+            }
+        });
+    }
+}
+
+private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target, bool add, bool maxSpeedMovement, bool acquireTarget, float doneDistanceSq, int entitiesCount)
+{
+    float currentDoneDistanceSq = GetAttackMoveDoneDistanceSq(entity, target, entitiesCount, doneDistanceSq);
+
+    AttackMove am = target != null
+        ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq)
+        : new AttackMove(entity, point, maxSpeedMovement, currentDoneDistanceSq);
+
+    UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+    if (uai != null)
+    {
         AddOrSet(am, uai, add);
+    }
+}
+
+private float GetAttackMoveDoneDistanceSq(Entity entity, Entity target, int entitiesCount, float initialDoneDistanceSq)
+{
+    if (target != null)
+    {
+        WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+        return (weaponsAspect != null && weaponsAspect.weapon != null)
+            ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range) - 100f * 100f
+            : 100000f;
+    }
+    else
+    {
+        if (initialDoneDistanceSq > 0f) return initialDoneDistanceSq;
+        if (entitiesCount == 1) return 200f * 200f;
+        if (entitiesCount < 5) return 500f * 500f;
+        if (entitiesCount >= 10)
+        {
+            WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+            return (weaponsAspect != null && weaponsAspect.weapon != null)
+                ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range)
+                : 100000f;
+        }
+        return StoppingDistanceSq(entity.entityType);
     }
 }
     public void HandleMove(List<Entity> entities, Vector3 point,
@@ -269,55 +299,117 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
         }
         foreach (Entity entity in entities)
         {
-            // Original log, kept inside the loop. If intended once per call, move outside.
-            //Debug.Log("EntityCount: " + entities.Count); 
             if(entity.isGreyed)
-                continue; // Skip greyed out entities
+                continue; 
 
-            float currentDoneDistanceSq;
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            var startPos = (add && uai != null) ? uai.GetQueueTailPosition() : entity.position;
 
-            if (entities.Count == 1)
-            {
-                if (doneDistanceSq > 0f) {
-                    currentDoneDistanceSq = doneDistanceSq;
-                } else {
-                    currentDoneDistanceSq = 200f * 200f; 
-                }
-            }
-            else if (entities.Count < 5) // Covers 2, 3, 4 entities
-            {
-                currentDoneDistanceSq = 500f * 500f;
-            }
-            else if (entities.Count >= 10)
-            {
-                //Debug.Log("Entities: " + entities.Count); // Specific log for this case
-                WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-                if (weaponsAspect != null && weaponsAspect.weapon != null)
+            Pathfinding.inst.StartFindPath(startPos, point, (waypoints, success) => {
+                if (success && waypoints.Length > 0)
                 {
-                    currentDoneDistanceSq = (weaponsAspect.weapon.range * weaponsAspect.weapon.range )- 100f * 100f ;
+                    if (uai == null) uai = entity.GetComponentInChildren<UnitAI>();
+                    if (uai != null)
+                    {
+                        if (!add)
+                        {
+                            uai.StopAndRemoveAllCommands();
+                        }
+
+                        for (int i = 0; i < waypoints.Length; i++)
+                        {
+                            Vector3 waypoint = waypoints[i];
+                            float currentDoneDistanceSq;
+
+                            // Use a smaller stopping distance for intermediate waypoints
+                            if (i < waypoints.Length - 1)
+                            {
+                                currentDoneDistanceSq = 100f * 100f;
+                            }
+                            else // Last waypoint uses original logic
+                            {
+                                if (entities.Count == 1)
+                                {
+                                    if (doneDistanceSq > 0f) {
+                                        currentDoneDistanceSq = doneDistanceSq;
+                                    } else {
+                                        currentDoneDistanceSq = 200f * 200f; 
+                                    }
+                                }
+                                else if (entities.Count < 5)
+                                {
+                                    currentDoneDistanceSq = 500f * 500f;
+                                }
+                                else if (entities.Count >= 10)
+                                {
+                                    WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+                                    if (weaponsAspect != null && weaponsAspect.weapon != null)
+                                    {
+                                        currentDoneDistanceSq = (weaponsAspect.weapon.range * weaponsAspect.weapon.range )- 100f * 100f ;
+                                    }
+                                    else
+                                    {
+                                        currentDoneDistanceSq = doneDistanceSq > 0f ? doneDistanceSq : StoppingDistanceSq(entity.entityType);
+                                    }
+                                }
+                                else
+                                {
+                                    currentDoneDistanceSq = StoppingDistanceSq(entity.entityType);
+                                }
+                            }
+                            
+                            Move m = new Move(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, i < waypoints.Length - 1);
+                            uai.AddCommand(m);
+                        }
+                    }
                 }
                 else
                 {
-                    // Fallback if WeaponsAspect or weapon is null
-                    currentDoneDistanceSq = doneDistanceSq; 
-                    //Debug.LogWarning($"Entity {entity.entityId} missing WeaponsAspect or weapon. Using fallback doneDistanceSq: {currentDoneDistanceSq}");
+                    // Fallback to direct move if pathfinding fails
+                    HandleDirectMove(entity, point, add, maxSpeedMovement, doneDistanceSq, entities.Count);
                 }
+            });
+        }
+    }
+
+    // Extracted original move logic into a separate method for fallback
+    private void HandleDirectMove(Entity entity, Vector3 point, bool add, bool maxSpeedMovement, float doneDistanceSq, int entitiesCount)
+    {
+        float currentDoneDistanceSq;
+        if (entitiesCount == 1)
+        {
+            if (doneDistanceSq > 0f) {
+                currentDoneDistanceSq = doneDistanceSq;
+            } else {
+                currentDoneDistanceSq = 200f * 200f; 
             }
-            else // Covers 5, 6, 7, 8, 9 entities
+        }
+        else if (entitiesCount < 5)
+        {
+            currentDoneDistanceSq = 500f * 500f;
+        }
+        else if (entitiesCount >= 10)
+        {
+            WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+            if (weaponsAspect != null && weaponsAspect.weapon != null)
             {
-                currentDoneDistanceSq = StoppingDistanceSq(entity.entityType);
-            }
-            
-            Move m = new Move(entity, point, maxSpeedMovement, currentDoneDistanceSq);
-            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-            if (uai != null)
-            {
-                AddOrSet(m, uai, add);
+                currentDoneDistanceSq = (weaponsAspect.weapon.range * weaponsAspect.weapon.range )- 100f * 100f ;
             }
             else
             {
-                //Debug.LogWarning($"Entity {entity.entityId} does not have a UnitAI component. Command not issued.");
+                currentDoneDistanceSq = doneDistanceSq > 0f ? doneDistanceSq : StoppingDistanceSq(entity.entityType);
             }
+        }
+        else
+        {
+            currentDoneDistanceSq = StoppingDistanceSq(entity.entityType);
+        }
+
+        Move m = new Move(entity, point, maxSpeedMovement, currentDoneDistanceSq);
+        UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+        if (uai != null)
+        {
+            AddOrSet(m, uai, add);
         }
     }
 

@@ -207,6 +207,8 @@ public class EnemyAIMgr : MonoBehaviour
                 if (!aiEntitiesList.Contains(entity))
                 {
                     aiEntitiesList.Add(entity);
+                    entity.isAI = true;
+                    
                 }
             }
             else if (entity.owner == PlayerMgr.inst.neutral)

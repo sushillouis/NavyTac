@@ -4,12 +4,14 @@ using System.Collections.Generic;
 
 public class Pathfinding : MonoBehaviour
 {
+    public static Pathfinding inst;
     private Grid grid;
     public float maxPathCalculateTime = 0.1f;
     public int maxSearchNodes = 10000;
 
     void Awake()
     {
+        inst = this;
         grid = GetComponent<Grid>();
     }
 

@@ -15,8 +15,11 @@ public class Intercept : Follow
     public override void Init()
     {
         ////Debug.Log("Intercept:\t ing: " + targetEntity.gameObject.name);
-        line = LineMgr.inst.CreateInterceptLine(entity.position, targetEntity.position, targetEntity.position);
-        line.gameObject.SetActive(false);
+        line = LineMgr.inst.CreateInterceptLine(entity.position, targetEntity.position, targetEntity.position, entity.isAI);
+        if (line != null)
+        {
+            line.gameObject.SetActive(false);
+        }
     }
 
     public override void Tick()

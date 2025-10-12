@@ -9,52 +9,66 @@ public class Move : Command
     public float range;
     public float timeOnTarget;
     private readonly bool useMaxSpeedMovement;
-    protected float pathUpdateCooldown = 0.25f; // baseline so derived commands have a default
-    public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false, float doneDistanceSq = 1000f) : base(ent) {
+    private readonly bool isWaypoint;
+    protected float pathUpdateCooldown = 0.25f;
+
+    public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false, float doneDistanceSq = 1000f, bool isWaypoint = false) : base(ent)
+    {
         movePosition = pos;
         useMaxSpeedMovement = maxSpeedMovement;
-        if (doneDistanceSq > 0f) {
+        this.isWaypoint = isWaypoint;
+        if (doneDistanceSq > 0f)
+        {
             this.doneDistanceSq = doneDistanceSq;
         }
     }
 
     public LineRenderer potentialLine;
-    public override void Init() {
-        //Debug.Log("MoveInit:\tMoving to: " + movePosition);
-        line = LineMgr.inst.CreateMoveLine(entity.position, movePosition);
-        line.gameObject.SetActive(false);
-        potentialLine = LineMgr.inst.CreatePotentialLine(entity.position);
-        if (potentialLine != null) {
+
+    public override void Init()
+    {
+        line = LineMgr.inst.CreateMoveLine(entity.position, movePosition, entity.isAI);
+        if (line != null)
+        {
+            line.gameObject.SetActive(false);
+        }
+        potentialLine = LineMgr.inst.CreatePotentialLine(entity.position, entity.isAI);
+        if (potentialLine != null)
+        {
             potentialLine.gameObject.SetActive(false);
         }
     }
 
-    public override void Tick() {
+    public override void Tick()
+    {
         DHDS dhds;
-        if(AIMgr.inst.isPotentialFieldsMovement)
-            dhds = ComputePF2(movePosition);// ComputePotentialDHDS(movePosition);
+        if (AIMgr.inst.isPotentialFieldsMovement)
+            dhds = ComputePF2(movePosition);
         else
             dhds = ComputeDHDS();
 
         entity.desiredHeading = dhds.dh;
         entity.desiredSpeed = dhds.ds;
-        if (line != null) {
+
+        if (line != null)
+        {
             line.SetPosition(1, movePosition);
         }
 
-        if (potentialLine != null && AIMgr.inst.isPotentialFieldsMovement) {
+        if (potentialLine != null && AIMgr.inst.isPotentialFieldsMovement)
+        {
             potentialLine.SetPosition(0, entity.position);
             potentialLine.SetPosition(1, entity.position + potentialSum);
         }
 
         range = diffToMovePosition.magnitude;
         timeOnTarget = entity.speed > 0.001f ? range / entity.speed : float.PositiveInfinity;
-
     }
 
     public Vector3 diffToMovePosition = Vector3.positiveInfinity;
     public float dhRadians;
     public float dhDegrees;
+
     public DHDS ComputeDHDS()
     {
         diffToMovePosition = movePosition - entity.position;
@@ -63,44 +77,45 @@ public class Move : Command
         potentialSum = Vector3.zero;
         repulsivePotential = Vector3.zero;
         attractivePotential = Vector3.zero;
-    float targetSpeed = useMaxSpeedMovement ? entity.maxSpeed : entity.cruiseSpeed;
-    return new DHDS(dhDegrees, targetSpeed);
-
+        float targetSpeed = useMaxSpeedMovement ? entity.maxSpeed : entity.cruiseSpeed;
+        return new DHDS(dhDegrees, targetSpeed);
     }
 
     public DHDS ComputePotentialDHDS(Vector3 movePosition)
     {
         diffToMovePosition = movePosition - entity.position;
         Potential p;
-        repulsivePotential = Vector3.one; 
+        repulsivePotential = Vector3.one;
         repulsivePotential.y = 0;
-        foreach (Entity ent in EntityMgr.inst.entities) {
+
+        foreach (Entity ent in EntityMgr.inst.entities)
+        {
             if (ent == entity) continue;
 
-
             p = DistanceMgr.inst.GetPotential(entity, ent);
-            if (p.distance < AIMgr.inst.potentialDistanceThreshold) {
-                //repulsivePotential += p.direction * entity.mass *
+            if (p.distance < AIMgr.inst.potentialDistanceThreshold)
+            {
                 repulsivePotential += p.direction * ent.mass *
                     AIMgr.inst.repulsiveCoefficient * Mathf.Pow(p.diff.magnitude, AIMgr.inst.repulsiveExponent);
-
             }
         }
-        //repulsivePotential *= repulsiveCoefficient * Mathf.Pow(repulsivePotential.magnitude, repulsiveExponent);
+
         attractivePotential = movePosition - entity.position;
         Vector3 tmp = attractivePotential.normalized;
-        attractivePotential = tmp * 
+        attractivePotential = tmp *
             AIMgr.inst.attractionCoefficient * Mathf.Pow(attractivePotential.magnitude, AIMgr.inst.attractiveExponent);
         potentialSum = attractivePotential - repulsivePotential;
 
         dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
 
         angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
-        cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f; // makes it between 0 and 1
-        ds = entity.maxSpeed * cosValue;
+        cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
+        float baseSpeed = useMaxSpeedMovement ? entity.maxSpeed : entity.cruiseSpeed;
+        ds = isWaypoint ? baseSpeed : baseSpeed * cosValue;
 
         return new DHDS(dh, ds);
     }
+
     public Vector3 attractivePotential = Vector3.zero;
     public Vector3 potentialSum = Vector3.zero;
     public Vector3 repulsivePotential = Vector3.zero;
@@ -109,54 +124,62 @@ public class Move : Command
     public float cosValue;
     public float ds;
 
-    public DHDS ComputePF2(Vector3 pos) {
+    public DHDS ComputePF2(Vector3 pos)
+    {
         diffToMovePosition = pos - entity.position;
-        repulsivePotential = Vector3.one;
-        repulsivePotential.y = 0;
+        repulsivePotential = Vector3.zero;
         Potential pot;
-        foreach(Entity otherEnt in EntityMgr.inst.entities) {
-            if(otherEnt != entity && (entity.position - otherEnt.position).sqrMagnitude < AIMgr.inst.potentialDistanceThresholdSq) {
-                if(entity.ai.potentialsD.ContainsKey(otherEnt)) {
+
+        // Entity Repulsion
+        foreach (Entity otherEnt in EntityMgr.inst.entities)
+        {
+            if (otherEnt != entity && (entity.position - otherEnt.position).sqrMagnitude < AIMgr.inst.potentialDistanceThresholdSq)
+            {
+                if (entity.ai.potentialsD.ContainsKey(otherEnt))
+                {
                     pot = entity.ai.potentialsD[otherEnt];
-                } else {
+                }
+                else
+                {
                     pot = new Potential(entity, otherEnt);
                     entity.ai.potentialsD.Add(otherEnt, pot);
                     entity.ai.potentialsL.Add(new EntityPotential { entity = otherEnt, potential = pot });
                 }
                 pot.ReCompute();
-                foreach(SubPotential subPot in pot.subPotentials) {
+                foreach (SubPotential subPot in pot.subPotentials)
+                {
                     repulsivePotential += subPot.direction * otherEnt.mass
                         * AIMgr.inst.repulsive2Coefficient * Mathf.Pow(subPot.distance, AIMgr.inst.repulsiveExponent);
                 }
             }
         }
-        Vector3 tmp = diffToMovePosition.sqrMagnitude > 0.0001f 
-            ? diffToMovePosition.normalized 
+        ApplyObstacleRepulsion();
+        Vector3 tmp = diffToMovePosition.sqrMagnitude > 0.0001f
+            ? diffToMovePosition.normalized
             : Vector3.zero;
-        attractivePotential = tmp 
+        attractivePotential = tmp
             * AIMgr.inst.attraction2Coefficient * entity.mass * Mathf.Pow(diffToMovePosition.magnitude, AIMgr.inst.attractiveExponent);
 
         potentialSum = attractivePotential - repulsivePotential;
 
-        dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z)); 
+        dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
 
         angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
         cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
         float baseSpeed = useMaxSpeedMovement ? entity.maxSpeed : entity.cruiseSpeed;
-        ds = baseSpeed * cosValue;
+        ds = isWaypoint ? baseSpeed : baseSpeed * cosValue;
 
         return new DHDS(dh, ds);
     }
 
+    public float doneDistanceSq = 100f;
 
-
-
-    public float doneDistanceSq = 100f; // 10 units squared
     public override bool IsDone()
     {
         float thresholdSq = doneDistanceSq;
         var weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-        if (weaponsAspect != null && weaponsAspect.weapon != null && weaponsAspect.weapon.range > 0f) {
+        if (weaponsAspect != null && weaponsAspect.weapon != null && weaponsAspect.weapon.range > 0f)
+        {
             float weaponRange = weaponsAspect.weapon.range;
             thresholdSq = weaponRange * weaponRange;
         }
@@ -165,14 +188,54 @@ public class Move : Command
 
     public override void Stop()
     {
-        entity.desiredSpeed = 0;
-        if (line != null) {
+        if (!isWaypoint)
+        {
+            entity.desiredSpeed = 0;
+        }
+        
+        if (line != null)
+        {
             LineMgr.inst.DestroyLR(line);
         }
-        if (potentialLine != null) {
+        if (potentialLine != null)
+        {
             LineMgr.inst.DestroyLR(potentialLine);
         }
         line = null;
         potentialLine = null;
+    }
+    void ApplyObstacleRepulsion()
+    {
+        var aimgr = AIMgr.inst;
+        Vector3 entityPos = entity.position;
+        int obstacleLayerMask = LayerMask.GetMask("Terrain");
+        float rayLength = 500f;
+        const int numRays = 36;
+        const float angleSpread = 10f;
+
+        float angleStep = angleSpread / (numRays > 1 ? numRays - 1 : 1);
+        float startAngle = -angleSpread / 2f;
+
+        Vector3 entityForward = entity.transform.forward;
+
+        for (int i = 0; i < numRays; i++)
+        {
+            float currentAngle = startAngle + i * angleStep;
+            Vector3 rayDirection = Quaternion.Euler(0, currentAngle, 0) * entityForward;
+
+            if (Physics.Raycast(entityPos, rayDirection, out RaycastHit hit, rayLength, obstacleLayerMask))
+            {
+                if (hit.point.y <= 0) continue;
+
+                float distance = hit.distance;
+                if (distance > 0.01f)
+                {
+                    Vector3 repulsionDirection = hit.normal;
+                    float terrainWeight = float.MaxValue;
+                    float magnitude = aimgr.repulsive2Coefficient * Mathf.Pow(distance, aimgr.repulsiveExponent) * terrainWeight;
+                    repulsivePotential += -repulsionDirection * magnitude;
+                }
+            }
+        }
     }
 }

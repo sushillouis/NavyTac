@@ -137,7 +137,27 @@ public class UnitAI : MonoBehaviour
         StopAndRemoveAllCommands();
         AddCommand(c);
     }
-       public void DecorateAll()
+
+    public Vector3 GetQueueTailPosition()
+    {
+        if (commands.Count == 0) return entity.position;
+        Vector3 tail = entity.position;
+        foreach (var cmd in commands)
+        {
+            switch (cmd)
+            {
+                case AttackMove am: tail = am.movePosition; break;
+                case Intercept3d i3: tail = i3.targetEntity.position; break;
+                case SmartIntercept si: tail = si.targetEntity.position; break;
+                case Intercept i:    tail = i.targetEntity.position; break;
+                case Follow f:       tail = f.targetEntity.position + f.offset; break;
+                case Move m:         tail = m.movePosition; break;
+            }
+        }
+        return tail;
+    }
+
+    public void DecorateAll()
     {
         Command prior = null;
         foreach(Command c in commands) {

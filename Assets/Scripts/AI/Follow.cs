@@ -44,8 +44,11 @@ public class Follow : Move
 
         base.Init();
         offset = targetEntity.transform.TransformVector(relativeOffset);
-        line = LineMgr.inst.CreateFollowLine(entity.position, targetEntity.position + offset, targetEntity.position);
-        line.gameObject.SetActive(false);
+        line = LineMgr.inst.CreateFollowLine(entity.position, targetEntity.position + offset, targetEntity.position, entity.isAI);
+        if (line != null)
+        {
+            line.gameObject.SetActive(false);
+        }
     }
 
     public override void Tick()

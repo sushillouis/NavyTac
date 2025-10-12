@@ -46,7 +46,7 @@ public class GameMgr : MonoBehaviour
     [SerializeField] public int seedAdaptive = 30;
     [SerializeField] public int seedNonAdaptive = 40;
 
-    public float min = 2;
+    public float min = 1;
     public float max = 5;
 
     [Header("Time Control UI")]
