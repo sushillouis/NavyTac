@@ -24,6 +24,7 @@ public class Move : Command
     }
 
     public LineRenderer potentialLine;
+    // Boundary avoidance settings are stored centrally on AIMgr.inst
 
     public override void Init()
     {
@@ -154,6 +155,8 @@ public class Move : Command
             }
         }
         ApplyObstacleRepulsion();
+        // Boundary object repulsion
+        ApplyBoundaryRepulsion();
         Vector3 tmp = diffToMovePosition.sqrMagnitude > 0.0001f
             ? diffToMovePosition.normalized
             : Vector3.zero;
@@ -170,6 +173,38 @@ public class Move : Command
         ds = isWaypoint ? baseSpeed : baseSpeed * cosValue;
 
         return new DHDS(dh, ds);
+    }
+
+void ApplyBoundaryRepulsion()
+{
+        var aimgr = AIMgr.inst;
+        if (aimgr == null || aimgr.boundaryPositions == null || aimgr.boundaryPositions.Count == 0) return;
+        Vector3 pos = entity.position;
+
+        int boundaryCount = aimgr.boundaryPositions.Count;
+        if (boundaryCount == 0) return;
+
+        // Stagger the boundary checks over 5 frames to improve performance.
+        int startIndex = Time.frameCount % 5;
+
+        for (int i = startIndex; i < boundaryCount; i += 5)
+        {
+            Vector3 boundaryPos = aimgr.boundaryPositions[i];
+            Vector3 dir = pos - boundaryPos;
+            float dist = dir.magnitude;
+            if (dist < 0.001f) dist = 0.001f;
+
+            if (dist <= aimgr.boundaryRepulsionDistance)
+            {
+            Vector3 repDir = dir.normalized;
+            // Use same exponent as entity repulsion for consistency
+            float magnitude = float.MaxValue * aimgr.repulsive2Coefficient * Mathf.Pow(dist, aimgr.repulsiveExponent);
+            magnitude *= aimgr.boundaryRepulsionStrength;
+            // Scale by entity mass so heavier entities respond appropriately
+            magnitude *= entity.mass;
+            repulsivePotential += -repDir * magnitude;
+            }
+        }
     }
 
     public float doneDistanceSq = 100f;

@@ -32,6 +32,7 @@ public class EntityMgr : MonoBehaviour
     public GameObject entitiesRoot;
     public List<Entity> entities;
     public Dictionary<int, Entity> entitiesDict;
+    public bool doIsGreyedOut = false;
 
     
     public int entityId = 0;
@@ -188,9 +189,9 @@ public class EntityMgr : MonoBehaviour
                     EditorUtility.SetDirty(entityPrefab);
                     #endif
                 }
-                catch (FormatException e)
+                catch (FormatException)
                 {
-                    //Debug.LogError($"Failed to parse values in line {i + 1}: {e.Message}");
+                    //Debug.LogError($"Failed to parse values in line {i + 1}: format exception");
                 }
             }
 
@@ -201,9 +202,9 @@ public class EntityMgr : MonoBehaviour
 
             //Debug.Log($"Successfully imported {importedCount} entities from {filePath}");
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            //Debug.LogError($"Import failed: {e.Message}");
+            //Debug.LogError("Import failed");
         }
     }
 
@@ -224,6 +225,10 @@ public class EntityMgr : MonoBehaviour
                 entityGo.name = et.ToString() + entityId++;
                 entity.owner = player;
                 entity.heading = entity.desiredHeading = eulerAngles.y;
+                if (doIsGreyedOut)
+                {
+                    entity.greyOverlayFadeDuration = 0f;
+                }
 
                 if (FogWarMgr.inst != null && FogWarMgr.inst.FOW && entity.entityClass != EntityClass.Missile)
                 {

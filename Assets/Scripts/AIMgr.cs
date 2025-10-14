@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 [Serializable]
 public struct TactCommandStruct: INetworkSerializable, IEquatable<TactCommandStruct>
 {
@@ -76,6 +77,10 @@ public class AIMgr : NetworkBehaviour
     void Start()
     {
         layerMask = LayerMask.GetMask("Ocean", "Terrain");
+        if (autoPopulateBoundaryPositions)
+        {
+            PopulateBoundaryPositions("TerrainBoundary");
+        }
     }
 
     public bool isPotentialFieldsMovement = false;
@@ -89,6 +94,17 @@ public class AIMgr : NetworkBehaviour
     [Header("Experimatal PF")]
     public float repulsive2Coefficient = 1000;
     public float attraction2Coefficient = 10000;
+    [Header("Boundary Avoidance")]
+    // List of boundary positions (e.g., markers placed along terrain boundary) to avoid
+    [FormerlySerializedAs("boundaryObjects")]
+    public List<Vector3> boundaryPositions = new List<Vector3>();
+    // maximum distance at which boundary objects will produce repulsion
+    public float boundaryRepulsionDistance = 200f;
+    // strength multiplier for boundary repulsion
+    public float boundaryRepulsionStrength = 1f;
+    // If true, populate boundary positions automatically (prefers TerrainBoundaryCreator data)
+    [FormerlySerializedAs("autoPopulateBoundaryObjects")]
+    public bool autoPopulateBoundaryPositions = true;
     // In AIMgr.cs
     [Header("Terrain Avoidance (Ships)")]
     public float terrainDetectionRadius = 100f; // How far ships detect islands
@@ -101,6 +117,68 @@ public class AIMgr : NetworkBehaviour
 
     public RaycastHit hit;
     public int layerMask;
+
+    // Gather boundary positions from active TerrainBoundaryCreator components or fall back to a layer search.
+    public void PopulateBoundaryPositions(string layerName)
+    {
+        boundaryPositions.Clear();
+        HashSet<Vector3> seen = new HashSet<Vector3>();
+
+        TerrainBoundaryCreator[] creators = FindObjectsOfType<TerrainBoundaryCreator>();
+        for (int i = 0; i < creators.Length; i++)
+        {
+            var positions = creators[i].BoundaryPositions;
+            if (positions == null)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < positions.Count; j++)
+            {
+                Vector3 pos = positions[j];
+                pos.y = 0f;
+                if (seen.Add(pos))
+                {
+                    boundaryPositions.Add(pos);
+                }
+            }
+        }
+
+        if (boundaryPositions.Count > 0 || string.IsNullOrEmpty(layerName))
+        {
+            return;
+        }
+
+        int layer = LayerMask.NameToLayer(layerName);
+        if (layer == -1)
+        {
+            return;
+        }
+
+        GameObject[] allGOs = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+        for (int i = 0; i < allGOs.Length; i++)
+        {
+            var stack = new Stack<GameObject>();
+            stack.Push(allGOs[i]);
+
+            while (stack.Count > 0)
+            {
+                GameObject go = stack.Pop();
+                Vector3 pos = go.transform.position;
+                pos.y = 0f;
+                if (go.layer == layer && seen.Add(pos))
+                {
+                    boundaryPositions.Add(pos);
+                }
+
+                Transform goTransform = go.transform;
+                for (int childIndex = 0; childIndex < goTransform.childCount; childIndex++)
+                {
+                    stack.Push(goTransform.GetChild(childIndex).gameObject);
+                }
+            }
+        }
+    }
     public List<Entity> selectedEntities = new List<Entity>();
 
 

@@ -10,7 +10,6 @@ public class WeaponsMgr : MonoBehaviour
     private Dictionary<TactPlayer, Dictionary<EntityType, Queue<Entity>>> weaponPools = new Dictionary<TactPlayer, Dictionary<EntityType, Queue<Entity>>>();
     public List<WeaponDamage> weaponDamages;
     public HashSet<Entity> weapons = new HashSet<Entity>();
-   
 
     private void Awake()
     {
@@ -29,14 +28,12 @@ public class WeaponsMgr : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(mousePos);
             if (!Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, AIMgr.inst.layerMask)) continue;
 
-            // Find the closest entity using a physics overlap sphere
-            Entity targetEntity = FindClosestEntityWithCollider(hit.point, 5f); // 5f is an example radius, adjust as needed
+            Entity targetEntity = FindClosestEntityWithCollider(hit.point, 5f);
 
             if (targetEntity != null && targetEntity.entityClass!= EntityClass.Missile && !targetEntity.isGreyed) handleWeapon(selectedEnt, targetEntity);
         }
     }
 
-    // New method to find the closest entity using colliders
     private Entity FindClosestEntityWithCollider(Vector3 position, float radius)
     {
         Collider[] hitColliders = Physics.OverlapSphere(position, radius);
@@ -45,7 +42,7 @@ public class WeaponsMgr : MonoBehaviour
 
         foreach (var hitCollider in hitColliders)
         {
-            Entity entity = hitCollider.GetComponentInParent<Entity>(); // Or GetComponent<Entity>() if Entity is on the same GameObject as the collider
+            Entity entity = hitCollider.GetComponentInParent<Entity>();
             if (entity != null && !entity.isGreyed)
             {
                 float distanceSqr = (entity.transform.position - position).sqrMagnitude;
@@ -62,20 +59,20 @@ public class WeaponsMgr : MonoBehaviour
     public void handleWeapon(Entity entity, Entity targetEntity)
     {
         if (entity == null) return;
-        
+
         WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
         if (weaponsAspect == null || weaponsAspect.weapon == null) return;
 
-        if (targetEntity != null && targetEntity.owner != entity.owner && 
-            targetEntity.entityClass != EntityClass.Missile && 
-            !targetEntity.isGreyed && 
-            targetEntity.owner != PlayerMgr.inst.neutral && 
+        if (targetEntity != null && targetEntity.owner != entity.owner &&
+            targetEntity.entityClass != EntityClass.Missile &&
+            !targetEntity.isGreyed &&
+            targetEntity.owner != PlayerMgr.inst.neutral &&
             entity.owner != PlayerMgr.inst.neutral)
         {
             LaunchWeapon(entity, weaponsAspect.weapon, targetEntity, targetEntity.transform.position);
         }
     }
-    
+
     private Entity GetWeapon(EntityType weaponType, Vector3 position, Vector3 direction, TactPlayer owner, Entity creatorEntity)
     {
         if (!weaponPools.ContainsKey(owner))
@@ -91,7 +88,6 @@ public class WeaponsMgr : MonoBehaviour
 
         if (ownerPool[weaponType].Count > 0)
         {
-            //Debug.Log("Reusing weapon from pool");
             return ReactivatePooledWeapon(ownerPool[weaponType], position, direction ,creatorEntity);
         }
 
@@ -101,33 +97,30 @@ public class WeaponsMgr : MonoBehaviour
     }
 
     private Entity ReactivatePooledWeapon(Queue<Entity> pool, Vector3 position, Vector3 direction, Entity creatorEntity)
-{
-    var weapon = pool.Dequeue();
-    ResetWeaponPhysics(weapon);
-    weapon.GetComponentInChildren<Oriented3dPhysics>().ResetAltitude();
-    UpdateWeaponTransform(weapon, position, direction);
-    
-    // Add these lines to set altitude correctly
-    var phx3d = weapon.GetComponentInChildren<Oriented3dPhysics>();
-    if (phx3d != null)
     {
-        phx3d.altitude = position.y;         // Match current altitude to launch position
-    }
-    weapon.creatorsEntity = creatorEntity;
-    weapon.gameObject.SetActive(true);
-    UIAspect uiAspect = weapon.GetComponentInChildren<UIAspect>();
-    if (uiAspect != null && uiAspect.minimapIcon != null)
-    {
-        MinimapMgr.inst.CreateMinimapIcon(weapon, uiAspect.minimapIcon);
-    }
-    DistanceMgr.inst.Initialize();
-    return weapon;
+        var weapon = pool.Dequeue();
+        ResetWeaponPhysics(weapon);
+        weapon.GetComponentInChildren<Oriented3dPhysics>().ResetAltitude();
+        UpdateWeaponTransform(weapon, position, direction);
+
+        var phx3d = weapon.GetComponentInChildren<Oriented3dPhysics>();
+        if (phx3d != null)
+        {
+            phx3d.altitude = position.y;
+        }
+        weapon.creatorsEntity = creatorEntity;
+        weapon.gameObject.SetActive(true);
+        UIAspect uiAspect = weapon.GetComponentInChildren<UIAspect>();
+        if (uiAspect != null && uiAspect.minimapIcon != null)
+        {
+            MinimapMgr.inst.CreateMinimapIcon(weapon, uiAspect.minimapIcon);
+        }
+        DistanceMgr.inst.Initialize();
+        return weapon;
     }
 
     private void ResetWeaponPhysics(Entity weapon)
     {
-        
-        
         weapon.health = 100;
         weapon.fuel = weapon.maxFuel;
         weapon.range = weapon.maxRange;
@@ -140,7 +133,6 @@ public class WeaponsMgr : MonoBehaviour
         weapon.transform.position = new Vector3(0,1,0);
         weapon.transform.localEulerAngles = Vector3.zero;
         weapon.GetComponentInChildren<Oriented3dPhysics>().ResetAltitude();
-        
     }
 
     private void ResetWeaponAI(Entity weapon)
@@ -158,7 +150,6 @@ public class WeaponsMgr : MonoBehaviour
         weapon.transform.localEulerAngles = direction;
         weapon.transform.position = position;
         weapon.heading = direction.y;
-        
     }
 
     private void ReturnWeapon(Entity weaponEntity)
@@ -188,7 +179,7 @@ public class WeaponsMgr : MonoBehaviour
     IEnumerator TargetEntity(Entity weapon, WeaponData wd, Entity targetEntity, Vector3 targetPosition)
     {
         yield return new WaitForFixedUpdate();
-        
+
         if (weapon == null || !weapon.gameObject.activeSelf) yield break;
 
         List<Entity> entities = new List<Entity> { weapon };
@@ -217,32 +208,23 @@ public class WeaponsMgr : MonoBehaviour
         float timeSinceLastShot = Time.time - wd.lastShotTime;
         if (timeSinceLastShot < wd.cooldown || wd.ammoCount == 0) return;
 
-        Vector3 launchPos = wd.launchPoint.position; // Define launch position early
+        Vector3 launchPos = wd.launchPoint.position;
         float actualDistanceToTarget;
-
 
         Collider targetCollider = target.GetComponentInChildren<Collider>();
 
         if (targetCollider != null && targetCollider.enabled)
         {
-            // Calculate the closest point on the target's collider to the launch position
             Vector3 closestPointOnTarget = targetCollider.ClosestPoint(launchPos);
             actualDistanceToTarget = Vector3.Distance(launchPos, closestPointOnTarget);
         }
         else
         {
-
             actualDistanceToTarget = Vector3.Distance(launchPos, target.transform.position);
-            // Optionally, log a warning if a precise collider-based distance could not be determined:
-            // if (targetCollider == null)
-            //     //Debug.LogWarning($"Target {target.name} has no Collider. Using transform-based distance for range check.");
-            // else if (!targetCollider.enabled)
-            //     //Debug.LogWarning($"Target {target.name}'s Collider is disabled. Using transform-based distance for range check.");
         }
 
         if (wd.range < actualDistanceToTarget)
         {
-            //Debug.Log($"Target out of range. Weapon Range: {wd.range}, Calculated Distance: {actualDistanceToTarget}");
             return;
         }
 
@@ -250,24 +232,15 @@ public class WeaponsMgr : MonoBehaviour
         {
             wd.ammoCount--;
         }
-        // Note: If ammoCount was 0, the method would have returned from the initial check.
 
-        // Calculate direction to aim the weapon (using targetPosition, which might be an intercept point)
         Vector3 directionToTargetAim = (targetPosition - launchPos).normalized;
         Quaternion targetRotation = Quaternion.LookRotation(directionToTargetAim);
-        Vector3 dir = targetRotation.eulerAngles; // Use rotation angles from target direction
+        Vector3 dir = targetRotation.eulerAngles;
 
         Entity ent = GetWeapon(wd.weaponEntityType, launchPos, dir, launchingEntity.owner, launchingEntity);
         if (ent == null)
         {
-            //Debug.Log("No Weapon entity found or could be created/reused from pool.");
             return;
-        }
-
-        if (!ent.gameObject.activeSelf) // Check if the retrieved/created weapon is active
-        {
-            // This might indicate an issue with pooling or entity creation if it occurs unexpectedly
-            //Debug.LogWarning("Weapon entity is not active immediately after GetWeapon call.");
         }
 
         weapons.Add(ent);
@@ -315,7 +288,6 @@ public class WeaponsMgr : MonoBehaviour
             DistanceMgr.inst.Initialize();
             Destroy(entity.gameObject);
 
-            // Explicitly remove from base lists before updating
             if (entity.entityRole == EntityRole.Base)
             {
                 bool removedOpponent = EnemyAIMgr.inst.OpponentBases.Remove(entity);
@@ -349,7 +321,6 @@ public class WeaponsMgr : MonoBehaviour
             }
             else if (entity.entityClass != EntityClass.Missile)
             {
-                // Check if owner has any combat entities left (non-missile, non-base)
                 TactPlayer owner = entity.owner;
                 if (owner != null)
                 {
@@ -377,46 +348,44 @@ public class WeaponsMgr : MonoBehaviour
                 }
             }
         }
-        catch (System.Exception e)
+        catch (System.Exception)
         {
             string entityName = entity != null ? entity.name : "null";
-            //Debug.LogError($"Error in DestroyEntity for entity: {entityName}. Exception: {e.Message}");
         }
     }
 
-    // Coroutine to call CheckVictory after end of frame
     private IEnumerator DelayedCheckVictory()
     {
         yield return new WaitForEndOfFrame();
         ScoreMgr.inst.CheckVictory();
     }
+
     public class EntityTypes{
         public EntityType entityType;
         public float defaultDamage;
     }
+
     public void StopAllWeapons()
-{
-    foreach (Entity weapon in weapons)
     {
-        if (weapon != null)
+        foreach (Entity weapon in weapons)
         {
-            // Stop movement and AI
-            weapon.StopAllCoroutines();
-            if (weapon.TryGetComponent<UnitAI>(out var unitAI))
+            if (weapon != null)
             {
-                unitAI.StopAndRemoveAllCommands();
-            }
-            
-            // Disable collision handling
-            if (weapon.TryGetComponent<WeaponCollisionHandler>(out var handler))
-            {
-                handler.enabled = false;
+                weapon.StopAllCoroutines();
+                if (weapon.TryGetComponent<UnitAI>(out var unitAI))
+                {
+                    unitAI.StopAndRemoveAllCommands();
+                }
+
+                if (weapon.TryGetComponent<WeaponCollisionHandler>(out var handler))
+                {
+                    handler.enabled = false;
+                }
             }
         }
     }
-}
+
     [Header("Context Menu")]
-    
     public List<EntityTypes> weaponTypes = new List<EntityTypes>();
     public GameObject MovableEntitiesRoot;
     public string fileNameCSV = "WeaponDamageMatrix.csv";
@@ -430,64 +399,53 @@ public class WeaponsMgr : MonoBehaviour
             GameObject aspectRoot = uiAspect.transform.parent.gameObject;
             if (aspectRoot != null && !aspectRoot.transform.parent.name.Contains("DDG"))
             {
-                // Add weapons aspect logic here
             }
         }
     }
-    // Add this method to WeaponsMgr class
-public void DestroyAllWeaponsImmediately(bool includePooled = true)
-{
-    // Destroy active weapons
-    List<Entity> weaponsToDestroy = weapons.ToList();
-    foreach (Entity weapon in weaponsToDestroy)
-    {
-        if (weapon == null) continue;
 
-        // Remove from management systems
-        EntityMgr.inst.entities.Remove(weapon);
-        // weapons.Remove(weapon); // This will be cleared at the end
-        
-        // Clean up components
-        MinimapMgr.inst.RemoveMinimapIcon(weapon);
-        
-        // Stop AI and physics
-        if (weapon.TryGetComponent<UnitAI>(out var unitAI))
-        {
-            unitAI.StopAndRemoveAllCommands();
-        }
-        
-        // Immediate destruction
-        GameObject.Destroy(weapon.gameObject);
-    }
-    weapons.Clear(); // Clear the set after iterating and destroying
-
-    // Destroy pooled weapons if requested
-    if (includePooled)
+    public void DestroyAllWeaponsImmediately(bool includePooled = true)
     {
-        foreach (var playerEntry in weaponPools)
+        List<Entity> weaponsToDestroy = weapons.ToList();
+        foreach (Entity weapon in weaponsToDestroy)
         {
-            foreach (var typePool in playerEntry.Value)
+            if (weapon == null) continue;
+
+            EntityMgr.inst.entities.Remove(weapon);
+            MinimapMgr.inst.RemoveMinimapIcon(weapon);
+
+            if (weapon.TryGetComponent<UnitAI>(out var unitAI))
             {
-                while (typePool.Value.Count > 0)
-                {
-                    Entity pooledWeapon = typePool.Value.Dequeue();
-                    if (pooledWeapon != null && pooledWeapon.gameObject != null)
-                    {
+                unitAI.StopAndRemoveAllCommands();
+            }
 
-                        MinimapMgr.inst.RemoveMinimapIcon(pooledWeapon); 
-                        GameObject.Destroy(pooledWeapon.gameObject);
+            GameObject.Destroy(weapon.gameObject);
+        }
+        weapons.Clear();
+
+        if (includePooled)
+        {
+            foreach (var playerEntry in weaponPools)
+            {
+                foreach (var typePool in playerEntry.Value)
+                {
+                    while (typePool.Value.Count > 0)
+                    {
+                        Entity pooledWeapon = typePool.Value.Dequeue();
+                        if (pooledWeapon != null && pooledWeapon.gameObject != null)
+                        {
+                            MinimapMgr.inst.RemoveMinimapIcon(pooledWeapon);
+                            GameObject.Destroy(pooledWeapon.gameObject);
+                        }
                     }
                 }
-
             }
+            weaponPools.Clear();
         }
-        weaponPools.Clear(); 
+        if (DistanceMgr.inst != null)
+        {
+            DistanceMgr.inst.Initialize();
+        }
     }
-    if (DistanceMgr.inst != null)
-    {
-        DistanceMgr.inst.Initialize();
-    }
-}
 
     [ContextMenu("Damage Matrix to CSV")]
     public void DamageMatrixToCSV()
