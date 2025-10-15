@@ -5,155 +5,152 @@ using UnityEngine;
 
 public class Level2EnemyAI : BaseEnemyAI
 {
-    private bool _level2CommandsStarted = false;
-    private float BatchDelay = 45f;
-    private Vector3 _aiBasePosition;
-    private List<Entity> _batch1 = new List<Entity>();
-    private List<Entity> _batch2 = new List<Entity>();
-    private Coroutine _level2Coroutine;
+    private bool started;
+    private List<Entity> captureGroup = new List<Entity>();
+    private List<Entity> greyedCaptureGroup = new List<Entity>();
+    private List<Entity> greyedAttackers = new List<Entity>();
+    private Coroutine monitorCo;
+    private float monitorInterval = 2f;
+    private int maxCapture = 3;     // send up to 3 JARIUSV
+    private int reinforceCount = 2; // send 2 more when needed
 
     public override void ProcessCombatBehavior(List<Entity> aiEntities)
     {
-        if (opponentBase == null) return;
-        if (aiEntities.Count == 0) return;
+        if (opponentBase == null || aiEntities == null || aiEntities.Count == 0) return;
+        if (started) return; // run once to avoid re-sending spam
+        started = true;
 
-        if (!_level2CommandsStarted && aiBases.Count > 0)
+        captureGroup.Clear();
+        greyedCaptureGroup.Clear();
+        greyedAttackers.Clear();
+
+        var jari = aiEntities.Where(e => e != null && e.entityType == EntityType.JARIUSV).ToList();
+        var attackers = new List<Entity>(aiEntities);
+
+        if (neutralBases != null && neutralBases.Count > 0 && jari.Count > 0)
         {
-            _aiBasePosition = aiBases[0].position;
-            _level2CommandsStarted = true;
+            var take = jari.Take(Mathf.Min(maxCapture, jari.Count)).ToList();
+            captureGroup.AddRange(take);
+            foreach (var c in take) attackers.Remove(c);
 
-            var validTypes = new HashSet<EntityType>
-            {
-                EntityType.DDG51,
-                EntityType.JARIUSV,
-                EntityType.SeaHunter
-            };
-
-            var filteredEntities = aiEntities
-                .Where(e => e != null && validTypes.Contains(e.entityType))
-                .ToList();
-
-            CreateBatches(filteredEntities);
-
-            if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
-            {
-                float diff = GameMgr.inst.difficultyLevel;
-                BatchDelay = Mathf.Lerp(60f, 20f, (diff - 0.33f) / (0.66f - 0.33f));
-            }
-
-            if (_level2Coroutine != null)
-            {
-                EnemyAIMgr.inst.StopCoroutine(_level2Coroutine);
-            }
-
-            _level2Coroutine = EnemyAIMgr.inst.StartCoroutine(RunLevel2CommandSequence());
+            // SEND CAPTURE GROUP NOW
+            var nb = neutralBases[0];
+            IssueAttackMove(captureGroup, nb.transform.position, targetBase: null); // capture
         }
+
+        // SEND ALL REMAINING TO OPPONENT BASE
+        IssueAttackMove(attackers.Where(e => e != null && e.entityType != EntityType.AntiShipMissile).ToList(),
+                        opponentBase.position, opponentBase.GetComponent<Entity>());
+
+        // start monitor for reinforcements and commit if captured/lost
+        if (monitorCo != null) EnemyAIMgr.inst.StopCoroutine(monitorCo);
+        monitorCo = EnemyAIMgr.inst.StartCoroutine(MonitorNeutralAndReinforce());
     }
 
     public override void ResetState()
     {
         base.ResetState();
-        _level2CommandsStarted = false;
-        _aiBasePosition = Vector3.zero;
-
-        _batch1.Clear();
-        _batch2.Clear();
-
-        if (_level2Coroutine != null)
-        {
-            EnemyAIMgr.inst.StopCoroutine(_level2Coroutine);
-            _level2Coroutine = null;
-        }
+        started = false;
+        captureGroup.Clear();
+        greyedCaptureGroup.Clear();
+        greyedAttackers.Clear();
+        if (monitorCo != null) { EnemyAIMgr.inst.StopCoroutine(monitorCo); monitorCo = null; }
     }
 
-    private void CreateBatches(List<Entity> allEntities)
+    private void IssueAttackMove(List<Entity> units, Vector3 pos, Entity targetBase)
     {
-        _batch1.Clear();
-        _batch2.Clear();
+        if (units == null || units.Count == 0) return;
 
-        foreach (EntityType type in new[] { EntityType.DDG51, EntityType.JARIUSV, EntityType.SeaHunter })
+        var activeUnits = units.Where(e => e != null && !e.isGreyed).ToList();
+        var greyedUnits = units.Where(e => e != null && e.isGreyed).ToList();
+
+        if (targetBase == null && neutralBases != null && neutralBases.Count > 0)
         {
-            var entitiesOfType = allEntities.Where(e => e.entityType == type).ToList();
-            int half = Mathf.CeilToInt(entitiesOfType.Count / 2f);
-
-            _batch1.AddRange(entitiesOfType.Take(half));
-            _batch2.AddRange(entitiesOfType.Skip(half));
-        }
-    }
-
-    private IEnumerator RunLevel2CommandSequence()
-    {
-        IssueDirectCommand(_batch1, GetStagingPosition(1000f), true, false);
-        yield return new WaitForSeconds(BatchDelay);
-        IssueDirectCommand(_batch1, opponentBase.position, true);
-        IssueDirectCommand(_batch2, GetStagingPosition(1000f), true, false);
-
-        yield return new WaitForSeconds(BatchDelay * 2);
-        IssueDirectCommand(_batch2, opponentBase.position, true);
-    }
-
-    private Vector3 GetStagingPosition(float position)
-    {
-        if (_aiBasePosition == Vector3.zero)
-        {
-            return new Vector3(position, 0f, position);
-        }
-
-        Vector3 stagingDir = (Vector3.zero - _aiBasePosition).normalized;
-        Vector3 stagingPos = _aiBasePosition + stagingDir * position;
-        return stagingPos;
-    }
-
-    private void IssueDirectCommand(List<Entity> entities, Vector3 position, bool isAttackMove, bool towardOpponentBase = true)
-    {
-        if (entities.Count == 0) return;
-
-        if (isAttackMove)
-        {
-            if (towardOpponentBase && opponentBase != null)
-            {
-                AIMgr.inst.HandleAttackMove(entities, position, opponentBase, false, acquireTarget: true);
-            }
-            else
-            {
-                foreach (Entity entity in entities)
-                {
-                    if (entity == null) continue;
-
-                    float minAbsJitter = 0f;
-                    float maxAbsJitter = 500f;
-
-                    float randomMagnitudeX = Random.Range(minAbsJitter, maxAbsJitter);
-                    float offsetX = (Random.value < 0.5f) ? -randomMagnitudeX : randomMagnitudeX;
-
-                    float randomMagnitudeZ = Random.Range(minAbsJitter, maxAbsJitter);
-                    float offsetZ = (Random.value < 0.5f) ? -randomMagnitudeZ : randomMagnitudeZ;
-
-                    Vector3 jitteredPosition = position + new Vector3(offsetX, 0, offsetZ);
-
-                    AIMgr.inst.HandleAttackMove(new List<Entity> { entity }, jitteredPosition, null, false, acquireTarget: true);
-                }
-            }
+            greyedCaptureGroup.AddRange(greyedUnits);
         }
         else
         {
-            foreach (Entity entity in entities)
+            greyedAttackers.AddRange(greyedUnits);
+        }
+
+        if (activeUnits.Count == 0) return;
+        // attack-move in one call, no jitter
+        AIMgr.inst.HandleAttackMove(activeUnits, pos, targetBase, false, acquireTarget: true);
+    }
+
+    private IEnumerator MonitorNeutralAndReinforce()
+    {
+        if (neutralBases == null || neutralBases.Count == 0) yield break;
+        var nb = neutralBases[0];
+
+        while (true)
+        {
+            yield return new WaitForSeconds(monitorInterval);
+            if (nb == null) yield break;
+
+            // Re-issue commands to un-greyed units
+            var newlyActiveCapture = greyedCaptureGroup.Where(e => e != null && !e.isGreyed).ToList();
+            if (newlyActiveCapture.Count > 0)
             {
-                if (entity == null) continue;
-
-                float minAbsJitter = 0f;
-                float maxAbsJitter = 500f;
-
-                float randomMagnitudeX = Random.Range(minAbsJitter, maxAbsJitter);
-                float offsetX = (Random.value < 0.5f) ? -randomMagnitudeX : randomMagnitudeX;
-
-                float randomMagnitudeZ = Random.Range(minAbsJitter, maxAbsJitter);
-                float offsetZ = (Random.value < 0.5f) ? -randomMagnitudeZ : randomMagnitudeZ;
-
-                Vector3 jitteredPosition = position + new Vector3(offsetX, 0, offsetZ);
-
-                AIMgr.inst.HandleMove(new List<Entity> { entity }, jitteredPosition, false);
+                IssueAttackMove(newlyActiveCapture, nb.transform.position, null);
+                greyedCaptureGroup.RemoveAll(e => newlyActiveCapture.Contains(e));
             }
+
+            var newlyActiveAttackers = greyedAttackers.Where(e => e != null && !e.isGreyed).ToList();
+            if (newlyActiveAttackers.Count > 0)
+            {
+                IssueAttackMove(newlyActiveAttackers, opponentBase.position, opponentBase.GetComponent<Entity>());
+                greyedAttackers.RemoveAll(e => newlyActiveAttackers.Contains(e));
+            }
+
+            // counts near neutral
+            int ours = 0, enemy = 0;
+            float r = 1400f;
+
+            foreach (var e in EntityMgr.inst.entities)
+            {
+                if (e == null || e.transform == null || e.owner == null) continue;
+                if (Vector3.Distance(e.transform.position, nb.transform.position) > r) continue;
+                if (e.entityType == EntityType.AntiShipMissile) continue;
+
+                if (e.owner == PlayerMgr.inst.player1) ours++;
+                else if (e.owner == PlayerMgr.inst.player2) enemy++;
+            }
+
+            // clean captureGroup of destroyed refs
+            captureGroup.RemoveAll(x => x == null);
+
+            // reinforce if wiped or outnumbered
+            if (captureGroup.Count == 0 || enemy > ours)
+            {
+                var candidates = EntityMgr.inst.entities
+                    .Where(e => e != null
+                                && e.owner == PlayerMgr.inst.player1
+                                && e.entityType != EntityType.AntiShipMissile
+                                && !captureGroup.Contains(e))
+                    .OrderBy(e => Vector3.Distance(e.transform.position, nb.transform.position))
+                    .Take(reinforceCount)
+                    .ToList();
+
+                if (candidates.Count > 0)
+                {
+                    captureGroup.AddRange(candidates);
+                    IssueAttackMove(candidates, nb.transform.position, targetBase: null);
+                }
+            }
+
+            // if neutral captured by anyone or clearly lost, commit all to opponent base
+            // if (nb.owner != PlayerMgr.inst.neutral || enemy > ours + 2)
+            // {
+            //     var allUs = EntityMgr.inst.entities
+            //         .Where(e => e != null
+            //                     && e.owner == PlayerMgr.inst.player1
+            //                     && e.entityType != EntityType.AntiShipMissile)
+            //         .ToList();
+
+            //     IssueAttackMove(allUs, opponentBase.position, opponentBase.GetComponent<Entity>());
+            //     yield break;
+            // }
         }
     }
 }

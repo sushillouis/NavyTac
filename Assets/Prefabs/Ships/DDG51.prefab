@@ -55,6 +55,7 @@ MonoBehaviour:
     currentWeaponEntities: []
     defaultDamage: 30
     ammoCount: -1
+  targetStickinessDuration: 2
 --- !u!1 &273685230956845566
 GameObject:
   m_ObjectHideFlags: 0
@@ -238,10 +239,10 @@ MonoBehaviour:
   originalAcceleration: 60
   turnRate: 35
   originalTurnRate: 35
-  maxSpeed: 112
+  maxSpeed: 140
   originalMaxSpeed: 112
   minSpeed: 0
-  cruiseSpeed: 10.3
+  cruiseSpeed: 100
   mass: 1000
   length: 155
   width: 20
@@ -264,6 +265,7 @@ MonoBehaviour:
     isObserver: 0
     isAdmin: 0
   creatorsEntity: {fileID: 0}
+  isAI: 0
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}

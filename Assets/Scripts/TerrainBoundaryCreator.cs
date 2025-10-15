@@ -22,10 +22,10 @@ public class TerrainBoundaryCreator : MonoBehaviour
     [Tooltip("Remove previously generated boundary data (and any child markers) before creating new ones")]
     public bool clearExistingChildren = true;
 
-    [SerializeField, HideInInspector]
+    [SerializeField]
     public List<Vector3> boundaryPositions = new List<Vector3>();
 
-    public IReadOnlyList<Vector3> BoundaryPositions => boundaryPositions;
+    public List<Vector3> BoundaryPositions => boundaryPositions;
 
     [ContextMenu("Create Terrain Boundary (Selected Terrain)")]
     public void CreateBoundary()
@@ -87,6 +87,21 @@ public class TerrainBoundaryCreator : MonoBehaviour
         {
             Debug.LogWarning("No boundary markers created. Check tolerance and spacing settings, and ensure the terrain intersects y = 0.");
         }
+
+#if UNITY_EDITOR
+        if (!EditorApplication.isPlaying)
+        {
+            UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
+        }
+#endif
+    }
+
+    [ContextMenu("Clear Boundary Data")]
+    public void ClearBoundaryData()
+    {
+        boundaryPositions.Clear();
+        ClearChildren();
+        Debug.Log("Cleared all boundary data and child markers.");
 
 #if UNITY_EDITOR
         if (!EditorApplication.isPlaying)
@@ -269,7 +284,7 @@ public class TerrainBoundaryCreator : MonoBehaviour
     {
         if (Mathf.Abs(a) <= heightTolerance || Mathf.Abs(b) <= heightTolerance)
         {
-            return true;
+            return false;
         }
 
         return (a < 0f && b > 0f) || (a > 0f && b < 0f);

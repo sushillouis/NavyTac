@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 [System.Serializable]
@@ -11,6 +12,7 @@ public class Move : Command
     private readonly bool useMaxSpeedMovement;
     private readonly bool isWaypoint;
     protected float pathUpdateCooldown = 0.25f;
+    private float pathUpdateTimer = 0f;
 
     public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false, float doneDistanceSq = 1000f, bool isWaypoint = false) : base(ent)
     {
@@ -28,6 +30,7 @@ public class Move : Command
 
     public override void Init()
     {
+        pathUpdateTimer = 0f; // Ensure path is calculated on first tick
         line = LineMgr.inst.CreateMoveLine(entity.position, movePosition, entity.isAI);
         if (line != null)
         {
@@ -42,14 +45,20 @@ public class Move : Command
 
     public override void Tick()
     {
-        DHDS dhds;
-        if (AIMgr.inst.isPotentialFieldsMovement)
-            dhds = ComputePF2(movePosition);
-        else
-            dhds = ComputeDHDS();
+        pathUpdateTimer -= Time.deltaTime;
 
-        entity.desiredHeading = dhds.dh;
-        entity.desiredSpeed = dhds.ds;
+        if (pathUpdateTimer <= 0f)
+        {
+            pathUpdateTimer = pathUpdateCooldown;
+            DHDS dhds;
+            if (AIMgr.inst.isPotentialFieldsMovement)
+                dhds = ComputePF2(movePosition);
+            else
+                dhds = ComputeDHDS();
+
+            entity.desiredHeading = dhds.dh;
+            entity.desiredSpeed = dhds.ds;
+        }
 
         if (line != null)
         {
@@ -177,9 +186,9 @@ public class Move : Command
 
 void ApplyBoundaryRepulsion()
 {
-        var aimgr = AIMgr.inst;
+    var aimgr = AIMgr.inst;
         if (aimgr == null || aimgr.boundaryPositions == null || aimgr.boundaryPositions.Count == 0) return;
-        Vector3 pos = entity.position;
+    Vector3 pos = entity.position;
 
         int boundaryCount = aimgr.boundaryPositions.Count;
         if (boundaryCount == 0) return;
@@ -188,24 +197,24 @@ void ApplyBoundaryRepulsion()
         int startIndex = Time.frameCount % 5;
 
         for (int i = startIndex; i < boundaryCount; i += 5)
-        {
+    {
             Vector3 boundaryPos = aimgr.boundaryPositions[i];
-            Vector3 dir = pos - boundaryPos;
-            float dist = dir.magnitude;
-            if (dist < 0.001f) dist = 0.001f;
+        Vector3 dir = pos - boundaryPos;
+        float dist = dir.magnitude;
+        if (dist < 0.001f) dist = 0.001f;
 
             if (dist <= aimgr.boundaryRepulsionDistance)
             {
-            Vector3 repDir = dir.normalized;
-            // Use same exponent as entity repulsion for consistency
-            float magnitude = float.MaxValue * aimgr.repulsive2Coefficient * Mathf.Pow(dist, aimgr.repulsiveExponent);
-            magnitude *= aimgr.boundaryRepulsionStrength;
-            // Scale by entity mass so heavier entities respond appropriately
-            magnitude *= entity.mass;
-            repulsivePotential += -repDir * magnitude;
+        Vector3 repDir = dir.normalized;
+        // Use same exponent as entity repulsion for consistency
+        float magnitude = float.MaxValue * aimgr.repulsive2Coefficient * Mathf.Pow(dist, aimgr.repulsiveExponent);
+        magnitude *= aimgr.boundaryRepulsionStrength;
+        // Scale by entity mass so heavier entities respond appropriately
+        magnitude *= entity.mass;
+        repulsivePotential += -repDir * magnitude;
             }
-        }
     }
+}
 
     public float doneDistanceSq = 100f;
 
@@ -239,38 +248,33 @@ void ApplyBoundaryRepulsion()
         line = null;
         potentialLine = null;
     }
-    void ApplyObstacleRepulsion()
+  void ApplyObstacleRepulsion()
+{
+    var aimgr = AIMgr.inst;
+    Vector3 entityPos = entity.position;
+    int obstacleLayerMask = LayerMask.GetMask("Terrain");
+    float rayLength = 500f;
+    const int numRays = 36;
+    const float angleStep = 360f / numRays;
+
+    for (int i = 0; i < numRays; i++)
     {
-        var aimgr = AIMgr.inst;
-        Vector3 entityPos = entity.position;
-        int obstacleLayerMask = LayerMask.GetMask("Terrain");
-        float rayLength = 500f;
-        const int numRays = 36;
-        const float angleSpread = 10f;
+        float currentAngle = i * angleStep;
+        Vector3 rayDirection = Quaternion.Euler(0, currentAngle, 0) * Vector3.forward;
 
-        float angleStep = angleSpread / (numRays > 1 ? numRays - 1 : 1);
-        float startAngle = -angleSpread / 2f;
-
-        Vector3 entityForward = entity.transform.forward;
-
-        for (int i = 0; i < numRays; i++)
+        if (Physics.Raycast(entityPos, rayDirection, out RaycastHit hit, rayLength, obstacleLayerMask))
         {
-            float currentAngle = startAngle + i * angleStep;
-            Vector3 rayDirection = Quaternion.Euler(0, currentAngle, 0) * entityForward;
+            if (hit.point.y <= 0) continue;
 
-            if (Physics.Raycast(entityPos, rayDirection, out RaycastHit hit, rayLength, obstacleLayerMask))
+            float distance = hit.distance;
+            if (distance > 0.01f)
             {
-                if (hit.point.y <= 0) continue;
-
-                float distance = hit.distance;
-                if (distance > 0.01f)
-                {
-                    Vector3 repulsionDirection = hit.normal;
-                    float terrainWeight = float.MaxValue;
-                    float magnitude = aimgr.repulsive2Coefficient * Mathf.Pow(distance, aimgr.repulsiveExponent) * terrainWeight;
-                    repulsivePotential += -repulsionDirection * magnitude;
-                }
+                Vector3 repulsionDirection = hit.normal;
+                 // Adjust this value as needed
+                float magnitude = aimgr.repulsive2Coefficient * Mathf.Pow(distance, aimgr.repulsiveExponent) * float.MaxValue;
+                repulsivePotential += -repulsionDirection * magnitude;
             }
         }
     }
+}
 }

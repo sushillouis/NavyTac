@@ -63,14 +63,14 @@ MonoBehaviour:
   range: 0
   fuelBurnRate: 0
   entityRole: 5
-  acceleration: 70
+  acceleration: 234.53448
   originalAcceleration: 70
-  turnRate: 50
+  turnRate: 62.0456
   originalTurnRate: 50
-  maxSpeed: 130
+  maxSpeed: 216.58
   originalMaxSpeed: 130
   minSpeed: 0
-  cruiseSpeed: 12
+  cruiseSpeed: 162
   mass: 1000
   length: 38
   width: 13.5
@@ -93,6 +93,7 @@ MonoBehaviour:
     isObserver: 0
     isAdmin: 0
   creatorsEntity: {fileID: 0}
+  isAI: 0
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}
@@ -300,7 +301,7 @@ Transform:
   m_GameObject: {fileID: 3992639200228740271}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -6.333334}
+  m_LocalPosition: {x: 0, y: 0, z: -31.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -470,7 +471,7 @@ Transform:
   m_GameObject: {fileID: 5354825164900326195}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 6.333333}
+  m_LocalPosition: {x: 0, y: 0, z: 26.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -986,6 +987,7 @@ MonoBehaviour:
     currentWeaponEntities: []
     defaultDamage: 20
     ammoCount: -1
+  targetStickinessDuration: 2
 --- !u!1 &8894906114254922421
 GameObject:
   m_ObjectHideFlags: 0
