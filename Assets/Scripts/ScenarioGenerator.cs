@@ -298,34 +298,8 @@ public class ScenarioGenerator : MonoBehaviour
         {
             var prefab = prefabGo.GetComponent<Entity>();
             if (prefab == null || prefab.entityType == EntityType.Rig_Balder) continue;
-
-            // SetAccelerationAndTurnRate(prefab, baseFactor);
         }
     }
-
-    // private void SetAccelerationAndTurnRate(Entity entity, float speedFactor)
-    // {
-    //     // entity.maxSpeed = entity.originalMaxSpeed * speedFactor;
-    //     float stopDistance = 100f;
-    //     if (entity.maxSpeed > 0.01f)
-    //     {
-    //         entity.acceleration = (entity.maxSpeed * entity.maxSpeed) / (2f * stopDistance);
-    //         if (entity.entityType == EntityType.AntiShipMissile)
-    //         {
-    //             //  entity.turnRate = entity.originalTurnRate;
-    //         }
-    //         else
-    //         {
-    //             entity.turnRate = Mathf.Rad2Deg * (entity.acceleration / entity.maxSpeed);
-    //         }
-    //     }
-    //     else
-    //     {
-    //         entity.acceleration = 0f;
-    //         entity.turnRate = 0f;
-    //     }
-    // }
-
     #endregion
 
     #region Spawning
