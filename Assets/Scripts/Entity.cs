@@ -31,11 +31,8 @@ public class Entity : MonoBehaviour
     // values that do not change
     //------------------------------
     public float acceleration;
-    public float originalAcceleration; // Used to reset acceleration after boost
     public float turnRate;
-    public float originalTurnRate; // Used to reset turn rate after boost
     public float maxSpeed;
-    public float originalMaxSpeed; // Used to reset max speed after boost
     public float minSpeed;
     public float cruiseSpeed;
     public float mass;
@@ -47,8 +44,6 @@ public class Entity : MonoBehaviour
     public bool isVisible = true;
     public float maxFuel;
     public float maxRange;
-    public float entityCollisionRadius = 1.0f; // Added entity collision radius
-
     public EntityType entityType;
     public EntityClass entityClass;
 
@@ -80,16 +75,8 @@ public class Entity : MonoBehaviour
 
     void InitializeEntityValues()
     {
-        entityCollisionRadius = length;
         fuel = maxFuel;
         health = maxHealth;
-
-        if (entityType != EntityType.AntiShipMissile && entityType != EntityType.Rig_Balder)
-        {
-            acceleration = maxSpeed * maxSpeed / 100f;
-            turnRate = (180f / Mathf.PI) * (maxSpeed / acceleration);
-        }
-
         isSelected = false;
     }
     public void SetEntityColors()
@@ -174,11 +161,6 @@ public class Entity : MonoBehaviour
         range = Mathf.Clamp(fuel * cruiseSpeed, 0, maxRange);
     }
 
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, entityCollisionRadius);
-    }
     
 }
 

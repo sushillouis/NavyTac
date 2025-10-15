@@ -473,15 +473,12 @@ MonoBehaviour:
   range: 0
   fuelBurnRate: 0
   entityRole: 5
-  acceleration: 333.4137
-  originalAcceleration: 80
-  turnRate: 73.97745
-  originalTurnRate: 100
-  maxSpeed: 258.23
-  originalMaxSpeed: 155
+  acceleration: 5
+  turnRate: 20
+  maxSpeed: 20
   minSpeed: 0
-  cruiseSpeed: 194
-  mass: 1000
+  cruiseSpeed: 15
+  mass: 250
   length: 15
   width: 5
   height: 7
@@ -490,7 +487,6 @@ MonoBehaviour:
   isVisible: 1
   maxFuel: 0
   maxRange: 0
-  entityCollisionRadius: 1
   entityType: 9
   entityClass: 5
   cameraRig: {fileID: 6667547634042605354}

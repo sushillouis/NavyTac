@@ -4,6 +4,7 @@ using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
 using Unity.Burst;
+using Unity.Mathematics;
 using System.Linq; // Added for ToList()
 
 [Serializable]
@@ -269,6 +270,41 @@ public struct SubPotentialJobOutput
 }
 
 [BurstCompile]
+public struct BoundaryRepulsionJob : IJobParallelFor
+{
+    [ReadOnly] public NativeArray<Vector3> EntityPositions;
+    [ReadOnly] public NativeArray<Vector3> BoundaryPositions;
+    [ReadOnly] public float RepulsiveCoefficient;
+    [ReadOnly] public float RepulsiveExponent;
+    [ReadOnly] public float BoundaryStrength;
+    [ReadOnly] public float MaxDistance;
+    [WriteOnly] public NativeArray<Vector3> RepulsionOutputs;
+
+    public void Execute(int index)
+    {
+        Vector3 entityPos = EntityPositions[index];
+        entityPos.y = 0f; // Evaluate repulsion on the horizontal plane only
+        Vector3 accumulatedRepulsion = Vector3.zero;
+
+        for (int i = 0; i < BoundaryPositions.Length; i++)
+        {
+            Vector3 boundaryPos = BoundaryPositions[i];
+            boundaryPos.y = 0f;
+            Vector3 diff = boundaryPos - entityPos; // Point from entity toward boundary
+            float dist = diff.magnitude;
+            if (dist <= 0.0001f || dist > MaxDistance) continue;
+
+            Vector3 repDir = diff / dist;
+            float safeDist = math.max(dist, 0.001f);
+            float magnitude = RepulsiveCoefficient * BoundaryStrength * math.pow(safeDist, RepulsiveExponent);
+            accumulatedRepulsion += repDir * magnitude;
+        }
+
+        RepulsionOutputs[index] = accumulatedRepulsion;
+    }
+}
+
+[BurstCompile]
 public struct ProcessPotentialsJob : IJobParallelFor
 {
     [ReadOnly] public NativeArray<PotentialPairJobInput> PotentialPairInputs;
@@ -380,6 +416,7 @@ public class DistanceMgr : MonoBehaviour
     private float _interactionRangeSqr;
 
     public int maxPairsToProcessPerFrame = 50; // Tune this to balance workload per frame
+    [Range(0f, 1f)] public float boundaryRepulsionSmoothing = 0.25f;
 
     // Main thread lists to hold task data and references for mapping job results back
     private readonly List<PotentialCalculationTaskData> _mainThreadTaskDataList = new();
@@ -388,6 +425,10 @@ public class DistanceMgr : MonoBehaviour
     // Temporary lists for populating NativeArrays
     private readonly List<PotentialPairJobInput> _tempPotentialPairJobInputs = new();
     private readonly List<SubPotentialJobInput> _tempAllSubPotentialJobInputs = new();
+    private readonly List<Entity> _boundaryJobEntities = new();
+    private readonly List<Entity> _boundaryJobValidEntities = new();
+    private readonly Dictionary<int, Vector3> _entityBoundaryRepulsions = new();
+    private readonly Dictionary<int, Vector3> _previousBoundaryRepulsions = new();
     
     public List<Potential> selectedEntityPotentials; // For UI or other systems needing potentials for a selected entity
 
@@ -399,6 +440,9 @@ public class DistanceMgr : MonoBehaviour
         _interactionRangeSqr = interactionRange * interactionRange;
         
         selectedEntityPotentials = new List<Potential>(); // Initialize the list
+        _entityBoundaryRepulsions.Clear();
+        _boundaryJobEntities.Clear();
+        _previousBoundaryRepulsions.Clear();
 
         isInitialized = true;
         // No longer pre-calculating all potentials
@@ -415,6 +459,9 @@ public class DistanceMgr : MonoBehaviour
         if (_activePotentials != null) _activePotentials.Clear();
         if (_activePotentialKeysToProcess != null) _activePotentialKeysToProcess.Clear();
         if (selectedEntityPotentials != null) selectedEntityPotentials.Clear();
+        _boundaryJobEntities.Clear();
+        _entityBoundaryRepulsions.Clear();
+        _previousBoundaryRepulsions.Clear();
     }
     
     void Update()
@@ -433,6 +480,7 @@ public class DistanceMgr : MonoBehaviour
         {
             UpdateSpatialGridAndActivePotentials();
             ProcessActivePotentialsWithJob();
+            ComputeBoundaryRepulsions();
             UpdateSelectedEntityPotentials(); // Update after job processing
         }
     }
@@ -454,7 +502,9 @@ public class DistanceMgr : MonoBehaviour
     {
         if (EntityMgr.inst == null || EntityMgr.inst.entities == null) return;
 
-        var relevantEntities = EntityMgr.inst.entities.FindAll(e => e != null && e.entityClass != EntityClass.Missile && e.isActiveAndEnabled);
+    var relevantEntities = EntityMgr.inst.entities.FindAll(e => e != null && e.entityClass != EntityClass.Missile && e.isActiveAndEnabled);
+    _boundaryJobEntities.Clear();
+    _boundaryJobEntities.AddRange(relevantEntities);
 
         _spatialGrid.Clear();
         foreach (Entity entity in relevantEntities)
@@ -794,6 +844,90 @@ public class DistanceMgr : MonoBehaviour
         allSubPotentialOutputsNat.Dispose();
     }
 
+    void ComputeBoundaryRepulsions()
+    {
+        var aimgr = AIMgr.inst;
+        if (aimgr == null || aimgr.boundaryPositions == null || aimgr.boundaryPositions.Count == 0 || aimgr.boundaryRepulsionDistance <= 0f)
+        {
+            _entityBoundaryRepulsions.Clear();
+            return;
+        }
+
+        if (_boundaryJobEntities.Count == 0)
+        {
+            _entityBoundaryRepulsions.Clear();
+            return;
+        }
+
+        _boundaryJobValidEntities.Clear();
+        var validEntities = _boundaryJobValidEntities;
+        for (int i = 0; i < _boundaryJobEntities.Count; i++)
+        {
+            Entity ent = _boundaryJobEntities[i];
+            if (ent == null || !ent.isActiveAndEnabled) continue;
+            validEntities.Add(ent);
+        }
+
+        if (validEntities.Count == 0)
+        {
+            _entityBoundaryRepulsions.Clear();
+            return;
+        }
+
+        NativeArray<Vector3> entityPositionsNat = new(validEntities.Count, Allocator.TempJob);
+        NativeArray<Vector3> boundaryPositionsNat = new(aimgr.boundaryPositions.Count, Allocator.TempJob);
+        NativeArray<Vector3> repulsionOutputsNat = new(validEntities.Count, Allocator.TempJob);
+
+        _previousBoundaryRepulsions.Clear();
+        foreach (var kvp in _entityBoundaryRepulsions)
+        {
+            _previousBoundaryRepulsions[kvp.Key] = kvp.Value;
+        }
+
+        for (int i = 0; i < validEntities.Count; i++)
+        {
+            entityPositionsNat[i] = validEntities[i].position;
+        }
+
+        for (int i = 0; i < aimgr.boundaryPositions.Count; i++)
+        {
+            Vector3 pos = aimgr.boundaryPositions[i];
+            pos.y = 0f; // enforce XZ plane repulsion
+            boundaryPositionsNat[i] = pos;
+        }
+
+        var job = new BoundaryRepulsionJob
+        {
+            EntityPositions = entityPositionsNat,
+            BoundaryPositions = boundaryPositionsNat,
+            RepulsiveCoefficient = aimgr.repulsive2Coefficient,
+            RepulsiveExponent = aimgr.repulsiveExponent,
+            BoundaryStrength = math.max(aimgr.boundaryRepulsionStrength, 0.0001f),
+            MaxDistance = aimgr.boundaryRepulsionDistance,
+            RepulsionOutputs = repulsionOutputsNat
+        };
+
+        JobHandle handle = job.Schedule(validEntities.Count, 32);
+        handle.Complete();
+
+        _entityBoundaryRepulsions.Clear();
+        float smoothing = Mathf.Clamp01(boundaryRepulsionSmoothing);
+        for (int i = 0; i < validEntities.Count; i++)
+        {
+            int id = validEntities[i].GetInstanceID();
+            Vector3 current = repulsionOutputsNat[i];
+            if (smoothing > 0f && _previousBoundaryRepulsions.TryGetValue(id, out var previous))
+            {
+                current = Vector3.Lerp(previous, current, smoothing);
+            }
+            _entityBoundaryRepulsions[id] = current;
+        }
+
+        entityPositionsNat.Dispose();
+        boundaryPositionsNat.Dispose();
+        repulsionOutputsNat.Dispose();
+    }
+
     void UpdateSelectedEntityPotentials()
     {
         if (SelectionMgr.inst != null && SelectionMgr.inst.selectedEntity != null)
@@ -818,6 +952,12 @@ public class DistanceMgr : MonoBehaviour
         {
             selectedEntityPotentials.Clear();
         }
+    }
+
+    public Vector3 GetBoundaryRepulsion(Entity entity)
+    {
+        if (entity == null) return Vector3.zero;
+        return _entityBoundaryRepulsions.TryGetValue(entity.GetInstanceID(), out var repulsion) ? repulsion : Vector3.zero;
     }
     
     public Potential ComputeEntityPotential(Entity ownshipParam, Entity targetParam) {

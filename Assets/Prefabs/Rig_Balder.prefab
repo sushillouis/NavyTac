@@ -712,11 +712,8 @@ MonoBehaviour:
   fuelBurnRate: 0
   entityRole: 13
   acceleration: 0
-  originalAcceleration: 0
   turnRate: 0
-  originalTurnRate: 0
   maxSpeed: 0
-  originalMaxSpeed: 0
   minSpeed: 0
   cruiseSpeed: 0
   mass: 1000
@@ -728,7 +725,6 @@ MonoBehaviour:
   isVisible: 1
   maxFuel: 0
   maxRange: 0
-  entityCollisionRadius: 1
   entityType: 16
   entityClass: 0
   cameraRig: {fileID: 6619095571109785082}
@@ -741,6 +737,7 @@ MonoBehaviour:
     isObserver: 0
     isAdmin: 0
   creatorsEntity: {fileID: 0}
+  isAI: 0
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}
