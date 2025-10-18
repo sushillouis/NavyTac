@@ -15,6 +15,11 @@ public class CaptureNeutralBaseMgr : MonoBehaviour
     private float captureProgress = 0f; // Initial neutral state (halfway between enemy and player)
 
     private bool isCaptured = false;
+    public static CaptureNeutralBaseMgr inst;
+    private void Awake()
+    {
+        inst = this;
+    }
 
     void Update()
     {
@@ -60,42 +65,39 @@ public class CaptureNeutralBaseMgr : MonoBehaviour
             float distance = Vector3.Distance(entity.transform.position, neutralBase.transform.position);
             if (distance <= 1400f)
             {
-            if (entity.owner == PlayerMgr.inst.player1 && entity.entityType != EntityType.AntiShipMissile)
-            {
-                playerEntitiesInRange++;
-            }
-            else if (entity.owner == PlayerMgr.inst.player2 && entity.entityType != EntityType.AntiShipMissile)
-            {
-                enemyEntitiesInRange++;
-            }
+                if (entity.owner == PlayerMgr.inst.player1 && entity.entityType != EntityType.AntiShipMissile)
+                {
+                    playerEntitiesInRange++;
+                }
+                else if (entity.owner == PlayerMgr.inst.player2 && entity.entityType != EntityType.AntiShipMissile)
+                {
+                    enemyEntitiesInRange++;
+                }
             }
         }
 
         float captureRate = Time.deltaTime * (maxWidth / 60f); // Base capture rate for one entity in 60 seconds
 
-        if (playerEntitiesInRange > 0 && enemyEntitiesInRange == 0)
-        {
-            captureProgressPlayer += captureRate * playerEntitiesInRange;
-        }
-        else if (enemyEntitiesInRange > 0 && playerEntitiesInRange == 0)
-        {
-            captureProgressEnemy += captureRate * enemyEntitiesInRange;
-        }
-        else if (playerEntitiesInRange > 0 && enemyEntitiesInRange > 0)
+        if (playerEntitiesInRange > enemyEntitiesInRange)
         {
             int netEntities = playerEntitiesInRange - enemyEntitiesInRange;
-            if (netEntities > 0)
-            {
-                captureProgressPlayer += captureRate * netEntities;
-            }
-            else if (netEntities < 0)
-            {
-                captureProgressEnemy += captureRate * Mathf.Abs(netEntities);
-            }
+            captureProgressPlayer += captureRate * netEntities;
+            captureProgressEnemy -= captureRate * netEntities;
         }
+        else if (enemyEntitiesInRange > playerEntitiesInRange)
+        {
+            int netEntities = enemyEntitiesInRange - playerEntitiesInRange;
+            captureProgressEnemy += captureRate * netEntities;
+            captureProgressPlayer -= captureRate * netEntities;
+        }
+        // If equal, do nothing (no progress for either side)
+
+        // Clamp to prevent negative progress
+        captureProgressPlayer = Mathf.Clamp(captureProgressPlayer, 0f, maxWidth);
+        captureProgressEnemy = Mathf.Clamp(captureProgressEnemy, 0f, maxWidth);
     }
 
-    private bool CheckCaptureCompletion()
+    public bool CheckCaptureCompletion()
     {
         if (captureProgressEnemy >= maxWidth || captureProgressPlayer >= maxWidth)
         {
@@ -108,6 +110,23 @@ public class CaptureNeutralBaseMgr : MonoBehaviour
             {
                 ChangeOwnership(PlayerMgr.inst.player1);
             }
+
+            // Set isNeutral to false for all neutral entities
+            foreach (Entity entity in EnemyAIMgr.inst.neutralBases)
+            {
+                if (entity != null)
+                {
+                    entity.isNeutral = false;
+                }
+            }
+            foreach (Entity entity in EnemyAIMgr.inst.neutralEntitiesList)
+            {
+                if (entity != null)
+                {
+                    entity.isNeutral = false;
+                }
+            }
+
             return true;
         }
         return false;

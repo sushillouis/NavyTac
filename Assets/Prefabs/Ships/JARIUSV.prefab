@@ -473,11 +473,11 @@ MonoBehaviour:
   range: 0
   fuelBurnRate: 0
   entityRole: 5
-  acceleration: 5
-  turnRate: 20
-  maxSpeed: 20
+  acceleration: 110
+  turnRate: 120
+  maxSpeed: 200
   minSpeed: 0
-  cruiseSpeed: 15
+  cruiseSpeed: 150
   mass: 250
   length: 15
   width: 5
@@ -500,6 +500,10 @@ MonoBehaviour:
     isAdmin: 0
   creatorsEntity: {fileID: 0}
   isAI: 0
+  isAttacking: 0
+  isBeingAttacked: 0
+  attackingTarget: {fileID: 0}
+  beingAttackedBy: {fileID: 0}
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}

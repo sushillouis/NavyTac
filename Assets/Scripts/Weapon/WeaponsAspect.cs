@@ -59,10 +59,37 @@ public class WeaponsAspect : MonoBehaviour
         if (Time.time - weapon.lastShotTime < weapon.cooldown || isAmmoDepleted)
             return;
         Entity target = FindImmediateThreatInRange();
-        if (target != null)
+        if (target != null && entity.isNeutral == false)
         {
             //Debug.Log("Target found: " + target.name);
+            entity.isAttacking = true;
+            entity.attackingTarget = target;
+            // If the current attacker is changing, release the previous target
+            if (entity.attackingTarget != null && entity.attackingTarget != target && entity.isNeutral == false)
+            {
+                if (entity.attackingTarget.beingAttackedBy == entity)
+                {
+                    entity.attackingTarget.isBeingAttacked = false;
+                    entity.attackingTarget.beingAttackedBy = null;
+                }
+            }
+
+            target.beingAttackedBy = entity;
+            target.isBeingAttacked = true;
             WeaponsMgr.inst.handleWeapon(entity, target);
+        }
+        else
+        {
+            if (entity.attackingTarget != null)
+            {
+                if (entity.attackingTarget.beingAttackedBy == entity)
+                {
+                    entity.attackingTarget.isBeingAttacked = false;
+                    entity.attackingTarget.beingAttackedBy = null;
+                }
+            }
+            entity.isAttacking = false;
+            entity.attackingTarget = null;
         }
     }
 

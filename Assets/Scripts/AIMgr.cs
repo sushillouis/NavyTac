@@ -14,13 +14,15 @@ public struct TactCommandStruct: INetworkSerializable, IEquatable<TactCommandStr
     public int targetEntityId;
     public Vector3 targetOrOffsetPosition;
     public bool add;
+    public bool useLowestCruiseSpeed;
 
     public bool Equals(TactCommandStruct other) {
         return (commandType == other.commandType
             && IntArrayEqual(entityIds, other.entityIds)
             && targetEntityId == other.targetEntityId
             && targetOrOffsetPosition == other.targetOrOffsetPosition
-            && add == other.add);
+            && add == other.add
+            && useLowestCruiseSpeed == other.useLowestCruiseSpeed);
     }
 
     public bool IntArrayEqual(int[] a, int[] b) {
@@ -53,6 +55,7 @@ public struct TactCommandStruct: INetworkSerializable, IEquatable<TactCommandStr
         serializer.SerializeValue(ref targetEntityId);
         serializer.SerializeValue(ref targetOrOffsetPosition);
         serializer.SerializeValue(ref add);
+        serializer.SerializeValue(ref useLowestCruiseSpeed);
     }
 
     public override string ToString() {
@@ -62,7 +65,7 @@ public struct TactCommandStruct: INetworkSerializable, IEquatable<TactCommandStr
             sb.Append(entityIds[i].ToString() + ", ");
         }
         sb.Append("]");
-        return $"Eid: {sb.ToString()}, Cmd: {commandType}, TGT: {targetEntityId}, Pos: {targetOrOffsetPosition}, Add?: {add}";
+        return $"Eid: {sb.ToString()}, Cmd: {commandType}, TGT: {targetEntityId}, Pos: {targetOrOffsetPosition}, Add?: {add}, UseLowestCruiseSpeed?: {useLowestCruiseSpeed}";
     }
 }
 
@@ -259,29 +262,43 @@ public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, boo
             if (ent == null)
             {
                 if (attackMove)
-                    HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, null, add);
+                    HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, null, add, useLowestCruiseSpeed: true);
                 else
-                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
+                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add, useLowestCruiseSpeed: true);
             }
             else
             {
                 if (attackMove)
-                    HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, ent, add);
+                    HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, ent, add, useLowestCruiseSpeed: true);
                 else
-                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add);
+                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add, useLowestCruiseSpeed: true);
             }
         }
     }
 }
 
     // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
-    //                   bool isLocalCommand = true, bool maxSpeedMovement = false , bool useFormation = false, FormationType formationType = FormationType.Circle)
+    //                   bool isLocalCommand = true, bool maxSpeedMovement = false, bool useFormation = false, FormationType formationType = FormationType.Circle)
     // Constructor for position-based attack-move
-public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, bool acquireTarget = false, float doneDistanceSq = 0f)
+public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, bool acquireTarget = false, float doneDistanceSq = 0f, bool useLowestCruiseSpeed = false)
 {
     if (isLocalCommand)
     {
-        NetTellAllClients(TactCommandTypes.AttackMove, entities, point, target, add);
+        NetTellAllClients(TactCommandTypes.AttackMove, entities, point, target, add, useLowestCruiseSpeed);
+    }
+
+    float groupSpeed = -1f;
+    if (useLowestCruiseSpeed && entities.Count > 1)
+    {
+        float lowestCruiseSpeed = float.MaxValue;
+        foreach (Entity entity in entities)
+        {
+            if (entity.maxSpeed < lowestCruiseSpeed)
+            {
+                lowestCruiseSpeed = entity.maxSpeed;
+            }
+        }
+        groupSpeed = lowestCruiseSpeed;
     }
 
     foreach (Entity entity in entities)
@@ -313,8 +330,8 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
                             : 100f * 100f;
 
                         AttackMove am = isLastWaypoint && target != null
-                            ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq)
-                            : new AttackMove(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, !isLastWaypoint);
+                            ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq, groupSpeed: groupSpeed)
+                            : new AttackMove(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, !isLastWaypoint, groupSpeed: groupSpeed);
                         
                         uai.AddCommand(am);
                     }
@@ -323,19 +340,19 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
             else
             {
                 // Fallback to direct attack-move if pathfinding fails
-                HandleDirectAttackMove(entity, point, target, add, maxSpeedMovement, acquireTarget, doneDistanceSq, entities.Count);
+                HandleDirectAttackMove(entity, point, target, add, maxSpeedMovement, acquireTarget, doneDistanceSq, entities.Count, groupSpeed);
             }
         });
     }
 }
 
-private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target, bool add, bool maxSpeedMovement, bool acquireTarget, float doneDistanceSq, int entitiesCount)
+private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target, bool add, bool maxSpeedMovement, bool acquireTarget, float doneDistanceSq, int entitiesCount, float groupSpeed = -1f)
 {
     float currentDoneDistanceSq = GetAttackMoveDoneDistanceSq(entity, target, entitiesCount, doneDistanceSq);
 
     AttackMove am = target != null
-        ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq)
-        : new AttackMove(entity, point, maxSpeedMovement, currentDoneDistanceSq);
+        ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq, groupSpeed: groupSpeed)
+        : new AttackMove(entity, point, maxSpeedMovement, currentDoneDistanceSq, groupSpeed: groupSpeed);
 
     UnitAI uai = entity.GetComponentInChildren<UnitAI>();
     if (uai != null)
@@ -369,12 +386,27 @@ private float GetAttackMoveDoneDistanceSq(Entity entity, Entity target, int enti
     }
 }
     public void HandleMove(List<Entity> entities, Vector3 point,
-                      bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, float doneDistanceSq = 0f)
+                      bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, float doneDistanceSq = 0f, bool useLowestCruiseSpeed = false)
     {
         if (isLocalCommand)
         {
-            NetTellAllClients(TactCommandTypes.Move, entities, point, null, add);
+            NetTellAllClients(TactCommandTypes.Move, entities, point, null, add, useLowestCruiseSpeed);
         }
+
+        float groupSpeed = -1f;
+        if (useLowestCruiseSpeed && entities.Count > 1)
+        {
+            float lowestCruiseSpeed = float.MaxValue;
+            foreach (Entity entity in entities)
+            {
+                if (entity.maxSpeed < lowestCruiseSpeed)
+                {
+                    lowestCruiseSpeed = entity.maxSpeed;
+                }
+            }
+            groupSpeed = lowestCruiseSpeed;
+        }
+
         foreach (Entity entity in entities)
         {
             if(entity.isGreyed)
@@ -436,7 +468,7 @@ private float GetAttackMoveDoneDistanceSq(Entity entity, Entity target, int enti
                                 }
                             }
                             
-                            Move m = new Move(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, i < waypoints.Length - 1);
+                            Move m = new Move(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, i < waypoints.Length - 1, groupSpeed);
                             uai.AddCommand(m);
                         }
                     }
@@ -444,14 +476,14 @@ private float GetAttackMoveDoneDistanceSq(Entity entity, Entity target, int enti
                 else
                 {
                     // Fallback to direct move if pathfinding fails
-                    HandleDirectMove(entity, point, add, maxSpeedMovement, doneDistanceSq, entities.Count);
+                    HandleDirectMove(entity, point, add, maxSpeedMovement, doneDistanceSq, entities.Count, groupSpeed);
                 }
             });
         }
     }
 
     // Extracted original move logic into a separate method for fallback
-    private void HandleDirectMove(Entity entity, Vector3 point, bool add, bool maxSpeedMovement, float doneDistanceSq, int entitiesCount)
+    private void HandleDirectMove(Entity entity, Vector3 point, bool add, bool maxSpeedMovement, float doneDistanceSq, int entitiesCount, float groupSpeed = -1f)
     {
         float currentDoneDistanceSq;
         if (entitiesCount == 1)
@@ -483,7 +515,7 @@ private float GetAttackMoveDoneDistanceSq(Entity entity, Entity target, int enti
             currentDoneDistanceSq = StoppingDistanceSq(entity.entityType);
         }
 
-        Move m = new Move(entity, point, maxSpeedMovement, currentDoneDistanceSq);
+        Move m = new Move(entity, point, maxSpeedMovement, currentDoneDistanceSq, groupSpeed: groupSpeed);
         UnitAI uai = entity.GetComponentInChildren<UnitAI>();
         if (uai != null)
         {
@@ -579,19 +611,20 @@ private float GetAttackMoveDoneDistanceSq(Entity entity, Entity target, int enti
     }
 
     //Networking -----------------------------------------------------------------
-    void NetTellAllClients(TactCommandTypes cmdType, List<Entity> entities, Vector3 pos, Entity target, bool add) {
+    void NetTellAllClients(TactCommandTypes cmdType, List<Entity> entities, Vector3 pos, Entity target, bool add, bool useLowestCruiseSpeed = false) {
         if(!OpenOceanMain.inst.isSinglePlayer) {
-            TactCommandStruct netCommand = MakeNetCommandStruct(cmdType, entities, pos, target, add);
+            TactCommandStruct netCommand = MakeNetCommandStruct(cmdType, entities, pos, target, add, useLowestCruiseSpeed);
             OpenOceanMain.inst.localTactNetMgr.CommandUpdateServerRpc(netCommand);
         }
     }
     
 
-    TactCommandStruct MakeNetCommandStruct(TactCommandTypes cmdType, List<Entity> entities, Vector3 pos, Entity target, bool add) {
+    TactCommandStruct MakeNetCommandStruct(TactCommandTypes cmdType, List<Entity> entities, Vector3 pos, Entity target, bool add, bool useLowestCruiseSpeed = false) {
         TactCommandStruct netCommand = new TactCommandStruct();
 
         netCommand.commandType = cmdType;
         netCommand.add = add;
+        netCommand.useLowestCruiseSpeed = useLowestCruiseSpeed;
         if(target != null)
             netCommand.targetEntityId = target.entityId;
         netCommand.targetOrOffsetPosition = pos;
@@ -622,7 +655,11 @@ private float GetAttackMoveDoneDistanceSq(Entity entity, Entity target, int enti
         switch(command.commandType) {
             case TactCommandTypes.Move:
                 ////Debug.Log("NetCmd: MoveTo pos:" + command.targetOrOffsetPosition);
-                HandleMove(entities, command.targetOrOffsetPosition, command.add, false);
+                HandleMove(entities, command.targetOrOffsetPosition, command.add, false, useLowestCruiseSpeed: command.useLowestCruiseSpeed);
+                break;
+            case TactCommandTypes.AttackMove:
+                Entity attackMoveTarget = command.targetEntityId != -1 ? EntityMgr.inst.entitiesDict[command.targetEntityId] : null;
+                HandleAttackMove(entities, command.targetOrOffsetPosition, attackMoveTarget, command.add, false, useLowestCruiseSpeed: command.useLowestCruiseSpeed);
                 break;
             case TactCommandTypes.Follow:
                 Entity target = EntityMgr.inst.entitiesDict[command.targetEntityId];

@@ -1,253 +1,189 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 public class Level1EnemyAI : BaseEnemyAI
 {
-    // Constants for adaptive AI
-    private const float AdaptiveBaseInitialStopDistanceEasy = 11000f;
-    private const float AdaptiveBaseInitialStopDistanceHard = 6000f;
-    private const float AdaptiveBaseWeaponRangeFallbackEasy = 800f;
-    private const float AdaptiveBaseWeaponRangeFallbackHard = 400f;
-    private const float AdaptiveBaseCooldownEasy = 1f;
-    private const float AdaptiveBaseCooldownHard = 0.25f;
-    private const float AdaptiveBaseInitialBufferEasy = 100f;
-    private const float AdaptiveBaseInitialBufferHard = 25f;
-    private const float StaticInitialStopDistance = 6000f;
-    private const float FirstMoveSentinel = -1f;
-    private bool _hasIssuedAdaptiveAttackMove = false;
+    public float reactionTime;
+    public Vector3 moveTill;
+    public TrainingState trainingState;
 
-    // Tunables for adaptive targeting
-    private const float SenseRadius = 400f;
-    private const float AttackMinScore = 2.5f;
-    private const float RetreatOutnumberFactor = 1f;
+    private bool hasBegunCombat = false;
 
-    private const float W_Density = 0.15f;
-    private const float W_LowHealth = 1.2f;
-    private const float W_HighHealthPenalty = 1.0f;
-    private const float W_Score = 0.4f;
+    public List<Entity> idleEntities = new List<Entity>();
+    public List<Entity> retreatingEntities = new List<Entity>();
+    public List<Entity> aggressiveEntities = new List<Entity>();
 
-    private Entity _cachedBestTarget;
-
-
-    public override void ProcessCombatBehavior(List<Entity> aiEntities)
+    public override void ProcessCombatBehavior(List<Entity> allAiEntities)
     {
-        if (opponentBase == null) return;
-        if (aiEntities.Count == 0) return;
-
-        // Delegate to appropriate AI implementation based on training state
-        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive)
+        Debug.Log($"[AI STATE] Frame Update: Aggressive({aggressiveEntities.Count}), Retreating({retreatingEntities.Count}), Idle({idleEntities.Count})");
+        foreach(Entity ent in allAiEntities)
         {
-            List<Entity> visibleOpponents = FindAllEnemyTargets();
-            Transform fallbackPoint = GetFallbackPointTransform();
-            ProcessAdaptiveBehavior(aiEntities, visibleOpponents, fallbackPoint);
-        }
-        else
-        {
-            ProcessStaticBehavior(aiEntities);
-        }
-    }
-
-    #region Adaptive AI Implementation
-    private void ProcessAdaptiveBehavior(List<Entity> allies, List<Entity> visibleOpponents, Transform fallbackPoint)
-    {
-        if (opponentBase == null) return;
-        if (allies == null || allies.Count == 0) return;
-        if (visibleOpponents == null || visibleOpponents.Count == 0) return;
-
-        for (int i = 0; i < allies.Count; i++)
-        {
-            Entity ally = allies[i];
-            if (ally != null && ally.isGreyed)
+            if(ent != null && ent.isGreyed)
             {
                 return;
             }
         }
-
-        float healthSum = 0f;
-        int validHealthCount = 0;
-        int myAlive = 0;
-        for (int i = 0; i < allies.Count; i++)
+        if (allAiEntities == null || allAiEntities.Count == 0)
         {
-            Entity ally = allies[i];
-            if (ally == null) continue;
-
-            healthSum += Mathf.Max(ally.health, 0f);
-            validHealthCount++;
-
-            if (ally.health > 0f)
+            if (aggressiveEntities.Count == 0 && retreatingEntities.Count == 0 && idleEntities.Count == 0)
             {
-                myAlive++;
+                if(hasBegunCombat)
+                {
+                    Debug.Log("Level1EnemyAI: All units are gone. Resetting combat flag.");
+                    hasBegunCombat = false;
+                }
             }
-        }
-
-        if (validHealthCount == 0 || myAlive == 0) return;
-
-        float myAvgHealth = Mathf.Max(1e-3f, healthSum / validHealthCount);
-
-        Vector3 alliesCentroid = AveragePos(allies);
-        int enemiesNearGroup = CountWithin(visibleOpponents, alliesCentroid, SenseRadius);
-        int alliesNearGroup = CountWithin(allies, alliesCentroid, SenseRadius);
-        bool globallyOutnumberedHere = enemiesNearGroup > alliesNearGroup;
-
-        Vector3 fallbackPosition = fallbackPoint != null ? fallbackPoint.position : opponentBase.position;
-
-        if (globallyOutnumberedHere && !_hasIssuedAdaptiveAttackMove)
-        {
-            AIMgr.inst.HandleAttackMove(allies, fallbackPosition, fallbackPoint != null ? fallbackPoint.GetComponent<Entity>() : null, false, acquireTarget: false);
-            _hasIssuedAdaptiveAttackMove = true;
             return;
         }
 
-        Entity bestTarget = null;
-        float bestScore = float.NegativeInfinity;
-
-        // Check if the cached target is still valid
-        if (_cachedBestTarget != null && (_cachedBestTarget.health <= 0f || !visibleOpponents.Contains(_cachedBestTarget)))
+        if (!hasBegunCombat)
         {
-            _cachedBestTarget = null; // Invalidate cache if target is dead or not visible
+            StartCombat(allAiEntities);
+            return;
         }
-
-        foreach (Entity enemy in visibleOpponents)
+        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive & ScenarioGenerator.inst.difficultyLevel >= 0.27f)
         {
-            if (enemy == null || enemy.health <= 0f) continue;
+            AddNewUnits(allAiEntities);
 
-            int localEnemies = CountWithin(visibleOpponents, enemy.transform.position, SenseRadius);
-            int localAllies = CountWithin(allies, enemy.transform.position, SenseRadius);
-            bool outnumberedLocally = localEnemies > localAllies;
+            UpdateRetreatingEntities();
+            UpdateAggressiveEntities();
+            UpdateIdleEntities();
 
-            float densityTerm = W_Density * localEnemies;
-            float lowHealthTerm = W_LowHealth * Mathf.Clamp01((myAvgHealth - enemy.health) / myAvgHealth);
-            float highHealthPenalty = enemy.health > myAvgHealth ? W_HighHealthPenalty : 0f;
-            float scoreTerm = W_Score * GetEntityScore(enemy);
+        }
+        else
+        {
+            return;
+        }
+        
+    }
 
-            float outnumberPenalty = outnumberedLocally ? RetreatOutnumberFactor : 0f;
+    private void StartCombat(List<Entity> initialEntities)
+    {
+        Debug.Log("Level1EnemyAI: Starting new combat behavior processing.");
+        hasBegunCombat = true;
+        
+        aggressiveEntities.AddRange(initialEntities);
 
-            float attractiveness = densityTerm + lowHealthTerm + scoreTerm - highHealthPenalty - outnumberPenalty;
+        SetReactionTime();
+        SetMoveTill();
+        
+        Debug.Log($"Level1EnemyAI: Reaction time set to {reactionTime}. Move till set to {moveTill}.");
+        Debug.Log($"Level1EnemyAI: Commanding {aggressiveEntities.Count} entities to take action after delay.");
 
-            if (attractiveness > bestScore)
+        EnemyAIMgr.inst.StartCoroutine(TakeInitialActionAfterDelay(reactionTime, new List<Entity>(aggressiveEntities)));
+    }
+
+    private void AddNewUnits(List<Entity> currentEntities)
+    {
+        foreach (var ent in currentEntities)
+        {
+            if (ent != null && !idleEntities.Contains(ent) && !aggressiveEntities.Contains(ent) && !retreatingEntities.Contains(ent))
             {
-                bestScore = attractiveness;
-                bestTarget = enemy;
-                Debug.Log($"New best target: {enemy.name} with score {bestScore}");
+                Debug.Log($"Level1EnemyAI: New unit {ent.name} detected. Adding to idle.");
+                idleEntities.Add(ent);
+            }
+        }
+    }
+
+    private void UpdateAggressiveEntities()
+    {
+        List<Entity> entitiesToRetreat = new List<Entity>();
+        
+        foreach(var ent in aggressiveEntities)
+        {
+            if (ent != null && ent.isBeingAttacked)
+            {
+                entitiesToRetreat.Add(ent);
             }
         }
 
-        // Decide whether to switch to the new best target or stick with the cached one
-        if (bestTarget != null && bestScore >= AttackMinScore)
+        foreach(var ent in entitiesToRetreat)
         {
-            // A simple hysteresis could be added here to prevent rapid target switching
-            // For now, we'll just update to the new best target if it's better.
-            _cachedBestTarget = bestTarget;
-        }
-
-        // If we have a valid target (either new or cached), attack it.
-        if (_cachedBestTarget != null)
-        {
-            AIMgr.inst.HandleAttackMove(allies, _cachedBestTarget.transform.position, _cachedBestTarget, false, acquireTarget: true);
-        }
-    }
-    #endregion
-
-    private Transform GetFallbackPointTransform()
-    {
-        if (aiBases != null)
-        {
-            for (int i = 0; i < aiBases.Count; i++)
+            Debug.Log($"Level1EnemyAI: Aggressive entity {ent.name} is being attacked. Moving to retreating.");
+            aggressiveEntities.Remove(ent);
+            retreatingEntities.Add(ent);
+            if (aiBases.Count > 0 && aiBases[0] != null)
             {
-                Entity baseEntity = aiBases[i];
-                if (baseEntity != null)
-                {
-                    return baseEntity.transform;
-                }
+                AIMgr.inst.HandleMove(new List<Entity> { ent }, aiBases[0].transform.position);
             }
         }
-
-        return opponentBase != null ? opponentBase.transform : null;
     }
 
-    private static Vector3 AveragePos(List<Entity> list)
+    private void UpdateRetreatingEntities()
     {
-        Vector3 sum = Vector3.zero;
-        int n = 0;
-        for (int i = 0; i < list.Count; i++)
+        List<Entity> entitiesToMakeIdle = new List<Entity>();
+        foreach(var ent in retreatingEntities)
         {
-            Entity entity = list[i];
-            if (entity == null) continue;
-            sum += entity.transform.position;
-            n++;
-        }
-
-        return n > 0 ? sum / n : Vector3.zero;
-    }
-
-    private static int CountWithin(List<Entity> list, Vector3 pos, float radius)
-    {
-        float radiusSquared = radius * radius;
-        int count = 0;
-        for (int i = 0; i < list.Count; i++)
-        {
-            Entity entity = list[i];
-            if (entity == null) continue;
-            Vector3 delta = entity.transform.position - pos;
-            if (delta.sqrMagnitude <= radiusSquared)
+            if (ent != null && !ent.isBeingAttacked)
             {
-                count++;
+                entitiesToMakeIdle.Add(ent);
             }
         }
-
-        return count;
-    }
-
-    private static float GetEntityScore(Entity entity)
-    {
-        if (entity == null) return 0f;
-
-        // Base score can be derived from max health or a fixed value
-        float baseScore = entity.maxHealth > 0f ? entity.maxHealth : 100f;
-
-        // Assign score multipliers based on entity type/class
-        // These values should be tuned based on gameplay balance.
-        switch (entity.entityType)
+        
+        foreach(var ent in entitiesToMakeIdle)
         {
-            // High-value combatants
-            case EntityType.DDG51: // Destroyer
-                baseScore *= 2.0f;
-                break;
-
-            // Medium-value combatants / USVs
-            case EntityType.JARIUSV:
-            case EntityType.SeaHunter:
-                baseScore *= 1.2f;
-                break;
-
-            // High-value static targets
-            case EntityType.Rig_Balder: // Assuming this is a base/rig
-                baseScore *= 3.0f;
-                break;
-
-            // Default for other known combatants from original 
-            // Default case for any other entity types
-            default:
-                baseScore *= 1.0f;
-                break;
+            Debug.Log($"Level1EnemyAI: Retreating entity {ent.name} is no longer being attacked. Moving to idle.");
+            retreatingEntities.Remove(ent);
+            idleEntities.Add(ent);
         }
-
-        return baseScore;
     }
 
-    #region Static AI Implementation
-    private void ProcessStaticBehavior(List<Entity> aiEntities)
+    private void UpdateIdleEntities()
     {
-        if (opponentBase == null) return;
-        if (aiEntities.Count == 0) return;
-        for (int i = 0; i < aiEntities.Count; i++)
+        if (idleEntities.Count > 0)
         {
-            if (aiEntities[i].isGreyed == true) return;
+            Debug.Log($"Level1EnemyAI: {idleEntities.Count} idle entities are now becoming aggressive.");
+            AIMgr.inst.HandleAttackMove(idleEntities, opponentBase.transform.position, opponentBase, acquireTarget: true, useLowestCruiseSpeed: true);
+            
+            aggressiveEntities.AddRange(idleEntities);
+            idleEntities.Clear();
         }
-
-        AIMgr.inst.HandleAttackMove(aiEntities, opponentBase.position, opponentBase.GetComponent<Entity>(), false, acquireTarget: true);
-
     }
-    #endregion
+
+    private IEnumerator TakeInitialActionAfterDelay(float delay, List<Entity> entitiesToCommand)
+    {
+        yield return new WaitForSeconds(delay);
+
+        var validEntities = entitiesToCommand.Where(e => e != null && aggressiveEntities.Contains(e)).ToList();
+        
+        if (validEntities.Count > 0)
+        {
+            Debug.Log($"Level1EnemyAI: Initial reaction delay over. Commanding {validEntities.Count} entities.");
+            AIMgr.inst.HandleAttackMove(validEntities, opponentBase.transform.position, opponentBase, acquireTarget: true, useLowestCruiseSpeed: true);
+        }
+        else
+        {
+            Debug.Log("Level1EnemyAI: Initial entities were all lost or began retreating before action could be taken.");
+        }
+    }
+
+    public void SetReactionTime()
+    {
+        if (trainingState == TrainingState.Adaptive)
+        {
+            float difficulty = ScenarioGenerator.inst.difficultyLevel;
+            reactionTime = Mathf.Max(0.5f, 30.0f - (difficulty * 45.45f));
+        }
+        else
+        {
+            reactionTime = 15.0f;
+        }
+    }
+
+    public void SetMoveTill()
+    {
+        if (trainingState == TrainingState.Adaptive)
+        {
+            float difficulty = ScenarioGenerator.inst.difficultyLevel;
+            float t = Mathf.Clamp01(difficulty / 0.33f);
+            moveTill = Vector3.Lerp(Vector3.zero, aiBases[0].transform.position, t);
+        }
+        else
+        {
+            moveTill = (aiBases[0].transform.position + new Vector3(0, 0, 0f)) / 2f;
+        }
+    }
 }

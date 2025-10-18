@@ -16,6 +16,9 @@ public class ScenarioGenerator : MonoBehaviour
     public List<Vector3> posPlayer2List = new();
     public List<float> headingPlayer2List = new();
 
+    public float nonAdaptiveDifficulty = 0.25f;
+    public float adaptiveDifficulty = 0.33f;
+
     [Range(0f, 1f)]
     public float difficultyLevel;
     public Dictionary<string, float> difficultyRanges = new()
@@ -69,7 +72,15 @@ public class ScenarioGenerator : MonoBehaviour
                 difficultyLevel = 0.1f; // Very easy for tutorial
                 break;
             case TrainingState.PreTest:
-                difficultyLevel = 0.333f; // Easy difficulty for pre-test
+                if (OpenOceanMain.inst.gamePlayCountMAX > 0)
+                {
+                    float progress = (float)OpenOceanMain.inst.gamesPlayedCount / OpenOceanMain.inst.gamePlayCountMAX;
+                    difficultyLevel = progress < 0.6f ? 0.2f : 0.5f;
+                }
+                else
+                {
+                    difficultyLevel = 0.333f; 
+                }
                 break;
             case TrainingState.PostTest:
                 if (OpenOceanMain.inst.gamePlayCountMAX > 0)
@@ -79,14 +90,14 @@ public class ScenarioGenerator : MonoBehaviour
                 }
                 else
                 {
-                    difficultyLevel = 0.2f;
+                    difficultyLevel = 0.333f; 
                 }
                 break;
             case TrainingState.Adaptive:
                 difficultyLevel = ComputeAdaptiveDifficulty();
                 break;
             case TrainingState.NonAdaptive:
-                difficultyLevel = 0.5f; // Medium difficulty for non-adaptive
+                difficultyLevel = nonAdaptiveDifficulty;
                 break;
             default:
                 difficultyLevel = 0.333f; // Default to easy
@@ -106,7 +117,7 @@ public class ScenarioGenerator : MonoBehaviour
         // Start with a reasonable default if no previous difficulty is set
         if (difficultyLevel <= 0f)
         {
-            difficultyLevel = 0.333f; // Start with Easy difficulty
+            difficultyLevel = adaptiveDifficulty; // Start with Easy difficulty
         }
 
         if (ScoreMgr.inst != null)

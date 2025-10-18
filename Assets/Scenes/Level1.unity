@@ -1258,7 +1258,7 @@ MonoBehaviour:
   gridWidthOverride: 128
   gridCellSize: 142.57812
   revelers: []
-  fogRevealRadius: 1700
+  fogRevealRadius: 1800
   updateInterval: 0.1
   visibilityCheckInterval: 0.2
 --- !u!33 &235835916
@@ -9068,6 +9068,8 @@ MonoBehaviour:
   headingPlayer1List: []
   posPlayer2List: []
   headingPlayer2List: []
+  nonAdaptiveDifficulty: 0.25
+  adaptiveDifficulty: 0.5
   difficultyLevel: 0
   allScenarios: []
 --- !u!1 &1717877730

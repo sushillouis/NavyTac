@@ -13,12 +13,14 @@ public class Move : Command
     private readonly bool isWaypoint;
     protected float pathUpdateCooldown = 0.25f;
     private float pathUpdateTimer = 0f;
+    private readonly float groupSpeed = -1f;
 
-    public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false, float doneDistanceSq = 1000f, bool isWaypoint = false) : base(ent)
+    public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false, float doneDistanceSq = 1000f, bool isWaypoint = false, float groupSpeed = -1f) : base(ent)
     {
         movePosition = pos;
         useMaxSpeedMovement = maxSpeedMovement;
         this.isWaypoint = isWaypoint;
+        this.groupSpeed = groupSpeed;
         if (doneDistanceSq > 0f)
         {
             this.doneDistanceSq = doneDistanceSq;
@@ -87,7 +89,15 @@ public class Move : Command
         potentialSum = Vector3.zero;
         repulsivePotential = Vector3.zero;
         attractivePotential = Vector3.zero;
-        float targetSpeed = useMaxSpeedMovement ? entity.maxSpeed : entity.cruiseSpeed;
+        float targetSpeed;
+        if (groupSpeed > 0)
+        {
+            targetSpeed = groupSpeed;
+        }
+        else
+        {
+            targetSpeed = useMaxSpeedMovement ? entity.maxSpeed : entity.cruiseSpeed;
+        }
         return new DHDS(dhDegrees, targetSpeed);
     }
 
@@ -181,7 +191,16 @@ public class Move : Command
 
         angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
         cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
-        float baseSpeed = useMaxSpeedMovement ? entity.maxSpeed : entity.cruiseSpeed;
+        float baseSpeed;
+        if(groupSpeed > 0)
+        {
+            baseSpeed = groupSpeed;
+        }
+        else
+        {
+            baseSpeed = useMaxSpeedMovement ? entity.maxSpeed : entity.cruiseSpeed;
+        }
+        
         ds = isWaypoint ? baseSpeed : baseSpeed * cosValue;
 
         return new DHDS(dh, ds);

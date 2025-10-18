@@ -225,6 +225,10 @@ public class EntityMgr : MonoBehaviour
                 entityGo.name = et.ToString() + entityId++;
                 entity.owner = player;
                 entity.heading = entity.desiredHeading = eulerAngles.y;
+                if (player == PlayerMgr.inst.neutral)
+                {
+                    entity.isNeutral = true;
+                }
                 if (doIsGreyedOut)
                 {
                     entity.greyOverlayFadeDuration = 0f;
@@ -334,7 +338,7 @@ public class EntityMgr : MonoBehaviour
         // AssetDatabase.SaveAssets();
         // EditorSceneManager.MarkAllScenesDirty();
 
-        Debug.Log($"✅ Replaced {changeCount} bright-green material(s).");
+        Debug.Log($" Replaced {changeCount} bright-green material(s).");
     }
 
     /* ─────────────────────────────────────────────────────────────

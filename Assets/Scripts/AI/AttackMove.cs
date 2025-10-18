@@ -22,9 +22,10 @@ public class AttackMove : Move
     private float timeSinceLastThreatCheck = 0f;
     private float timeSinceLastPathUpdate = 0f;
     private const float SignificantMovementThresholdSq = 1.0f; // 1 unit squared
+    private readonly float groupSpeed = -1f;
 
-    public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false, float doneDistanceSq = 100000f, bool isWaypoint = false) 
-        : base(ent, pos, maxSpeed, doneDistanceSq, isWaypoint)
+    public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false, float doneDistanceSq = 100000f, bool isWaypoint = false, float groupSpeed = -1f) 
+        : base(ent, pos, maxSpeed, doneDistanceSq, isWaypoint, groupSpeed)
     {
         InitializeWeaponsAspect();
         hasExplicitTarget = false;
@@ -38,10 +39,11 @@ public class AttackMove : Move
         wasOriginallyAttackMoveToPosition = true;
         lastKnownTargetPosition = pos;
         lastKnownCommandedTargetPosition = pos;
+        this.groupSpeed = groupSpeed;
     }
 
-    public AttackMove(Entity ent, Entity target, bool acquireTargetsOnWay = false, bool maxSpeed = false, float doneDistanceSq = 100000f, bool isWaypoint = false)
-        : base(ent, target != null ? target.position : ent.position, maxSpeed, doneDistanceSq, isWaypoint)
+    public AttackMove(Entity ent, Entity target, bool acquireTargetsOnWay = false, bool maxSpeed = false, float doneDistanceSq = 100000f, bool isWaypoint = false, float groupSpeed = -1f)
+        : base(ent, target != null ? target.position : ent.position, maxSpeed, doneDistanceSq, isWaypoint, groupSpeed)
     {
         InitializeWeaponsAspect();
         explicitTarget = target;
@@ -49,6 +51,7 @@ public class AttackMove : Move
         commandedTarget = target;
         isAcquiredTarget = false;
         this.acquireTargetsOnWay = acquireTargetsOnWay;
+        this.groupSpeed = groupSpeed;
 
         lastKnownTargetPosition = target != null ? target.position : ent.position;
         lastKnownCommandedTargetPosition = target != null ? target.position : ent.position;

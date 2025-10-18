@@ -1,8 +1,4 @@
-﻿
-using System.Collections;
-using System.Collections.Generic;
-using System.Data.Common;
-using UnityEngine;
+﻿using UnityEngine;
 
 
 public class Entity : MonoBehaviour
@@ -15,7 +11,6 @@ public class Entity : MonoBehaviour
     public bool isSelected = false;
     public Vector3 position = Vector3.zero;
     public Vector3 velocity = Vector3.zero;
-
     public float speed;
     public float desiredSpeed;
     public float heading; //degrees
@@ -25,11 +20,7 @@ public class Entity : MonoBehaviour
     public float range;
     public float fuelBurnRate;
     public EntityRole entityRole;
-
     [Header("Const values")]
-    //------------------------------
-    // values that do not change
-    //------------------------------
     public float acceleration;
     public float turnRate;
     public float maxSpeed;
@@ -46,33 +37,30 @@ public class Entity : MonoBehaviour
     public float maxRange;
     public EntityType entityType;
     public EntityClass entityClass;
-
     public GameObject cameraRig;
     public GameObject selectionCircle;
     public TactPlayer owner;
     public Entity creatorsEntity;
     public bool isAI = false;
-
-
-    [Header("Aspect references")]
+    public bool isAttacking = false;
+    public bool isBeingAttacked = false;
+    public Entity attackingTarget = null;
+    public Entity beingAttackedBy = null;
     public NetAspect net = null;
     public OrientedPhysics phx = null;
     public UnitAI ai = null;
     public UIAspect ui = null;
     public WeaponsAspect weapons = null;
     private GameObject healthBarObject;
-    public bool isGreyed = false; // Used for greyed out entities in the UI
-
-    public float greyOverlayFadeDuration = 10f; // Duration for the grey overlay fade-out effect
-
+    public bool isGreyed = false;
+    public bool isNeutral = false;
+    public float greyOverlayFadeDuration = 10f; 
     void Start()
     {
         InitializeEntityValues();
         SetEntityColors();
-        SetupHealthBar();
-        
+        SetupHealthBar();  
     }
-
     void InitializeEntityValues()
     {
         fuel = maxFuel;
@@ -116,6 +104,25 @@ public class Entity : MonoBehaviour
             return;
 
         UpdateVisibility();
+        if (beingAttackedBy != null)
+        {
+            isBeingAttacked = true;
+            if (!beingAttackedBy.isAttacking || beingAttackedBy.attackingTarget != this)
+            {
+                isBeingAttacked = false;
+                beingAttackedBy = null;
+            }
+        }
+        else
+        {
+            isBeingAttacked = false;
+
+        }
+        if (isNeutral)
+        {
+            isBeingAttacked = false;
+            beingAttackedBy = null;
+        }
     }
 
     private bool CheckAndHandleEntityDestruction()
