@@ -278,7 +278,7 @@ public class CameraMgr : MonoBehaviour
 
         moveCoefficent = Mathf.Log(YawNode.transform.position.y * heightSensitivty);
         moveCoefficent = Mathf.Clamp(moveCoefficent, 0.0001f, 999f);
-        HandleEdgeScrolling();
+        // HandleEdgeScrolling();
         HandleMiddleMouseDrag();
         HandleReplayScrollWheelHeight();
 

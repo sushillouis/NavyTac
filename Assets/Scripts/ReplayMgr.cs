@@ -1,16 +1,17 @@
 using System;
+using System.Collections; 
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
+using UnityEngine.Networking; 
+
 
 [Serializable]
 public class ReplayCommand
 {
     public float timestamp;
     public float timeScale;
-
     public string commandType;
     public int[] entityIds;
     public Vector3 targetPosition;
@@ -265,7 +266,7 @@ public class ReplayMgr : MonoBehaviour
         }
 
         replayFinished = false;
-        Time.timeScale = 1f;
+        Time.timeScale = 2f;
 
         if (AIMgr.inst != null) AIMgr.inst.StopAllCoroutines();
         if (DistanceMgr.inst != null) DistanceMgr.inst.Initialize();
@@ -380,11 +381,11 @@ public class ReplayMgr : MonoBehaviour
 
     private void ExecuteCommand(ReplayCommand cmd)
     {
-        if(cmd.commandType == "TimeScaleChange")
-        {
-            Time.timeScale = cmd.timeScale;
-            return;
-        }
+        // if(cmd.commandType == "TimeScaleChange")
+        // {
+        //     Time.timeScale = cmd.timeScale;
+        //     return;
+        // }
         List<Entity> entities = new List<Entity>();
         foreach (int id in cmd.entityIds)
         {
@@ -398,7 +399,7 @@ public class ReplayMgr : MonoBehaviour
         {
             return;
         }
-        Time.timeScale = cmd.timeScale;
+        // Time.timeScale = cmd.timeScale;
         switch (cmd.commandType)
         {
             case "Move":
@@ -429,6 +430,14 @@ public class ReplayMgr : MonoBehaviour
     {
         public List<ReplayCommand> commands;
         public List<Snapshot> snapshots;
+    }
+
+    // <-- ADDED: Helper class for creating the JSON payload -->
+    [Serializable]
+    private class UploadPayload
+    {
+        public string filename;
+        public string content;
     }
 
     // Ensure we have the latest state captured before exporting JSON
@@ -529,6 +538,10 @@ public class ReplayMgr : MonoBehaviour
         };
         string json = JsonUtility.ToJson(commandList, true);
         File.WriteAllText(filePath, json);
+
+        // --- MODIFICATION: Start the upload coroutine ---
+        StartCoroutine(UploadToServer(fileName, json));
+        // ------------------------------------------------
     }
 
     private string GetGameTypeFolder()
@@ -719,5 +732,56 @@ public class ReplayMgr : MonoBehaviour
         }
 
         return false;
+    }
+
+    // --- ADDED: Coroutine to upload the JSON file content ---
+    private IEnumerator UploadToServer(string filename, string jsonContent)
+    {
+        string url = "https://www.cse.unr.edu/~yvohra/Study/upload/upload.php";
+
+        // Use the payload class to correctly serialize the JSON
+        UploadPayload payload = new UploadPayload
+        {
+            filename = filename,
+            content = jsonContent
+        };
+        string jsonPayload = JsonUtility.ToJson(payload);
+
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
+            request.uploadHandler = new UploadHandlerRaw(jsonBytes);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.certificateHandler = new CustomCertificateHandler(); // Handles self-signed certs
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                // Check the server's text response for "SUCCESS"
+                if (request.downloadHandler.text.StartsWith("SUCCESS"))
+                {
+                    Debug.Log($"Replay upload successful! Server response: {request.downloadHandler.text}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Replay upload complete, but server reported an error: {request.downloadHandler.text}");
+                }
+            }
+            else
+            {
+                Debug.LogError($"Replay upload failed! Error: {request.error} | Server response: {request.downloadHandler.text}");
+            }
+        }
+    }
+
+    // --- ADDED: Certificate handler to bypass SSL validation ---
+    public class CustomCertificateHandler : CertificateHandler
+    {
+        protected override bool ValidateCertificate(byte[] certificateData)
+        {
+            return true; 
+        }
     }
 }

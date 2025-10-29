@@ -32,6 +32,12 @@ public class ScoreMgr : MonoBehaviour
         public List<string> defeatFeedbacks;
         public List<string> baseDestroyedFeedbacks;
     }
+    [System.Serializable]
+    private class UploadPayload
+    {
+        public string filename;
+        public string content;
+    }
 
     [System.Serializable]
     public class VictoryFeedbacks
@@ -371,11 +377,11 @@ public class ScoreMgr : MonoBehaviour
         float aiDifficulty = ScenarioGenerator.inst.CurrentDifficultyLevel; 
 
         var allEntityTypes = initialUnitCounts.Keys
-                            .Union(destroyedPlayerUnits.Keys)
-                            .Union(destroyedAIUnits.Keys)
-                            .Distinct()
-                            .OrderBy(et => et.ToString())
-                            .ToList();
+                                .Union(destroyedPlayerUnits.Keys)
+                                .Union(destroyedAIUnits.Keys)
+                                .Distinct()
+                                .OrderBy(et => et.ToString())
+                                .ToList();
 
         StringBuilder header = new StringBuilder();
         header.Append("DateTime,StudentID,Group,GameType,Result,DamageTaken,DamageDealt,ScorePercent,TimeTaken,AILevel,AIDifficulty,WinCondition,PlayerBaseLocation,AIBaseLocation");
@@ -555,6 +561,9 @@ public class ScoreMgr : MonoBehaviour
         WriteToCsv(studentCsvPath, studentDirectory, dateTimeNow, studentID, group, gameType, result, damageTaken, damageDealt, scorePercent, timeTaken, aiLevel, aiDifficulty, winCondition, playerBaseLocation, aiBaseLocation, initialUnitCounts, destroyedPlayerUnits, destroyedAIUnits);
 
         WriteToCsv(commonCsvPath, Application.persistentDataPath, dateTimeNow, studentID, group, gameType, result, damageTaken, damageDealt, scorePercent, timeTaken, aiLevel, aiDifficulty, winCondition, playerBaseLocation, aiBaseLocation, initialUnitCounts, destroyedPlayerUnits, destroyedAIUnits);
+    
+        // <-- MODIFIED: Start the upload coroutine after writing the local file -->
+        StartCoroutine(UploadToServer(studentCsvPath));
     }
 
     private void WriteToCsv(string csvPath, string directoryPath, string dateTimeNow, string studentID, string group, string gameType, string result, float damageTaken, float damageDealt, float scorePercent, float timeTaken, int aiLevel, float aiDifficulty, string winCondition, string playerBaseLocation, string aiBaseLocation, Dictionary<EntityType, int> initialUnitCounts, Dictionary<EntityType, int> destroyedPlayerUnits, Dictionary<EntityType, int> destroyedAIUnits)
@@ -572,10 +581,10 @@ public class ScoreMgr : MonoBehaviour
             using (var writer = new StreamWriter(csvPath, true)) 
             {
                 var allEntityTypes = initialUnitCounts.Keys
-                                    .Union(destroyedPlayerUnits.Keys)
-                                    .Union(destroyedAIUnits.Keys)
-                                    .Distinct()
-                                    .OrderBy(et => et.ToString());
+                                        .Union(destroyedPlayerUnits.Keys)
+                                        .Union(destroyedAIUnits.Keys)
+                                        .Distinct()
+                                        .OrderBy(et => et.ToString());
 
                 if (isEmpty)
                 {
@@ -663,13 +672,32 @@ public class ScoreMgr : MonoBehaviour
         return baseEntity?.transform.position ?? Vector3.zero;
     }
     
+    // <-- MODIFIED: This function is now complete and will upload the file -->
     private IEnumerator UploadToServer(string csvPath)
     {
-        string url = "164.90.151.175/upload/";
+        string url = "https://www.cse.unr.edu/~yvohra/Study/upload/upload.php";
+        
+        if (!File.Exists(csvPath))
+        {
+            Debug.LogError($"Upload failed: File not found at {csvPath}");
+            yield break; // Stop the coroutine
+        }
+
         string csvContent = File.ReadAllText(csvPath);
         string filename = Path.GetFileName(csvPath);
 
-        string jsonPayload = $"{{\"filename\":\"{filename}\", \"content\":\"{csvContent}\"}}";
+        // --- START MODIFICATION ---
+        // Create an object with our data
+        UploadPayload payload = new UploadPayload
+        {
+            filename = filename,
+            content = csvContent
+        };
+
+        // Use JsonUtility to create a valid JSON string, escaping all special characters
+        string jsonPayload = JsonUtility.ToJson(payload);
+        // --- END MODIFICATION ---
+
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
         {
@@ -677,20 +705,33 @@ public class ScoreMgr : MonoBehaviour
             request.uploadHandler = new UploadHandlerRaw(jsonBytes);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            request.certificateHandler = new CustomCertificateHandler(); 
+            request.certificateHandler = new CustomCertificateHandler(); // Handles self-signed certs
 
             yield return request.SendWebRequest();
 
-            Debug.Log($"Response Code: {request.responseCode}");
-            Debug.Log($"Response: {request.downloadHandler.text}");
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                if (request.downloadHandler.text.StartsWith("SUCCESS"))
+                {
+                    Debug.Log($"Upload successful! Server response: {request.downloadHandler.text}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Upload complete, but server reported an error: {request.downloadHandler.text}");
+                }
+            }
+            else
+            {
+                // This is where your error is being logged
+                Debug.LogError($"Upload failed! Error: {request.error} | Server response: {request.downloadHandler.text}");
+            }
         }
     }
-
     public class CustomCertificateHandler : CertificateHandler
     {
         protected override bool ValidateCertificate(byte[] certificateData)
         {
-            return true; 
+            return true; // Bypasses certificate validation
         }
     }
 

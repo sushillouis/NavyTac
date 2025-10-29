@@ -83,6 +83,6 @@ public class ResetScene : MonoBehaviour
         WeaponsMgr.inst?.DestroyAllWeaponsImmediately();
         FXMgr.inst?.ResetEffects();
         EntityMgr.inst?.Reset();
-        // EnemyAIMgr.inst?.ResetLevel2State();
+        EnemyAIMgr.inst?.ResetAI();
     }
 }

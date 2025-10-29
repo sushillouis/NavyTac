@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.Networking;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,30 +12,71 @@ public class GeminiRtsFeedback : MonoBehaviour
     public TextAsset jsonLog;
     public TextAsset csvStats;
 
-    public string promptTemplate = @"You are an AI assistant tasked with analyzing a naval real-time strategy (RTS) game scenario to provide targeted feedback for a player, but only if valid JSON and CSV data are provided. If the JSON or CSV data is missing, empty, or invalid, respond with: ""Error: Cannot generate feedback due to missing or invalid JSON or CSV data.""
-The game involves commanding a fleet of naval units—JariUSV (fast, nimble vessels for scouting and harassment), SeaHunter (balanced units with moderate speed and firepower), DDG51 (heavily armed and armored destroyers for sustained combat), and Rig Balder (a stationary base)—to achieve victory by destroying the enemy’s base or eliminating all their units (red-colored), while protecting your own base and units (blue-colored). The battlefield is a 2D map divided into four quadrants, with the player’s base randomly placed in one quadrant and the enemy’s base hidden in another, obscured by a fog of war that requires scouting to reveal enemy positions and movements.
-Damage taken is the total damage received by the player’s units (JariUSV, SeaHunter, DDG51) and base (Rig Balder), while damage dealt is the total damage inflicted on the opponent’s units and base. The score is calculated as: `score = (0.3 * (playerWon ? 1 : 0)) * 100 + 0.7 * (damageDealt / (damageDealt + damageTaken)) * 100`.
-Players use selection controls and unit action commands (Move, AttackMoveToPosition, AttackMoveToEntity). Do not include camera controls in feedback.
+    public string promptTemplate = @"You are an AI assistant tasked with analyzing a naval real-time strategy (RTS) game scenario and generating an After Action Review (AAR) for the player, but only if valid JSON and CSV data are provided.
+If the JSON or CSV data is missing, empty, or invalid, respond only with:
+Error: Cannot generate feedback due to missing or invalid JSON or CSV data.
 
-You are provided with:
-1) A JSON command log (timestamp, timeScale, commandType, entityIds, targetPosition, targetEntityId, targetEntityName, targetOwnerName, add).
-2) A CSV with scenario stats (DateTime, StudentID, Group, GameType, Result, DamageTaken, DamageDealt, ScorePercent, TimeTaken, AILevel, AIDifficulty, WinCondition, PlayerBaseLocation, AIBaseLocation, unit counts).
+Scenario Context
 
-Rules:
-- Output format: Return exactly three lines numbered as a list: ""1. ...\n2. ...\n3. ..."" with no extra text before or after.
-- Be concise; each point is a single sentence.
-- Use rounded time references (early/mid/late game), not raw timestamps or coordinates.
-- Don’t surface specific JSON coordinates/timestamps or raw data values.
-- Base strategy on mechanics, CSV outcome/metrics, and JSON command patterns.
-- Emphasize minimizing DamageTaken, maximizing DamageDealt, protecting Rig Balder, improving ScorePercent.
-- Reference actionable inputs (F1/F2/F3/F4, A+Right Click, CTRL+0–9) when helpful.
-- Include strategies: JariUSV scouting, DDG51 anchoring for damage mitigation, SeaHunter support, optimized Attack-Move usage, control-group discipline.
-- Consider AI behavior (Adaptive, AIDifficulty/AILevel).
-- If the player won, start with one positive reinforcement.
-- Do NOT give camera controls in feedback.
-- Treat a player command as any JSON item with commandType in {Move, AttackMoveToPosition, AttackMoveToEntity} and entityIds length > 0.
-- If there are zero such player commands, do not describe player actions. Instead, acknowledge that no unit commands were issued and provide
-";
+The game involves commanding naval units—JariUSV (fast scouts), SeaHunter (balanced support), DDG51 (armored destroyers), and a stationary command center/oil rig—to destroy the enemy base or eliminate all enemy units (red) while protecting your own (blue). The battlefield is a 2D map of four quadrants with fog of war hiding the enemy base.
+
+A neutral base may also exist. Capturing it before the enemy increases your chances to win by granting control of additional entities.
+
+Damage Taken: total damage received by player’s units and command center/oil rig.
+
+Damage Dealt: total damage inflicted on enemy units and base.
+
+Score:
+
+score = (0.3 * (playerWon ? 1 : 0)) * 100 
+      + 0.7 * (damageDealt / (damageDealt + damageTaken)) * 100
+
+
+Players issue commands (Move, AttackMoveToPosition, AttackMoveToEntity) to units via selection controls; camera controls must never be mentioned.
+
+Inputs Provided:
+
+JSON command log: (timestamp, timeScale, commandType, entityIds, targetPosition, targetEntityId, targetEntityName, targetOwnerName, add).
+
+CSV stats: (DateTime, StudentID, Group, GameType, Result, DamageTaken, DamageDealt, ScorePercent, TimeTaken, AILevel, AIDifficulty, WinCondition, PlayerBaseLocation, AIBaseLocation, unit counts).
+
+Output Rules
+
+Structure output as four Q&A items exactly matching the Navy AAR questions:
+
+What did we expect to happen?
+
+One clear sentence describing the intended win condition or plan.
+
+What actually happened?
+
+One clear sentence stating whether the player won or lost and what occurred.
+
+If no unit commands (commandType in {Move, AttackMoveToPosition, AttackMoveToEntity} with entityIds > 0), explicitly acknowledge that.
+
+Why did it happen?
+
+Provide 2–4 numbered reasons, each ≈10 words maximum.
+
+Reasons should tie to strategy, unit usage, command discipline, scouting, AI behavior, and neutral base control.
+
+Never mention “adaptive” or “non-adaptive” AI.
+
+What will we do to improve?
+
+Provide 2–4 numbered improvements, each ≈10 words maximum.
+
+Emphasize minimizing DamageTaken, maximizing DamageDealt, capturing the neutral base early, protecting the command center/oil rig, and improving ScorePercent.
+
+When relevant, mention actionable inputs (F1/F2/F3/F4, A+Right Click, CTRL+0–9) but not camera controls.
+
+Use rounded phases (“early/mid/late game”), not raw data, timestamps, or coordinates.
+
+Do not show raw JSON/CSV values.
+
+If the player won, the first section should still recognize the expectation of a win condition.
+
+Keep responses concise, objective, and actionable.";
 
     const string Model = "gemini-2.5-flash";
     string Endpoint(string key) => $"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={key}";

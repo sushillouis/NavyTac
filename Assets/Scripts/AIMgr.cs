@@ -325,13 +325,13 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
                         Vector3 waypoint = waypoints[i];
                         bool isLastWaypoint = (i == waypoints.Length - 1);
 
-                        float currentDoneDistanceSq = isLastWaypoint 
-                            ? GetAttackMoveDoneDistanceSq(entity, target, entities.Count, doneDistanceSq)
-                            : 100f * 100f;
+                        float currentDoneDistanceSq = isLastWaypoint
+                            ? StoppingDistanceSq(entity, entities.Count)
+                            : 1000f * 1000f;
 
                         AttackMove am = isLastWaypoint && target != null
-                            ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq, groupSpeed: groupSpeed)
-                            : new AttackMove(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, !isLastWaypoint, groupSpeed: groupSpeed);
+                            ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq)
+                            : new AttackMove(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, !isLastWaypoint);
                         
                         uai.AddCommand(am);
                     }
@@ -340,7 +340,7 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
             else
             {
                 // Fallback to direct attack-move if pathfinding fails
-                HandleDirectAttackMove(entity, point, target, add, maxSpeedMovement, acquireTarget, doneDistanceSq, entities.Count, groupSpeed);
+                HandleDirectAttackMove(entity, point, target, add, maxSpeedMovement, acquireTarget, doneDistanceSq, entities.Count);
             }
         });
     }
@@ -348,11 +348,10 @@ public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target
 
 private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target, bool add, bool maxSpeedMovement, bool acquireTarget, float doneDistanceSq, int entitiesCount, float groupSpeed = -1f)
 {
-    float currentDoneDistanceSq = GetAttackMoveDoneDistanceSq(entity, target, entitiesCount, doneDistanceSq);
-
+    float currentDoneDistanceSq = StoppingDistanceSq(entity, entitiesCount);
     AttackMove am = target != null
-        ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq, groupSpeed: groupSpeed)
-        : new AttackMove(entity, point, maxSpeedMovement, currentDoneDistanceSq, groupSpeed: groupSpeed);
+        ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq)
+        : new AttackMove(entity, point, maxSpeedMovement, currentDoneDistanceSq);
 
     UnitAI uai = entity.GetComponentInChildren<UnitAI>();
     if (uai != null)
@@ -361,30 +360,6 @@ private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target,
     }
 }
 
-private float GetAttackMoveDoneDistanceSq(Entity entity, Entity target, int entitiesCount, float initialDoneDistanceSq)
-{
-    if (target != null)
-    {
-        WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-        return (weaponsAspect != null && weaponsAspect.weapon != null)
-            ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range) - 100f * 100f
-            : 100000f;
-    }
-    else
-    {
-        if (initialDoneDistanceSq > 0f) return initialDoneDistanceSq;
-        if (entitiesCount == 1) return 200f * 200f;
-        if (entitiesCount < 5) return 500f * 500f;
-        if (entitiesCount >= 10)
-        {
-            WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-            return (weaponsAspect != null && weaponsAspect.weapon != null)
-                ? (weaponsAspect.weapon.range * weaponsAspect.weapon.range)
-                : 100000f;
-        }
-        return StoppingDistanceSq(entity.entityType);
-    }
-}
     public void HandleMove(List<Entity> entities, Vector3 point,
                       bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, float doneDistanceSq = 0f, bool useLowestCruiseSpeed = false)
     {
@@ -430,44 +405,15 @@ private float GetAttackMoveDoneDistanceSq(Entity entity, Entity target, int enti
                         {
                             Vector3 waypoint = waypoints[i];
                             float currentDoneDistanceSq;
-
-                            // Use a smaller stopping distance for intermediate waypoints
                             if (i < waypoints.Length - 1)
                             {
-                                currentDoneDistanceSq = 100f * 100f;
+                                currentDoneDistanceSq = 1000f * 1000f;
                             }
-                            else // Last waypoint uses original logic
+                            else 
                             {
-                                if (entities.Count == 1)
-                                {
-                                    if (doneDistanceSq > 0f) {
-                                        currentDoneDistanceSq = doneDistanceSq;
-                                    } else {
-                                        currentDoneDistanceSq = 200f * 200f; 
-                                    }
-                                }
-                                else if (entities.Count < 5)
-                                {
-                                    currentDoneDistanceSq = 500f * 500f;
-                                }
-                                else if (entities.Count >= 10)
-                                {
-                                    WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-                                    if (weaponsAspect != null && weaponsAspect.weapon != null)
-                                    {
-                                        currentDoneDistanceSq = (weaponsAspect.weapon.range * weaponsAspect.weapon.range )- 100f * 100f ;
-                                    }
-                                    else
-                                    {
-                                        currentDoneDistanceSq = doneDistanceSq > 0f ? doneDistanceSq : StoppingDistanceSq(entity.entityType);
-                                    }
-                                }
-                                else
-                                {
-                                    currentDoneDistanceSq = StoppingDistanceSq(entity.entityType);
-                                }
+                               currentDoneDistanceSq = StoppingDistanceSq(entity, entities.Count);
                             }
-                            
+                            Debug.Log($"AIMgr: Creating Move command to waypoint {waypoint} with doneDistanceSq {currentDoneDistanceSq}");
                             Move m = new Move(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, i < waypoints.Length - 1, groupSpeed);
                             uai.AddCommand(m);
                         }
@@ -475,46 +421,16 @@ private float GetAttackMoveDoneDistanceSq(Entity entity, Entity target, int enti
                 }
                 else
                 {
-                    // Fallback to direct move if pathfinding fails
                     HandleDirectMove(entity, point, add, maxSpeedMovement, doneDistanceSq, entities.Count, groupSpeed);
                 }
             });
         }
     }
 
-    // Extracted original move logic into a separate method for fallback
     private void HandleDirectMove(Entity entity, Vector3 point, bool add, bool maxSpeedMovement, float doneDistanceSq, int entitiesCount, float groupSpeed = -1f)
     {
-        float currentDoneDistanceSq;
-        if (entitiesCount == 1)
-        {
-            if (doneDistanceSq > 0f) {
-                currentDoneDistanceSq = doneDistanceSq;
-            } else {
-                currentDoneDistanceSq = 200f * 200f; 
-            }
-        }
-        else if (entitiesCount < 5)
-        {
-            currentDoneDistanceSq = 500f * 500f;
-        }
-        else if (entitiesCount >= 10)
-        {
-            WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-            if (weaponsAspect != null && weaponsAspect.weapon != null)
-            {
-                currentDoneDistanceSq = (weaponsAspect.weapon.range * weaponsAspect.weapon.range )- 100f * 100f ;
-            }
-            else
-            {
-                currentDoneDistanceSq = doneDistanceSq > 0f ? doneDistanceSq : StoppingDistanceSq(entity.entityType);
-            }
-        }
-        else
-        {
-            currentDoneDistanceSq = StoppingDistanceSq(entity.entityType);
-        }
-
+        float currentDoneDistanceSq = StoppingDistanceSq(entity, entitiesCount);
+        
         Move m = new Move(entity, point, maxSpeedMovement, currentDoneDistanceSq, groupSpeed: groupSpeed);
         UnitAI uai = entity.GetComponentInChildren<UnitAI>();
         if (uai != null)
@@ -523,26 +439,25 @@ private float GetAttackMoveDoneDistanceSq(Entity entity, Entity target, int enti
         }
     }
 
-    public float StoppingDistanceSq(EntityType entityType)
+    public float StoppingDistanceSq(Entity entity, int entitiesCount = 1)
     {
-        // Using float literals for consistency
-        if (entityType == EntityType.DDG51)
+        if (entitiesCount == 1)
         {
-            return 800f * 800f;
+            return 200f * 200f;
         }
-        else if (entityType == EntityType.SeaHunter)
+        else if (entitiesCount < 5)
         {
             return 500f * 500f;
         }
-        else if (entityType == EntityType.JARIUSV)
+        else if (entitiesCount >= 5)
         {
-            return 400f * 400f;
+            WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
+            return weaponsAspect.weapon.range * weaponsAspect.weapon.range;
         }
         else
         {
-            return 100f * 100f;
+            return 1000f * 1000f;
         }
-       
     }
     void AddOrSet(Command c, UnitAI uai, bool add)
     {

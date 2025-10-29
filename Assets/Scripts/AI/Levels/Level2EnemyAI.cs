@@ -21,6 +21,18 @@ public class Level2EnemyAI : BaseEnemyAI
     public List<Entity> aggressiveEntities = new List<Entity>();
     public List<Entity> capturingEntities = new List<Entity>();
 
+    public override void ResetState()
+    {
+        base.ResetState();
+        hasBegunCombat = false;
+        processedCapture = false;
+        neutralBaseCaptured = false;
+        idleEntities.Clear();
+        retreatingEntities.Clear();
+        aggressiveEntities.Clear();
+        capturingEntities.Clear();
+    }
+
     public override void ProcessCombatBehavior(List<Entity> allAiEntities)
     {
         Debug.Log($"[AI STATE] Frame Update: Aggressive({aggressiveEntities.Count}), Retreating({retreatingEntities.Count}), Idle({idleEntities.Count}), Capturing({capturingEntities.Count})");
@@ -148,9 +160,14 @@ public class Level2EnemyAI : BaseEnemyAI
         {
             if (ent != null && !ent.isBeingAttacked && ent.isAttacking == false && ent.speed == 0  )
             {
-                idleEntities.Add(ent);
-                aggressiveEntities.Remove(ent);
+                toIdle.Add(ent);
             }
+        }
+
+        foreach (var ent in toIdle)
+        {
+            idleEntities.Add(ent);
+            aggressiveEntities.Remove(ent);
         }
     }
 

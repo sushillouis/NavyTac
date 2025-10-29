@@ -14,6 +14,7 @@ public class Move : Command
     protected float pathUpdateCooldown = 0.25f;
     private float pathUpdateTimer = 0f;
     private readonly float groupSpeed = -1f;
+    public float doneDistanceSq = 100f * 100f;
 
     public Move(Entity ent, Vector3 pos, bool maxSpeedMovement = false, float doneDistanceSq = 1000f, bool isWaypoint = false, float groupSpeed = -1f) : base(ent)
     {
@@ -205,17 +206,9 @@ public class Move : Command
 
         return new DHDS(dh, ds);
     }
-    public float doneDistanceSq = 100f;
-
     public override bool IsDone()
     {
         float thresholdSq = doneDistanceSq;
-        var weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-        if (weaponsAspect != null && weaponsAspect.weapon != null && weaponsAspect.weapon.range > 0f)
-        {
-            float weaponRange = weaponsAspect.weapon.range;
-            thresholdSq = weaponRange * weaponRange;
-        }
         return (entity.position - movePosition).sqrMagnitude < thresholdSq;
     }
 

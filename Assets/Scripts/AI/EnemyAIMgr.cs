@@ -220,5 +220,29 @@ public class EnemyAIMgr : MonoBehaviour
             }
         }
     }
+
+    public void ResetAI()
+    {
+        // Reset AI level to force reinitialization
+        currentLevel = 1;
+        _previousLevel = -1;
+
+        // Clear all entity lists
+        OpponentBases.Clear();
+        aiBases.Clear();
+        neutralBases.Clear();
+        aiEntitiesList.Clear();
+        playerEntitiesList.Clear();
+        neutralEntitiesList.Clear();
+
+        // Reset opponent base
+        opponentBase = null;
+
+        // Reset current AI state if exists
+        if (currentAI != null)
+        {
+            currentAI.ResetState();
+        }
+    }
 }
 

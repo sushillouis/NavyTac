@@ -16,6 +16,15 @@ public class Level1EnemyAI : BaseEnemyAI
     public List<Entity> retreatingEntities = new List<Entity>();
     public List<Entity> aggressiveEntities = new List<Entity>();
 
+    public override void ResetState()
+    {
+        base.ResetState();
+        hasBegunCombat = false;
+        idleEntities.Clear();
+        retreatingEntities.Clear();
+        aggressiveEntities.Clear();
+    }
+
     public override void ProcessCombatBehavior(List<Entity> allAiEntities)
     {
         Debug.Log($"[AI STATE] Frame Update: Aggressive({aggressiveEntities.Count}), Retreating({retreatingEntities.Count}), Idle({idleEntities.Count})");
