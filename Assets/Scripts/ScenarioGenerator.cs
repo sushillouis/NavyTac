@@ -5,17 +5,16 @@ using UnityEngine;
 public class ScenarioGenerator : MonoBehaviour
 {
     public static ScenarioGenerator inst;
-
     [Header("Scenario Entity Configuration")]
     [SerializeField] public List<EntityQuantity> entityQuantities = new();
     public Dictionary<EntityType, int> entityDict;
-
     [Header("Player Start Positions")]
     public List<Vector3> posPlayer1List = new();
     public List<float> headingPlayer1List = new();
     public List<Vector3> posPlayer2List = new();
     public List<float> headingPlayer2List = new();
-
+    public List<Vector3> neutralEntityPositions = new();
+    public List<float> neutralEntityHeadings = new();
     public float nonAdaptiveDifficulty = 0.25f;
     public float adaptiveDifficulty = 0.33f;
 
@@ -28,7 +27,6 @@ public class ScenarioGenerator : MonoBehaviour
         {"hard", 1.00f}
     };
     private Difficulty currentDifficulty;
-
     private int[,] positionRelations = new int[4, 3]
     {
         {1, 3, 2},
@@ -41,47 +39,24 @@ public class ScenarioGenerator : MonoBehaviour
 
     private void Awake()
     {
-        if (inst == null)
-        {
-            inst = this;
-        }
-        else if (inst != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        
+        inst = this;
         BuildEntityDictionary();
     }
 
-    #region Difficulty Management
-
     public void DetermineDifficulty()
     {
-        if (OpenOceanMain.inst == null) 
+        if (OpenOceanMain.inst == null)
         {
-            // Default difficulty if OpenOceanMain is not available
-            difficultyLevel = 0.333f; // Easy difficulty
+            difficultyLevel = 0.333f;
             currentDifficulty = Difficulty.Easy;
             return;
         }
-
         switch (OpenOceanMain.inst.currentTrainingState)
         {
             case TrainingState.Tutorial:
-                difficultyLevel = 0.1f; // Very easy for tutorial
+                difficultyLevel = 0.1f;
                 break;
             case TrainingState.PreTest:
-                if (OpenOceanMain.inst.gamePlayCountMAX > 0)
-                {
-                    float progress = (float)OpenOceanMain.inst.gamesPlayedCount / OpenOceanMain.inst.gamePlayCountMAX;
-                    difficultyLevel = progress < 0.6f ? 0.2f : 0.5f;
-                }
-                else
-                {
-                    difficultyLevel = 0.333f; 
-                }
-                break;
             case TrainingState.PostTest:
                 if (OpenOceanMain.inst.gamePlayCountMAX > 0)
                 {
@@ -90,7 +65,7 @@ public class ScenarioGenerator : MonoBehaviour
                 }
                 else
                 {
-                    difficultyLevel = 0.333f; 
+                    difficultyLevel = 0.333f;
                 }
                 break;
             case TrainingState.Adaptive:
@@ -100,13 +75,10 @@ public class ScenarioGenerator : MonoBehaviour
                 difficultyLevel = nonAdaptiveDifficulty;
                 break;
             default:
-                difficultyLevel = 0.333f; // Default to easy
+                difficultyLevel = 0.333f;
                 break;
         }
-
-        // Ensure difficulty level is within valid range
         difficultyLevel = Mathf.Clamp(difficultyLevel, 0.05f, 1f);
-
         if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
         else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
         else currentDifficulty = Difficulty.Hard;
@@ -114,86 +86,65 @@ public class ScenarioGenerator : MonoBehaviour
 
     private float ComputeAdaptiveDifficulty()
     {
-        // Start with a reasonable default if no previous difficulty is set
-        if (difficultyLevel <= 0f)
-        {
-            difficultyLevel = adaptiveDifficulty; // Start with Easy difficulty
-        }
-
+        if (difficultyLevel <= 0f) difficultyLevel = adaptiveDifficulty;
         if (ScoreMgr.inst != null)
         {
-            if (ScoreMgr.inst.playerScores.Count == 0)
-            {
-                return difficultyLevel;
-            }
-            
+            if (ScoreMgr.inst.playerScores.Count == 0) return difficultyLevel;
             float lastScore = ScoreMgr.inst.playerScores[^1];
             float adjustment = 0.07f * lastScore / 100f;
             difficultyLevel += adjustment;
         }
-        
         return Mathf.Clamp(difficultyLevel, 0.05f, 1f);
     }
-
-    #endregion
-
-    #region Scenario Generation
 
     public ScenarioData GenerateScenario(TrainingState trainingState)
     {
         DetermineDifficulty();
-
         ScenarioData scenario = new ScenarioData
         {
             scenarioNumber = allScenarios.Count + 1,
             difficultyLevel = difficultyLevel,
-            timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+            trainingState = trainingState
         };
 
         if (trainingState == TrainingState.Tutorial)
         {
+            AdjustNonAdaptiveEntitySpeed();
             GenerateTutorialScenario(scenario);
         }
         else
         {
+            if (trainingState == TrainingState.Adaptive) AdjustAdaptiveEntitySpeed();
+            else AdjustNonAdaptiveEntitySpeed();
             GenerateStandardScenario(scenario, trainingState);
         }
-
         return scenario;
     }
 
     private void GenerateTutorialScenario(ScenarioData scenario)
     {
-        // Set all entity counts to 1 for tutorial
         scenario.entityQuantities = new List<EntityQuantity>();
         foreach (EntityQuantity eq in entityQuantities)
-        {
             scenario.entityQuantities.Add(new EntityQuantity { entityType = eq.entityType, unitCount = 1 });
-        }
 
-        // Simple positioning for tutorial
         scenario.Player1Positions.Add(new Vector3(0, 0, 0));
-        scenario.Player1Headings.Add(0f); // Facing North
-
+        scenario.Player1Headings.Add(0f);
         scenario.Player2Positions.Add(new Vector3(0, 0, 7000));
-        scenario.Player2Headings.Add(180f); // Facing South
+        scenario.Player2Headings.Add(180f);
     }
 
     private void GenerateStandardScenario(ScenarioData scenario, TrainingState trainingState)
     {
-        // Adjust unit counts based on training state
+        scenario.entityQuantities = new List<EntityQuantity>();
+        foreach (EntityQuantity baseEq in entityQuantities)
+            scenario.entityQuantities.Add(new EntityQuantity { entityType = baseEq.entityType, unitCount = baseEq.unitCount });
+
         if (trainingState == TrainingState.Adaptive)
-        {
-            AdjustAdaptiveUnitCounts();
-        }
+            AdjustAdaptiveUnitCounts(scenario.entityQuantities);
         else
-        {
-            AdjustNonAdaptiveUnitCounts();
-        }
+            AdjustNonAdaptiveUnitCounts(scenario.entityQuantities);
 
-        scenario.entityQuantities = new List<EntityQuantity>(entityQuantities);
-
-        // Generate positions
         GeneratePlayerPositions(scenario);
     }
 
@@ -202,64 +153,40 @@ public class ScenarioGenerator : MonoBehaviour
         StartingPosition[] allPositions = new StartingPosition[]
         {
             new() { position = new(0, 0, -7000), heading = 0 },
-            new() { position = new(0, 0, 7000),  heading = 180 },
+            new() { position = new(0, 0, 7000), heading = 180 },
             new() { position = new(-7000, 0, 0), heading = 90 },
-            new() { position = new(7000, 0, 0),  heading = 270 }
+            new() { position = new(7000, 0, 0), heading = 270 }
         };
-
-        // Assign player 1 position
         int player1Index = UnityEngine.Random.Range(0, allPositions.Length);
         StartingPosition p1StartPos = allPositions[player1Index];
         scenario.Player1Positions.Add(p1StartPos.position);
         scenario.Player1Headings.Add(p1StartPos.heading);
-
-        // Assign player 2 position based on difficulty
         List<int> player2ValidIndices = GetValidPlayer2Positions(player1Index);
-        int player2AssignedIndex = player1Index;
-        if (player2ValidIndices.Count > 0)
-        {
-            player2AssignedIndex = player2ValidIndices[UnityEngine.Random.Range(0, player2ValidIndices.Count)];
-        }
-        else
-        {
-            for (int i = 0; i < allPositions.Length; ++i)
-            {
-                if (i != player1Index)
-                {
-                    player2AssignedIndex = i;
-                    break;
-                }
-            }
-        }
-
+        int player2AssignedIndex = player2ValidIndices.Count > 0
+            ? player2ValidIndices[UnityEngine.Random.Range(0, player2ValidIndices.Count)]
+            : (player1Index + 1) % allPositions.Length;
         StartingPosition p2StartPos = allPositions[player2AssignedIndex];
         scenario.Player2Positions.Add(p2StartPos.position);
         scenario.Player2Headings.Add(p2StartPos.heading);
     }
 
-    #endregion
-
-    #region Unit Count Adjustments
-
-    private void AdjustAdaptiveUnitCounts()
+    private void AdjustAdaptiveUnitCounts(List<EntityQuantity> scenarioQuantities)
     {
-        foreach (EntityQuantity eq in entityQuantities)
+        foreach (EntityQuantity eq in scenarioQuantities)
         {
             if (eq.entityType == EntityType.Rig_Balder)
             {
                 eq.unitCount = 1;
                 continue;
             }
-            // Calculate unit count based on difficulty level, ensuring minimum of 1
             int calculatedCount = Mathf.RoundToInt(21.25f * difficultyLevel - 1.25f);
             eq.unitCount = Mathf.Max(1, calculatedCount);
         }
-        BuildEntityDictionary();
     }
 
-    private void AdjustNonAdaptiveUnitCounts()
+    private void AdjustNonAdaptiveUnitCounts(List<EntityQuantity> scenarioQuantities)
     {
-        foreach (EntityQuantity eq in entityQuantities)
+        foreach (EntityQuantity eq in scenarioQuantities)
         {
             if (eq.entityType == EntityType.Rig_Balder)
             {
@@ -274,24 +201,16 @@ public class ScenarioGenerator : MonoBehaviour
                 _ => eq.unitCount
             };
         }
-        BuildEntityDictionary();
     }
-
-    #endregion
-
-    #region Entity Speed Adjustments
 
     public void AdjustAdaptiveEntitySpeed()
     {
         float range = 2f;
         float speedFactor = 1f + difficultyLevel * range;
-
         foreach (GameObject prefabGo in EntityMgr.inst.entityPrefabs)
         {
             var prefab = prefabGo.GetComponent<Entity>();
             if (prefab == null || prefab.entityType == EntityType.Rig_Balder) continue;
-
-            // SetAccelerationAndTurnRate(prefab, speedFactor);
         }
     }
 
@@ -304,20 +223,15 @@ public class ScenarioGenerator : MonoBehaviour
             Difficulty.Hard => 3f,
             _ => 1f
         };
-
         foreach (GameObject prefabGo in EntityMgr.inst.entityPrefabs)
         {
             var prefab = prefabGo.GetComponent<Entity>();
             if (prefab == null || prefab.entityType == EntityType.Rig_Balder) continue;
         }
     }
-    #endregion
-
-    #region Spawning
 
     public void SpawnScenario(ScenarioData scenario)
     {
-        // Copy scenario data to local lists for spawning
         entityQuantities = new List<EntityQuantity>(scenario.entityQuantities);
         posPlayer1List = new List<Vector3>(scenario.Player1Positions);
         headingPlayer1List = new List<float>(scenario.Player1Headings);
@@ -325,19 +239,17 @@ public class ScenarioGenerator : MonoBehaviour
         headingPlayer2List = new List<float>(scenario.Player2Headings);
         difficultyLevel = scenario.difficultyLevel;
 
+        if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
+        else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
+        else currentDifficulty = Difficulty.Hard;
+
         BuildEntityDictionary();
 
         if (scenario.Player1Positions.Count == 1 && scenario.Player1Positions[0] == Vector3.zero &&
             scenario.Player2Positions.Count == 1 && scenario.Player2Positions[0] == new Vector3(0, 0, 7000))
-        {
-            // This is a tutorial scenario
             SpawnTutorialEntities();
-        }
         else
-        {
-            // Standard scenario
-            SpawnStandardEntities();
-        }
+            SpawnStandardEntities(scenario);
 
         ApplyGreyOverlays();
     }
@@ -352,15 +264,11 @@ public class ScenarioGenerator : MonoBehaviour
         }
     }
 
-    public void SpawnStandardEntities()
+    public void SpawnStandardEntities(ScenarioData scenario)
     {
         if (PlayerMgr.inst == null || SpawnEntityMgr.inst == null) return;
-
-        // Spawn players
         SpawnWithExistingPositions();
-
-        // Spawn neutral entities based on difficulty
-        SpawnNeutralEntities();
+        SpawnNeutralEntities(scenario);
     }
 
     public void SpawnWithExistingPositions()
@@ -368,27 +276,22 @@ public class ScenarioGenerator : MonoBehaviour
         if (PlayerMgr.inst != null && SpawnEntityMgr.inst != null)
         {
             for (int i = 0; i < posPlayer1List.Count; i++)
-            {
                 SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer1List[i], headingPlayer1List[i], PlayerMgr.inst.player1);
-            }
             for (int i = 0; i < posPlayer2List.Count; i++)
-            {
                 SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(posPlayer2List[i], headingPlayer2List[i], PlayerMgr.inst.player2);
-            }
         }
     }
 
-    private void SpawnNeutralEntities()
+    private void SpawnNeutralEntities(ScenarioData scenario)
     {
         StartingPosition[] allPositions = new StartingPosition[]
         {
             new() { position = new(0, 0, -7000), heading = 0 },
-            new() { position = new(0, 0, 7000),  heading = 180 },
+            new() { position = new(0, 0, 7000), heading = 180 },
             new() { position = new(-7000, 0, 0), heading = 90 },
-            new() { position = new(7000, 0, 0),  heading = 270 }
+            new() { position = new(7000, 0, 0), heading = 270 }
         };
 
-        // Find positions already used by players
         List<int> usedIndices = new();
         for (int i = 0; i < allPositions.Length; i++)
         {
@@ -400,6 +303,7 @@ public class ScenarioGenerator : MonoBehaviour
                     break;
                 }
             }
+            if (usedIndices.Contains(i)) continue;
             for (int j = 0; j < posPlayer2List.Count; j++)
             {
                 if (Vector3.Distance(allPositions[i].position, posPlayer2List[j]) < 100f)
@@ -414,37 +318,35 @@ public class ScenarioGenerator : MonoBehaviour
         for (int i = 0; i < allPositions.Length; ++i)
         {
             if (!usedIndices.Contains(i))
-            {
                 neutralIndices.Add(i);
-            }
         }
 
-        // Spawn neutral entities based on difficulty
         var neutralPlayer = PlayerMgr.inst?.neutral;
         if (neutralPlayer != null && SpawnEntityMgr.inst != null)
         {
-            if (currentDifficulty == Difficulty.Medium && neutralIndices.Count > 0)
+            if (currentDifficulty != Difficulty.Easy && neutralIndices.Count > 0)
             {
-                // Medium: spawn at one place
-                SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(
-                    allPositions[neutralIndices[0]].position,
-                    allPositions[neutralIndices[0]].heading,
-                    neutralPlayer
-                );
+                int idx = neutralIndices[0];
+                scenario.isNeutralBaseAvailable = true;
+                scenario.NeutralBasePositions.Add(allPositions[idx].position);
+                scenario.NeutralBaseHeadings.Add(allPositions[idx].heading);
+                SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(allPositions[idx].position, allPositions[idx].heading, neutralPlayer);
+                neutralEntityHeadings.Add(allPositions[idx].heading);
+                neutralEntityPositions.Add(allPositions[idx].position);
             }
-            else if (currentDifficulty == Difficulty.Hard && neutralIndices.Count > 0)
-            {
-                // Hard: spawn at two places if possible
-                for (int i = 0; i < Mathf.Min(2, neutralIndices.Count); i++)
-                {
-                    SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(
-                        allPositions[neutralIndices[i]].position,
-                        allPositions[neutralIndices[i]].heading,
-                        neutralPlayer
-                    );
-                }
-            }
-            // Easy: do not spawn neutral entities
+        }
+    }
+
+    private void SpawnNeutralEntitiesFromData(ScenarioData data)
+    {
+        if (!data.isNeutralBaseAvailable) return;
+        var neutralPlayer = PlayerMgr.inst?.neutral;
+        if (neutralPlayer == null || SpawnEntityMgr.inst == null) return;
+        for (int i = 0; i < data.NeutralBasePositions.Count; i++)
+        {
+            var pos = data.NeutralBasePositions[i];
+            var hdg = i < data.NeutralBaseHeadings.Count ? data.NeutralBaseHeadings[i] : 0f;
+            SpawnEntityMgr.inst.SpawnEntitiesFromDictionary(pos, hdg, neutralPlayer);
         }
     }
 
@@ -454,15 +356,9 @@ public class ScenarioGenerator : MonoBehaviour
         foreach (Entity e in allEntities)
         {
             if (e.TryGetComponent<GreyOverlayGenerator>(out var greyOverlay))
-            {
                 greyOverlay.ApplyGreyOverlay();
-            }
         }
     }
-
-    #endregion
-
-    #region Utility Methods
 
     private List<int> GetValidPlayer2Positions(int player1Index)
     {
@@ -491,10 +387,7 @@ public class ScenarioGenerator : MonoBehaviour
                 entityDict[eq.entityType] = Mathf.Min(eq.unitCount, 1);
                 continue;
             }
-            
-            // Ensure unit count is at least 0 (no negative counts)
             int safeUnitCount = Mathf.Max(0, eq.unitCount);
-            
             if (entityDict.ContainsKey(eq.entityType))
                 entityDict[eq.entityType] += safeUnitCount;
             else
@@ -504,45 +397,30 @@ public class ScenarioGenerator : MonoBehaviour
 
     public void GenerateTwoVsTwoScenario()
     {
-        // Define all possible starting positions and headings
         StartingPosition northStart = new() { position = new(0, 0, -7000), heading = 0 };
         StartingPosition southStart = new() { position = new(0, 0, 7000), heading = 180 };
         StartingPosition westStart = new() { position = new(-7000, 0, 0), heading = 90 };
         StartingPosition eastStart = new() { position = new(7000, 0, 0), heading = 270 };
-
-        // Clear existing lists to prepare for the new scenario
         posPlayer1List.Clear();
         headingPlayer1List.Clear();
         posPlayer2List.Clear();
         headingPlayer2List.Clear();
-
-        // Assign two starting positions and headings for Player 1
         posPlayer1List.Add(northStart.position);
         headingPlayer1List.Add(northStart.heading);
         posPlayer1List.Add(westStart.position);
         headingPlayer1List.Add(westStart.heading);
-
-        // Assign the remaining two starting positions and headings for Player 2
         posPlayer2List.Add(southStart.position);
         headingPlayer2List.Add(southStart.heading);
         posPlayer2List.Add(eastStart.position);
         headingPlayer2List.Add(eastStart.heading);
-
-        // Ensure the entity dictionary reflects the current unit counts
         BuildEntityDictionary();
-
-        // Spawn the entities for both players at their designated starting locations
         SpawnWithExistingPositions();
     }
-
-    #endregion
-
-    #region Scenario Data Management
 
     public void StoreCurrentScenario()
     {
         if (ReplayMgr.inst != null && ReplayMgr.inst.isReplaying) return;
-
+        TrainingState currentState = OpenOceanMain.inst != null ? OpenOceanMain.inst.currentTrainingState : TrainingState.NonAdaptive;
         ScenarioData data = new()
         {
             scenarioNumber = allScenarios.Count + 1,
@@ -552,13 +430,16 @@ public class ScenarioGenerator : MonoBehaviour
             Player2Positions = new(posPlayer2List),
             Player2Headings = new(headingPlayer2List),
             difficultyLevel = difficultyLevel,
+            trainingState = currentState,
+            isNeutralBaseAvailable = true,
+            NeutralBasePositions = new(neutralEntityPositions),
+            NeutralBaseHeadings = new(neutralEntityHeadings),
             winLoss = ScoreMgr.inst != null && ScoreMgr.inst.playerWon,
             winReason = ScoreMgr.inst != null ? ScoreMgr.inst.winReason : "Unknown",
             score = ScoreMgr.inst != null ? ScoreMgr.inst.score : 0f,
-            totalTime = OpenOceanMain.inst.playSessionDuration,
+            totalTime = OpenOceanMain.inst != null ? OpenOceanMain.inst.playSessionDuration : 0f,
             timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
         };
-
         SaveScenario(data);
     }
 
@@ -575,18 +456,25 @@ public class ScenarioGenerator : MonoBehaviour
         posPlayer2List = new(data.Player2Positions);
         headingPlayer2List = new(data.Player2Headings);
         difficultyLevel = data.difficultyLevel;
-        
-        DetermineDifficulty();
+        BuildEntityDictionary();
+        if (difficultyLevel <= difficultyRanges["easy"]) currentDifficulty = Difficulty.Easy;
+        else if (difficultyLevel <= difficultyRanges["medium"]) currentDifficulty = Difficulty.Medium;
+        else currentDifficulty = Difficulty.Hard;
+        switch (data.trainingState)
+        {
+            case TrainingState.Adaptive: AdjustAdaptiveEntitySpeed(); break;
+            case TrainingState.Tutorial:
+            case TrainingState.PreTest:
+            case TrainingState.PostTest:
+            case TrainingState.NonAdaptive:
+            default: AdjustNonAdaptiveEntitySpeed(); break;
+        }
         SpawnWithExistingPositions();
+        if (data.isNeutralBaseAvailable) SpawnNeutralEntitiesFromData(data);
+        ApplyGreyOverlays();
     }
-
-    #endregion
-
-    #region Public Properties
 
     public float CurrentDifficultyLevel => difficultyLevel;
     public Difficulty CurrentDifficulty => currentDifficulty;
     public Dictionary<EntityType, int> EntityDictionary => entityDict;
-
-    #endregion
 }

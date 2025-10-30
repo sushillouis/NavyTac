@@ -254,11 +254,7 @@ public class ScoreMgr : MonoBehaviour
 
             if (ReplayMgr.inst != null)
             {
-                // Capture a snapshot right now to avoid empty snapshot set
-                ReplayMgr.inst.ForceSnapshotNow();
-
-                // Prefer in-memory JSON for the current scenario
-                jsonData = ReplayMgr.inst.GetCurrentScenarioReplayJson();
+        
 
                 // If unavailable, try the latest saved replay file as a fallback
                 if (string.IsNullOrEmpty(jsonData))

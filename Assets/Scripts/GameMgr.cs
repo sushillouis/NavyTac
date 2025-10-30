@@ -22,17 +22,21 @@ public struct StartingPosition
 public class ScenarioData
 {
     public int scenarioNumber;
-    public List<EntityQuantity> entityQuantities;
+    public List<EntityQuantity> entityQuantities = new();
     public List<Vector3> Player1Positions = new();
     public List<float> Player1Headings = new();
     public List<Vector3> Player2Positions = new();
     public List<float> Player2Headings = new();
     public float difficultyLevel;
-    public string timestamp;
+    public bool isNeutralBaseAvailable;
+    public List<Vector3> NeutralBasePositions = new();
+    public List<float> NeutralBaseHeadings = new();
+    public TrainingState trainingState;
     public bool winLoss;
     public string winReason;
     public float score;
     public float totalTime;
+    public string timestamp;
 }
 
 public class GameMgr : MonoBehaviour
@@ -45,6 +49,7 @@ public class GameMgr : MonoBehaviour
     [SerializeField] public int seedPostTest = 20;
     [SerializeField] public int seedAdaptive = 30;
     [SerializeField] public int seedNonAdaptive = 40;
+    public int selectedSeed;
 
     public float min = 1;
     public float max = 5;
@@ -113,7 +118,7 @@ public class GameMgr : MonoBehaviour
 
     public int GetSelectedSeed()
     {
-        int selectedSeed = seedPreTest;
+        selectedSeed = seedPreTest;
         if (OpenOceanMain.inst != null)
         {
             switch (OpenOceanMain.inst.currentTrainingState)

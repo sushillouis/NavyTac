@@ -5,14 +5,14 @@ using System.Linq;
 
 public class CaptureNeutralBaseMgr : MonoBehaviour
 {
-    [Range(0, 220)] public float captureProgressEnemy = 0f; // 0 (enemy fully captured) to 220 (player fully captured)
-    [Range(0, 220)] public float captureProgressPlayer = 0f; // 0 (enemy fully captured) to 220 (player fully captured)
+    [Range(0, 220)] public float captureProgressEnemy = 0f;
+    [Range(0, 220)] public float captureProgressPlayer = 0f;
     public Image enemyFill;   // Red (fills from left)
     public Image playerFill;  // Blue (fills from right)
     public Image background; // Background image for the capture bar
     public TMP_Text CaptureText; // Text to display capture progress
-    public float maxWidth = 220f; // Total width of the background image
-    private float captureProgress = 0f; // Initial neutral state (halfway between enemy and player)
+    public float maxWidth = 220f;
+    private float captureProgress = 0f;
 
     private bool isCaptured = false;
     public static CaptureNeutralBaseMgr inst;
@@ -23,18 +23,25 @@ public class CaptureNeutralBaseMgr : MonoBehaviour
 
     void Update()
     {
+        if (isCaptured)
+        {
+            // Base is captured, ensure UI is hidden
+            DeactivateUIElements();
+            return;
+        }
+
         if (CheckCaptureCompletion())
         {
             return;
         }
-            HandleCaptureLogic();
-            UpdateCaptureProgress();
-            UpdateUIWidths();
+
+        HandleCaptureLogic();
+        UpdateCaptureProgress();
+        UpdateUIWidths();
 
         if (IsNeutralEntityVisible())
         {
             ActivateUIElements();
-
         }
         else
         {
@@ -76,23 +83,35 @@ public class CaptureNeutralBaseMgr : MonoBehaviour
             }
         }
 
-        float captureRate = Time.deltaTime * (maxWidth / 60f); // Base capture rate for one entity in 60 seconds
+        float captureRate = Time.deltaTime * (maxWidth / 60f);
 
-        if (playerEntitiesInRange > enemyEntitiesInRange)
-        {
-            int netEntities = playerEntitiesInRange - enemyEntitiesInRange;
-            captureProgressPlayer += captureRate * netEntities;
-            captureProgressEnemy -= captureRate * netEntities;
-        }
-        else if (enemyEntitiesInRange > playerEntitiesInRange)
-        {
-            int netEntities = enemyEntitiesInRange - playerEntitiesInRange;
-            captureProgressEnemy += captureRate * netEntities;
-            captureProgressPlayer -= captureRate * netEntities;
-        }
-        // If equal, do nothing (no progress for either side)
+        // Calculate net advantage
+        int netPlayerAdvantage = playerEntitiesInRange - enemyEntitiesInRange;
+        int netEnemyAdvantage = enemyEntitiesInRange - playerEntitiesInRange;
 
-        // Clamp to prevent negative progress
+        // Player has more entities - capture from enemy
+        if (netPlayerAdvantage > 0)
+        {
+            captureProgressPlayer += captureRate * netPlayerAdvantage;
+            // Reduce enemy progress when player is capturing
+            if (captureProgressEnemy > 0)
+            {
+                captureProgressEnemy -= captureRate * netPlayerAdvantage;
+            }
+        }
+        // Enemy has more entities - capture from player
+        else if (netEnemyAdvantage > 0)
+        {
+            captureProgressEnemy += captureRate * netEnemyAdvantage;
+            // Reduce player progress when enemy is capturing
+            if (captureProgressPlayer > 0)
+            {
+                captureProgressPlayer -= captureRate * netEnemyAdvantage;
+            }
+        }
+        // If equal numbers or no entities, no progress change
+
+        // Clamp values
         captureProgressPlayer = Mathf.Clamp(captureProgressPlayer, 0f, maxWidth);
         captureProgressEnemy = Mathf.Clamp(captureProgressEnemy, 0f, maxWidth);
     }
@@ -127,52 +146,54 @@ public class CaptureNeutralBaseMgr : MonoBehaviour
                 }
             }
 
+            // Hide UI after capture
+            DeactivateUIElements();
             return true;
         }
         return false;
     }
 
-   private void ChangeOwnership(TactPlayer newOwner)
-{
-    foreach (Entity entity in EnemyAIMgr.inst.neutralBases)
+    private void ChangeOwnership(TactPlayer newOwner)
     {
-        if (entity != null && entity.owner != newOwner)
+        foreach (Entity entity in EnemyAIMgr.inst.neutralBases)
         {
-            entity.owner = newOwner;
-            entity.SetEntityColors();
-            UpdateEntityQuantities(newOwner, entity.entityType);
+            if (entity != null && entity.owner != newOwner)
+            {
+                entity.owner = newOwner;
+                entity.SetEntityColors();
+                UpdateEntityQuantities(newOwner, entity.entityType);
+            }
+        }
+
+        foreach (Entity entity in EnemyAIMgr.inst.neutralEntitiesList)
+        {
+            if (entity != null && entity.owner != newOwner)
+            {
+                entity.owner = newOwner;
+                entity.SetEntityColors();
+                UpdateEntityQuantities(newOwner, entity.entityType);
+            }
         }
     }
 
-    foreach (Entity entity in EnemyAIMgr.inst.neutralEntitiesList)
+    private void UpdateEntityQuantities(TactPlayer owner, EntityType type)
     {
-        if (entity != null && entity.owner != newOwner)
+        if (owner == PlayerMgr.inst.player1 || owner == PlayerMgr.inst.player2)
         {
-            entity.owner = newOwner;
-            entity.SetEntityColors();
-            UpdateEntityQuantities(newOwner, entity.entityType);
-        }
-    }
-}
-private void UpdateEntityQuantities(TactPlayer owner, EntityType type)
-{
-    if (owner == PlayerMgr.inst.player1 || owner == PlayerMgr.inst.player2)
-    {
-        var eqList = GameMgr.inst.entityQuantities;
-        var entry = eqList.FirstOrDefault(eq => eq.entityType == type);
-        if (entry != null)
-        {
-            entry.unitCount += 1;
-        }
-        else
-        {
-            eqList.Add(new EntityQuantity { entityType = type, unitCount = 1 });
-        }
+            var eqList = GameMgr.inst.entityQuantities;
+            var entry = eqList.FirstOrDefault(eq => eq.entityType == type);
+            if (entry != null)
+            {
+                entry.unitCount += 1;
+            }
+            else
+            {
+                eqList.Add(new EntityQuantity { entityType = type, unitCount = 1 });
+            }
 
-        ScenarioGenerator.inst.BuildEntityDictionary();
+            ScenarioGenerator.inst.BuildEntityDictionary();
+        }
     }
-}
-    
 
     private void ActivateUIElements()
     {
@@ -192,13 +213,12 @@ private void UpdateEntityQuantities(TactPlayer owner, EntityType type)
 
     private void UpdateCaptureProgress()
     {
-        captureProgressEnemy = Mathf.Clamp(captureProgressEnemy, 0f, maxWidth);
-        captureProgressPlayer = Mathf.Clamp(captureProgressPlayer, 0f, maxWidth);
-
+        // Ensure total doesn't exceed maxWidth
         float totalProgress = captureProgressEnemy + captureProgressPlayer;
         if (totalProgress > maxWidth)
         {
             float excess = totalProgress - maxWidth;
+            // Remove excess from the side that has more progress
             if (captureProgressEnemy > captureProgressPlayer)
             {
                 captureProgressEnemy -= excess;
@@ -227,10 +247,14 @@ private void UpdateEntityQuantities(TactPlayer owner, EntityType type)
                 playerRect.sizeDelta = new Vector2(playerWidth, playerRect.sizeDelta.y);
         }
     }
+
     private bool IsNeutralEntityVisible()
     {
+        // Don't show UI if base is already captured
+        if (isCaptured) return false;
+
         Entity neutralBase = EnemyAIMgr.inst?.neutralBases?.Count > 0 ? EnemyAIMgr.inst.neutralBases[0] : null;
-        if (neutralBase == null || neutralBase.transform == null || Camera.main == null || isCaptured || !neutralBase.isVisible)
+        if (neutralBase == null || neutralBase.transform == null || Camera.main == null || !neutralBase.isVisible)
         {
             return false;
         }
@@ -245,13 +269,20 @@ private void UpdateEntityQuantities(TactPlayer owner, EntityType type)
             {
                 if (hit.transform == neutralBase.transform)
                 {
-                    return true; // Neutral entity is visible and not obstructed
+                    return true;
                 }
             }
         }
 
-        return false; // Neutral entity is not visible or is obstructed
+        return false;
     }
 
-
+    // Optional: Reset capture progress if needed (for game restarts, etc.)
+    public void ResetCapture()
+    {
+        isCaptured = false;
+        captureProgressEnemy = 0f;
+        captureProgressPlayer = 0f;
+        DeactivateUIElements();
+    }
 }

@@ -29,11 +29,16 @@ public class Move : Command
     }
 
     public LineRenderer potentialLine;
-    // Boundary avoidance settings are stored centrally on AIMgr.inst
+    
+    // Terrain avoidance parameters
+    private float emergencyAvoidanceTimer = 0f;
+    private const float EMERGENCY_AVOIDANCE_COOLDOWN = 0.1f;
+    private Vector3 lastSafeDirection = Vector3.zero;
 
     public override void Init()
     {
-        pathUpdateTimer = 0f; // Ensure path is calculated on first tick
+        pathUpdateTimer = 0f;
+        emergencyAvoidanceTimer = 0f;
         line = LineMgr.inst.CreateMoveLine(entity.position, movePosition, entity.isAI);
         if (line != null)
         {
@@ -49,8 +54,12 @@ public class Move : Command
     public override void Tick()
     {
         pathUpdateTimer -= Time.deltaTime;
+        emergencyAvoidanceTimer -= Time.deltaTime;
 
-        if (pathUpdateTimer <= 0f)
+        // Emergency terrain avoidance (runs every frame)
+        bool emergencyAvoidanceActive = CheckImmediateTerrainDanger();
+
+        if (pathUpdateTimer <= 0f && !emergencyAvoidanceActive)
         {
             pathUpdateTimer = pathUpdateCooldown;
             DHDS dhds;
@@ -65,6 +74,7 @@ public class Move : Command
 
         if (line != null)
         {
+            line.SetPosition(0, entity.position);
             line.SetPosition(1, movePosition);
         }
 
@@ -151,6 +161,9 @@ public class Move : Command
         repulsivePotential = Vector3.zero;
         Potential pot;
 
+        // Enhanced terrain repulsion - call this FIRST for highest priority
+        ApplyEnhancedTerrainRepulsion();
+        
         // Entity Repulsion
         foreach (Entity otherEnt in EntityMgr.inst.entities)
         {
@@ -174,12 +187,18 @@ public class Move : Command
                 }
             }
         }
-        // ApplyObstacleRepulsion();
+
+        // Apply obstacle repulsion
+        ApplyObstacleRepulsion();
+        
         // Boundary object repulsion computed via DistanceMgr Burst job
         if (DistanceMgr.inst != null)
         {
-            repulsivePotential += DistanceMgr.inst.GetBoundaryRepulsion(entity);
+            Vector3 boundaryRepulsion = DistanceMgr.inst.GetBoundaryRepulsion(entity);
+            // Apply boundary repulsion with higher priority
+            repulsivePotential += boundaryRepulsion * 2f;
         }
+
         Vector3 tmp = diffToMovePosition.sqrMagnitude > 0.0001f
             ? diffToMovePosition.normalized
             : Vector3.zero;
@@ -188,24 +207,228 @@ public class Move : Command
 
         potentialSum = attractivePotential - repulsivePotential;
 
+        // Apply minimum repulsion force away from terrain
+        ApplyMinimumTerrainAvoidance(ref potentialSum);
+
         dh = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(potentialSum.x, potentialSum.z));
 
         angleDiff = Utils.Degrees360(Utils.AngleDiffPosNeg(dh, entity.heading));
         cosValue = (Mathf.Cos(angleDiff * Mathf.Deg2Rad) + 1) / 2.0f;
-        float baseSpeed;
-        if(groupSpeed > 0)
-        {
-            baseSpeed = groupSpeed;
-        }
-        else
-        {
-            baseSpeed = useMaxSpeedMovement ? entity.maxSpeed : entity.cruiseSpeed;
-        }
+        float baseSpeed = GetTerrainAwareSpeed();
         
         ds = isWaypoint ? baseSpeed : baseSpeed * cosValue;
 
         return new DHDS(dh, ds);
     }
+
+    void ApplyEnhancedTerrainRepulsion()
+    {
+        var aimgr = AIMgr.inst;
+        Vector3 entityPos = entity.position;
+        
+        // Multiple proximity checks for better terrain awareness
+        float[] checkDistances = { 50f, 100f, 200f }; // Close, medium, far
+        float[] weights = { 3f, 1.5f, 0.5f }; // Higher weight for closer terrain
+        
+        int terrainLayerMask = LayerMask.GetMask("Terrain");
+        
+        for (int i = 0; i < checkDistances.Length; i++)
+        {
+            float checkDistance = checkDistances[i];
+            float weight = weights[i];
+            
+            // Check in movement direction
+            Vector3 moveDirection = (movePosition - entityPos).normalized;
+            if (Physics.Raycast(entityPos, moveDirection, out RaycastHit hit, checkDistance, terrainLayerMask))
+            {
+                if (hit.point.y > 0) // Only consider above-water terrain
+                {
+                    float avoidanceStrength = (1f - (hit.distance / checkDistance)) * weight;
+                    Vector3 avoidanceDir = -hit.normal;
+                    repulsivePotential += avoidanceDir * aimgr.repulsive2Coefficient * avoidanceStrength * entity.mass * 2f;
+                }
+            }
+            
+            // Additional check straight down for ground proximity
+            if (Physics.Raycast(entityPos, Vector3.down, out RaycastHit groundHit, checkDistance, terrainLayerMask))
+            {
+                if (groundHit.point.y > 0 && groundHit.distance < checkDistance * 0.5f)
+                {
+                    float groundAvoidance = (1f - (groundHit.distance / (checkDistance * 0.5f))) * weight * 3f;
+                    repulsivePotential += Vector3.up * aimgr.repulsive2Coefficient * groundAvoidance * entity.mass;
+                }
+            }
+        }
+    }
+
+    void ApplyMinimumTerrainAvoidance(ref Vector3 potentialSum)
+    {
+        // Ensure there's always some minimal avoidance force
+        Vector3 entityPos = entity.position;
+        int terrainLayerMask = LayerMask.GetMask("Terrain");
+        float emergencyDistance = 75f;
+        
+        // Check for immediate terrain danger
+        if (Physics.Raycast(entityPos, entity.velocity.normalized, out RaycastHit hit, emergencyDistance, terrainLayerMask))
+        {
+            if (hit.point.y > 0)
+            {
+                float dangerLevel = 1f - (hit.distance / emergencyDistance);
+                Vector3 emergencyAvoidance = -hit.normal * dangerLevel * 8f; // Strong avoidance
+                potentialSum += emergencyAvoidance;
+                
+                // Store safe direction for emergency use
+                lastSafeDirection = Vector3.Cross(hit.normal, Vector3.up).normalized;
+                if (Vector3.Dot(lastSafeDirection, (movePosition - entityPos).normalized) < 0)
+                    lastSafeDirection = -lastSafeDirection;
+            }
+        }
+    }
+
+    float GetTerrainAwareSpeed()
+    {
+        float baseSpeed = groupSpeed > 0 ? groupSpeed : 
+                         (useMaxSpeedMovement ? entity.maxSpeed : entity.cruiseSpeed);
+        
+        // Reduce speed when close to terrain
+        Vector3 entityPos = entity.position;
+        int terrainLayerMask = LayerMask.GetMask("Terrain");
+        float slowDownDistance = 150f;
+        
+        if (Physics.Raycast(entityPos, entity.velocity.normalized, out RaycastHit hit, slowDownDistance, terrainLayerMask))
+        {
+            if (hit.point.y > 0)
+            {
+                float slowFactor = Mathf.Clamp01(hit.distance / slowDownDistance);
+                return baseSpeed * Mathf.Lerp(0.3f, 1f, slowFactor);
+            }
+        }
+        
+        return baseSpeed;
+    }
+
+    bool CheckImmediateTerrainDanger()
+    {
+        if (emergencyAvoidanceTimer > 0f) return false;
+
+        Vector3 entityPos = entity.position;
+        int terrainLayerMask = LayerMask.GetMask("Terrain");
+        float immediateDangerDistance = 25f;
+        bool dangerDetected = false;
+        
+        // Check multiple directions for immediate danger
+        Vector3[] checkDirections = {
+            entity.velocity.normalized,
+            (movePosition - entityPos).normalized,
+            Vector3.down
+        };
+        
+        foreach (Vector3 dir in checkDirections)
+        {
+            if (Physics.Raycast(entityPos, dir, out RaycastHit hit, immediateDangerDistance, terrainLayerMask))
+            {
+                if (hit.point.y > 0)
+                {
+                    dangerDetected = true;
+                    
+                    // Immediate course correction
+                    Vector3 escapeDirection = -hit.normal;
+                    
+                    // If normal is straight up, use last safe direction or calculate sideways escape
+                    if (escapeDirection.y > 0.9f)
+                    {
+                        if (lastSafeDirection != Vector3.zero)
+                            escapeDirection = lastSafeDirection;
+                        else
+                            escapeDirection = Vector3.Cross(hit.normal, Vector3.up).normalized;
+                    }
+                    
+                    float escapeForce = (1f - (hit.distance / immediateDangerDistance)) * 12f;
+                    
+                    // Calculate emergency heading
+                    float escapeHeading = Utils.Degrees360(Mathf.Rad2Deg * Mathf.Atan2(escapeDirection.x, escapeDirection.z));
+                    
+                    // Override desired heading and speed for immediate escape
+                    entity.desiredHeading = escapeHeading;
+                    entity.desiredSpeed *= 0.5f; // Slow down while escaping
+                    
+                    // Set cooldown and shorten path update for more responsive avoidance
+                    emergencyAvoidanceTimer = EMERGENCY_AVOIDANCE_COOLDOWN;
+                    pathUpdateTimer = Mathf.Min(pathUpdateTimer, 0.05f);
+                    
+                    // Debug visualization
+                    if (potentialLine != null)
+                    {
+                        potentialLine.startColor = Color.red;
+                        potentialLine.endColor = Color.red;
+                    }
+                    
+                    break;
+                }
+            }
+        }
+
+        // Reset line color if no danger
+        if (!dangerDetected && potentialLine != null)
+        {
+            potentialLine.startColor = entity.isAI ? Color.blue : Color.green;
+            potentialLine.endColor = entity.isAI ? Color.blue : Color.green;
+        }
+
+        return dangerDetected;
+    }
+
+    void ApplyObstacleRepulsion()
+    {
+        var aimgr = AIMgr.inst;
+        Vector3 entityPos = entity.position;
+        int obstacleLayerMask = LayerMask.GetMask("Terrain");
+        float rayLength = 500f;
+        const int numRays = 36;
+        const float angleStep = 360f / numRays;
+
+        Vector3 movementDirection = (movePosition - entityPos).normalized;
+        
+        for (int i = 0; i < numRays; i++)
+        {
+            float currentAngle = i * angleStep;
+            Vector3 rayDirection = Quaternion.Euler(0, currentAngle, 0) * Vector3.forward;
+
+            if (Physics.Raycast(entityPos, rayDirection, out RaycastHit hit, rayLength, obstacleLayerMask))
+            {
+                if (hit.point.y <= 0) continue;
+
+                float distance = hit.distance;
+                if (distance > 0.01f)
+                {
+                    Vector3 repulsionDirection = hit.normal;
+                    
+                    // Weight rays in movement direction more heavily
+                    float directionalWeight = Vector3.Dot(rayDirection, movementDirection);
+                    directionalWeight = Mathf.Clamp01(directionalWeight + 0.5f);
+                    
+                    // Increase repulsion for closer obstacles
+                    float proximityFactor = 1f - (distance / rayLength);
+                    float magnitude = aimgr.repulsive2Coefficient * 
+                                     Mathf.Pow(proximityFactor, aimgr.repulsiveExponent) * 
+                                     entity.mass * directionalWeight * 2f;
+                    
+                    repulsivePotential += -repulsionDirection * magnitude;
+                }
+            }
+        }
+        
+        // Additional check: if we're very close to terrain, apply strong upward force
+        if (Physics.Raycast(entityPos, Vector3.down, out RaycastHit groundHit, 50f, obstacleLayerMask))
+        {
+            if (groundHit.point.y > 0 && groundHit.distance < 25f)
+            {
+                float emergencyForce = (1f - (groundHit.distance / 25f)) * 15f;
+                repulsivePotential += Vector3.up * aimgr.repulsive2Coefficient * emergencyForce * entity.mass;
+            }
+        }
+    }
+
     public override bool IsDone()
     {
         float thresholdSq = doneDistanceSq;
@@ -230,33 +453,4 @@ public class Move : Command
         line = null;
         potentialLine = null;
     }
-  void ApplyObstacleRepulsion()
-{
-    var aimgr = AIMgr.inst;
-    Vector3 entityPos = entity.position;
-    int obstacleLayerMask = LayerMask.GetMask("Terrain");
-    float rayLength = 500f;
-    const int numRays = 36;
-    const float angleStep = 360f / numRays;
-
-    for (int i = 0; i < numRays; i++)
-    {
-        float currentAngle = i * angleStep;
-        Vector3 rayDirection = Quaternion.Euler(0, currentAngle, 0) * Vector3.forward;
-
-        if (Physics.Raycast(entityPos, rayDirection, out RaycastHit hit, rayLength, obstacleLayerMask))
-        {
-            if (hit.point.y <= 0) continue;
-
-            float distance = hit.distance;
-            if (distance > 0.01f)
-            {
-                Vector3 repulsionDirection = hit.normal;
-                 // Adjust this value as needed
-                float magnitude = aimgr.repulsive2Coefficient * Mathf.Pow(distance, aimgr.repulsiveExponent) * entity.mass;
-                repulsivePotential += -repulsionDirection * magnitude;
-            }
-        }
-    }
-}
 }

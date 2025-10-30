@@ -1,177 +1,198 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class Level3EnemyAI : BaseEnemyAI
 {
-    private const float BaseDefenseRadiusLevel3 = 1200f;
-    private const float DefenderHoldDistanceLevel3 = 150f;
-    private const float DefenderOffsetFromBaseLevel3 = 250f;
-    private static readonly Vector3 MapCenterLevel3 = Vector3.zero;
-    private const float DefenderPositionToleranceSqLevel3 = 25f;
+    public float reactionTime;
+    public Vector3 moveTill;
+    public TrainingState trainingState;
 
-    private List<Entity> _reusableThreatsNearBaseList = new List<Entity>();
-    private List<Entity> _reusableDefendersList = new List<Entity>();
-    private List<Entity> _reusableAttackersList = new List<Entity>();
+    private bool hasBegunCombat = false;
 
-    public override void ProcessCombatBehavior(List<Entity> aiEntities)
+    public List<Entity> idleEntities = new List<Entity>();
+    public List<Entity> retreatingEntities = new List<Entity>();
+    public List<Entity> aggressiveEntities = new List<Entity>();
+
+    public override void ResetState()
     {
-        if (opponentBase == null && !(aiBases.Count > 0 && aiEntities.Any(e => e != null)))
-        {
-            if (aiBases.Count == 0) return;
-        }
-
-        _reusableDefendersList.Clear();
-        _reusableAttackersList.Clear();
-        HashSet<Entity> assignedDefenders = new HashSet<Entity>();
-
-        Entity primaryAiBase = null;
-        if (aiBases.Count > 0)
-        {
-            primaryAiBase = aiBases[0];
-        }
-
-        if (primaryAiBase != null && aiEntities.Count > 0)
-        {
-            var defenderTypeConfigs = new Dictionary<EntityType, float>
-            {
-                { EntityType.DDG51, 0.1f },
-                { EntityType.JARIUSV, 0.1f },
-                { EntityType.SeaHunter, 0.1f }
-            };
-
-            var entitiesByType = aiEntities
-                .Where(e => e != null && e.entityType != default(EntityType))
-                .GroupBy(e => e.entityType)
-                .ToDictionary(g => g.Key, g => g.ToList());
-
-            foreach (var config in defenderTypeConfigs)
-            {
-                EntityType type = config.Key;
-                float percentage = config.Value;
-
-                if (entitiesByType.TryGetValue(type, out List<Entity> unitsOfType))
-                {
-                    int numToDefend;
-                    if (unitsOfType.Count > 0)
-                    {
-                        int tenPercentOfUnits = Mathf.FloorToInt(unitsOfType.Count * percentage);
-                        numToDefend = Mathf.Max(1, tenPercentOfUnits);
-                        numToDefend = Mathf.Min(numToDefend, unitsOfType.Count);
-                    }
-                    else
-                    {
-                        numToDefend = 0;
-                    }
-
-                    for (int i = 0; i < numToDefend; i++)
-                    {
-                        Entity candidateDefender = unitsOfType[i];
-                        if (candidateDefender != null && !assignedDefenders.Contains(candidateDefender))
-                        {
-                            _reusableDefendersList.Add(candidateDefender);
-                            assignedDefenders.Add(candidateDefender);
-                        }
-                    }
-                }
-            }
-        }
-
-        foreach (Entity entity in aiEntities)
-        {
-            if (entity != null && !assignedDefenders.Contains(entity))
-            {
-                _reusableAttackersList.Add(entity);
-            }
-        }
-
-        if (primaryAiBase != null)
-        {
-            HandleDefenderLogicLevel3(_reusableDefendersList, primaryAiBase);
-        }
-
-        if (opponentBase != null)
-        {
-            HandleAttackerLogicLevel3(_reusableAttackersList, opponentBase);
-        }
+        base.ResetState();
+        hasBegunCombat = false;
+        idleEntities.Clear();
+        retreatingEntities.Clear();
+        aggressiveEntities.Clear();
     }
 
-    private void HandleDefenderLogicLevel3(List<Entity> defenders, Entity aiBaseToDefend)
+    public override void ProcessCombatBehavior(List<Entity> allAiEntities)
     {
-        if (defenders.Count == 0 || aiBaseToDefend == null) return;
-
-        Vector3 basePosition = aiBaseToDefend.position;
-        float defenseRadiusSq = BaseDefenseRadiusLevel3 * BaseDefenseRadiusLevel3;
-
-        _reusableThreatsNearBaseList.Clear();
-        List<Entity> allEnemyTargets = playerEntitiesList;
-        foreach (Entity enemy in allEnemyTargets)
+        Debug.Log($"[AI STATE] Frame Update: Aggressive({aggressiveEntities.Count}), Retreating({retreatingEntities.Count}), Idle({idleEntities.Count})");
+        foreach(Entity ent in allAiEntities)
         {
-            if (enemy == null) continue;
-            if ((enemy.position - basePosition).sqrMagnitude < defenseRadiusSq)
+            if(ent != null && ent.isGreyed)
             {
-                _reusableThreatsNearBaseList.Add(enemy);
+                return;
             }
         }
-
-        foreach (Entity defender in defenders)
+        if (allAiEntities == null || allAiEntities.Count == 0)
         {
-            if (defender == null) continue;
-            UnitAI unitAI = defender.GetComponentInChildren<UnitAI>();
-
-            if (_reusableThreatsNearBaseList.Count > 0)
+            if (aggressiveEntities.Count == 0 && retreatingEntities.Count == 0 && idleEntities.Count == 0)
             {
-                Entity targetToAttack = null;
-                float minSqrDistToDefender = float.MaxValue;
-                foreach (Entity threat in _reusableThreatsNearBaseList)
+                if(hasBegunCombat)
                 {
-                    float sqrDist = (threat.position - defender.position).sqrMagnitude;
-                    if (sqrDist < minSqrDistToDefender)
-                    {
-                        minSqrDistToDefender = sqrDist;
-                        targetToAttack = threat;
-                    }
-                }
-
-                if (targetToAttack != null)
-                {
-                    AIMgr.inst.HandleAttackMove(new List<Entity> { defender }, targetToAttack.position, targetToAttack, false);
+                    Debug.Log("Level3EnemyAI: All units are gone. Resetting combat flag.");
+                    hasBegunCombat = false;
                 }
             }
-            else
+            return;
+        }
+
+        if (!hasBegunCombat)
+        {
+            StartCombat(allAiEntities);
+            return;
+        }
+        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Adaptive & ScenarioGenerator.inst.difficultyLevel >= 0.27f)
+        {
+            AddNewUnits(allAiEntities);
+
+            UpdateRetreatingEntities();
+            UpdateAggressiveEntities();
+            UpdateIdleEntities();
+
+        }
+        else
+        {
+            return;
+        }
+        
+    }
+
+    private void StartCombat(List<Entity> initialEntities)
+    {
+        Debug.Log("Level3EnemyAI: Starting new combat behavior processing.");
+        hasBegunCombat = true;
+        
+        aggressiveEntities.AddRange(initialEntities);
+
+        SetReactionTime();
+        SetMoveTill();
+        
+        Debug.Log($"Level3EnemyAI: Reaction time set to {reactionTime}. Move till set to {moveTill}.");
+        Debug.Log($"Level3EnemyAI: Commanding {aggressiveEntities.Count} entities to take action after delay.");
+
+        EnemyAIMgr.inst.StartCoroutine(TakeInitialActionAfterDelay(reactionTime, new List<Entity>(aggressiveEntities)));
+    }
+
+    private void AddNewUnits(List<Entity> currentEntities)
+    {
+        foreach (var ent in currentEntities)
+        {
+            if (ent != null && !idleEntities.Contains(ent) && !aggressiveEntities.Contains(ent) && !retreatingEntities.Contains(ent))
             {
-                Vector3 directionFromBaseToCenter = (MapCenterLevel3 - basePosition).normalized;
-                if (directionFromBaseToCenter == Vector3.zero)
-                {
-                    directionFromBaseToCenter = (aiBaseToDefend.transform.forward != Vector3.zero) ?
-                                                 aiBaseToDefend.transform.forward.normalized : Vector3.forward;
-                }
-
-                Vector3 defendPosition = basePosition + directionFromBaseToCenter * DefenderOffsetFromBaseLevel3;
-
-                float distanceToDefendPosSq = (defender.position - defendPosition).sqrMagnitude;
-
-                if (distanceToDefendPosSq > DefenderPositionToleranceSqLevel3)
-                {
-                    AIMgr.inst.HandleMove(new List<Entity> { defender }, defendPosition, false, doneDistanceSq: DefenderPositionToleranceSqLevel3 / 4f);
-                }
-                else
-                {
-                    unitAI?.StopAndRemoveAllCommands();
-
-                    if (MapCenterLevel3 != defender.position)
-                    {
-                        defender.transform.LookAt(MapCenterLevel3);
-                    }
-                }
+                Debug.Log($"Level3EnemyAI: New unit {ent.name} detected. Adding to idle.");
+                idleEntities.Add(ent);
             }
         }
     }
 
-    private void HandleAttackerLogicLevel3(List<Entity> attackers, Entity globalTargetOpponentBase)
+    private void UpdateAggressiveEntities()
     {
-        if (attackers.Count == 0) return;
-        if (opponentBase == null) return;
-        AIMgr.inst.HandleAttackMove(attackers, globalTargetOpponentBase.position, globalTargetOpponentBase, false, acquireTarget: true);
+        List<Entity> entitiesToRetreat = new List<Entity>();
+        
+        foreach(var ent in aggressiveEntities)
+        {
+            if (ent != null && ent.isBeingAttacked)
+            {
+                entitiesToRetreat.Add(ent);
+            }
+        }
+
+        foreach(var ent in entitiesToRetreat)
+        {
+            Debug.Log($"Level3EnemyAI: Aggressive entity {ent.name} is being attacked. Moving to retreating.");
+            aggressiveEntities.Remove(ent);
+            retreatingEntities.Add(ent);
+            if (aiBases.Count > 0 && aiBases[0] != null)
+            {
+                AIMgr.inst.HandleMove(new List<Entity> { ent }, aiBases[0].transform.position);
+            }
+        }
+    }
+
+    private void UpdateRetreatingEntities()
+    {
+        List<Entity> entitiesToMakeIdle = new List<Entity>();
+        foreach(var ent in retreatingEntities)
+        {
+            if (ent != null && !ent.isBeingAttacked)
+            {
+                entitiesToMakeIdle.Add(ent);
+            }
+        }
+        
+        foreach(var ent in entitiesToMakeIdle)
+        {
+            Debug.Log($"Level3EnemyAI: Retreating entity {ent.name} is no longer being attacked. Moving to idle.");
+            retreatingEntities.Remove(ent);
+            idleEntities.Add(ent);
+        }
+    }
+
+    private void UpdateIdleEntities()
+    {
+        if (idleEntities.Count > 0)
+        {
+            Debug.Log($"Level3EnemyAI: {idleEntities.Count} idle entities are now becoming aggressive.");
+            AIMgr.inst.HandleAttackMove(idleEntities, opponentBase.transform.position, opponentBase, acquireTarget: true, useLowestCruiseSpeed: true);
+            
+            aggressiveEntities.AddRange(idleEntities);
+            idleEntities.Clear();
+        }
+    }
+
+    private IEnumerator TakeInitialActionAfterDelay(float delay, List<Entity> entitiesToCommand)
+    {
+        yield return new WaitForSeconds(delay);
+
+        var validEntities = entitiesToCommand.Where(e => e != null && aggressiveEntities.Contains(e)).ToList();
+        
+        if (validEntities.Count > 0)
+        {
+            Debug.Log($"Level3EnemyAI: Initial reaction delay over. Commanding {validEntities.Count} entities.");
+            AIMgr.inst.HandleAttackMove(validEntities, opponentBase.transform.position, opponentBase, acquireTarget: true, useLowestCruiseSpeed: true);
+        }
+        else
+        {
+            Debug.Log("Level3EnemyAI: Initial entities were all lost or began retreating before action could be taken.");
+        }
+    }
+
+    public void SetReactionTime()
+    {
+        if (trainingState == TrainingState.Adaptive)
+        {
+            float difficulty = ScenarioGenerator.inst.difficultyLevel;
+            reactionTime = Mathf.Max(0.25f, 15.0f - (difficulty * 22.725f));
+        }
+        else
+        {
+            reactionTime = 7.5f;
+        }
+    }
+
+    public void SetMoveTill()
+    {
+        if (trainingState == TrainingState.Adaptive)
+        {
+            float difficulty = ScenarioGenerator.inst.difficultyLevel;
+            float t = Mathf.Clamp01(difficulty / 0.33f);
+            moveTill = Vector3.Lerp(Vector3.zero, aiBases[0].transform.position, t);
+        }
+        else
+        {
+            moveTill = (aiBases[0].transform.position + new Vector3(0, 0, 0f)) / 2f;
+        }
     }
 }

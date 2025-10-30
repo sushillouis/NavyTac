@@ -1,12 +1,12 @@
 using System;
-using System.Collections; 
+using System.Collections;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Networking; 
-
-
+using UnityEngine.Networking;
+using UnityEngine.SocialPlatforms.Impl;
 [Serializable]
 public class ReplayCommand
 {
@@ -20,7 +20,6 @@ public class ReplayCommand
     public string targetOwnerName;
     public bool add;
 }
-
 [Serializable]
 public class EntityState
 {
@@ -31,27 +30,48 @@ public class EntityState
     public bool isActive;
     public string ownerName;
 }
-
 [Serializable]
 public class Snapshot
 {
     public float timestamp;
     public List<EntityState> entityStates = new List<EntityState>();
 }
-
+[Serializable]
+public struct StringCount {
+    public string key;
+    public int count;
+}
+[Serializable]
+public class ScenarioMeta {
+    public int scenarioNumber;
+    public int seed;
+    public string startUtc;
+    public float durationSeconds;
+    public int totalEntities;
+    public List<StringCount> byOwner = new();
+    public List<StringCount> byEntityType = new();
+    public List<int> playerBaseIds = new();
+    public List<int> aiBaseIds = new();
+    public List<int> neutralBaseIds = new();
+    public Vector3 aiBasePosition;
+    public Vector3 playerBasePosition;
+    public Vector3 neutralBasePosition;
+    public bool hasNeutralBase;
+    public TrainingState trainingState;
+    public float difficultyLevel;
+}
 public class ReplayMgr : MonoBehaviour
 {
     [Serializable]
     public class ScenarioReplayData
     {
         public int scenarioNumber;
+        public ScenarioMeta meta = new ScenarioMeta();
         public List<ReplayCommand> commands = new List<ReplayCommand>();
         public List<Snapshot> snapshots = new List<Snapshot>();
     }
-
     public static ReplayMgr inst;
     [SerializeField] private List<ScenarioReplayData> scenarioReplayDataList = new List<ScenarioReplayData>();
-
     private Dictionary<int, float> scenarioStartTimes = new Dictionary<int, float>();
     private Dictionary<int, float> scenarioDurations = new Dictionary<int, float>();
 
@@ -64,11 +84,8 @@ public class ReplayMgr : MonoBehaviour
     private bool replayFinished = false;
     public int currentScenarioNumber = 1;
     public bool isRecording = false;
-
-    // Hybrid replay settings
     [SerializeField] private float snapshotInterval = 5f; // Take snapshot every 5 seconds
     private float lastSnapshotTime = 0f;
-
     public bool actualPlayerWon;
     public string actualWinReason;
     public float actualTimeTaken;
@@ -81,21 +98,89 @@ public class ReplayMgr : MonoBehaviour
     public void StartNewScenario()
     {
         currentScenarioNumber = OpenOceanMain.inst.gamesPlayedCount + 1;
-
-        scenarioStartTimes[currentScenarioNumber] = Time.time;
-        scenarioDurations[currentScenarioNumber] = 0f;
-        lastSnapshotTime = 0f; // Reset snapshot timer
-
-        ScenarioReplayData currentScenarioData = scenarioReplayDataList.Find(data => data.scenarioNumber == currentScenarioNumber);
-        if (currentScenarioData == null)
+        ScenarioMeta scenarioMeta = new ScenarioMeta
         {
-            currentScenarioData = new ScenarioReplayData { scenarioNumber = currentScenarioNumber };
-            scenarioReplayDataList.Add(currentScenarioData);
+            scenarioNumber = currentScenarioNumber,
+            seed = GameMgr.inst.selectedSeed,
+            startUtc = DateTime.UtcNow.ToString("o"),
+            durationSeconds = 0f,
+            totalEntities = EntityMgr.inst != null ? EntityMgr.inst.entities.Count : 0,
+            byOwner = new List<StringCount>(),
+            byEntityType = new List<StringCount>(),
+            playerBaseIds = new List<int>(),
+            aiBaseIds = new List<int>(),
+            neutralBaseIds = new List<int>(),
+            hasNeutralBase = false
+        };
+
+
+        if (EntityMgr.inst != null)
+        {
+            foreach (var ent in EntityMgr.inst.entities)
+            {
+                if (EntityMgr.inst != null)
+                {
+                    var ents = EntityMgr.inst.entities.Where(e => e != null).ToList();
+
+                    scenarioMeta.byOwner = ents
+                        .GroupBy(e => e.owner != null ? e.owner.name : "None")
+                        .Select(g => new StringCount { key = g.Key, count = g.Count() })
+                        .ToList();
+
+                    scenarioMeta.byEntityType = ents
+                        .GroupBy(e => e.entityType.ToString())
+                        .Select(g => new StringCount { key = g.Key, count = g.Count() })
+                        .ToList();
+                    // Collect base IDs based on owner
+                    if (ent.entityRole == EntityRole.Base)
+                    {
+                        if (ent.owner == PlayerMgr.inst?.player1)
+                        {
+                            scenarioMeta.playerBaseIds.Add(ent.entityId);
+                        }
+                        else if (ent.owner == PlayerMgr.inst?.player2)
+                        {
+                            scenarioMeta.aiBaseIds.Add(ent.entityId);
+                        }
+                        else if (ent.owner == PlayerMgr.inst?.neutral || ent.isNeutral || ent.owner == null)
+                        {
+                            scenarioMeta.neutralBaseIds.Add(ent.entityId);
+                        }
+                    }
+                }
+                scenarioMeta.hasNeutralBase = scenarioMeta.neutralBaseIds.Count > 0;
+                scenarioMeta.totalEntities = EntityMgr.inst.entities.Count;
+                scenarioMeta.trainingState = OpenOceanMain.inst?.currentTrainingState ?? TrainingState.PreTest;
+                scenarioMeta.difficultyLevel = GameMgr.inst.difficultyLevel;
+            }
+            scenarioMeta.aiBasePosition = scenarioMeta.aiBaseIds.Count > 0
+                ? EntityMgr.inst.entitiesDict[scenarioMeta.aiBaseIds[0]].transform.position
+                : Vector3.zero;
+            scenarioMeta.playerBasePosition = scenarioMeta.playerBaseIds.Count > 0
+                ? EntityMgr.inst.entitiesDict[scenarioMeta.playerBaseIds[0]].transform.position
+                : Vector3.zero;
+            scenarioMeta.neutralBasePosition = scenarioMeta.neutralBaseIds.Count > 0
+                ? EntityMgr.inst.entitiesDict[scenarioMeta.neutralBaseIds[0]].transform.position
+                : Vector3.zero;
+            scenarioStartTimes[currentScenarioNumber] = Time.time;
+            scenarioDurations[currentScenarioNumber] = 0f;
+            lastSnapshotTime = 0f; // Reset snapshot timer
+
+            ScenarioReplayData currentScenarioData = scenarioReplayDataList.Find(data => data.scenarioNumber == currentScenarioNumber);
+            if (currentScenarioData == null)
+            {
+                currentScenarioData = new ScenarioReplayData { scenarioNumber = currentScenarioNumber };
+                currentScenarioData.meta = scenarioMeta;
+                scenarioReplayDataList.Add(currentScenarioData);
+            }
+            else
+            {
+                // Update meta in case StartNewScenario is called again for same scenario
+                currentScenarioData.meta = scenarioMeta;
+            }
+
+            isRecording = true;
         }
-
-        isRecording = true;
-
-        TakeSnapshot();
     }
 
     public void RecordCommand(ReplayCommand cmd)
@@ -126,113 +211,6 @@ public class ReplayMgr : MonoBehaviour
         }
 
         currentData.commands.Add(cmd);
-    }
-
-    private void TakeSnapshot()
-    {
-        if (!isRecording || isReplaying || EntityMgr.inst == null)
-        {
-            return;
-        }
-
-        float currentTime = Time.time;
-        if (scenarioStartTimes.TryGetValue(currentScenarioNumber, out float startTime))
-        {
-            float timestamp = currentTime - startTime;
-            
-            ScenarioReplayData currentData = scenarioReplayDataList.Find(data => data.scenarioNumber == currentScenarioNumber);
-            if (currentData == null)
-            {
-                currentData = new ScenarioReplayData { scenarioNumber = currentScenarioNumber };
-                scenarioReplayDataList.Add(currentData);
-            }
-
-            Snapshot snapshot = new Snapshot
-            {
-                timestamp = timestamp
-            };
-
-            // Capture state of all entities
-            foreach (Entity entity in EntityMgr.inst.entities)
-            {
-                if (entity != null && entity.gameObject != null)
-                {
-                    EntityState entityState = new EntityState
-                    {
-                        entityId = entity.entityId,
-                        position = entity.transform.position,
-                        rotation = entity.transform.rotation,
-                        health = entity.health,
-                        isActive = entity.gameObject.activeSelf,
-                        ownerName = entity.owner?.name ?? "None"
-                    };
-                    snapshot.entityStates.Add(entityState);
-                }
-            }
-
-            currentData.snapshots.Add(snapshot);
-            lastSnapshotTime = timestamp;
-        }
-    }
-
-    private void ApplyNearestSnapshot(float currentReplayTime)
-    {
-        if (currentReplaySnapshots == null || currentReplaySnapshots.Count == 0 || EntityMgr.inst == null)
-        {
-            return;
-        }
-
-        // Find the most recent snapshot that is not in the future
-        Snapshot nearestSnapshot = null;
-        for (int i = currentReplaySnapshots.Count - 1; i >= 0; i--)
-        {
-            if (currentReplaySnapshots[i].timestamp <= currentReplayTime)
-            {
-                nearestSnapshot = currentReplaySnapshots[i];
-                break;
-            }
-        }
-
-        if (nearestSnapshot != null && lastAppliedSnapshotIndex != currentReplaySnapshots.IndexOf(nearestSnapshot))
-        {
-            ApplySnapshot(nearestSnapshot);
-            lastAppliedSnapshotIndex = currentReplaySnapshots.IndexOf(nearestSnapshot);
-        }
-    }
-
-    private void ApplySnapshot(Snapshot snapshot)
-    {
-        if (snapshot == null || EntityMgr.inst == null)
-        {
-            return;
-        }
-
-        foreach (EntityState entityState in snapshot.entityStates)
-        {
-            if (EntityMgr.inst.entitiesDict.TryGetValue(entityState.entityId, out Entity entity))
-            {
-                if (entity != null && entity.gameObject != null)
-                {
-                    // Apply position and rotation
-                    entity.transform.position = entityState.position;
-                    entity.transform.rotation = entityState.rotation;
-                    
-                    // Apply health
-                    entity.health = entityState.health;
-                    
-                    // Apply active state
-                    entity.gameObject.SetActive(entityState.isActive);
-                }
-            }
-        }
-    }
-
-    public void LogButtonPressed()
-    {
-        if (OpenOceanMain.inst != null)
-        {
-            OpenOceanMain.inst.lobbyState = LobbyState.Replay;
-        }
     }
 
     public void StartReplay(int scenarioNumber)
@@ -290,8 +268,6 @@ public class ReplayMgr : MonoBehaviour
             actualPlayerWon = scenario.winLoss;
             actualWinReason = scenario.winReason;
             GameMgr.inst.InitializeScenarioFromData(scenario);
-            
-            // Apply grey overlays to all entities for replay
             ApplyGreyOverlays();
         }
         else
@@ -313,25 +289,11 @@ public class ReplayMgr : MonoBehaviour
         if (isRecording && !isReplaying && scenarioStartTimes.ContainsKey(currentScenarioNumber))
         {
             float currentTime = Time.time - scenarioStartTimes[currentScenarioNumber];
-            if (currentTime - lastSnapshotTime >= snapshotInterval)
-            {
-                TakeSnapshot();
-            }
         }
 
         if (isReplaying && !replayFinished && currentReplayCommands != null)
         {
             float currentReplayTime = Time.time - replayStartTime;
-
-            if (currentReplayTime > actualTimeTaken + 10f)
-            {
-                StopReplayAndShowScores();
-                return;
-            }
-
-            // Apply snapshots for state correction
-            ApplyNearestSnapshot(currentReplayTime);
-
             while (nextCommandIndex < currentReplayCommands.Count &&
                    currentReplayCommands[nextCommandIndex].timestamp <= currentReplayTime)
             {
@@ -339,14 +301,41 @@ public class ReplayMgr : MonoBehaviour
                 ExecuteCommand(commandToExecute);
                 nextCommandIndex++;
             }
-
-            if (nextCommandIndex >= currentReplayCommands.Count && !replayFinished)
+        }
+        // Check for end of replay
+        // check if some one has one the game
+        if (isReplaying && !replayFinished)
+        {
+            if (ScoreMgr.inst != null )
             {
-                // End the replay when all commands are executed, regardless of win condition match
-                // We'll restore the correct win state in StopReplayAndShowScores()
-                StopReplayAndShowScores();
+                if(ScoreMgr.inst.playerWon == true || ScoreMgr.inst.aiWon == true)
+                {
+                    if (CheckWinConditionMatchesActual())
+                    {
+                        StopReplayAndShowScores();
+                    }
+                    else
+                    {
+                        // Mismatch in win conditions; continue replay
+                        // check for commands left
+                        if (nextCommandIndex >= currentReplayCommands.Count)
+                        {
+                            StopReplayAndShowScores();
+                        }
+                        // check fot time left
+                        else
+                        {
+                            float currentReplayTime = Time.time - replayStartTime;
+                            if (currentReplayTime >= actualTimeTaken)
+                            {
+                                StopReplayAndShowScores();
+                            }
+                        }
+                    }
+                }
             }
         }
+            
     }
 
     private bool CheckWinConditionMatchesActual()
@@ -381,39 +370,52 @@ public class ReplayMgr : MonoBehaviour
 
     private void ExecuteCommand(ReplayCommand cmd)
     {
-        // if(cmd.commandType == "TimeScaleChange")
-        // {
-        //     Time.timeScale = cmd.timeScale;
-        //     return;
-        // }
-        List<Entity> entities = new List<Entity>();
-        foreach (int id in cmd.entityIds)
-        {
-            if (EntityMgr.inst.entitiesDict.TryGetValue(id, out Entity ent))
-            {
-                entities.Add(ent);
-            }
-        }
-
-        if (entities.Count == 0 && cmd.entityIds.Length > 0)
+        // Defensive checks: ensure cmd is not null and entityIds is safe to iterate
+        if (cmd == null)
         {
             return;
         }
-        // Time.timeScale = cmd.timeScale;
-        switch (cmd.commandType)
+
+        int[] ids = cmd.entityIds ?? Array.Empty<int>();
+
+        List<Entity> entities = new List<Entity>();
+        foreach (int id in ids)
+        {
+            if (EntityMgr.inst != null && EntityMgr.inst.entitiesDict.TryGetValue(id, out Entity ent))
+            {
+                if (ent != null) entities.Add(ent);
+            }
+        }
+
+        // If the command referenced entity ids but none were found, skip executing it
+        if (entities.Count == 0 && ids.Length > 0)
+        {
+            return;
+        }
+
+        string cmdType = cmd.commandType ?? string.Empty;
+
+        switch (cmdType)
         {
             case "Move":
-                AIMgr.inst.HandleMove(entities, cmd.targetPosition, cmd.add, isLocalCommand: false);
-                
+                if (AIMgr.inst != null)
+                {
+                    AIMgr.inst.HandleMove(entities, cmd.targetPosition, cmd.add, isLocalCommand: false);
+                }
                 break;
 
             case "AttackMoveToPosition":
-                // AIMgr.inst.HandleAttackMove(entities, cmd.targetPosition, null, cmd.add, isLocalCommand: false);
+                // Intentional no-op until AI attack-move re-implemented for replay
 
                 break;
 
             case "AttackMoveToEntity":
-                Entity targetEnt = EntityMgr.inst.entitiesDict.TryGetValue(cmd.targetEntityId, out Entity tEnt) ? tEnt : null;
+                Entity targetEnt = null;
+                if (EntityMgr.inst != null)
+                {
+                    EntityMgr.inst.entitiesDict.TryGetValue(cmd.targetEntityId, out targetEnt);
+                }
+
                 if (targetEnt != null)
                 {
                     // AIMgr.inst.HandleAttackMove(entities, cmd.targetPosition, targetEnt, cmd.add, isLocalCommand: false);
@@ -421,6 +423,7 @@ public class ReplayMgr : MonoBehaviour
                 break;
 
             default:
+                // Unknown or empty commandType: ignore
                 break;
         }
     }
@@ -428,46 +431,16 @@ public class ReplayMgr : MonoBehaviour
     [Serializable]
     public class ReplayCommandList
     {
+        public ScenarioMeta meta;
         public List<ReplayCommand> commands;
         public List<Snapshot> snapshots;
     }
-
-    // <-- ADDED: Helper class for creating the JSON payload -->
     [Serializable]
     private class UploadPayload
     {
         public string filename;
         public string content;
     }
-
-    // Ensure we have the latest state captured before exporting JSON
-    public void ForceSnapshotNow()
-    {
-        if (isRecording && !isReplaying)
-        {
-            TakeSnapshot();
-        }
-    }
-
-    // Serialize the current scenario's replay data (commands + snapshots) to JSON in-memory.
-    // Returns empty string if no data is available.
-    public string GetCurrentScenarioReplayJson()
-    {
-        ScenarioReplayData replayData = scenarioReplayDataList.Find(d => d.scenarioNumber == currentScenarioNumber);
-        if (replayData == null)
-        {
-            return string.Empty;
-        }
-        ReplayCommandList list = new ReplayCommandList
-        {
-            commands = replayData.commands ?? new List<ReplayCommand>(),
-            snapshots = replayData.snapshots ?? new List<Snapshot>()
-        };
-        return JsonUtility.ToJson(list, false);
-    }
-
-    // Find the most recent saved replay JSON file for a given scenario number.
-    // Returns null if directory or files are missing.
     public string GetLatestReplayFilePath(int scenarioNumber)
     {
         string studentID = OpenOceanMain.inst.playerName ?? "UnknownStudent";
@@ -489,12 +462,7 @@ public class ReplayMgr : MonoBehaviour
 
     public void CompleteScenario()
     {
-        // Take final snapshot before stopping recording
-        if (isRecording)
-        {
-            TakeSnapshot();
-        }
-        
+
         isRecording = false;
 
         if (scenarioStartTimes.TryGetValue(currentScenarioNumber, out float startTime))
@@ -510,10 +478,11 @@ public class ReplayMgr : MonoBehaviour
         ScenarioReplayData replayData = scenarioReplayDataList.Find(data => data.scenarioNumber == scenarioNumber);
         if (replayData == null)
         {
+            Debug.LogWarning($"No replay data found for scenario {scenarioNumber}");
             return;
         }
 
-        string studentID = OpenOceanMain.inst.playerName ?? "UnknownStudent";
+        string studentID = OpenOceanMain.inst?.playerName ?? "UnknownStudent";
         string gameType = GetGameTypeFolder();
 
         string directoryPath = Path.Combine(
@@ -522,9 +491,17 @@ public class ReplayMgr : MonoBehaviour
             gameType
         );
 
-        if (!Directory.Exists(directoryPath))
+        try
         {
-            Directory.CreateDirectory(directoryPath);
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to create directory for replay files: {e.Message}");
+            // Still attempt to upload even if local save fails
         }
 
         string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
@@ -533,15 +510,34 @@ public class ReplayMgr : MonoBehaviour
 
         ReplayCommandList commandList = new ReplayCommandList
         {
-            commands = replayData.commands,
-            snapshots = replayData.snapshots
+            meta = replayData.meta,
+            commands = replayData.commands ?? new List<ReplayCommand>(),
+            snapshots = replayData.snapshots ?? new List<Snapshot>()
         };
-        string json = JsonUtility.ToJson(commandList, true);
-        File.WriteAllText(filePath, json);
 
-        // --- MODIFICATION: Start the upload coroutine ---
-        StartCoroutine(UploadToServer(fileName, json));
-        // ------------------------------------------------
+        string json = JsonUtility.ToJson(commandList, true);
+
+        // Save locally first (best-effort)
+        try
+        {
+            File.WriteAllText(filePath, json);
+            Debug.Log($"Saved replay locally: {filePath}");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to save replay locally: {e.Message}");
+        }
+
+        // Start upload to server (non-blocking). Upload coroutine will log success/failure.
+        try
+        {
+            StartCoroutine(UploadToServer(fileName, json));
+            Debug.Log($"Started upload coroutine for: {fileName}");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to start upload coroutine: {e.Message}");
+        }
     }
 
     private string GetGameTypeFolder()
@@ -590,63 +586,6 @@ public class ReplayMgr : MonoBehaviour
         }
     }
 
-    // Hybrid replay scrubbing support - jump to specific time
-    public void ScrubToTime(float targetTime)
-    {
-        if (!isReplaying || currentReplayCommands == null || currentReplaySnapshots == null)
-        {
-            return;
-        }
-
-        // Clamp target time to valid range
-        targetTime = Mathf.Clamp(targetTime, 0f, actualTimeTaken);
-
-        // Find the closest snapshot before or at the target time
-        Snapshot targetSnapshot = null;
-        int snapshotIndex = -1;
-        for (int i = currentReplaySnapshots.Count - 1; i >= 0; i--)
-        {
-            if (currentReplaySnapshots[i].timestamp <= targetTime)
-            {
-                targetSnapshot = currentReplaySnapshots[i];
-                snapshotIndex = i;
-                break;
-            }
-        }
-
-        // Apply the snapshot to reset game state
-        if (targetSnapshot != null)
-        {
-            ApplySnapshot(targetSnapshot);
-            lastAppliedSnapshotIndex = snapshotIndex;
-        }
-
-        // Find the first command after the snapshot
-        nextCommandIndex = 0;
-        float snapshotTime = targetSnapshot?.timestamp ?? 0f;
-        
-        for (int i = 0; i < currentReplayCommands.Count; i++)
-        {
-            if (currentReplayCommands[i].timestamp > snapshotTime)
-            {
-                nextCommandIndex = i;
-                break;
-            }
-        }
-
-        // Execute commands from snapshot time to target time
-        while (nextCommandIndex < currentReplayCommands.Count &&
-               currentReplayCommands[nextCommandIndex].timestamp <= targetTime)
-        {
-            ExecuteCommand(currentReplayCommands[nextCommandIndex]);
-            nextCommandIndex++;
-        }
-
-        // Update replay start time to account for the scrub
-        replayStartTime = Time.time - targetTime;
-    }
-
-    // Get total number of snapshots for current scenario
     public int GetSnapshotCount()
     {
         return currentReplaySnapshots?.Count ?? 0;
@@ -685,12 +624,10 @@ public class ReplayMgr : MonoBehaviour
         {
             return "No replay data available";
         }
-
         int commandCount = currentReplayCommands.Count;
         int snapshotCount = currentReplaySnapshots.Count;
         float duration = actualTimeTaken;
         float avgCommandInterval = commandCount > 1 ? duration / (commandCount - 1) : 0f;
-
         return $"Commands: {commandCount}, Snapshots: {snapshotCount}, Duration: {duration:F1}s, Avg Command Interval: {avgCommandInterval:F2}s";
     }
 
@@ -714,6 +651,7 @@ public class ReplayMgr : MonoBehaviour
                 ScenarioReplayData replayData = new ScenarioReplayData
                 {
                     scenarioNumber = -1, // Mark as loaded from file
+                    meta = loadedData.meta ?? new ScenarioMeta(),
                     commands = loadedData.commands ?? new List<ReplayCommand>(),
                     snapshots = loadedData.snapshots ?? new List<Snapshot>()
                 };
@@ -733,8 +671,6 @@ public class ReplayMgr : MonoBehaviour
 
         return false;
     }
-
-    // --- ADDED: Coroutine to upload the JSON file content ---
     private IEnumerator UploadToServer(string filename, string jsonContent)
     {
         string url = "https://www.cse.unr.edu/~yvohra/Study/upload/upload.php";
@@ -776,12 +712,12 @@ public class ReplayMgr : MonoBehaviour
         }
     }
 
-    // --- ADDED: Certificate handler to bypass SSL validation ---
+
     public class CustomCertificateHandler : CertificateHandler
     {
         protected override bool ValidateCertificate(byte[] certificateData)
         {
-            return true; 
+            return true;
         }
     }
 }

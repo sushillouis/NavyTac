@@ -76,6 +76,23 @@ public class EnemyAIMgr : MonoBehaviour
 
     private void UpdateAILevel()
     {
+        // Map ScenarioGenerator difficulty to AI level (Easy=1, Medium=2, Hard=3)
+        if (ScenarioGenerator.inst != null)
+        {
+            switch (ScenarioGenerator.inst.CurrentDifficulty)
+            {
+                case Difficulty.Medium:
+                    currentLevel = 2;
+                    break;
+                case Difficulty.Hard:
+                    currentLevel = 3;
+                    break;
+                default:
+                    currentLevel = 1;
+                    break;
+            }
+        }
+
         if (currentLevel != _previousLevel)
         {
             if (currentAI != null)
@@ -92,7 +109,7 @@ public class EnemyAIMgr : MonoBehaviour
                     currentAI = new Level2EnemyAI();
                     break;
                 case 3:
-                    currentAI = new Level3EnemyAI();
+                    currentAI = new Level2EnemyAI();
                     break;
                 default:
                     //Debug.LogWarning($"Unhandled AI level: {currentLevel}");
