@@ -564,6 +564,11 @@ public class OpenOceanMain : MonoBehaviour
         {
             totalTrainingTime += Time.deltaTime;
         }
+        if(lobbyState == LobbyState.MultiScorePanel)
+        {
+            ReplayMgr.inst.isReplaying = false;
+            ReplayMgr.inst.replayFinished = true;
+        }
     }
 
     public void OnStartButton()

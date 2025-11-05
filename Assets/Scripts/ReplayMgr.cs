@@ -81,7 +81,7 @@ public class ReplayMgr : MonoBehaviour
     private float replayStartTime;
     private int nextCommandIndex = 0;
     private int lastAppliedSnapshotIndex = -1;
-    private bool replayFinished = false;
+    public bool replayFinished = false;
     public int currentScenarioNumber = 1;
     public bool isRecording = false;
     [SerializeField] private float snapshotInterval = 5f; // Take snapshot every 5 seconds
@@ -257,10 +257,11 @@ public class ReplayMgr : MonoBehaviour
         if (FXMgr.inst != null) FXMgr.inst.ResetEffects();
         if (EntityMgr.inst != null) EntityMgr.inst.Reset();
         if (ResetScene.inst != null) ResetScene.inst.ClearAllEntities();
+        if (EnemyAIMgr.inst != null) EnemyAIMgr.inst.ResetAI();
+        if (CaptureNeutralBaseMgr.inst != null) CaptureNeutralBaseMgr.inst.ResetCapture();
         // if (EnemyAIMgr.inst != null) EnemyAIMgr.inst.ResetLevel2State();
 
-        isRecording = false;
-
+        
         ScenarioData scenario = GameMgr.inst.GetScenario(scenarioNumber);
 
         if (scenario != null)
@@ -269,13 +270,16 @@ public class ReplayMgr : MonoBehaviour
             actualWinReason = scenario.winReason;
             GameMgr.inst.InitializeScenarioFromData(scenario);
             ApplyGreyOverlays();
+            isRecording = false;
+            isReplaying = true;
+
         }
         else
         {
             return;
         }
 
-        isReplaying = true;
+        
         nextCommandIndex = 0;
         lastAppliedSnapshotIndex = -1;
         replayStartTime = Time.time;
@@ -351,8 +355,7 @@ public class ReplayMgr : MonoBehaviour
 
     private void StopReplayAndShowScores()
     {
-        isReplaying = false;
-        replayFinished = true;
+        
 
         // Restore the original win/loss state to prevent data contamination
         if (ScoreMgr.inst != null)
@@ -365,6 +368,7 @@ public class ReplayMgr : MonoBehaviour
         if (OpenOceanMain.inst != null)
         {
             OpenOceanMain.inst.lobbyState = LobbyState.MultiScorePanel;
+            
         }
     }
 
@@ -405,7 +409,10 @@ public class ReplayMgr : MonoBehaviour
                 break;
 
             case "AttackMoveToPosition":
-                // Intentional no-op until AI attack-move re-implemented for replay
+                if (AIMgr.inst != null)
+                {
+                    AIMgr.inst.HandleAttackMove(entities, cmd.targetPosition, null, cmd.add, isLocalCommand: false);
+                }
 
                 break;
 
@@ -418,7 +425,7 @@ public class ReplayMgr : MonoBehaviour
 
                 if (targetEnt != null)
                 {
-                    // AIMgr.inst.HandleAttackMove(entities, cmd.targetPosition, targetEnt, cmd.add, isLocalCommand: false);
+                    AIMgr.inst.HandleAttackMove(entities, cmd.targetPosition, targetEnt, cmd.add, isLocalCommand: false);
                 }
                 break;
 
@@ -586,26 +593,6 @@ public class ReplayMgr : MonoBehaviour
         }
     }
 
-    public int GetSnapshotCount()
-    {
-        return currentReplaySnapshots?.Count ?? 0;
-    }
-
-    // Get snapshot timestamps for UI scrubbing controls
-    public List<float> GetSnapshotTimestamps()
-    {
-        List<float> timestamps = new List<float>();
-        if (currentReplaySnapshots != null)
-        {
-            foreach (Snapshot snapshot in currentReplaySnapshots)
-            {
-                timestamps.Add(snapshot.timestamp);
-            }
-        }
-        return timestamps;
-    }
-
-    // Get current replay progress (0.0 to 1.0)
     public float GetReplayProgress()
     {
         if (!isReplaying || actualTimeTaken <= 0)

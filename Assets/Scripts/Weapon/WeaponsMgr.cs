@@ -307,8 +307,8 @@ public class WeaponsMgr : MonoBehaviour
                 if (EnemyAIMgr.inst.OpponentBases.Count == 0)
                 {
                     ScoreMgr.inst.aiWon = true;
-                    ScoreMgr.inst.winReason = "All Opponent Bases Were Destroyed";
-                    Debug.Log("[DestroyEntity] All Opponent Bases destroyed, AI wins. Scheduling CheckVictory.");
+                    ScoreMgr.inst.winReason = "All Friendly Bases Were Destroyed";
+                    Debug.Log("[DestroyEntity] All Friendly Bases destroyed, AI wins. Scheduling CheckVictory.");
                     StartCoroutine(DelayedCheckVictory());
                 }
                 else if (EnemyAIMgr.inst.aiBases.Count == 0)
@@ -356,6 +356,10 @@ public class WeaponsMgr : MonoBehaviour
 
     private IEnumerator DelayedCheckVictory()
     {
+        if(ReplayMgr.inst != null && ReplayMgr.inst.isReplaying)
+        {
+            yield break;
+        }
         yield return new WaitForEndOfFrame();
         ScoreMgr.inst.CheckVictory();
     }
