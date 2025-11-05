@@ -95,7 +95,10 @@ public class FogWarMgr : MonoBehaviour
 
         if (fogMaterial != null)
         {
-            fogPlane.GetComponent<MeshRenderer>().material = fogMaterial;
+           MeshRenderer mr = fogPlane.GetComponent<MeshRenderer>();
+            mr.material = fogMaterial;
+            mr.material.renderQueue = 3001;
+            mr.material.SetInt("_ZWrite", 0);
         }
         else
         {
@@ -267,33 +270,26 @@ public class FogWarMgr : MonoBehaviour
             !playerSide.Contains(entity.owner.playerSide) &&
             entity.entityClass != EntityClass.Missile);
 
-        if (revelers.Count == 0)
-        {
-            // Clear fogGrid to show previously revealed areas
-            for (int x = 0; x < gridWidth; x++)
-            {
-                for (int z = 0; z < gridHeight; z++)
-                {
-                    if (fogGrid[x, z] > 0)
-                    {
-                        fogGrid[x, z] = 0;
-                        dirtyCells[x + z * gridWidth] = true;
-                    }
-                }
-            }
-            UpdateMeshColors();
-            return;
-        }
+        // FIX 2: Removed the "if (revelers.Count == 0)" instant-clear block.
+        // Let the natural decay below handle it to prevent one-frame black flashes.
 
-        // Clear visibility
+        // FIX 3: Consistent decay independent of frame rate spikes.
+        // Instead of Time.deltaTime, we use a fixed decay multiplier appropriate for the 0.2s interval.
+        // 0.7f means it retains 70% visibility every 0.2s until revealed again. Adjust to taste (higher = slower fade).
+        float decayMultiplier = 0.75f; 
+
         for (int x = 0; x < gridWidth; x++)
         {
             for (int z = 0; z < gridHeight; z++)
             {
                 if (fogGrid[x, z] > 0)
                 {
-                    fogGrid[x, z] = Mathf.Lerp(fogGrid[x, z], 0f, Time.deltaTime * 5f);
-                    if (fogGrid[x, z] < 0.01f) fogGrid[x, z] = 0f;
+                    // Apply fixed decay
+                    fogGrid[x, z] *= decayMultiplier;
+
+                    // Clean cutoff to zero to stop unnecessary updates
+                    if (fogGrid[x, z] < 0.05f) fogGrid[x, z] = 0f;
+                    
                     dirtyCells[x + z * gridWidth] = true;
                 }
             }
