@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UIElements.Experimental;
 [Serializable]
 public struct TactCommandStruct: INetworkSerializable, IEquatable<TactCommandStruct>
 {
@@ -188,13 +190,38 @@ public class AIMgr : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     //I need to be entity owner to command entities.
     //If I select a number of entities, I will only command the entities I own
     // Does not yet handle AI players
     // In AIMgr.cs
+
+    [ContextMenu("Values")]
+    public void Values()
+    {
+        StringBuilder sb = new StringBuilder("AIMgr Values:\n");
+        sb.AppendLine($"attractionCoefficient: {attractionCoefficient}");
+        sb.AppendLine($"attractiveExponent: {attractiveExponent}");
+        sb.AppendLine($"repulsiveCoefficient: {repulsiveCoefficient}");
+        sb.AppendLine($"repulsiveExponent: {repulsiveExponent}");
+        sb.AppendLine($"repulsive2Coefficient: {repulsive2Coefficient}");
+        sb.AppendLine($"attraction2Coefficient: {attraction2Coefficient}");
+        sb.AppendLine($"boundaryRepulsionDistance: {boundaryRepulsionDistance}");
+        sb.AppendLine($"boundaryRepulsionStrength: {boundaryRepulsionStrength}");
+        sb.AppendLine($"potentialDistanceThreshold: {potentialDistanceThreshold}");
+        sb.AppendLine($"potentialDistanceThresholdSq: {potentialDistanceThresholdSq}");
+        sb.AppendLine($"isPotentialFieldsMovement: {isPotentialFieldsMovement}");
+        sb.AppendLine($"terrainDetectionRadius: {terrainDetectionRadius}");
+        sb.AppendLine($"maxTerrainRepulsion: {maxTerrainRepulsion}");
+        sb.AppendLine($"minSafeDistance: {minSafeDistance}");
+        sb.AppendLine($"collisionRepulsionCoefficient: {collisionRepulsionCoefficient}");
+        sb.AppendLine($"showTerrainAvoidance: {showTerrainAvoidance}");
+        sb.AppendLine($"autoPopulateBoundaryPositions: {autoPopulateBoundaryPositions}");
+        Debug.Log(sb.ToString());
+
+    }
 public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, bool add)
 {
     selectedEntities = SelectionMgr.inst.selectedEntities;

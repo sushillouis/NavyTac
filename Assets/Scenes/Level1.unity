@@ -1874,10 +1874,80 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1491763689}
     m_Modifications:
+    - target: {fileID: 4992333878655647106, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_InputType
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4992333878655647106, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CaretWidth
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4992333878655647106, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_ContentType
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4992333878655647106, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CaretColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4992333878655647106, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CaretColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4992333878655647106, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CaretColor.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4992333878655647106, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CaretBlinkRate
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4992333878655647106, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CustomCaretColor
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7587122850021805978, guid: 25a77a5a7d309544b9cdd76bf96382f5,
         type: 3}
       propertyPath: m_Name
       value: LoginPanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 8491019669320125697, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CaretWidth
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8491019669320125697, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CaretColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8491019669320125697, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CaretColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8491019669320125697, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CaretColor.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8491019669320125697, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CaretBlinkRate
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8491019669320125697, guid: 25a77a5a7d309544b9cdd76bf96382f5,
+        type: 3}
+      propertyPath: m_CustomCaretColor
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9218733183138762138, guid: 25a77a5a7d309544b9cdd76bf96382f5,
         type: 3}
@@ -7993,7 +8063,7 @@ MonoBehaviour:
   neutralEntityPositions: []
   neutralEntityHeadings: []
   nonAdaptiveDifficulty: 0.25
-  adaptiveDifficulty: 0.2
+  adaptiveDifficulty: 0.6
   difficultyLevel: 0
   allScenarios: []
 --- !u!1 &1717877730
@@ -8371,7 +8441,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc331097491174f41b1d50a6c2e61adf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentLevel: 1
+  currentLevel: 2
   opponentBase: {fileID: 0}
   OpponentBases: []
   aiBases: []
@@ -13775,8 +13845,33 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
         type: 3}
+      propertyPath: mass
+      value: 700
+      objectReference: {fileID: 0}
+    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
+        type: 3}
       propertyPath: maxFuel
       value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
+        type: 3}
+      propertyPath: maxRange
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
+        type: 3}
+      propertyPath: turnRate
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
+        type: 3}
+      propertyPath: cruiseSpeed
+      value: 290
+      objectReference: {fileID: 0}
+    - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
+        type: 3}
+      propertyPath: acceleration
+      value: 1500
       objectReference: {fileID: 0}
     - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
         type: 3}

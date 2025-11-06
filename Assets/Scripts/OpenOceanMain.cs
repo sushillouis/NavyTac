@@ -623,7 +623,7 @@ public class OpenOceanMain : MonoBehaviour
         if (currentTrainingState == TrainingState.NonAdaptive || currentTrainingState == TrainingState.Adaptive)
         {
             Debug.Log(totalTrainingTime + " >= " + TrainingTime * 60f + " ? " + (totalTrainingTime >= TrainingTime * 60f));
-            return totalTrainingTime >= TrainingTime * 60f;
+            return totalTrainingTime >= TrainingTime * 60f && gamesPlayedCount >= gamePlayCountMAX;
         }
         return gamesPlayedCount >= gamePlayCountMAX;
     }
