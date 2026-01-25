@@ -59,6 +59,7 @@ public class SelectionMgr : MonoBehaviour
 
         SelectEntitiesInBox(startMousePosition, Input.mousePosition);
         SelectionBoxPanel.gameObject.SetActive(false);
+        LogSelectionChanged();
     }
 
     public void UpdateSelectionBox(Vector3 end)
@@ -118,6 +119,7 @@ public class SelectionMgr : MonoBehaviour
                 SelectEntity(ent, shouldClearSelection: false);
 
         TacticalAIMgr.inst.currentGroup = new Group(new List<Entity>());
+        LogSelectionChanged();
     }
     //----------------------------------------------------------------------------------------------------
 
@@ -145,7 +147,7 @@ public class SelectionMgr : MonoBehaviour
         selectedEntities.Clear();
         selectedEntity = null;
         GroupUIMgr.inst.EntityControlPanel.isVisible = false;
-
+        LogSelectionChanged();
     }
 
 
@@ -167,6 +169,7 @@ public class SelectionMgr : MonoBehaviour
                     selectedEntity = null;
             }
             selectedEntities.Remove(ent);
+            LogSelectionChanged();
         }
     }
 
@@ -185,6 +188,7 @@ public class SelectionMgr : MonoBehaviour
 
             if (!selectedEntities.Contains(ent))
                 selectedEntities.Add(ent);
+            LogSelectionChanged();
         }
     }
 
@@ -266,6 +270,7 @@ public class SelectionMgr : MonoBehaviour
         {
             ClearSelection();
             TacticalAIMgr.inst.SelectControlGroup(groupNumber);
+            LogSelectionChanged();
         }
     }
 
@@ -279,6 +284,7 @@ public class SelectionMgr : MonoBehaviour
                 SelectEntity(ent, shouldClearSelection: false);
             }
         }
+        LogSelectionChanged();
     }
     public void SelectAllDDG51()
     {
@@ -290,6 +296,7 @@ public class SelectionMgr : MonoBehaviour
                 SelectEntity(ent, shouldClearSelection: false);
             }
         }
+        LogSelectionChanged();
     }
 
     public void SelectALLJARIUSV()
@@ -303,6 +310,7 @@ public class SelectionMgr : MonoBehaviour
             }
         }
 
+        LogSelectionChanged();
     }
 
     public void SelectALLSEAHUNTER()
@@ -315,6 +323,7 @@ public class SelectionMgr : MonoBehaviour
                 SelectEntity(ent, shouldClearSelection: false);
             }
         }
+        LogSelectionChanged();
     }
 
     public void FormControlGroup(int groupNumber)
@@ -324,6 +333,22 @@ public class SelectionMgr : MonoBehaviour
             TacticalAIMgr.inst.CreateBindControlGroup(selectedEntities, groupNumber);
         }
 
+    }
+    
+    // --------- AAR helpers ---------
+    private void LogSelectionChanged()
+    {
+        if (ReplayMgr.inst == null) return;
+        int count = selectedEntities.Count;
+        int[] ids = new int[count];
+        string[] types = new string[count];
+        for (int i = 0; i < count; i++)
+        {
+            var e = selectedEntities[i];
+            ids[i] = e.entityId;
+            types[i] = e.entityType.ToString();
+        }
+        ReplayMgr.inst.RecordSelectionChange(ids, types);
     }
     
   public void SimulateBoxSelection(Vector3 screenStart, Vector3 screenEnd, float duration = 1.5f)

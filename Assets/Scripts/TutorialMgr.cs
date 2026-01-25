@@ -72,9 +72,9 @@ public class TutorialMgr : MonoBehaviour
     DisableAllInputMaps(); 
     yield return new WaitForSeconds(.1f);
     TutorialHeaderText.text = "Tutorial: Camera Movement";
-    TutorialText.text = 
-        "Use <sprite name=ku>, <sprite name=kd>, <sprite name=kl>, <sprite name=kr> to move the camera.\n" +
-        "You can also move the mouse to the top/bottom/left/right edges of the screen to move the camera in that direction.";
+    TutorialText.text =
+        "Use <sprite name=w>, <sprite name=s>, <sprite name=a>, <sprite name=d> or the arrow keys (<sprite name=ku>, <sprite name=kd>, <sprite name=kl>, <sprite name=kr>) to move the camera.\n" ;
+        
     EnableOnly(inputs.Camera.XZMove);
 
     // Wait for movement in all directions
@@ -101,7 +101,7 @@ public class TutorialMgr : MonoBehaviour
     // === CAMERA ZOOM ===
     TutorialHeaderText.text = "Tutorial: Camera Zoom";
     TutorialText.text = 
-        "Press <sprite name=r> to zoom in, <sprite name=f> to zoom out.\n" +
+        "Press <sprite name=f> to zoom in, <sprite name=r> to zoom out.\n" +
         "You can also scroll the mouse wheel up/down to zoom in and out.";
     EnableOnly(inputs.Camera.YMove);
 
@@ -386,7 +386,7 @@ TutorialText.text = "Now you try! Drag to select multiple units.";
     }
 
     // Attack move command
-    TutorialText.text = "Now hold <sprite name=a> and <sprite name=mr> on the red capsule to attack move.\n\nWhen you use attack move, your units will stop and destroy any enemy they encounter, then continue moving forward.\n\nTip: If you attack move and select an opponent entity, all your selected units will attack that target entity.";
+    TutorialText.text = "Now hold <sprite name=space> and <sprite name=mr> on the red capsule to attack move.\n\nWhen you use attack move, your units will stop and destroy any enemy they encounter, then continue moving forward.\n\nTip: If you attack move and select an opponent entity, all your selected units will attack that target entity.";
     EnableOnly(
         inputs.Attacks.Attack1, 
         inputs.Entities.Command, 

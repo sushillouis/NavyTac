@@ -171,8 +171,8 @@ public class Move : Command
         if (DistanceMgr.inst != null)
         {
             Vector3 boundaryRepulsion = DistanceMgr.inst.GetBoundaryRepulsion(entity);
-            // Apply boundary repulsion with higher priority
-            repulsivePotential += boundaryRepulsion * 2f;
+            // Smoothly interpolate (lerp) the repulsion for smoother movement
+            repulsivePotential = Vector3.Lerp(repulsivePotential, repulsivePotential + boundaryRepulsion * 2f, 0.5f);
         }
         Vector3 tmp = diffToMovePosition.sqrMagnitude > 0.0001f
             ? diffToMovePosition.normalized

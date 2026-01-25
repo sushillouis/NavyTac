@@ -440,7 +440,7 @@ private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target,
                             {
                                currentDoneDistanceSq = StoppingDistanceSq(entity, entities.Count);
                             }
-                            Debug.Log($"AIMgr: Creating Move command to waypoint {waypoint} with doneDistanceSq {currentDoneDistanceSq}");
+                            // Debug.Log($"AIMgr: Creating Move command to waypoint {waypoint} with doneDistanceSq {currentDoneDistanceSq}");
                             Move m = new Move(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, i < waypoints.Length - 1, groupSpeed);
                             uai.AddCommand(m);
                         }

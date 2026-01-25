@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SocialPlatforms.Impl;
@@ -19,6 +20,27 @@ public class ReplayCommand
     public string targetEntityName;
     public string targetOwnerName;
     public bool add;
+}
+[Serializable]
+/// <summary>
+/// Unified player-centric event used for AAR intelligence:
+/// SelectionChange: captures currently selected entity ids & types.
+/// CameraFocusUpdate: periodic or movement-triggered world position of player's camera focus.
+/// HotkeyPress: records keyBinding (e.g., SelectAllScouts, ControlGroupCreate) and optional groupNumber (1..10 or -1).
+/// Unused fields for an event type are left empty/default to keep a single homogeneous list for JSON.
+/// </summary>
+public class ReplayEvent
+{
+    public float timestamp;               // Seconds since scenario start
+    public string eventType;              // SelectionChange | CameraFocusUpdate | HotkeyPress
+    // SelectionChange
+    public int[] selectedEntityIds;       // Empty if not SelectionChange
+    public string[] selectedEntityTypes;  // Parallel to selectedEntityIds
+    // CameraFocusUpdate
+    public Vector3 cameraPosition;        // World position (y flattened to 0) of camera focus
+    // HotkeyPress
+    public string keyBinding;             // Semantic binding name
+    public int groupNumber;               // Control group index or -1 if N/A
 }
 [Serializable]
 public class EntityState
@@ -59,7 +81,12 @@ public class ScenarioMeta {
     public bool hasNeutralBase;
     public TrainingState trainingState;
     public float difficultyLevel;
+    // Neutral base capture info
+    public bool neutralBaseCaptured;                 // Was the neutral base captured at any point?
+    public string neutralBaseCapturedBy;             // "Player", "AI" or null/empty
+    public float neutralBaseCaptureTimeSeconds = -1; // Seconds since scenario start when capture finished
 }
+
 public class ReplayMgr : MonoBehaviour
 {
     [Serializable]
@@ -68,8 +95,10 @@ public class ReplayMgr : MonoBehaviour
         public int scenarioNumber;
         public ScenarioMeta meta = new ScenarioMeta();
         public List<ReplayCommand> commands = new List<ReplayCommand>();
-        public List<Snapshot> snapshots = new List<Snapshot>();
+        public List<Snapshot> snapshots = new List<Snapshot>(); // AAR-only snapshots (not used for playback)
+        public List<ReplayEvent> events = new List<ReplayEvent>();
     }
+
     public static ReplayMgr inst;
     [SerializeField] private List<ScenarioReplayData> scenarioReplayDataList = new List<ScenarioReplayData>();
     private Dictionary<int, float> scenarioStartTimes = new Dictionary<int, float>();
@@ -89,6 +118,11 @@ public class ReplayMgr : MonoBehaviour
     public bool actualPlayerWon;
     public string actualWinReason;
     public float actualTimeTaken;
+    // ---------------- AAR augmentation logging controls ----------------
+    [Header("AAR Logging")]
+    // Selection dedupe
+    private string _lastSelectionSignature = string.Empty;
+    private float _lastSelectionLogTime = -10f;
 
     private void Awake()
     {
@@ -110,7 +144,11 @@ public class ReplayMgr : MonoBehaviour
             playerBaseIds = new List<int>(),
             aiBaseIds = new List<int>(),
             neutralBaseIds = new List<int>(),
-            hasNeutralBase = false
+            hasNeutralBase = false,
+            // initialize neutral capture defaults explicitly
+            neutralBaseCaptured = false,
+            neutralBaseCapturedBy = null,
+            neutralBaseCaptureTimeSeconds = -1f
         };
 
 
@@ -289,10 +327,11 @@ public class ReplayMgr : MonoBehaviour
 
     private void Update()
     {
-        // Handle periodic snapshot recording during gameplay
+        // Periodically record entity snapshots (AAR only; not used during replay playback)
         if (isRecording && !isReplaying && scenarioStartTimes.ContainsKey(currentScenarioNumber))
         {
             float currentTime = Time.time - scenarioStartTimes[currentScenarioNumber];
+            MaybeRecordSnapshot(currentTime);
         }
 
         if (isReplaying && !replayFinished && currentReplayCommands != null)
@@ -351,6 +390,52 @@ public class ReplayMgr : MonoBehaviour
 
         return (ScoreMgr.inst.playerWon == actualPlayerWon) &&
                (ScoreMgr.inst.winReason == actualWinReason);
+    }
+
+    // --------------- Snapshot Recording (AAR only) ---------------
+    private void MaybeRecordSnapshot(float relativeTime)
+    {
+        if (relativeTime - lastSnapshotTime < snapshotInterval) return;
+        RecordSnapshot(relativeTime);
+        lastSnapshotTime = relativeTime;
+    }
+
+    private void RecordSnapshot(float timestamp)
+    {
+        try
+        {
+            var currentData = scenarioReplayDataList.Find(d => d.scenarioNumber == currentScenarioNumber);
+            if (currentData == null)
+            {
+                currentData = new ScenarioReplayData { scenarioNumber = currentScenarioNumber };
+                scenarioReplayDataList.Add(currentData);
+            }
+
+            Snapshot snap = new Snapshot { timestamp = timestamp };
+            if (EntityMgr.inst != null && EntityMgr.inst.entities != null)
+            {
+                foreach (var ent in EntityMgr.inst.entities)
+                {
+                    if (ent == null) continue;
+                    var es = new EntityState
+                    {
+                        entityId = ent.entityId,
+                        position = ent.transform.position,
+                        rotation = ent.transform.rotation,
+                        health = ent.health,
+                        isActive = ent.gameObject.activeInHierarchy,
+                        ownerName = ent.owner != null ? ent.owner.name : "None"
+                    };
+                    snap.entityStates.Add(es);
+                }
+            }
+
+            currentData.snapshots.Add(snap);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"Snapshot recording failed: {e.Message}");
+        }
     }
 
     private void StopReplayAndShowScores()
@@ -441,12 +526,20 @@ public class ReplayMgr : MonoBehaviour
         public ScenarioMeta meta;
         public List<ReplayCommand> commands;
         public List<Snapshot> snapshots;
+        public List<ReplayEvent> events;
     }
     [Serializable]
     private class UploadPayload
     {
         public string filename;
         public string content;
+        public bool base64;
+    }
+    [Serializable]
+    private class EnsurePayload
+    {
+        public bool ensure = true;
+        public string path;
     }
     public string GetLatestReplayFilePath(int scenarioNumber)
     {
@@ -519,7 +612,8 @@ public class ReplayMgr : MonoBehaviour
         {
             meta = replayData.meta,
             commands = replayData.commands ?? new List<ReplayCommand>(),
-            snapshots = replayData.snapshots ?? new List<Snapshot>()
+            snapshots = replayData.snapshots ?? new List<Snapshot>(),
+            events = replayData.events ?? new List<ReplayEvent>()
         };
 
         string json = JsonUtility.ToJson(commandList, true);
@@ -565,6 +659,45 @@ public class ReplayMgr : MonoBehaviour
         if (OpenOceanMain.inst != null)
         {
             OpenOceanMain.inst.lobbyState = LobbyState.MultiScorePanel;
+        }
+    }
+
+    // Record that the neutral base was captured and by whom ("Player" or "AI")
+    public void RecordNeutralBaseCapture(string capturedBy)
+    {
+        try
+        {
+            var currentData = scenarioReplayDataList.Find(d => d.scenarioNumber == currentScenarioNumber);
+            if (currentData == null)
+            {
+                currentData = new ScenarioReplayData { scenarioNumber = currentScenarioNumber };
+                scenarioReplayDataList.Add(currentData);
+            }
+
+            if (currentData.meta == null)
+            {
+                currentData.meta = new ScenarioMeta();
+            }
+
+            // If already recorded once, don't overwrite (idempotent)
+            if (currentData.meta.neutralBaseCaptured)
+            {
+                return;
+            }
+
+            currentData.meta.neutralBaseCaptured = true;
+            currentData.meta.neutralBaseCapturedBy = capturedBy;
+
+            float captureTime = 0f;
+            if (scenarioStartTimes.TryGetValue(currentScenarioNumber, out float startTime))
+            {
+                captureTime = Time.time - startTime;
+            }
+            currentData.meta.neutralBaseCaptureTimeSeconds = captureTime;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"RecordNeutralBaseCapture failed: {e.Message}");
         }
     }
 
@@ -640,7 +773,8 @@ public class ReplayMgr : MonoBehaviour
                     scenarioNumber = -1, // Mark as loaded from file
                     meta = loadedData.meta ?? new ScenarioMeta(),
                     commands = loadedData.commands ?? new List<ReplayCommand>(),
-                    snapshots = loadedData.snapshots ?? new List<Snapshot>()
+                    snapshots = loadedData.snapshots ?? new List<Snapshot>(),
+                    events = loadedData.events ?? new List<ReplayEvent>()
                 };
 
                 // Clear existing data and add loaded data
@@ -663,10 +797,17 @@ public class ReplayMgr : MonoBehaviour
         string url = "https://www.cse.unr.edu/~yvohra/Study/upload/upload.php";
 
         // Use the payload class to correctly serialize the JSON
+        string studentID = OpenOceanMain.inst?.playerName ?? "UnknownStudent";
+        string gameType = GetGameTypeFolder();
+        // Ensure the server-side folder hierarchy exists before uploading the file
+        var ensureTask = EnsureServerFolderExistsAsync(url, studentID, gameType);
+        while (!ensureTask.IsCompleted) { yield return null; }
         UploadPayload payload = new UploadPayload
         {
-            filename = filename,
-            content = jsonContent
+            // use forward slashes for server paths
+            filename = $"{studentID}/{gameType}/{filename}",
+            content = jsonContent,
+            base64 = false
         };
         string jsonPayload = JsonUtility.ToJson(payload);
 
@@ -699,6 +840,35 @@ public class ReplayMgr : MonoBehaviour
         }
     }
 
+    private async Task<bool> EnsureServerFolderExistsAsync(string uploadUrl, string studentID, string gameType)
+    {
+        try
+        {
+            var payload = new EnsurePayload
+            {
+                path = $"{studentID}/{gameType}"
+            };
+
+            var req = new UnityWebRequest(uploadUrl, "POST");
+            var body = System.Text.Encoding.UTF8.GetBytes(JsonUtility.ToJson(payload));
+            req.uploadHandler = new UploadHandlerRaw(body);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.certificateHandler = new CustomCertificateHandler();
+            var tcs = new TaskCompletionSource<bool>();
+            var op = req.SendWebRequest();
+            op.completed += _ => tcs.TrySetResult(true);
+            await tcs.Task;
+            Debug.Log(req.downloadHandler.text);
+            return req.result == UnityWebRequest.Result.Success;
+        }
+        catch (Exception e)
+        {
+            Debug.Log($"Ensure folder request failed: {e.Message}");
+            return false;
+        }
+    }
+
 
     public class CustomCertificateHandler : CertificateHandler
     {
@@ -706,5 +876,68 @@ public class ReplayMgr : MonoBehaviour
         {
             return true;
         }
+    }
+
+    // ---------------------- Public Event Logging API ----------------------
+    /// <summary>
+    /// Record the player's selection change. Provide arrays of entity ids and their type names.
+    /// </summary>
+    public void RecordSelectionChange(int[] selectedEntityIds, string[] selectedEntityTypes)
+    {
+        if (!isRecording || isReplaying) return;
+        selectedEntityIds ??= Array.Empty<int>();
+        selectedEntityTypes ??= Array.Empty<string>();
+        Array.Sort(selectedEntityIds);
+        string signature = string.Join(",", selectedEntityIds);
+        // Avoid spamming identical selection within same frame burst
+        if (signature == _lastSelectionSignature && Time.time - _lastSelectionLogTime < 0.05f)
+            return;
+        _lastSelectionSignature = signature;
+        _lastSelectionLogTime = Time.time;
+        float ts = scenarioStartTimes.TryGetValue(currentScenarioNumber, out float start) ? Time.time - start : 0f;
+        var data = scenarioReplayDataList.Find(d => d.scenarioNumber == currentScenarioNumber);
+        if (data == null)
+        {
+            data = new ScenarioReplayData { scenarioNumber = currentScenarioNumber };
+            scenarioReplayDataList.Add(data);
+        }
+        data.events.Add(new ReplayEvent
+        {
+            timestamp = ts,
+            eventType = "SelectionChange",
+            selectedEntityIds = selectedEntityIds,
+            selectedEntityTypes = selectedEntityTypes,
+            keyBinding = null,
+            groupNumber = -1,
+            cameraPosition = default
+        });
+    }
+
+    // Camera focus events removed per design shift (we now store entity snapshots only).
+
+    /// <summary>
+    /// Record a hotkey press (selection or control group). Pass groupNumber for control group related presses (1..10) or -1.
+    /// </summary>
+    public void RecordHotkeyPress(string keyBinding, int groupNumber = -1)
+    {
+        if (!isRecording || isReplaying) return;
+        if (string.IsNullOrEmpty(keyBinding)) return;
+        float ts = scenarioStartTimes.TryGetValue(currentScenarioNumber, out float start) ? Time.time - start : 0f;
+        var data = scenarioReplayDataList.Find(d => d.scenarioNumber == currentScenarioNumber);
+        if (data == null)
+        {
+            data = new ScenarioReplayData { scenarioNumber = currentScenarioNumber };
+            scenarioReplayDataList.Add(data);
+        }
+        data.events.Add(new ReplayEvent
+        {
+            timestamp = ts,
+            eventType = "HotkeyPress",
+            keyBinding = keyBinding,
+            groupNumber = groupNumber,
+            selectedEntityIds = Array.Empty<int>(),
+            selectedEntityTypes = Array.Empty<string>(),
+            cameraPosition = default
+        });
     }
 }

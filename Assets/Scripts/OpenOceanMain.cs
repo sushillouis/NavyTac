@@ -599,7 +599,7 @@ public class OpenOceanMain : MonoBehaviour
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
-        Application.Quit();
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
 #endif
     }
     public void OnResumeButton() => lobbyState = LobbyState.Play;

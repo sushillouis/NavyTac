@@ -37,6 +37,13 @@ public class ScoreMgr : MonoBehaviour
     {
         public string filename;
         public string content;
+        public bool base64;
+    }
+    [System.Serializable]
+    private class EnsurePayload
+    {
+        public bool ensure = true;
+        public string path;
     }
 
     [System.Serializable]
@@ -679,15 +686,22 @@ public class ScoreMgr : MonoBehaviour
             yield break; // Stop the coroutine
         }
 
-        string csvContent = File.ReadAllText(csvPath);
-        string filename = Path.GetFileName(csvPath);
+    string csvContent = File.ReadAllText(csvPath);
+    string studentID = OpenOceanMain.inst?.playerName ?? "UnknownStudent";
+    string gameType  = GetGameTypeFolder();
+    string baseName  = Path.GetFileName(csvPath);
+
+        // Ensure the server-side folder hierarchy exists before uploading the file
+        var ensureTask = EnsureServerFolderExistsAsync(url, studentID, gameType);
+        while (!ensureTask.IsCompleted) { yield return null; }
 
         // --- START MODIFICATION ---
         // Create an object with our data
         UploadPayload payload = new UploadPayload
         {
-            filename = filename,
-            content = csvContent
+            filename = $"{studentID}/{gameType}/{baseName}",
+            content = csvContent,
+            base64 = false
         };
 
         // Use JsonUtility to create a valid JSON string, escaping all special characters
@@ -707,20 +721,54 @@ public class ScoreMgr : MonoBehaviour
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                if (request.downloadHandler.text.StartsWith("SUCCESS"))
+                string responseText = request.downloadHandler.text;
+                
+                // Check if response is JSON with "ok" field
+                if (responseText.Contains("\"ok\":true"))
                 {
-                    Debug.Log($"Upload successful! Server response: {request.downloadHandler.text}");
+                    Debug.Log($"Upload successful! Server response: {responseText}");
+                }
+                else if (responseText.StartsWith("SUCCESS"))
+                {
+                    Debug.Log($"Upload successful! Server response: {responseText}");
                 }
                 else
                 {
-                    Debug.LogWarning($"Upload complete, but server reported an error: {request.downloadHandler.text}");
+                    Debug.LogWarning($"Upload complete, but server reported an error: {responseText}");
                 }
             }
             else
             {
-                // This is where your error is being logged
                 Debug.LogError($"Upload failed! Error: {request.error} | Server response: {request.downloadHandler.text}");
             }
+        }
+    }
+    private async Task<bool> EnsureServerFolderExistsAsync(string uploadUrl, string studentID, string gameType)
+    {
+        try
+        {
+            var payload = new EnsurePayload
+            {
+                path = $"{studentID}/{gameType}"
+            };
+
+            var req = new UnityWebRequest(uploadUrl, "POST");
+            var body = Encoding.UTF8.GetBytes(JsonUtility.ToJson(payload));
+            req.uploadHandler = new UploadHandlerRaw(body);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+            req.certificateHandler = new CustomCertificateHandler();
+            var tcs = new TaskCompletionSource<bool>();
+            var op = req.SendWebRequest();
+            op.completed += _ => tcs.TrySetResult(true);
+            await tcs.Task;
+            Debug.Log(req.downloadHandler.text);
+            return req.result == UnityWebRequest.Result.Success;
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"Ensure folder request failed: {e.Message}");
+            return false;
         }
     }
     public class CustomCertificateHandler : CertificateHandler

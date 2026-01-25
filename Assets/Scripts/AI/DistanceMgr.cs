@@ -305,6 +305,51 @@ public struct BoundaryRepulsionJob : IJobParallelFor
 }
 
 [BurstCompile]
+public struct BoundaryRepulsionContribsJob : IJobParallelFor
+{
+    [ReadOnly] public NativeArray<Vector3> EntityPositions;
+    [ReadOnly] public NativeArray<Vector3> BoundaryPositions;
+    [ReadOnly] public float RepulsiveCoefficient;
+    [ReadOnly] public float RepulsiveExponent;
+    [ReadOnly] public float BoundaryStrength;
+    [ReadOnly] public float MaxDistance;
+    [ReadOnly] public int MaxContributionsPerEntity;
+
+    [WriteOnly] public NativeArray<Vector3> Contributions; // Length = EntityCount * MaxContributionsPerEntity
+    [WriteOnly] public NativeArray<int> ContributionCounts; // Length = EntityCount
+    [WriteOnly] public NativeArray<int> BoundaryIndices;    // Length = EntityCount * MaxContributionsPerEntity
+
+    public void Execute(int index)
+    {
+        Vector3 entityPos = EntityPositions[index];
+        entityPos.y = 0f; // XZ plane
+
+        int baseOffset = index * MaxContributionsPerEntity;
+        int count = 0;
+
+        for (int i = 0; i < BoundaryPositions.Length; i++)
+        {
+            Vector3 boundaryPos = BoundaryPositions[i];
+            boundaryPos.y = 0f;
+            Vector3 diff = boundaryPos - entityPos; // Point from entity toward boundary
+            float dist = diff.magnitude;
+            if (dist <= 0.0001f || dist > MaxDistance) continue;
+            if (count >= MaxContributionsPerEntity) break;
+
+            Vector3 repDir = diff / dist;
+            float safeDist = math.max(dist, 0.001f);
+            float magnitude = RepulsiveCoefficient * BoundaryStrength * math.pow(safeDist, RepulsiveExponent);
+
+            Contributions[baseOffset + count] = repDir * magnitude;
+            BoundaryIndices[baseOffset + count] = i;
+            count++;
+        }
+
+        ContributionCounts[index] = count;
+    }
+}
+
+[BurstCompile]
 public struct ProcessPotentialsJob : IJobParallelFor
 {
     [ReadOnly] public NativeArray<PotentialPairJobInput> PotentialPairInputs;
@@ -417,6 +462,8 @@ public class DistanceMgr : MonoBehaviour
 
     public int maxPairsToProcessPerFrame = 50; // Tune this to balance workload per frame
     [Range(0f, 1f)] public float boundaryRepulsionSmoothing = 0.25f;
+    public bool computePerPointBoundaryContributions = false; // Enable to compute per-point boundary repulsions per entity
+    [Range(1, 64)] public int maxBoundaryContributionsPerEntity = 8; // Up to K contributions per entity
 
     // Main thread lists to hold task data and references for mapping job results back
     private readonly List<PotentialCalculationTaskData> _mainThreadTaskDataList = new();
@@ -429,6 +476,10 @@ public class DistanceMgr : MonoBehaviour
     private readonly List<Entity> _boundaryJobValidEntities = new();
     private readonly Dictionary<int, Vector3> _entityBoundaryRepulsions = new();
     private readonly Dictionary<int, Vector3> _previousBoundaryRepulsions = new();
+    // Per-point boundary repulsions (precomputed each frame if enabled)
+    private readonly Dictionary<int, Vector3[]> _entityBoundaryPerPointRepulsions = new();
+    private readonly Dictionary<int, int[]> _entityBoundaryPerPointIndices = new();
+    private readonly Dictionary<int, int> _entityBoundaryPerPointCounts = new();
     
     public List<Potential> selectedEntityPotentials; // For UI or other systems needing potentials for a selected entity
 
@@ -462,6 +513,9 @@ public class DistanceMgr : MonoBehaviour
         _boundaryJobEntities.Clear();
         _entityBoundaryRepulsions.Clear();
         _previousBoundaryRepulsions.Clear();
+    _entityBoundaryPerPointRepulsions.Clear();
+    _entityBoundaryPerPointIndices.Clear();
+    _entityBoundaryPerPointCounts.Clear();
     }
     
     void Update()
@@ -850,12 +904,18 @@ public class DistanceMgr : MonoBehaviour
         if (aimgr == null || aimgr.boundaryPositions == null || aimgr.boundaryPositions.Count == 0 || aimgr.boundaryRepulsionDistance <= 0f)
         {
             _entityBoundaryRepulsions.Clear();
+            _entityBoundaryPerPointRepulsions.Clear();
+            _entityBoundaryPerPointIndices.Clear();
+            _entityBoundaryPerPointCounts.Clear();
             return;
         }
 
         if (_boundaryJobEntities.Count == 0)
         {
             _entityBoundaryRepulsions.Clear();
+            _entityBoundaryPerPointRepulsions.Clear();
+            _entityBoundaryPerPointIndices.Clear();
+            _entityBoundaryPerPointCounts.Clear();
             return;
         }
 
@@ -871,6 +931,9 @@ public class DistanceMgr : MonoBehaviour
         if (validEntities.Count == 0)
         {
             _entityBoundaryRepulsions.Clear();
+            _entityBoundaryPerPointRepulsions.Clear();
+            _entityBoundaryPerPointIndices.Clear();
+            _entityBoundaryPerPointCounts.Clear();
             return;
         }
 
@@ -923,6 +986,78 @@ public class DistanceMgr : MonoBehaviour
             _entityBoundaryRepulsions[id] = current;
         }
 
+        // Optionally compute per-point contributions per entity
+        if (computePerPointBoundaryContributions && maxBoundaryContributionsPerEntity > 0)
+        {
+            int N = validEntities.Count;
+            int K = Mathf.Clamp(maxBoundaryContributionsPerEntity, 1, 64);
+            NativeArray<Vector3> contribsNat = new(N * K, Allocator.TempJob);
+            NativeArray<int> countsNat = new(N, Allocator.TempJob);
+            NativeArray<int> indicesNat = new(N * K, Allocator.TempJob);
+
+            var contribJob = new BoundaryRepulsionContribsJob
+            {
+                EntityPositions = entityPositionsNat,
+                BoundaryPositions = boundaryPositionsNat,
+                RepulsiveCoefficient = aimgr.repulsive2Coefficient,
+                RepulsiveExponent = aimgr.repulsiveExponent,
+                BoundaryStrength = math.max(aimgr.boundaryRepulsionStrength, 0.0001f),
+                MaxDistance = aimgr.boundaryRepulsionDistance,
+                MaxContributionsPerEntity = K,
+                Contributions = contribsNat,
+                ContributionCounts = countsNat,
+                BoundaryIndices = indicesNat
+            };
+
+            JobHandle contribHandle = contribJob.Schedule(N, 32);
+            contribHandle.Complete();
+
+            // Copy results to managed containers for easy access
+            _entityBoundaryPerPointRepulsions.Clear();
+            _entityBoundaryPerPointIndices.Clear();
+            _entityBoundaryPerPointCounts.Clear();
+
+            for (int i = 0; i < N; i++)
+            {
+                int id = validEntities[i].GetInstanceID();
+                int count = Mathf.Clamp(countsNat[i], 0, K);
+                _entityBoundaryPerPointCounts[id] = count;
+
+                // Reuse arrays if possible
+                Vector3[] repArray;
+                if (!_entityBoundaryPerPointRepulsions.TryGetValue(id, out repArray) || repArray == null || repArray.Length != K)
+                {
+                    repArray = new Vector3[K];
+                }
+
+                int[] idxArray;
+                if (!_entityBoundaryPerPointIndices.TryGetValue(id, out idxArray) || idxArray == null || idxArray.Length != K)
+                {
+                    idxArray = new int[K];
+                }
+
+                int baseOffset = i * K;
+                for (int c = 0; c < count; c++)
+                {
+                    repArray[c] = contribsNat[baseOffset + c];
+                    idxArray[c] = indicesNat[baseOffset + c];
+                }
+
+                _entityBoundaryPerPointRepulsions[id] = repArray;
+                _entityBoundaryPerPointIndices[id] = idxArray;
+            }
+
+            contribsNat.Dispose();
+            countsNat.Dispose();
+            indicesNat.Dispose();
+        }
+        else
+        {
+            _entityBoundaryPerPointRepulsions.Clear();
+            _entityBoundaryPerPointIndices.Clear();
+            _entityBoundaryPerPointCounts.Clear();
+        }
+
         entityPositionsNat.Dispose();
         boundaryPositionsNat.Dispose();
         repulsionOutputsNat.Dispose();
@@ -958,6 +1093,83 @@ public class DistanceMgr : MonoBehaviour
     {
         if (entity == null) return Vector3.zero;
         return _entityBoundaryRepulsions.TryGetValue(entity.GetInstanceID(), out var repulsion) ? repulsion : Vector3.zero;
+    }
+    
+    // Get precomputed per-point boundary repulsion contributions (if computePerPointBoundaryContributions is enabled).
+    // Returns the count written to outVectors/indices (up to K per entity). If disabled or none available, returns 0.
+    public int GetPrecomputedBoundaryRepulsionContributions(
+        Entity entity,
+        List<Vector3> outVectors,
+        List<int> outBoundaryIndices = null)
+    {
+        outVectors?.Clear();
+        outBoundaryIndices?.Clear();
+        if (entity == null) return 0;
+
+        int id = entity.GetInstanceID();
+        if (_entityBoundaryPerPointCounts.TryGetValue(id, out var count)
+            && _entityBoundaryPerPointRepulsions.TryGetValue(id, out var vecs))
+        {
+            int n = Mathf.Min(count, vecs.Length);
+            if (outVectors != null)
+            {
+                for (int i = 0; i < n; i++) outVectors.Add(vecs[i]);
+            }
+            if (outBoundaryIndices != null && _entityBoundaryPerPointIndices.TryGetValue(id, out var inds))
+            {
+                for (int i = 0; i < n && i < inds.Length; i++) outBoundaryIndices.Add(inds[i]);
+            }
+            return n;
+        }
+        return 0;
+    }
+    
+    // Returns the individual repulsion vectors contributed by each boundary point within the provided radius.
+    // This does NOT sum them; it gives you one vector per contributing boundary point so you can process/visualize separately.
+    // The calculation mirrors BoundaryRepulsionJob (XZ plane only), but runs on the main thread for ad-hoc queries.
+    public int GetBoundaryRepulsionContributionsWithinRadius(
+        Entity entity,
+        List<Vector3> outRepulsionVectors,
+        float radius = 200f,
+        List<int> outBoundaryIndices = null,
+        bool planarXZ = true)
+    {
+        outRepulsionVectors?.Clear();
+        outBoundaryIndices?.Clear();
+
+        if (entity == null || AIMgr.inst == null) return 0;
+        var aimgr = AIMgr.inst;
+        var boundaryPts = aimgr.boundaryPositions;
+        if (boundaryPts == null || boundaryPts.Count == 0 || radius <= 0f) return 0;
+
+        Vector3 entPos = entity.position;
+        if (planarXZ) entPos.y = 0f;
+
+        float maxRadius = Mathf.Min(radius, Mathf.Max(aimgr.boundaryRepulsionDistance, 0.0001f));
+        float coef = aimgr.repulsive2Coefficient;
+        float exp = aimgr.repulsiveExponent;
+        float strength = Mathf.Max(aimgr.boundaryRepulsionStrength, 0.0001f);
+
+        int count = 0;
+        for (int i = 0; i < boundaryPts.Count; i++)
+        {
+            Vector3 b = boundaryPts[i];
+            if (planarXZ) b.y = 0f;
+            Vector3 diff = b - entPos; // from entity toward boundary point
+            float dist = diff.magnitude;
+            if (dist <= 0.0001f || dist > maxRadius) continue;
+
+            Vector3 dir = diff / dist;
+            float safeDist = math.max(dist, 0.001f);
+            float magnitude = coef * strength * math.pow(safeDist, exp);
+            Vector3 repulsion = dir * magnitude;
+
+            if (outRepulsionVectors != null) outRepulsionVectors.Add(repulsion);
+            if (outBoundaryIndices != null) outBoundaryIndices.Add(i);
+            count++;
+        }
+
+        return count;
     }
     
     public Potential ComputeEntityPotential(Entity ownshipParam, Entity targetParam) {

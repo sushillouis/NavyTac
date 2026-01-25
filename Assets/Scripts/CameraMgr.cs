@@ -272,6 +272,11 @@ public class CameraMgr : MonoBehaviour
     public Vector3 currentYawEulerAngles = Vector3.zero;
     public Vector3 currentPitchEulerAngles = Vector3.zero;
 
+    [Header("Scroll Settings")]
+    [Tooltip("Multiplier for non-replay mouse wheel vertical movement (Y-axis). Lower = slower.")]
+    [Range(0.01f, 10f)]
+    public float yScrollFactor = 0.25f;
+
     // Update is called once per frame
     void Update()
     {
@@ -294,8 +299,16 @@ public class CameraMgr : MonoBehaviour
         float newY = Mathf.Clamp(YawNode.transform.position.y, minCameraHeight, maxCameraHeight);
         YawNode.transform.position = new(YawNode.transform.position.x, newY, YawNode.transform.position.z);
     }
+
+    // Use this for mouse wheel Y movement outside replay to apply an adjustable sensitivity
+    public void MoveCameraYFromScroll(float scrollDelta)
+    {
+        // Many mice report deltas in steps of ~120; keeping raw delta and scaling by inspector factor is simpler to tune
+        MoveCameraY(scrollDelta * yScrollFactor);
+    }
     // This field can be adjusted in the Inspector to change scroll sensitivity during replay.
-    public float replayScrollFactor = 5.0f; // Example: A factor of 5 means one scroll notch might feel like a moderate joystick push.
+    [Range(0.01f, 10f)]
+    public float replayScrollFactor = 0.8f; // Lower value = slower zoom per wheel notch
 
     /// <summary>
     /// Handles camera height adjustment using the mouse scroll wheel during replay mode.
@@ -305,6 +318,7 @@ public class CameraMgr : MonoBehaviour
     {
         if (ReplayMgr.inst.isReplaying)
         {
+            if (!isReplayScrollEnabled) return;
             Vector3 moveVector = Vector3.zero;
             // Read the scroll wheel's vertical movement delta for this frame.
             float scrollInputY = Mouse.current.scroll.ReadValue().y;
@@ -317,7 +331,7 @@ public class CameraMgr : MonoBehaviour
 
                 // Determine the amount to move. Positive scroll (wheel forward/up) should increase height.
                 // MoveCameraY expects a positive value to move up.
-                float moveAmount = normalizedScroll * replayScrollFactor;
+                float moveAmount = normalizedScroll * replayScrollFactor; // reduced by lower default factor
                 moveVector.z = moveAmount * moveCoefficent;
 
             }

@@ -65,6 +65,12 @@ public class UIMgr : MonoBehaviour
     private InputAction attack4;
     private InputAction modifiers;
 
+    // Bind group input actions (1-10)
+    private InputAction[] bindGroupBindActions;
+    private InputAction[] bindGroupRetrieveActions;
+    private Action<InputAction.CallbackContext>[] bindGroupBindHandlers;
+    private Action<InputAction.CallbackContext>[] bindGroupRetrieveHandlers;
+
     private void Awake()
     {
         inst = this;
@@ -176,6 +182,9 @@ public class UIMgr : MonoBehaviour
 
         modifiers = inputs.Attacks.Modifers;
         modifiers.Enable();
+
+        // Setup bind group controls (Ctrl+1..0 to bind, 1..0 to retrieve per input map)
+        SetupBindGroupInputs();
     }
 
     private void OnDisable()
@@ -209,6 +218,9 @@ public class UIMgr : MonoBehaviour
         attack3.Disable();
         attack4.Disable();
         modifiers.Disable();
+
+        // Tear down bind group inputs
+        TeardownBindGroupInputs();
     }
 
     void Start()
@@ -388,7 +400,7 @@ public class UIMgr : MonoBehaviour
         }
         else
         {
-            CameraMgr.inst.MoveCameraY(mouseScroll.ReadValue<Vector2>().y);
+            CameraMgr.inst.MoveCameraYFromScroll(mouseScroll.ReadValue<Vector2>().y);
             CameraMgr.inst.MoveCameraXZ(mouseDelta.ReadValue<Vector2>());
         }
     }
@@ -500,15 +512,19 @@ public class UIMgr : MonoBehaviour
     }
 
     private void OnSelectAllPerformed(InputAction.CallbackContext context) {
+        if (ReplayMgr.inst != null) ReplayMgr.inst.RecordHotkeyPress("SelectAll");
         SelectionMgr.inst.SelectAll();
     }
     private void OnSelectAllDDG51Performed(InputAction.CallbackContext context) {
+        if (ReplayMgr.inst != null) ReplayMgr.inst.RecordHotkeyPress("SelectAllDDG51");
         SelectionMgr.inst.SelectAllDDG51();
     }
     private void OnSelectAllJARIUSVPerformed(InputAction.CallbackContext context) {
+        if (ReplayMgr.inst != null) ReplayMgr.inst.RecordHotkeyPress("SelectAllScouts");
         SelectionMgr.inst.SelectALLJARIUSV();
     }
     private void OnSelectAllSEAHUNTERPerformed(InputAction.CallbackContext context) {
+        if (ReplayMgr.inst != null) ReplayMgr.inst.RecordHotkeyPress("SelectAllSEAHUNTER");
         SelectionMgr.inst.SelectALLSEAHUNTER();
     }
 
@@ -579,5 +595,77 @@ public class UIMgr : MonoBehaviour
     {
         //Debug.Log("Smart Weapon");
         // WeaponsMgr.inst.handleWeapon(selectionCursorPosition.ReadValue<Vector2>(), WeaponBehaviors.Smart);
+    }
+
+    private void SetupBindGroupInputs()
+    {
+        // Initialize arrays on first use
+        if (bindGroupBindActions == null)
+        {
+            bindGroupBindActions = new InputAction[10];
+            bindGroupRetrieveActions = new InputAction[10];
+            bindGroupBindHandlers = new Action<InputAction.CallbackContext>[10];
+            bindGroupRetrieveHandlers = new Action<InputAction.CallbackContext>[10];
+        }
+
+        // Map number 1-10 (with 10 representing key '0')
+        bindGroupBindActions[0] = inputs.BindGroup.BindControlGroup1;
+        bindGroupBindActions[1] = inputs.BindGroup.BindControlGroup2;
+        bindGroupBindActions[2] = inputs.BindGroup.BindControlGroup3;
+        bindGroupBindActions[3] = inputs.BindGroup.BindControlGroup4;
+        bindGroupBindActions[4] = inputs.BindGroup.BindControlGroup5;
+        bindGroupBindActions[5] = inputs.BindGroup.BindControlGroup6;
+        bindGroupBindActions[6] = inputs.BindGroup.BindControlGroup7;
+        bindGroupBindActions[7] = inputs.BindGroup.BindControlGroup8;
+        bindGroupBindActions[8] = inputs.BindGroup.BindControlGroup9;
+        bindGroupBindActions[9] = inputs.BindGroup.BindControlGroup10;
+
+        bindGroupRetrieveActions[0] = inputs.BindGroup.RetreiveControlGroup1;
+        bindGroupRetrieveActions[1] = inputs.BindGroup.RetreiveControlGroup2;
+        bindGroupRetrieveActions[2] = inputs.BindGroup.RetreiveControlGroup3;
+        bindGroupRetrieveActions[3] = inputs.BindGroup.RetreiveControlGroup4;
+        bindGroupRetrieveActions[4] = inputs.BindGroup.RetreiveControlGroup5;
+        bindGroupRetrieveActions[5] = inputs.BindGroup.RetreiveControlGroup6;
+        bindGroupRetrieveActions[6] = inputs.BindGroup.RetreiveControlGroup7;
+        bindGroupRetrieveActions[7] = inputs.BindGroup.RetreiveControlGroup8;
+        bindGroupRetrieveActions[8] = inputs.BindGroup.RetreiveControlGroup9;
+        bindGroupRetrieveActions[9] = inputs.BindGroup.RetreiveControlGroup10;
+
+        for (int i = 0; i < 10; i++)
+        {
+            // Capture local copy for closure
+            int groupNumber = i + 1; // 1..10
+
+            // Enable actions
+            bindGroupBindActions[i].Enable();
+            bindGroupRetrieveActions[i].Enable();
+
+            // Create and attach handlers
+            bindGroupBindHandlers[i] = (ctx) => { if (ReplayMgr.inst != null) ReplayMgr.inst.RecordHotkeyPress("ControlGroupCreate", groupNumber); SelectionMgr.inst.FormControlGroup(groupNumber); };
+            bindGroupRetrieveHandlers[i] = (ctx) => { if (ReplayMgr.inst != null) ReplayMgr.inst.RecordHotkeyPress("ControlGroupSelect", groupNumber); SelectionMgr.inst.SelectControlGroup(groupNumber); };
+            bindGroupBindActions[i].performed += bindGroupBindHandlers[i];
+            bindGroupRetrieveActions[i].performed += bindGroupRetrieveHandlers[i];
+        }
+    }
+
+    private void TeardownBindGroupInputs()
+    {
+        if (bindGroupBindActions == null) return;
+
+        for (int i = 0; i < 10; i++)
+        {
+            if (bindGroupBindActions[i] != null && bindGroupBindHandlers[i] != null)
+            {
+                bindGroupBindActions[i].performed -= bindGroupBindHandlers[i];
+                bindGroupBindActions[i].Disable();
+            }
+            if (bindGroupRetrieveActions[i] != null && bindGroupRetrieveHandlers[i] != null)
+            {
+                bindGroupRetrieveActions[i].performed -= bindGroupRetrieveHandlers[i];
+                bindGroupRetrieveActions[i].Disable();
+            }
+            bindGroupBindHandlers[i] = null;
+            bindGroupRetrieveHandlers[i] = null;
+        }
     }
 }

@@ -68,8 +68,16 @@ public class GroupUIMgr : MonoBehaviour
 
     public void Bind(InputAction.CallbackContext ctx)
     {
+        // Guard: don't bind an empty selection into a control group
+        if (SelectionMgr.inst.selectedEntities.Count == 0)
+        {
+            NetDebugConsole.inst.Log("No entities selected. Cannot form control group.");
+            return;
+        }
+
         int groupNumber = ParseContextForControlGroupNumber(ctx.control.path);
         NetDebugConsole.inst.Log("Binding..." + ctx.control + " : " + groupNumber);
+        if (ReplayMgr.inst != null) ReplayMgr.inst.RecordHotkeyPress("ControlGroupCreate", groupNumber);
         SelectionMgr.inst.FormControlGroup(groupNumber);
     }
 
@@ -77,12 +85,19 @@ public class GroupUIMgr : MonoBehaviour
     {
         int groupNumber = ParseContextForControlGroupNumber(context.control.path);
         NetDebugConsole.inst?.Log("Retreiving..." + context.control + " : " + groupNumber);
+        if (ReplayMgr.inst != null) ReplayMgr.inst.RecordHotkeyPress("ControlGroupSelect", groupNumber);
         SelectionMgr.inst.SelectControlGroup(groupNumber);
     }
     int ParseContextForControlGroupNumber(string path)
     {
         string[] pathElements = path.Split('/');
         string keycode = pathElements[pathElements.Length - 1];
+        // Map the '0' key to control group 10
+        if (keycode == "0")
+        {
+            return 10;
+        }
+
         return int.Parse(keycode);
     }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.UI;
 
 public class MinimapMgr : MonoBehaviour
@@ -57,6 +58,10 @@ public class MinimapMgr : MonoBehaviour
         else
             minimapImage = minimapImageNonReplay;
         UpdateMinimap();
+
+        if (Input.GetMouseButtonDown(0)) {
+            MoveCameraViaMinimap(Input.mousePosition);
+        }
     }
 
     //Set the matrix that translates world position to map position
@@ -213,8 +218,9 @@ public class MinimapMgr : MonoBehaviour
 
     //Zooms in the minimap
     public void ChangeZoom(float delta) {
-        minimapZoom -= delta * 0.1f;
-        minimapZoom = Mathf.Clamp(minimapZoom, 1, 4);
+        
+        if (minimapZoom != 1f)
+            minimapZoom = 1f;
         InitMapToWorldTransformationMatrix();
         InitWorldToMapTransformationMatrix();
     }

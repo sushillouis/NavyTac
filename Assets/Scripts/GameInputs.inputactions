@@ -249,7 +249,7 @@
                     "id": "773e73eb-b501-47c0-a0f1-f72be94128a5",
                     "path": "<Mouse>/scroll",
                     "interactions": "",
-                    "processors": "ScaleVector2(y=-0.025)",
+                    "processors": "ScaleVector2(x=0.025,y=-0.025)",
                     "groups": "",
                     "action": "YMove",
                     "isComposite": false,
@@ -1158,6 +1158,634 @@
                     "processors": "",
                     "groups": "",
                     "action": "Modifers",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "BindGroup",
+            "id": "25fa9ef8-842a-45bd-9c91-52bf980bcd03",
+            "actions": [
+                {
+                    "name": "BindControlGroup1",
+                    "type": "Button",
+                    "id": "24f87f2f-0f5d-4558-b689-58b9ac0a201b",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BindControlGroup2",
+                    "type": "Button",
+                    "id": "872788b8-f0e4-42cb-9ff2-5df4d9381fc6",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BindControlGroup3",
+                    "type": "Button",
+                    "id": "72943975-72b7-4c1f-954a-4937dbce0029",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BindControlGroup4",
+                    "type": "Button",
+                    "id": "e7d499fe-0b55-4a49-8226-f9c7afd4b1b3",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BindControlGroup5",
+                    "type": "Button",
+                    "id": "9792951f-6f79-4cd7-827e-c4bc32ba6a55",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BindControlGroup6",
+                    "type": "Button",
+                    "id": "84066bc2-9b27-4a99-b5fa-8f8f323d1c86",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BindControlGroup7",
+                    "type": "Button",
+                    "id": "2c85ed16-721a-4ee4-ad58-d29f1c10448d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BindControlGroup8",
+                    "type": "Button",
+                    "id": "94858a1e-e459-49bd-8a41-7b884c5ab171",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BindControlGroup9",
+                    "type": "Button",
+                    "id": "3610689c-3ec0-4a0d-b894-afca472f29b8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BindControlGroup10",
+                    "type": "Button",
+                    "id": "3c741c4a-f161-4ee8-b6c2-fdc7566e0b12",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RetreiveControlGroup1",
+                    "type": "Button",
+                    "id": "247cc660-3d1f-48d4-922c-210d00c28879",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RetreiveControlGroup2",
+                    "type": "Button",
+                    "id": "bd4efa35-4e5b-413d-84a0-7dfdb9c30aeb",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RetreiveControlGroup3",
+                    "type": "Button",
+                    "id": "f8fd2153-9324-4b86-a8d7-d816331172c3",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RetreiveControlGroup4",
+                    "type": "Button",
+                    "id": "ece3e713-a7dd-4b59-bf5c-4134e3f5a238",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RetreiveControlGroup5",
+                    "type": "Button",
+                    "id": "68aca8b1-614a-4777-9ad5-759320c73f80",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RetreiveControlGroup6",
+                    "type": "Button",
+                    "id": "63048d67-6e02-4aa4-a6fc-2b825fe57cb8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RetreiveControlGroup7",
+                    "type": "Button",
+                    "id": "27a63571-dab5-4cb4-911e-ab7e49fe0834",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RetreiveControlGroup8",
+                    "type": "Button",
+                    "id": "74831513-49ab-42e0-9496-fe965bb7fb71",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RetreiveControlGroup9",
+                    "type": "Button",
+                    "id": "8e588988-98dd-45e8-aeb7-b4c9f5fd3501",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RetreiveControlGroup10",
+                    "type": "Button",
+                    "id": "845a3baa-a0c1-489b-8388-da0bdee39ec8",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "Button With One Modifier",
+                    "id": "9cb455ba-5bcc-4374-9aa1-f28687dda899",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BindControlGroup1",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Modifier",
+                    "id": "d4a78df2-426a-498b-b471-85276ea63ec0",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup1",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button",
+                    "id": "f6e2f93e-4c30-4a9c-a3a9-1f104085ce38",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup1",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "fe92efd5-3874-4783-a91c-551086d952ad",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "RetreiveControlGroup1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Button With One Modifier",
+                    "id": "adfe461c-65b1-4be0-bedd-b232acc17b35",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BindControlGroup2",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Modifier",
+                    "id": "65177098-bac8-4d4b-b48d-0bce796b88c7",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup2",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button",
+                    "id": "ca51af9a-6d3e-44bc-85bd-21fc9800fb78",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup2",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "5f1a04b7-488f-4d11-bcc0-4b57b6bf4fea",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "RetreiveControlGroup2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Button With One Modifier",
+                    "id": "da06f868-887b-4280-ab1d-a519130d5d93",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BindControlGroup3",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Modifier",
+                    "id": "e7c5369d-4ba1-4eb6-b6e0-50a757ec40ac",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup3",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button",
+                    "id": "20d8a0ed-d2ad-4110-93c5-13930396b791",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup3",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button With One Modifier",
+                    "id": "b62fb061-fc83-4f28-a038-833a37d8b074",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BindControlGroup4",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Modifier",
+                    "id": "cb30f53f-570b-4935-9349-0583521eea0a",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup4",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button",
+                    "id": "3044a295-93d2-47ab-8e59-2daba1aed020",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup4",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button With One Modifier",
+                    "id": "bfa3fa36-14fb-4d6c-a557-525e22c23c57",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BindControlGroup5",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Modifier",
+                    "id": "59a58874-857c-4048-bc30-1f40af1371ec",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup5",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button",
+                    "id": "95479443-21e3-4640-a2e6-4469344c50b0",
+                    "path": "<Keyboard>/5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup5",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button With One Modifier",
+                    "id": "3a59ec00-fb64-463f-944e-7988969785c2",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BindControlGroup6",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Modifier",
+                    "id": "0665ff6f-c38a-4b29-9548-0080234e85f1",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup6",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button",
+                    "id": "b18f7285-c26a-4655-94b2-2e4a4d76cec9",
+                    "path": "<Keyboard>/6",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup6",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button With One Modifier",
+                    "id": "2fdcb72e-818b-4813-8047-44ab374c1743",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BindControlGroup7",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Modifier",
+                    "id": "cb049d29-d539-42cc-aa1e-881a605105f4",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup7",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button",
+                    "id": "45a960a1-542e-4b41-b155-39ca9bc483c2",
+                    "path": "<Keyboard>/7",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup7",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button With One Modifier",
+                    "id": "8409006d-ff68-465f-ac52-90d8bdc0b96a",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BindControlGroup8",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Modifier",
+                    "id": "be6a0a27-12c2-4a53-a6f1-e7856f7e0ef5",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup8",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button",
+                    "id": "3a1b6d3a-5fae-4a9a-9430-b6f95b447adf",
+                    "path": "<Keyboard>/8",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup8",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button With One Modifier",
+                    "id": "74daaeb0-b738-4c4d-b187-1f95ff619c31",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BindControlGroup9",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Modifier",
+                    "id": "2fc4dce8-3814-49a6-8eaf-9e0d777f8db8",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup9",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button",
+                    "id": "ecfaf291-d014-43bf-b49d-2cf520fcf407",
+                    "path": "<Keyboard>/9",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup9",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button With One Modifier",
+                    "id": "e96e4de1-be9d-47f6-8a23-0a4b3c1f6650",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BindControlGroup10",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "Modifier",
+                    "id": "ded70e55-e008-4ed5-8242-71870c31d293",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup10",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button",
+                    "id": "1ab45393-9bc3-4cd4-bbac-74a237685588",
+                    "path": "<Keyboard>/0",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "BindControlGroup10",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "6e45ba63-5aa2-4d87-a705-62775c161ae3",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "RetreiveControlGroup3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "87d582f6-9644-45dc-be0e-914f62fda2c2",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "RetreiveControlGroup4",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "75a5af5d-31c0-4b42-b89e-c4ca28af426c",
+                    "path": "<Keyboard>/5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "RetreiveControlGroup5",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "41e765ff-8372-40b4-970e-e22b8af67fcc",
+                    "path": "<Keyboard>/6",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "RetreiveControlGroup6",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d66e024f-a76a-443c-ad6c-b7a0c833a940",
+                    "path": "<Keyboard>/7",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "RetreiveControlGroup7",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e27ea953-3733-42b9-ad84-68c562784923",
+                    "path": "<Keyboard>/8",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "RetreiveControlGroup8",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2423839a-3d78-4a56-beaa-c3992b4150f6",
+                    "path": "<Keyboard>/9",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "RetreiveControlGroup9",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d66821e4-d7a9-45d4-812e-0dbd56927bd0",
+                    "path": "<Keyboard>/0",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;XR",
+                    "action": "RetreiveControlGroup10",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -22,7 +22,7 @@ public class TerrainBoundaryCreator : MonoBehaviour
     [Tooltip("Remove previously generated boundary data (and any child markers) before creating new ones")]
     public bool clearExistingChildren = true;
 
-    [SerializeField]
+    [SerializeField, HideInInspector]
     public List<Vector3> boundaryPositions = new List<Vector3>();
 
     public List<Vector3> BoundaryPositions => boundaryPositions;
@@ -297,4 +297,103 @@ public class TerrainBoundaryCreator : MonoBehaviour
             Mathf.RoundToInt(position.y * scale),
             Mathf.RoundToInt(position.z * scale));
     }
-}
+
+//     void OnDrawGizmosSelected()
+//     {
+//         Gizmos.color = Color.red;
+//         for (int i = 0; i < boundaryPositions.Count; i++)
+//         {
+//             Gizmos.DrawSphere(boundaryPositions[i], 10f);
+
+// // #if UNITY_EDITOR
+// //             // Draw the index number at each point
+// //             GUIStyle style = new GUIStyle();
+// //             style.normal.textColor = Color.white;
+// //             Handles.Label(boundaryPositions[i] + Vector3.up * 12f, i.ToString(), style);
+// // #endif
+//         }
+//     }
+
+    [ContextMenu("make y zero")]
+    void MakeYZero()
+    {
+        for (int i = 0; i < boundaryPositions.Count; i++)
+        {
+            Vector3 pos = boundaryPositions[i];
+            pos.y = 0;
+            boundaryPositions[i] = pos;
+        }
+    }
+    [ContextMenu("Sort by Nearby Point")]
+    void SortByNearbyPoint()
+    {
+        if (boundaryPositions.Count < 2)
+            return;
+
+        List<Vector3> sorted = new List<Vector3>();
+        HashSet<int> used = new HashSet<int>();
+        int current = 0;
+        sorted.Add(boundaryPositions[current]);
+        used.Add(current);
+
+        for (int i = 1; i < boundaryPositions.Count; i++)
+        {
+            float minDist = float.MaxValue;
+            int nextIndex = -1;
+            Vector3 last = sorted[sorted.Count - 1];
+
+            for (int j = 0; j < boundaryPositions.Count; j++)
+            {
+                if (used.Contains(j)) continue;
+                float dist = Vector3.Distance(last, boundaryPositions[j]);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    nextIndex = j;
+                }
+            }
+
+            if (nextIndex != -1)
+            {
+                sorted.Add(boundaryPositions[nextIndex]);
+                used.Add(nextIndex);
+            }
+            else
+            {
+                // Should not happen, but break to avoid infinite loop
+                break;
+            }
+        }
+
+        boundaryPositions = sorted;
+    }
+
+    [ContextMenu("Create 5 Points Between Each Pair")]
+    void CreateFivePointsBetweenEachPair()
+    {
+        if (boundaryPositions.Count < 2)
+            return;
+
+        List<Vector3> newPoints = new List<Vector3>();
+
+        for (int i = 0; i < boundaryPositions.Count - 1; i++)
+        {
+            Vector3 a = boundaryPositions[i];
+            Vector3 b = boundaryPositions[i + 1];
+            newPoints.Add(a);
+
+            // Insert 5 points between a and b
+            for (int j = 1; j <= 5; j++)
+            {
+                float t = (float)j / 6f;
+                Vector3 p = Vector3.Lerp(a, b, t);
+                newPoints.Add(p);
+            }
+        }
+        newPoints.Add(boundaryPositions[boundaryPositions.Count - 1]);
+        boundaryPositions = newPoints;
+    }
+
+    
+
+    }

@@ -12,17 +12,17 @@ public class GeminiRtsFeedback : MonoBehaviour
     public TextAsset jsonLog;
     public TextAsset csvStats;
 
-    public string promptTemplate = @"You are an AI assistant tasked with analyzing a naval real-time strategy (RTS) game scenario and generating an After Action Review (AAR) for the player, but only if valid JSON and CSV data are provided.
+    public string promptTemplate = @"You are an AI assistant tasked with analyzing a naval real-time strategy (RTS) game scenario and generating an After Action Review (AAR) for **you**, but only if valid JSON and CSV data are provided.
 If the JSON or CSV data is missing, empty, or invalid, respond only with:
 Error: Cannot generate feedback due to missing or invalid JSON or CSV data.
 
 Scenario Context
 
-The game involves commanding naval units—JariUSV (fast scouts), SeaHunter (balanced support), DDG51 (armored destroyers), and a stationary command center/oil rig—to destroy the enemy base or eliminate all enemy units (red) while protecting your own (blue). The battlefield is a 2D map of four quadrants with fog of war hiding the enemy base.
+The game involves commanding naval units—JariUSV (fast scouts), SeaHunter (balanced support), DDG51 (armored destroyers), and a stationary **command center**—to destroy the enemy base or eliminate all enemy units (red) while protecting your own (blue). The battlefield is a 2D map of four quadrants with fog of war hiding the enemy base.
 
 A neutral base may also exist. Capturing it before the enemy increases your chances to win by granting control of additional entities.
 
-Damage Taken: total damage received by player’s units and command center/oil rig.
+Damage Taken: total damage received by **your** units and **command center**.
 
 Damage Dealt: total damage inflicted on enemy units and base.
 
@@ -32,7 +32,7 @@ score = (0.3 * (playerWon ? 1 : 0)) * 100
       + 0.7 * (damageDealt / (damageDealt + damageTaken)) * 100
 
 
-Players issue commands (Move, AttackMoveToPosition, AttackMoveToEntity) to units via selection controls; camera controls must never be mentioned.
+**You** issue commands (Move, AttackMoveToPosition, AttackMoveToEntity) to units via selection controls; camera controls must never be mentioned.
 
 Inputs Provided:
 
@@ -50,7 +50,7 @@ One clear sentence describing the intended win condition or plan.
 
 What actually happened?
 
-One clear sentence stating whether the player won or lost and what occurred.
+One clear sentence stating whether **you** won or lost and what occurred.
 
 If no unit commands (commandType in {Move, AttackMoveToPosition, AttackMoveToEntity} with entityIds > 0), explicitly acknowledge that.
 
@@ -66,7 +66,12 @@ What will we do to improve?
 
 Provide 2–4 numbered improvements, each ≈10 words maximum.
 
-Emphasize minimizing DamageTaken, maximizing DamageDealt, capturing the neutral base early, protecting the command center/oil rig, and improving ScorePercent.
+**Improvements MUST directly correct the mistakes identified in 'Why did it happen?'.**
+
+For example, if the analysis showed 'Attack-Move only', suggest 'Use focused fire (A+Right Click) on key targets'.
+If the analysis showed 'one large fleet', suggest 'Use unit groups (CTRL+0-9) for flanks or scouting'.
+
+Emphasize minimizing DamageTaken, maximizing DamageDealt, protecting the **command center**, and improving ScorePercent.
 
 When relevant, mention actionable inputs (F1/F2/F3/F4, A+Right Click, CTRL+0–9) but not camera controls.
 
@@ -74,9 +79,17 @@ Use rounded phases (“early/mid/late game”), not raw data, timestamps, or coo
 
 Do not show raw JSON/CSV values.
 
-If the player won, the first section should still recognize the expectation of a win condition.
+If **you** won, the first section should still recognize the expectation of a win condition.
 
-Keep responses concise, objective, and actionable.";
+Keep responses concise, objective, and actionable.
+
+**Scenario-Specific Logic Rules:**
+
+1.  **Neutral Base:** Only mention capturing the neutral base if the CSV `unit counts` or `WinCondition` data indicates it was present in the scenario. If it was not present, do not mention it.
+2.  **AI Difficulty (Attack-Retreat):** If the CSV `AIDifficulty` is greater than 0.25, your analysis in 'Why did it happen?' should consider that the AI uses 'attack-retreat' tactics.
+3.  **AI Difficulty (Scouting):** If `AIDifficulty` is greater than 0.33 AND a neutral base was present, 'What will we do to improve?' should suggest sending scouts to the neutral base early to contest it before the AI arrives.
+";
+
 
     const string Model = "gemini-2.5-flash";
     string Endpoint(string key) => $"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={key}";

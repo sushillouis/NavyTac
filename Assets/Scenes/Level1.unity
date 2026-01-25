@@ -601,41 +601,53 @@ MonoBehaviour:
   csvStats: {fileID: 0}
   promptTemplate: "You are an AI assistant tasked with analyzing a naval real-time
     strategy (RTS) game scenario and generating an After Action Review (AAR) for
-    the player, but only if valid JSON and CSV data are provided. If the JSON or
-    CSV data is missing, empty, or invalid, respond only with: Error: Cannot generate
-    feedback due to missing or invalid JSON or CSV data.  Scenario Context  The game
-    involves commanding naval units\u2014JariUSV (fast scouts), SeaHunter (balanced
-    support), DDG51 (armored destroyers), and a stationary command center/oil rig\u2014to
+    **you**, but only if valid JSON and CSV data are provided.\nIf the JSON or CSV
+    data is missing, empty, or invalid, respond only with:\nError: Cannot generate
+    feedback due to missing or invalid JSON or CSV data.\n\nScenario Context\n\nThe
+    game involves commanding naval units\u2014JariUSV (fast scouts), SeaHunter (balanced
+    support), DDG51 (armored destroyers), and a stationary **command center**\u2014to
     destroy the enemy base or eliminate all enemy units (red) while protecting your
     own (blue). The battlefield is a 2D map of four quadrants with fog of war hiding
-    the enemy base.  A neutral base may also exist. Capturing it before the enemy
-    increases your chances to win by granting control of additional entities.  Damage
-    Taken: total damage received by player\u2019s units and command center/oil rig. 
-    Damage Dealt: total damage inflicted on enemy units and base.  Score:  score
-    = (0.3 * (playerWon ? 1 : 0)) * 100        + 0.7 * (damageDealt / (damageDealt
-    + damageTaken)) * 100   Players issue commands (Move, AttackMoveToPosition, AttackMoveToEntity)
-    to units via selection controls; camera controls must never be mentioned.  Inputs
-    Provided:  JSON command log: (timestamp, timeScale, commandType, entityIds, targetPosition,
-    targetEntityId, targetEntityName, targetOwnerName, add).  CSV stats: (DateTime,
-    StudentID, Group, GameType, Result, DamageTaken, DamageDealt, ScorePercent, TimeTaken,
-    AILevel, AIDifficulty, WinCondition, PlayerBaseLocation, AIBaseLocation, unit
-    counts).  Output Rules  Structure output as four Q&A items exactly matching the
-    Navy AAR questions:  What did we expect to happen?  One clear sentence describing
-    the intended win condition or plan.  What actually happened?  One clear sentence
-    stating whether the player won or lost and what occurred.  If no unit commands
-    (commandType in {Move, AttackMoveToPosition, AttackMoveToEntity} with entityIds
-    > 0), explicitly acknowledge that.  Why did it happen?  Provide 2\u20134 numbered
-    reasons, each \u224810 words maximum.  Reasons should tie to strategy, unit usage,
-    command discipline, scouting, AI behavior, and neutral base control.  Never mention
-    \u201Cadaptive\u201D or \u201Cnon-adaptive\u201D AI.  What will we do to improve? 
-    Provide 2\u20134 numbered improvements, each \u224810 words maximum.  Emphasize
-    minimizing DamageTaken, maximizing DamageDealt, capturing the neutral base early,
-    protecting the command center/oil rig, and improving ScorePercent.  When relevant,
+    the enemy base.\n\nA neutral base may also exist. Capturing it before the enemy
+    increases your chances to win by granting control of additional entities.\n\nDamage
+    Taken: total damage received by **your** units and **command center**.\n\nDamage
+    Dealt: total damage inflicted on enemy units and base.\n\nScore:\n\nscore = (0.3
+    * (playerWon ? 1 : 0)) * 100 \n      + 0.7 * (damageDealt / (damageDealt + damageTaken))
+    * 100\n\n\n**You** issue commands (Move, AttackMoveToPosition, AttackMoveToEntity)
+    to units via selection controls; camera controls must never be mentioned.\n\nInputs
+    Provided:\n\nJSON command log: (timestamp, timeScale, commandType, entityIds,
+    targetPosition, targetEntityId, targetEntityName, targetOwnerName, add).\n\nCSV
+    stats: (DateTime, StudentID, Group, GameType, Result, DamageTaken, DamageDealt,
+    ScorePercent, TimeTaken, AILevel, AIDifficulty, WinCondition, PlayerBaseLocation,
+    AIBaseLocation, unit counts).\n\nOutput Rules\n\nStructure output as four Q&A
+    items exactly matching the Navy AAR questions:\n\nWhat did we expect to happen?\n\nOne
+    clear sentence describing the intended win condition or plan.\n\nWhat actually
+    happened?\n\nOne clear sentence stating whether **you** won or lost and what
+    occurred.\n\nIf no unit commands (commandType in {Move, AttackMoveToPosition,
+    AttackMoveToEntity} with entityIds > 0), explicitly acknowledge that.\n\nWhy
+    did it happen?\n\nProvide 2\u20134 numbered reasons, each \u224810 words maximum.\n\nReasons
+    should tie to strategy, unit usage, command discipline, scouting, AI behavior,
+    and neutral base control.\n\nNever mention \u201Cadaptive\u201D or \u201Cnon-adaptive\u201D
+    AI.\n\nWhat will we do to improve?\n\nProvide 2\u20134 numbered improvements,
+    each \u224810 words maximum.\n\n**Improvements MUST directly correct the mistakes
+    identified in 'Why did it happen?'.**\n\nFor example, if the analysis showed
+    'Attack-Move only', suggest 'Use focused fire (A+Right Click) on key targets'.\nIf
+    the analysis showed 'one large fleet', suggest 'Use unit groups (CTRL+0-9) for
+    flanks or scouting'.\n\nEmphasize minimizing DamageTaken, maximizing DamageDealt,
+    protecting the **command center**, and improving ScorePercent.\n\nWhen relevant,
     mention actionable inputs (F1/F2/F3/F4, A+Right Click, CTRL+0\u20139) but not
-    camera controls.  Use rounded phases (\u201Cearly/mid/late game\u201D), not raw
-    data, timestamps, or coordinates.  Do not show raw JSON/CSV values.  If the player
-    won, the first section should still recognize the expectation of a win condition. 
-    Keep responses concise, objective, and actionable."
+    camera controls.\n\nUse rounded phases (\u201Cearly/mid/late game\u201D), not
+    raw data, timestamps, or coordinates.\n\nDo not show raw JSON/CSV values.\n\nIf
+    **you** won, the first section should still recognize the expectation of a win
+    condition.\n\nKeep responses concise, objective, and actionable.\n\n**Scenario-Specific
+    Logic Rules:**\n\n1.  **Neutral Base:** Only mention capturing the neutral base
+    if the CSV `unit counts` or `WinCondition` data indicates it was present in the
+    scenario. If it was not present, do not mention it.\n2.  **AI Difficulty (Attack-Retreat):**
+    If the CSV `AIDifficulty` is greater than 0.25, your analysis in 'Why did it
+    happen?' should consider that the AI uses 'attack-retreat' tactics.\n3.  **AI
+    Difficulty (Scouting):** If `AIDifficulty` is greater than 0.33 AND a neutral
+    base was present, 'What will we do to improve?' should suggest sending scouts
+    to the neutral base early to contest it before the AI arrives.\n"
 --- !u!1 &194918367
 GameObject:
   m_ObjectHideFlags: 0
@@ -3150,6 +3162,7 @@ MonoBehaviour:
   maxPitchAngle: 80
   currentYawEulerAngles: {x: 0, y: 0, z: 0}
   currentPitchEulerAngles: {x: 0, y: 0, z: 0}
+  yScrollFactor: 0.25
   isRTSMode: 1
   replayScrollFactor: 5
 --- !u!114 &562710001 stripped
@@ -3718,6 +3731,8 @@ MonoBehaviour:
   interactionRange: 2000
   maxPairsToProcessPerFrame: 50
   boundaryRepulsionSmoothing: 0.25
+  computePerPointBoundaryContributions: 0
+  maxBoundaryContributionsPerEntity: 8
   selectedEntityPotentials: []
 --- !u!1 &690747839
 GameObject:
@@ -5332,7 +5347,7 @@ PrefabInstance:
     - target: {fileID: 7736597981213494469, guid: 911a35030e42a4b3e9262902890c0e2c,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -35
+      value: -35.000305
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6699,7 +6714,7 @@ PrefabInstance:
     - target: {fileID: 5664203522044234669, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -35
+      value: -35.000305
       objectReference: {fileID: 0}
     - target: {fileID: 8627727354957610720, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
@@ -8063,7 +8078,7 @@ MonoBehaviour:
   neutralEntityPositions: []
   neutralEntityHeadings: []
   nonAdaptiveDifficulty: 0.25
-  adaptiveDifficulty: 0.6
+  adaptiveDifficulty: 0.2
   difficultyLevel: 0
   allScenarios: []
 --- !u!1 &1717877730
@@ -8936,7 +8951,7 @@ PrefabInstance:
     - target: {fileID: 7736597981213494469, guid: 80bce631b4c42184898a37f5096c046b,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -35
+      value: -35.000305
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -13364,6 +13379,11 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
       value: GameMgr, Assembly-CSharp
       objectReference: {fileID: 0}
+    - target: {fileID: 6408438248101743821, guid: e0cbdce17e98e4e8994efdfde155618b,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7406573549795362453, guid: e0cbdce17e98e4e8994efdfde155618b,
         type: 3}
       propertyPath: m_Pivot.x
@@ -13477,6 +13497,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1491763689}
     m_Modifications:
+    - target: {fileID: 925161622609447559, guid: b89ba6f4b759a464da93e95fbafe480f,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -35.000305
+      objectReference: {fileID: 0}
     - target: {fileID: 2576317505240213592, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -14157,7 +14182,7 @@ PrefabInstance:
     - target: {fileID: 2154912725876448436, guid: d43bf3f91e83f364f921f8d7955a2b67,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -35
+      value: -35.000305
       objectReference: {fileID: 0}
     - target: {fileID: 4165066258349059795, guid: d43bf3f91e83f364f921f8d7955a2b67,
         type: 3}

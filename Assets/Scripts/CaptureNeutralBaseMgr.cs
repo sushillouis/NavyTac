@@ -124,10 +124,14 @@ public class CaptureNeutralBaseMgr : MonoBehaviour
             if (captureProgressEnemy >= maxWidth)
             {
                 ChangeOwnership(PlayerMgr.inst.player2);
+                // Log into replay meta that AI captured neutral base
+                ReplayMgr.inst?.RecordNeutralBaseCapture("AI");
             }
             else if (captureProgressPlayer >= maxWidth)
             {
                 ChangeOwnership(PlayerMgr.inst.player1);
+                // Log into replay meta that Player captured neutral base
+                ReplayMgr.inst?.RecordNeutralBaseCapture("Player");
             }
 
             // Set isNeutral to false for all neutral entities
@@ -277,7 +281,6 @@ public class CaptureNeutralBaseMgr : MonoBehaviour
         return false;
     }
 
-    // Optional: Reset capture progress if needed (for game restarts, etc.)
     public void ResetCapture()
     {
         isCaptured = false;

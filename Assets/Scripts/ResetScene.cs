@@ -84,5 +84,6 @@ public class ResetScene : MonoBehaviour
         FXMgr.inst?.ResetEffects();
         EntityMgr.inst?.Reset();
         EnemyAIMgr.inst?.ResetAI();
+        CaptureNeutralBaseMgr.inst?.ResetCapture();
     }
 }
