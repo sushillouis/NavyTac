@@ -145,7 +145,7 @@ public class Level3EnemyAI : BaseEnemyAI
         if (idleEntities.Count > 0)
         {
             Debug.Log($"Level3EnemyAI: {idleEntities.Count} idle entities are now becoming aggressive.");
-            AIMgr.inst.HandleAttackMove(idleEntities, opponentBase.transform.position, opponentBase, acquireTarget: true, useLowestCruiseSpeed: true);
+            AIMgr.inst.HandleAttackMove(idleEntities, opponentBase.transform.position, null, acquireTarget: true, useLowestCruiseSpeed: true);
             
             aggressiveEntities.AddRange(idleEntities);
             idleEntities.Clear();
@@ -161,7 +161,7 @@ public class Level3EnemyAI : BaseEnemyAI
         if (validEntities.Count > 0)
         {
             Debug.Log($"Level3EnemyAI: Initial reaction delay over. Commanding {validEntities.Count} entities.");
-            AIMgr.inst.HandleAttackMove(validEntities, opponentBase.transform.position, opponentBase, acquireTarget: true, useLowestCruiseSpeed: true);
+            AIMgr.inst.HandleAttackMove(validEntities, opponentBase.transform.position, null, acquireTarget: true, useLowestCruiseSpeed: true);
         }
         else
         {

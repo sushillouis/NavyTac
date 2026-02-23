@@ -5,12 +5,13 @@ public class Follow : Move
 {
     public Entity targetEntity;
     public Vector3 relativeOffset;
-    public float followThresholdSq = 200f;
     public Vector3 offset;
-    private Vector3 lastValidTargetPosition;
+    protected Vector3 lastValidTargetPosition;
+    private WeaponsAspect _weaponsAspect;
+    private float weaponRangeSq;
 
-    public Follow(Entity ent, Entity target, Vector3 delta) : 
-        base(ent, (target != null && target.gameObject.activeSelf ? target.transform.position : (ent != null && ent.gameObject.activeSelf ? ent.transform.position : Vector3.zero)))
+    public Follow(Entity ent, Entity target, Vector3 delta, float doneDistanceSq = 1000f) : 
+        base(ent, (target != null && target.gameObject.activeSelf ? target.transform.position : (ent != null && ent.gameObject.activeSelf ? ent.transform.position : Vector3.zero)), doneDistanceSq: doneDistanceSq)
     {
         targetEntity = target;
         relativeOffset = delta;
@@ -27,18 +28,31 @@ public class Follow : Move
         {
             lastValidTargetPosition = Vector3.zero;
         }
+
+        // Cache weapon range for maintain-distance logic
+        if (ent != null)
+        {
+            _weaponsAspect = ent.GetComponentInChildren<WeaponsAspect>();
+            if (_weaponsAspect != null && _weaponsAspect.weapon != null)
+            {
+                float range = _weaponsAspect.weapon.range;
+                weaponRangeSq = (range * range) - 100f * 100f; // Same margin as AttackMove
+            }
+            else
+            {
+                weaponRangeSq = 0f;
+            }
+        }
     }
 
     public override void Init()
     {
         if (entity == null || !entity.gameObject.activeSelf)
         {
-            // //Debug.LogError("Follow.Init: Entity is null or inactive.");
             return;
         }
         if (targetEntity == null || !targetEntity.gameObject.activeSelf)
         {
-            // //Debug.LogError("Follow.Init: TargetEntity is null or inactive.");
             return;
         }
 
@@ -55,43 +69,59 @@ public class Follow : Move
     {
         if (entity == null || !entity.gameObject.activeSelf)
         {
-            return; // Entity performing the action is invalid
+            return;
         }
 
         if (targetEntity == null || !targetEntity.gameObject.activeSelf)
         {
-            // Target is invalid; stop following and move to last known valid position
+            // Target is invalid; move to last known valid position
             movePosition = lastValidTargetPosition;
-            base.Tick(); // This will attempt to move to lastValidTargetPosition
+            base.Tick();
             return;
         }
 
         // Update position and offset
         offset = targetEntity.transform.TransformVector(relativeOffset);
         movePosition = targetEntity.position + offset;
-        // //Debug.Log(Mathf.Sqrt((movePosition-entity.position).sqrMagnitude));
-        lastValidTargetPosition = movePosition; // Update last valid target position
+        lastValidTargetPosition = movePosition;
 
-        // Calculate movement
-        DHDS dhds = ComputePotentialDHDS(movePosition);
-        entity.desiredHeading = dhds.dh;
-
-        // Adjust speed based on proximity
         float distanceSq = (movePosition - entity.position).sqrMagnitude;
-        entity.desiredSpeed = (Mathf.Sqrt(distanceSq) < followThresholdSq) 
-            ? targetEntity.desiredSpeed
-            : entity.maxSpeed;
-        //Debug.Log(followThresholdSq);
-        //Debug.Log(Mathf.Sqrt(distanceSq) < followThresholdSq);
-        // base.Tick(); // Allow base class to handle pathfinding if needed
+
+        // Use weapon range as maintain distance (like AttackMove), fall back to doneDistanceSq
+        float maintainDistanceSq = weaponRangeSq > 0f ? weaponRangeSq : doneDistanceSq;
+
+        if (distanceSq <= maintainDistanceSq)
+        {
+            // Within maintain distance — match target's speed and heading
+            entity.desiredSpeed = targetEntity.desiredSpeed;
+            entity.desiredHeading = targetEntity.desiredHeading;
+
+            // Update lines
+            if (line != null)
+            {
+                line.SetPosition(0, entity.position);
+                line.SetPosition(1, movePosition);
+            }
+            if (potentialLine != null && AIMgr.inst.isPotentialFieldsMovement)
+            {
+                potentialLine.SetPosition(0, entity.position);
+                potentialLine.SetPosition(1, entity.position + potentialSum);
+            }
+
+            range = (movePosition - entity.position).magnitude;
+            timeOnTarget = entity.speed > 0.001f ? range / entity.speed : float.PositiveInfinity;
+        }
+        else
+        {
+            // Outside maintain distance — close in using full Move.Tick() steering
+            base.Tick();
+        }
     }
 
     public override bool IsDone()
     {
-        // Terminate if target is invalid or base condition met
-        // Also check if the entity itself is gone
         if (entity == null || !entity.gameObject.activeSelf) return true;
-        return targetEntity == null || !targetEntity.gameObject.activeSelf ;
+        return targetEntity == null || !targetEntity.gameObject.activeSelf;
     }
 
     public override void Stop()
@@ -110,25 +140,19 @@ public class Follow : Move
     Vector3 predictedDiff;
     public Vector3 diff;
     // this is also used by the Intercept class
-   public float ComputePredictiveDH()
+    public float ComputePredictiveDH()
     {
-        if (entity == null || !entity.gameObject.activeSelf) return 0f; // Or current heading: entity.heading
+        if (entity == null || !entity.gameObject.activeSelf) return 0f;
         if (targetEntity == null || !targetEntity.gameObject.activeSelf) return entity.heading;
-
 
         float dh;
         Vector3 calculatedMovePosition = targetEntity.position + targetEntity.transform.TransformVector(relativeOffset);
         diff = calculatedMovePosition - entity.position;
         relativeVelocity = entity.velocity - targetEntity.velocity;
 
-        if (relativeVelocity.sqrMagnitude < Mathf.Epsilon * Mathf.Epsilon) // Avoid division by zero or near-zero
+        if (relativeVelocity.sqrMagnitude < Mathf.Epsilon * Mathf.Epsilon)
         {
-            // Relative speed is zero, predictive intercept is not meaningful or will cause issues.
-            // Fallback to direct heading towards the calculatedMovePosition.
-            // This part might need to use ComputeDHDS(calculatedMovePosition) if available,
-            // or set this.movePosition and call parameterless ComputeDHDS().
-            // For now, using the existing else branch logic:
-            DHDS fallbackDhds = ComputeDHDS(); // Assumes ComputeDHDS() uses current state or a default.
+            DHDS fallbackDhds = ComputeDHDS();
             dh = fallbackDhds.dh;
         }
         else

@@ -596,7 +596,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1edb8ba0c18bd5d45b7b066b700f8e5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  apiKey: 
+  apiGatewayUrl: 
   jsonLog: {fileID: 0}
   csvStats: {fileID: 0}
   promptTemplate: "You are an AI assistant tasked with analyzing a naval real-time
@@ -631,23 +631,38 @@ MonoBehaviour:
     AI.\n\nWhat will we do to improve?\n\nProvide 2\u20134 numbered improvements,
     each \u224810 words maximum.\n\n**Improvements MUST directly correct the mistakes
     identified in 'Why did it happen?'.**\n\nFor example, if the analysis showed
-    'Attack-Move only', suggest 'Use focused fire (A+Right Click) on key targets'.\nIf
+    'Attack-Move only', suggest 'Use focused fire (Space +Right Click) on key targets'.\nIf
     the analysis showed 'one large fleet', suggest 'Use unit groups (CTRL+0-9) for
     flanks or scouting'.\n\nEmphasize minimizing DamageTaken, maximizing DamageDealt,
     protecting the **command center**, and improving ScorePercent.\n\nWhen relevant,
-    mention actionable inputs (F1/F2/F3/F4, A+Right Click, CTRL+0\u20139) but not
-    camera controls.\n\nUse rounded phases (\u201Cearly/mid/late game\u201D), not
-    raw data, timestamps, or coordinates.\n\nDo not show raw JSON/CSV values.\n\nIf
-    **you** won, the first section should still recognize the expectation of a win
-    condition.\n\nKeep responses concise, objective, and actionable.\n\n**Scenario-Specific
-    Logic Rules:**\n\n1.  **Neutral Base:** Only mention capturing the neutral base
-    if the CSV `unit counts` or `WinCondition` data indicates it was present in the
-    scenario. If it was not present, do not mention it.\n2.  **AI Difficulty (Attack-Retreat):**
-    If the CSV `AIDifficulty` is greater than 0.25, your analysis in 'Why did it
-    happen?' should consider that the AI uses 'attack-retreat' tactics.\n3.  **AI
-    Difficulty (Scouting):** If `AIDifficulty` is greater than 0.33 AND a neutral
-    base was present, 'What will we do to improve?' should suggest sending scouts
-    to the neutral base early to contest it before the AI arrives.\n"
+    mention actionable inputs -  (F1 to select ALL units/F2 - To Select ALL DDG51/F3
+    - TO SELECT ALL SEA HUNTER/F4 - TO SELECT ALL JARIUSV, Space +Right Click - ATTACK
+    MOVE , CTRL+0\u20139 - ACTION GROUP) but not camera controls.\n\nUse rounded
+    phases (\u201Cearly/mid/late game\u201D), not raw data, timestamps, or coordinates.\n\nDo
+    not show raw JSON/CSV values.\n\nIf **you** won, the first section should still
+    recognize the expectation of a win condition.\n\nKeep responses concise, objective,
+    and actionable.\n\n**Scenario-Specific Logic Rules:**\n\n1.  **Neutral Base:**
+    Only mention capturing the neutral base if the CSV `unit counts` or `WinCondition`
+    data indicates it was present in the scenario. If it was not present, do not
+    mention it.\n2.  **AI Difficulty (Attack-Retreat):** If the CSV `AIDifficulty`
+    is greater than 0.25, your analysis in 'Why did it happen?' should consider that
+    the AI uses 'attack-retreat' tactics.\n3.  **AI Difficulty (Scouting):** If `AIDifficulty`
+    is greater than 0.33 AND a neutral base was present, 'What will we do to improve?'
+    should suggest sending scouts to the neutral base early to contest it before
+    the AI arrives.\nExample - Feedback:   **What did we expect to happen?** The
+    plan was to destroy the enemy base or eliminate all enemy units while protecting
+    our command center.  **What actually happened?** We lost \u2014 the enemy destroyed
+    our command center while the bulk of our fleet was stranded far from base, resulting
+    in very low damage dealt and a poor score.  **Why did it happen?**  1. JariUSVs
+    were sent far forward and became idle mid-map, contributing nothing. 2. SeaHunters
+    and DDG51s stopped advancing and never engaged the enemy base. 3. The command
+    center was left completely undefended against the AI attack. 4. No commands were
+    issued after early game; time-scale was increased and the fleet was abandoned. 
+    **What will we do to improve?**  1. Keep DDG51s near the command center as defenders
+    (F2 to select all DDG51s quickly). 2. Use focused fire (Space + Right Click)
+    on priority targets instead of generic attack-move. 3. Continue issuing commands
+    throughout the game; do not speed up and disengage. 4. Use unit groups (CTRL+0\u20139)
+    to split scouts forward while keeping heavy units on defense."
 --- !u!1 &194918367
 GameObject:
   m_ObjectHideFlags: 0
@@ -5347,7 +5362,7 @@ PrefabInstance:
     - target: {fileID: 7736597981213494469, guid: 911a35030e42a4b3e9262902890c0e2c,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -35.000305
+      value: -35.00049
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6714,7 +6729,7 @@ PrefabInstance:
     - target: {fileID: 5664203522044234669, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -35.000305
+      value: -35.00049
       objectReference: {fileID: 0}
     - target: {fileID: 8627727354957610720, guid: 237a1a63acdb71544844a930ca79d548,
         type: 3}
@@ -8078,7 +8093,7 @@ MonoBehaviour:
   neutralEntityPositions: []
   neutralEntityHeadings: []
   nonAdaptiveDifficulty: 0.25
-  adaptiveDifficulty: 0.2
+  adaptiveDifficulty: 0.25
   difficultyLevel: 0
   allScenarios: []
 --- !u!1 &1717877730
@@ -8951,7 +8966,7 @@ PrefabInstance:
     - target: {fileID: 7736597981213494469, guid: 80bce631b4c42184898a37f5096c046b,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -35.000305
+      value: -35.00049
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -13500,7 +13515,7 @@ PrefabInstance:
     - target: {fileID: 925161622609447559, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -35.000305
+      value: -35.00049
       objectReference: {fileID: 0}
     - target: {fileID: 2576317505240213592, guid: b89ba6f4b759a464da93e95fbafe480f,
         type: 3}
@@ -13886,7 +13901,7 @@ PrefabInstance:
     - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
         type: 3}
       propertyPath: turnRate
-      value: 60
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3560310340352068585, guid: 8e5a241efd26c114ca69ba5949ed5da0,
         type: 3}
@@ -14182,7 +14197,7 @@ PrefabInstance:
     - target: {fileID: 2154912725876448436, guid: d43bf3f91e83f364f921f8d7955a2b67,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -35.000305
+      value: -35.00049
       objectReference: {fileID: 0}
     - target: {fileID: 4165066258349059795, guid: d43bf3f91e83f364f921f8d7955a2b67,
         type: 3}

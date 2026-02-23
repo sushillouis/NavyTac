@@ -6,7 +6,6 @@ using System.IO;
 using UnityEngine.Networking;
 using System.Collections;
 using System.Text;
-using System.Threading.Tasks;
 
 public class ScoreMgr : MonoBehaviour
 {
@@ -22,7 +21,10 @@ public class ScoreMgr : MonoBehaviour
     private string sessionStartTimeString; 
     private const string CommonLogFileName = "AllGamesLog.csv"; 
 
-    [SerializeField] private GeminiRtsFeedback geminiFeedback; // assign in Inspector or auto-find in Awake
+    [SerializeField] private GeminiRtsFeedback geminiFeedback;
+
+    // Unified API endpoint for both S3 and DynamoDB
+    private const string API_URL = "";
 
     [System.Serializable]
     public class FeedbackData
@@ -32,18 +34,13 @@ public class ScoreMgr : MonoBehaviour
         public List<string> defeatFeedbacks;
         public List<string> baseDestroyedFeedbacks;
     }
+
     [System.Serializable]
     private class UploadPayload
     {
         public string filename;
         public string content;
         public bool base64;
-    }
-    [System.Serializable]
-    private class EnsurePayload
-    {
-        public bool ensure = true;
-        public string path;
     }
 
     [System.Serializable]
@@ -121,10 +118,10 @@ public class ScoreMgr : MonoBehaviour
     public void CheckVictory()
     {
         if (OpenOceanMain.inst.lobbyState == LobbyState.Replay)
-            return ;
+            return;
         if (ReplayMgr.inst != null && ReplayMgr.inst.isReplaying)
-            return ;
-        if(OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial)
+            return;
+        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial)
         {
             playerWon = true; 
             aiWon = false; 
@@ -139,7 +136,6 @@ public class ScoreMgr : MonoBehaviour
         }
         if (!playerWon && !aiWon) return;
 
-        // Don't change lobby state during replay - let ReplayMgr handle it
         if (!(ReplayMgr.inst != null && ReplayMgr.inst.isReplaying))
         {
             OpenOceanMain.inst.lobbyState = LobbyState.ScorePanel;
@@ -176,10 +172,8 @@ public class ScoreMgr : MonoBehaviour
             data.damageDealt = damageDealt;
             data.winLoss = playerWon;
             data.winReason = winReason; 
-                                        
             data.score = score;
-            data.feedback = GetFeedback(); // fallback until AI feedback arrives
-
+            data.feedback = GetFeedback();
 
             ScenarioDataMgr.inst.scenarioDataList.Add(data);
             Debug.Log($"Game data for scenario {data.scenarioNumber} logged successfully.");
@@ -233,12 +227,11 @@ public class ScoreMgr : MonoBehaviour
         }
     }
 
-    private async void GenerateDynamicFeedbackForScenario(ScenarioDataMgr.ScenarioData data)
+    // ───────────────────────── Dynamic AI Feedback ─────────────────────────
+
+    private void GenerateDynamicFeedbackForScenario(ScenarioDataMgr.ScenarioData data)
     {
-        if (data == null)
-        {
-            return;
-        }
+        if (data == null) return;
 
         data.isGeminiFeedbackReady = false;
         EnsureFallbackFeedback(data);
@@ -252,65 +245,90 @@ public class ScoreMgr : MonoBehaviour
             return;
         }
 
-        try
+        StartCoroutine(GenerateDynamicFeedbackCoroutine(data));
+    }
+
+    private IEnumerator GenerateDynamicFeedbackCoroutine(ScenarioDataMgr.ScenarioData data)
+    {
+        OpenOceanMain.inst?.SetMultiScoreLoading(true);
+
+        string csvData = BuildCsvForCurrentScenario();
+        string jsonData = string.Empty;
+
+#if !UNITY_WEBGL || UNITY_EDITOR
+        if (ReplayMgr.inst != null)
         {
-            OpenOceanMain.inst?.SetMultiScoreLoading(true);
-
-            string csvData = BuildCsvForCurrentScenario();
-            string jsonData = string.Empty;
-
-            if (ReplayMgr.inst != null)
+            string path = ReplayMgr.inst.GetLatestReplayFilePath(OpenOceanMain.inst.gamesPlayedCount);
+            if (!string.IsNullOrEmpty(path) && File.Exists(path))
             {
-        
-
-                // If unavailable, try the latest saved replay file as a fallback
-                if (string.IsNullOrEmpty(jsonData))
-                {
-                    string path = ReplayMgr.inst.GetLatestReplayFilePath(OpenOceanMain.inst.gamesPlayedCount);
-                    if (!string.IsNullOrEmpty(path) && File.Exists(path))
-                    {
-                        jsonData = File.ReadAllText(path);
-                    }
-                }
+                jsonData = File.ReadAllText(path);
             }
-
-            // Provide minimal valid JSON if nothing was recorded
-            if (string.IsNullOrWhiteSpace(jsonData))
-            {
-                jsonData = "{\"commands\":[],\"snapshots\":[]}";
-            }
-
-            // If either input is empty, skip AI feedback
-            if (string.IsNullOrWhiteSpace(jsonData) || string.IsNullOrWhiteSpace(csvData))
-            {
-                Debug.Log("Skipping AI feedback: missing JSON or CSV data.");
-                data.isGeminiFeedbackReady = true;
-                return;
-            }
-
-            // Show progress only when making the call
-            UpdateScorePanelFeedback("Generating AI feedback...");
-
-            string feedback = await geminiFeedback.GenerateFeedbackAsync(jsonData, csvData, UpdateScorePanelFeedback);
-
-            if (!string.IsNullOrWhiteSpace(feedback))
-            {
-                data.feedback = feedback;
-            }
-
-            data.isGeminiFeedbackReady = true;
         }
-        catch (Exception e)
+#endif
+
+        if (string.IsNullOrWhiteSpace(jsonData))
         {
-            Debug.LogError($"Dynamic feedback generation failed: {e.Message}");
-            EnsureFallbackFeedback(data);
-            data.isGeminiFeedbackReady = true;
+            jsonData = "{\"commands\":[],\"snapshots\":[]}";
         }
-        finally
+
+        if (string.IsNullOrWhiteSpace(csvData))
         {
+            Debug.Log("Skipping AI feedback: missing CSV data.");
+            data.isGeminiFeedbackReady = true;
             OpenOceanMain.inst?.SetMultiScoreLoading(false);
             UpdateScorePanelFeedback(data.feedback);
             RefreshMultiScorePanelIfVisible();
+            yield break;
+        }
+
+        UpdateScorePanelFeedback("Generating AI feedback...");
+
+        string feedback = null;
+        bool done = false;
+
+        RunFeedbackAsync(jsonData, csvData, (result, ex) =>
+        {
+            if (ex != null)
+            {
+                Debug.LogError($"Dynamic feedback generation failed: {ex.Message}");
+            }
+            else
+            {
+                feedback = result;
+            }
+            done = true;
+        });
+
+        while (!done)
+        {
+            yield return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(feedback))
+        {
+            data.feedback = feedback;
+        }
+        else
+        {
+            EnsureFallbackFeedback(data);
+        }
+
+        data.isGeminiFeedbackReady = true;
+        OpenOceanMain.inst?.SetMultiScoreLoading(false);
+        UpdateScorePanelFeedback(data.feedback);
+        RefreshMultiScorePanelIfVisible();
+    }
+
+    private async void RunFeedbackAsync(string jsonData, string csvData, Action<string, Exception> callback)
+    {
+        try
+        {
+            string result = await geminiFeedback.GenerateFeedbackAsync(jsonData, csvData, UpdateScorePanelFeedback);
+            callback?.Invoke(result, null);
+        }
+        catch (Exception e)
+        {
+            callback?.Invoke(null, e);
         }
     }
 
@@ -343,6 +361,8 @@ public class ScoreMgr : MonoBehaviour
         }
     }
 
+    // ───────────────────────── CSV Building (In-Memory) ─────────────────────────
+
     private string BuildCsvForCurrentScenario()
     {
         string dateTimeNow = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"); 
@@ -366,7 +386,6 @@ public class ScoreMgr : MonoBehaviour
 
         Dictionary<EntityType, int> initialUnitCounts = ScenarioGenerator.inst.entityQuantities
             .ToDictionary(eq => eq.entityType, eq => eq.unitCount);
-
         Dictionary<EntityType, int> destroyedPlayerUnits = GetDestroyedUnits(PlayerMgr.inst.localPlayer);
         TactPlayer aiPlayer = PlayerMgr.inst.player2;
         Dictionary<EntityType, int> destroyedAIUnits = (aiPlayer != null) ? GetDestroyedUnits(aiPlayer) : new Dictionary<EntityType, int>();
@@ -379,12 +398,23 @@ public class ScoreMgr : MonoBehaviour
         int aiLevel = ScenarioGenerator.inst.CurrentDifficultyLevel < 0.33f ? 1 : (ScenarioGenerator.inst.CurrentDifficultyLevel < 0.66f ? 2 : 3);
         float aiDifficulty = ScenarioGenerator.inst.CurrentDifficultyLevel; 
 
+        return BuildCsvContent(dateTimeNow, studentID, group, gameType, result, dmgTaken, dmgDealt,
+            scorePercent, timeTaken, aiLevel, aiDifficulty, winCondition, playerBaseLocation, aiBaseLocation,
+            initialUnitCounts, destroyedPlayerUnits, destroyedAIUnits);
+    }
+
+    private string BuildCsvContent(string dateTimeNow, string studentID, string group, string gameType,
+        string result, float damageTaken, float damageDealt, float scorePercent, float timeTaken,
+        int aiLevel, float aiDifficulty, string winCondition, string playerBaseLocation, string aiBaseLocation,
+        Dictionary<EntityType, int> initialUnitCounts, Dictionary<EntityType, int> destroyedPlayerUnits,
+        Dictionary<EntityType, int> destroyedAIUnits)
+    {
         var allEntityTypes = initialUnitCounts.Keys
-                                .Union(destroyedPlayerUnits.Keys)
-                                .Union(destroyedAIUnits.Keys)
-                                .Distinct()
-                                .OrderBy(et => et.ToString())
-                                .ToList();
+            .Union(destroyedPlayerUnits.Keys)
+            .Union(destroyedAIUnits.Keys)
+            .Distinct()
+            .OrderBy(et => et.ToString())
+            .ToList();
 
         StringBuilder header = new StringBuilder();
         header.Append("DateTime,StudentID,Group,GameType,Result,DamageTaken,DamageDealt,ScorePercent,TimeTaken,AILevel,AIDifficulty,WinCondition,PlayerBaseLocation,AIBaseLocation");
@@ -394,7 +424,7 @@ public class ScoreMgr : MonoBehaviour
         }
 
         StringBuilder row = new StringBuilder();
-        row.Append($"{dateTimeNow},{studentID},{group},{gameType},{result},{dmgTaken:0.##},{dmgDealt:0.##},{scorePercent:0.##},{timeTaken:0.##},{aiLevel},{aiDifficulty:0.##},{winCondition},{playerBaseLocation},{aiBaseLocation}");
+        row.Append($"{dateTimeNow},{studentID},{group},{gameType},{result},{damageTaken:0.##},{damageDealt:0.##},{scorePercent:0.##},{timeTaken:0.##},{aiLevel},{aiDifficulty:0.##},{winCondition},{playerBaseLocation},{aiBaseLocation}");
         foreach (var unitType in allEntityTypes)
         {
             int initialCount = initialUnitCounts.TryGetValue(unitType, out var ic) ? ic : 0;
@@ -405,6 +435,8 @@ public class ScoreMgr : MonoBehaviour
 
         return header.ToString() + "\n" + row.ToString();
     }
+
+    // ───────────────────────── Feedback ─────────────────────────
 
     public string GetFeedback()
     {
@@ -456,7 +488,7 @@ public class ScoreMgr : MonoBehaviour
         if (selectedFeedbacks.Any())
         {
             var feedbacksToDisplay = selectedFeedbacks.Take(3);
-            System.Text.StringBuilder feedbackString = new System.Text.StringBuilder();
+            StringBuilder feedbackString = new StringBuilder();
             int index = 1;
             foreach (var fb in feedbacksToDisplay)
             {
@@ -471,11 +503,14 @@ public class ScoreMgr : MonoBehaviour
         }
     }
 
+    // ───────────────────────── Logging ─────────────────────────
+
     private void LogVictoryMessage()
     {
         string message = playerWon ?
             $"PLAYER VICTORY! Damage Dealt: {damageDealt} | Taken: {damageTaken}" :
             $"AI VICTORY! Damage Dealt: {damageDealt} | Taken: {damageTaken}";
+        Debug.Log(message);
     }
 
     public void ResetScores()
@@ -498,20 +533,16 @@ public class ScoreMgr : MonoBehaviour
         return "UnknownGameType"; 
     }
 
-    public (string studentCsvPath, string studentDirectory, string commonCsvPath) GenerateLogPaths(string studentID, string sessionStartTimeString, string gameTypeFolder)
+    public (string studentCsvPath, string studentDirectory, string commonCsvPath) GenerateLogPaths(string studentID, string sessionStartTimeStr, string gameTypeFolder)
     {
-        string studentFileName = $"{studentID}_{sessionStartTimeString}_{gameTypeFolder}.csv";
-        string studentDirectory = Path.Combine(
-        Application.persistentDataPath,
-        studentID,
-        gameTypeFolder
-        );
+        string studentFileName = $"{studentID}_{sessionStartTimeStr}_{gameTypeFolder}.csv";
+        string studentDirectory = Path.Combine(Application.persistentDataPath, studentID, gameTypeFolder);
         string studentCsvPath = Path.Combine(studentDirectory, studentFileName); 
-
         string commonCsvPath = Path.Combine(Application.persistentDataPath, CommonLogFileName);
-
         return (studentCsvPath, studentDirectory, commonCsvPath);
     }
+
+    // ───────────────────────── LogGameData ─────────────────────────
 
     public void LogGameData()
     {
@@ -531,20 +562,15 @@ public class ScoreMgr : MonoBehaviour
                 group = "Non-Adaptive";
             }
         }
-        else if (studentID != "UnknownStudent") 
-        {
-        }
 
         string gameType = OpenOceanMain.inst.currentTrainingState.ToString(); 
         string result = playerWon ? "Win" : "Loss"; 
         float scorePercent = score; 
-
         float damageTaken = this.damageTaken; 
         float damageDealt = this.damageDealt; 
 
         Dictionary<EntityType, int> initialUnitCounts = ScenarioGenerator.inst.entityQuantities
             .ToDictionary(eq => eq.entityType, eq => eq.unitCount);
-
         Dictionary<EntityType, int> destroyedPlayerUnits = GetDestroyedUnits(PlayerMgr.inst.localPlayer);
         TactPlayer aiPlayer = PlayerMgr.inst.player2;
         Dictionary<EntityType, int> destroyedAIUnits = (aiPlayer != null) ? GetDestroyedUnits(aiPlayer) : new Dictionary<EntityType, int>();
@@ -559,18 +585,51 @@ public class ScoreMgr : MonoBehaviour
 
         string gameTypeFolder = GetGameTypeFolder(); 
 
+        // Build CSV content in memory (works on all platforms including WebGL)
+        string csvContent = BuildCsvContent(dateTimeNow, studentID, group, gameType, result,
+            damageTaken, damageDealt, scorePercent, timeTaken, aiLevel, aiDifficulty,
+            winCondition, playerBaseLocation, aiBaseLocation,
+            initialUnitCounts, destroyedPlayerUnits, destroyedAIUnits);
+
+        // Write to local files only on non-WebGL platforms
+#if !UNITY_WEBGL || UNITY_EDITOR
         var (studentCsvPath, studentDirectory, commonCsvPath) = GenerateLogPaths(studentID, sessionStartTimeString, gameTypeFolder);
 
-        WriteToCsv(studentCsvPath, studentDirectory, dateTimeNow, studentID, group, gameType, result, damageTaken, damageDealt, scorePercent, timeTaken, aiLevel, aiDifficulty, winCondition, playerBaseLocation, aiBaseLocation, initialUnitCounts, destroyedPlayerUnits, destroyedAIUnits);
+        WriteToCsv(studentCsvPath, studentDirectory, dateTimeNow, studentID, group, gameType, result,
+            damageTaken, damageDealt, scorePercent, timeTaken, aiLevel, aiDifficulty,
+            winCondition, playerBaseLocation, aiBaseLocation,
+            initialUnitCounts, destroyedPlayerUnits, destroyedAIUnits);
 
-        WriteToCsv(commonCsvPath, Application.persistentDataPath, dateTimeNow, studentID, group, gameType, result, damageTaken, damageDealt, scorePercent, timeTaken, aiLevel, aiDifficulty, winCondition, playerBaseLocation, aiBaseLocation, initialUnitCounts, destroyedPlayerUnits, destroyedAIUnits);
-    
-        // <-- MODIFIED: Start the upload coroutine after writing the local file -->
-        StartCoroutine(UploadToServer(studentCsvPath));
+        WriteToCsv(commonCsvPath, Application.persistentDataPath, dateTimeNow, studentID, group, gameType, result,
+            damageTaken, damageDealt, scorePercent, timeTaken, aiLevel, aiDifficulty,
+            winCondition, playerBaseLocation, aiBaseLocation,
+            initialUnitCounts, destroyedPlayerUnits, destroyedAIUnits);
+#endif
+
+        // Upload to S3 and DynamoDB (works on all platforms — uses in-memory CSV, no file I/O)
+        string baseName = $"{studentID}_{sessionStartTimeString}_{gameTypeFolder}_Game{OpenOceanMain.inst.gamesPlayedCount}.csv";
+        string remotePath = $"{studentID}/{gameTypeFolder}/{baseName}";
+
+        StartCoroutine(UploadToS3(csvContent, studentID, gameTypeFolder, baseName));
+        StartCoroutine(SaveScoreToDynamoDB(dateTimeNow, studentID, group, gameType, result,
+            damageTaken, damageDealt, scorePercent, timeTaken, aiLevel, aiDifficulty,
+            winCondition, playerBaseLocation, aiBaseLocation,
+            initialUnitCounts, destroyedPlayerUnits, destroyedAIUnits, remotePath));
     }
 
-    private void WriteToCsv(string csvPath, string directoryPath, string dateTimeNow, string studentID, string group, string gameType, string result, float damageTaken, float damageDealt, float scorePercent, float timeTaken, int aiLevel, float aiDifficulty, string winCondition, string playerBaseLocation, string aiBaseLocation, Dictionary<EntityType, int> initialUnitCounts, Dictionary<EntityType, int> destroyedPlayerUnits, Dictionary<EntityType, int> destroyedAIUnits)
+    // ───────────────────────── WriteToCsv (Non-WebGL Only) ─────────────────────────
+
+    private void WriteToCsv(string csvPath, string directoryPath, string dateTimeNow, string studentID,
+        string group, string gameType, string result, float damageTaken, float damageDealt,
+        float scorePercent, float timeTaken, int aiLevel, float aiDifficulty, string winCondition,
+        string playerBaseLocation, string aiBaseLocation,
+        Dictionary<EntityType, int> initialUnitCounts,
+        Dictionary<EntityType, int> destroyedPlayerUnits,
+        Dictionary<EntityType, int> destroyedAIUnits)
     {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        return;
+#else
         try
         {
             if (!Directory.Exists(directoryPath))
@@ -584,15 +643,14 @@ public class ScoreMgr : MonoBehaviour
             using (var writer = new StreamWriter(csvPath, true)) 
             {
                 var allEntityTypes = initialUnitCounts.Keys
-                                        .Union(destroyedPlayerUnits.Keys)
-                                        .Union(destroyedAIUnits.Keys)
-                                        .Distinct()
-                                        .OrderBy(et => et.ToString());
+                    .Union(destroyedPlayerUnits.Keys)
+                    .Union(destroyedAIUnits.Keys)
+                    .Distinct()
+                    .OrderBy(et => et.ToString());
 
                 if (isEmpty)
                 {
                     writer.Write("DateTime,StudentID,Group,GameType,Result,DamageTaken,DamageDealt,ScorePercent,TimeTaken,AILevel,AIDifficulty,WinCondition,PlayerBaseLocation,AIBaseLocation");
-
                     foreach (var unitType in allEntityTypes)
                     {
                         writer.Write($",Initial_{unitType},DestroyedPlayer_{unitType},DestroyedAI_{unitType}");
@@ -601,22 +659,140 @@ public class ScoreMgr : MonoBehaviour
                 }
 
                 writer.Write($"{dateTimeNow},{studentID},{group},{gameType},{result},{damageTaken:0.##},{damageDealt:0.##},{scorePercent:0.##},{timeTaken:0.##},{aiLevel},{aiDifficulty:0.##},{winCondition},{playerBaseLocation},{aiBaseLocation}");
-
                 foreach (var unitType in allEntityTypes)
                 {
                     int initialCount = initialUnitCounts.TryGetValue(unitType, out var ic) ? ic : 0;
                     int destroyedPlayerCount = destroyedPlayerUnits.TryGetValue(unitType, out var dpc) ? dpc : 0;
                     int destroyedAICount = destroyedAIUnits.TryGetValue(unitType, out var dac) ? dac : 0;
-
                     writer.Write($",{initialCount},{destroyedPlayerCount},{destroyedAICount}");
                 }
                 writer.WriteLine(); 
             }
             Debug.Log($"Game data logged to {csvPath}"); 
         }
-        catch (System.Exception)
+        catch (System.Exception e)
         {
+            Debug.LogError($"Failed to write CSV: {e.Message}");
         }
+#endif
+    }
+
+    // ───────────────────────── Upload to S3 (No File I/O) ─────────────────────────
+
+    private IEnumerator UploadToS3(string csvContent, string studentID, string gameTypeFolder, string baseName)
+    {
+        UploadPayload payload = new UploadPayload
+        {
+            filename = $"{studentID}/{gameTypeFolder}/{baseName}",
+            content = csvContent,
+            base64 = false
+        };
+
+        string jsonPayload = JsonUtility.ToJson(payload);
+
+        using (UnityWebRequest request = new UnityWebRequest(API_URL, "POST"))
+        {
+            byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonPayload);
+            request.uploadHandler = new UploadHandlerRaw(jsonBytes);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log($"S3 Upload successful! Response: {request.downloadHandler.text}");
+            }
+            else
+            {
+                Debug.LogError($"S3 Upload failed! Error: {request.error} | Response: {request.downloadHandler.text}");
+            }
+        }
+    }
+
+    // ───────────────────────── Save to DynamoDB (Manual JSON) ─────────────────────────
+
+    private IEnumerator SaveScoreToDynamoDB(string dateTimeNow, string studentID, string group,
+        string gameType, string result, float damageTaken, float damageDealt, float scorePercent,
+        float timeTaken, int aiLevel, float aiDifficulty, string winCondition,
+        string playerBaseLocation, string aiBaseLocation,
+        Dictionary<EntityType, int> initialUnitCounts,
+        Dictionary<EntityType, int> destroyedPlayerUnits,
+        Dictionary<EntityType, int> destroyedAIUnits,
+        string csvFilePath)
+    {
+        // Build unit breakdown as raw JSON — JsonUtility cannot serialize Dictionary
+        StringBuilder ubJson = new StringBuilder();
+        ubJson.Append("{");
+        bool first = true;
+
+        var allEntityTypes = initialUnitCounts.Keys
+            .Union(destroyedPlayerUnits.Keys)
+            .Union(destroyedAIUnits.Keys)
+            .Distinct();
+
+        foreach (var unitType in allEntityTypes)
+        {
+            if (!first) ubJson.Append(",");
+            first = false;
+            int init = initialUnitCounts.GetValueOrDefault(unitType, 0);
+            int dp = destroyedPlayerUnits.GetValueOrDefault(unitType, 0);
+            int da = destroyedAIUnits.GetValueOrDefault(unitType, 0);
+            ubJson.Append($"\"{unitType}\":{{\"initial\":{init},\"destroyedPlayer\":{dp},\"destroyedAI\":{da}}}");
+        }
+        ubJson.Append("}");
+
+        // Build full JSON payload manually to properly include the dictionary
+        string jsonPayload = "{" +
+            $"\"action\":\"saveScore\"," +
+            $"\"studentID\":\"{EscapeJson(studentID)}\"," +
+            $"\"dateTime\":\"{EscapeJson(dateTimeNow)}\"," +
+            $"\"group\":\"{EscapeJson(group)}\"," +
+            $"\"gameType\":\"{EscapeJson(gameType)}\"," +
+            $"\"result\":\"{EscapeJson(result)}\"," +
+            $"\"score\":{scorePercent}," +
+            $"\"damageDealt\":{damageDealt}," +
+            $"\"damageTaken\":{damageTaken}," +
+            $"\"timeTaken\":{timeTaken}," +
+            $"\"aiLevel\":{aiLevel}," +
+            $"\"aiDifficulty\":{aiDifficulty}," +
+            $"\"winCondition\":\"{EscapeJson(winCondition)}\"," +
+            $"\"playerBaseLocation\":\"{EscapeJson(playerBaseLocation)}\"," +
+            $"\"aiBaseLocation\":\"{EscapeJson(aiBaseLocation)}\"," +
+            $"\"ourUnitsDestroyed\":{destroyedPlayerUnits.Values.Sum()}," +
+            $"\"enemyUnitsDestroyed\":{destroyedAIUnits.Values.Sum()}," +
+            $"\"totalUnits\":{initialUnitCounts.Values.Sum()}," +
+            $"\"scenarioNumber\":{OpenOceanMain.inst.gamesPlayedCount}," +
+            $"\"csvFilePath\":\"{EscapeJson(csvFilePath)}\"," +
+            $"\"unitBreakdown\":{ubJson}" +
+        "}";
+
+        using (UnityWebRequest request = new UnityWebRequest(API_URL, "POST"))
+        {
+            byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonPayload);
+            request.uploadHandler = new UploadHandlerRaw(jsonBytes);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log($"DynamoDB Score saved! Response: {request.downloadHandler.text}");
+            }
+            else
+            {
+                Debug.LogError($"DynamoDB Save failed! Error: {request.error} | Response: {request.downloadHandler.text}");
+            }
+        }
+    }
+
+    // ───────────────────────── Helpers ─────────────────────────
+
+    private static string EscapeJson(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        return s.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r").Replace("\t", "\\t");
     }
 
     private string GetCardinalDirection(Vector3 position, float threshold = 10.0f)
@@ -646,7 +822,6 @@ public class ScoreMgr : MonoBehaviour
             return destroyed; 
         }
 
-        // Get the current counts of entities owned by the player
         Dictionary<EntityType, int> currentCounts = EntityMgr.inst.entities
             .Where(e => e.owner == owner)
             .GroupBy(e => e.entityType)
@@ -656,8 +831,6 @@ public class ScoreMgr : MonoBehaviour
         {
             int initialCount = eq.unitCount;
             int currentCount = currentCounts.GetValueOrDefault(eq.entityType, 0);
-
-            // Calculate destroyed units based on the difference
             destroyed[eq.entityType] = Math.Max(0, initialCount - currentCount);
         }
 
@@ -674,115 +847,18 @@ public class ScoreMgr : MonoBehaviour
             .FirstOrDefault(e => e.owner == owner && e.entityRole == EntityRole.Base);
         return baseEntity?.transform.position ?? Vector3.zero;
     }
-    
-    // <-- MODIFIED: This function is now complete and will upload the file -->
-    private IEnumerator UploadToServer(string csvPath)
-    {
-        string url = "https://www.cse.unr.edu/~yvohra/Study/upload/upload.php";
-        
-        if (!File.Exists(csvPath))
-        {
-            Debug.LogError($"Upload failed: File not found at {csvPath}");
-            yield break; // Stop the coroutine
-        }
-
-    string csvContent = File.ReadAllText(csvPath);
-    string studentID = OpenOceanMain.inst?.playerName ?? "UnknownStudent";
-    string gameType  = GetGameTypeFolder();
-    string baseName  = Path.GetFileName(csvPath);
-
-        // Ensure the server-side folder hierarchy exists before uploading the file
-        var ensureTask = EnsureServerFolderExistsAsync(url, studentID, gameType);
-        while (!ensureTask.IsCompleted) { yield return null; }
-
-        // --- START MODIFICATION ---
-        // Create an object with our data
-        UploadPayload payload = new UploadPayload
-        {
-            filename = $"{studentID}/{gameType}/{baseName}",
-            content = csvContent,
-            base64 = false
-        };
-
-        // Use JsonUtility to create a valid JSON string, escaping all special characters
-        string jsonPayload = JsonUtility.ToJson(payload);
-        // --- END MODIFICATION ---
-
-
-        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
-        {
-            byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
-            request.uploadHandler = new UploadHandlerRaw(jsonBytes);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-            request.certificateHandler = new CustomCertificateHandler(); // Handles self-signed certs
-
-            yield return request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.Success)
-            {
-                string responseText = request.downloadHandler.text;
-                
-                // Check if response is JSON with "ok" field
-                if (responseText.Contains("\"ok\":true"))
-                {
-                    Debug.Log($"Upload successful! Server response: {responseText}");
-                }
-                else if (responseText.StartsWith("SUCCESS"))
-                {
-                    Debug.Log($"Upload successful! Server response: {responseText}");
-                }
-                else
-                {
-                    Debug.LogWarning($"Upload complete, but server reported an error: {responseText}");
-                }
-            }
-            else
-            {
-                Debug.LogError($"Upload failed! Error: {request.error} | Server response: {request.downloadHandler.text}");
-            }
-        }
-    }
-    private async Task<bool> EnsureServerFolderExistsAsync(string uploadUrl, string studentID, string gameType)
-    {
-        try
-        {
-            var payload = new EnsurePayload
-            {
-                path = $"{studentID}/{gameType}"
-            };
-
-            var req = new UnityWebRequest(uploadUrl, "POST");
-            var body = Encoding.UTF8.GetBytes(JsonUtility.ToJson(payload));
-            req.uploadHandler = new UploadHandlerRaw(body);
-            req.downloadHandler = new DownloadHandlerBuffer();
-            req.SetRequestHeader("Content-Type", "application/json");
-            req.certificateHandler = new CustomCertificateHandler();
-            var tcs = new TaskCompletionSource<bool>();
-            var op = req.SendWebRequest();
-            op.completed += _ => tcs.TrySetResult(true);
-            await tcs.Task;
-            Debug.Log(req.downloadHandler.text);
-            return req.result == UnityWebRequest.Result.Success;
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning($"Ensure folder request failed: {e.Message}");
-            return false;
-        }
-    }
-    public class CustomCertificateHandler : CertificateHandler
-    {
-        protected override bool ValidateCertificate(byte[] certificateData)
-        {
-            return true; // Bypasses certificate validation
-        }
-    }
 
     public float LastScenarioScore()
     {
         Debug.Log($"Player scores count: {playerScores.Count}");
-        
         return playerScores.Count > 0 ? playerScores.Last() : 0f;
+    }
+
+    public class CustomCertificateHandler : CertificateHandler
+    {
+        protected override bool ValidateCertificate(byte[] certificateData)
+        {
+            return true;
+        }
     }
 }

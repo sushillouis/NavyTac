@@ -19,20 +19,47 @@ public class WeaponsMgr : MonoBehaviour
     }
 
     public void handleWeapon(Vector2 mousePos)
+{
+    List<Entity> selectedEntities = SelectionMgr.inst.selectedEntities;
+    if (selectedEntities == null || selectedEntities.Count == 0) return;
+
+    Ray ray = Camera.main.ScreenPointToRay(mousePos);
+
+    // Raycast everything; pick the closest hit that is an Entity (ignore terrain/ocean hits)
+    RaycastHit[] hits = Physics.RaycastAll(ray, 50000f);
+    if (hits == null || hits.Length == 0) return;
+
+    Entity clickedTarget = null;
+    float bestDist = float.MaxValue;
+
+    foreach (var h in hits)
     {
-        List<Entity> selectedEntities = SelectionMgr.inst.selectedEntities;
-        if (selectedEntities == null || selectedEntities.Count == 0) return;
+        Entity e = h.collider.GetComponentInParent<Entity>();
+        if (e == null) continue;
 
-        foreach (Entity selectedEnt in selectedEntities)
+        // filter
+        if (e.entityClass == EntityClass.Missile) continue;
+        if (e.isGreyed) continue;
+        if (e.owner == null || e.owner == PlayerMgr.inst.neutral) continue;
+
+        if (h.distance < bestDist)
         {
-            Ray ray = Camera.main.ScreenPointToRay(mousePos);
-            if (!Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, AIMgr.inst.layerMask)) continue;
-
-            Entity targetEntity = FindClosestEntityWithCollider(hit.point, 5f);
-
-            if (targetEntity != null && targetEntity.entityClass!= EntityClass.Missile && !targetEntity.isGreyed) handleWeapon(selectedEnt, targetEntity);
+            bestDist = h.distance;
+            clickedTarget = e;
         }
     }
+
+    // If you didn’t actually click an entity, do nothing (true “focus attack” behavior)
+    if (clickedTarget == null) return;
+
+    foreach (Entity selectedEnt in selectedEntities)
+    {
+        if (selectedEnt == null) continue;
+        if (clickedTarget.owner == selectedEnt.owner) continue; // no friendly fire
+        handleWeapon(selectedEnt, clickedTarget);
+    }
+}
+
 
     private Entity FindClosestEntityWithCollider(Vector3 position, float radius)
     {

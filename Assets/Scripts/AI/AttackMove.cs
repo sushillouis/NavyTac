@@ -3,56 +3,67 @@
 [System.Serializable]
 public class AttackMove : Move
 {
+    // Focus‑fire mode
     private Entity explicitTarget;
     private bool hasExplicitTarget;
     private readonly Entity commandedTarget;
     private Vector3 lastKnownCommandedTargetPosition;
-    private bool isAcquiredTarget;
-    private readonly bool acquireTargetsOnWay;
-    private Vector3 originalDestinationForAttackMove;
+
+    // Position‑based mode
+    public bool acquireTargetsOnWay;               // true by default for position moves
+    private Vector3 originalDestination;           // stored for position moves
     private readonly bool wasOriginallyAttackMoveToPosition;
-    private readonly float basePathUpdateCooldown;
-    private Vector3 lastKnownTargetPosition;
+
+    // Shared
     private WeaponsAspect _weaponsAspect;
+    private readonly float basePathUpdateCooldown;
+    private float timeSinceLastPathUpdate = 0f;
+    private const float SignificantMovementThresholdSq = 1.0f;
+
+    // Threat detection (used only when acquireTargetsOnWay is true)
+    private const float threatCheckCooldown = 0.5f;
+    private float timeSinceLastThreatCheck = 0f;
+    private Entity opportunisticTarget;            // fired upon while moving, never followed
+
+    // Constants
     private const float DefaultPathUpdateCooldown = 0.3f;
     private const float MovingTargetPathUpdateCooldown = 0.2f;
     private const float TargetMovingSpeedThreshold = 1.0f;
-    // Optimization fields
-    private readonly float threatCheckCooldown = 0.5f;
-    private float timeSinceLastThreatCheck = 0f;
-    private float timeSinceLastPathUpdate = 0f;
-    private const float SignificantMovementThresholdSq = 1.0f; // 1 unit squared
-    
-    public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false, float doneDistanceSq = 100000f, bool isWaypoint = false) 
+
+    /// <summary>
+    /// Attack‑move to a position. By default, acquireTargetsOnWay = true,
+    /// so the unit will stop and fire at enemies in range, then resume moving.
+    /// </summary>
+    public AttackMove(Entity ent, Vector3 pos, bool maxSpeed = false,
+                      float doneDistanceSq = 100000f, bool isWaypoint = false)
         : base(ent, pos, maxSpeed, doneDistanceSq, isWaypoint)
     {
         InitializeWeaponsAspect();
         hasExplicitTarget = false;
         explicitTarget = null;
         commandedTarget = null;
-        isAcquiredTarget = false;
-        acquireTargetsOnWay = false;
+        acquireTargetsOnWay = true;                 // default true for position moves
+        originalDestination = pos;
+        wasOriginallyAttackMoveToPosition = true;
         pathUpdateCooldown = DefaultPathUpdateCooldown;
         basePathUpdateCooldown = DefaultPathUpdateCooldown;
-        originalDestinationForAttackMove = pos;
-        wasOriginallyAttackMoveToPosition = true;
-        lastKnownTargetPosition = pos;
-        lastKnownCommandedTargetPosition = pos;
-       
+        opportunisticTarget = null;
     }
 
-    public AttackMove(Entity ent, Entity target, bool acquireTargetsOnWay = false, bool maxSpeed = false, float doneDistanceSq = 100000f, bool isWaypoint = false)
+    /// <summary>
+    /// Attack‑move focused on a specific entity. acquireTargetsOnWay is ignored.
+    /// The unit will only engage this target (focus fire).
+    /// </summary>
+    public AttackMove(Entity ent, Entity target, bool maxSpeed = false,
+                      float doneDistanceSq = 100000f, bool isWaypoint = false)
         : base(ent, target != null ? target.position : ent.position, maxSpeed, doneDistanceSq, isWaypoint)
     {
         InitializeWeaponsAspect();
         explicitTarget = target;
         hasExplicitTarget = (target != null);
         commandedTarget = target;
-        isAcquiredTarget = false;
-        this.acquireTargetsOnWay = acquireTargetsOnWay;
-
-        lastKnownTargetPosition = target != null ? target.position : ent.position;
-        lastKnownCommandedTargetPosition = target != null ? target.position : ent.position;
+        acquireTargetsOnWay = false;                // not used in this mode
+        wasOriginallyAttackMoveToPosition = false;
 
         if (target != null && _weaponsAspect != null && _weaponsAspect.IsTargetValid(target))
         {
@@ -64,178 +75,129 @@ public class AttackMove : Move
         {
             pathUpdateCooldown = DefaultPathUpdateCooldown;
         }
-
         basePathUpdateCooldown = DefaultPathUpdateCooldown;
-        wasOriginallyAttackMoveToPosition = false;
+        opportunisticTarget = null;
     }
 
     private void InitializeWeaponsAspect()
     {
-        if (entity != null) // Check if the entity is valid (not null and not destroyed)
-        {
+        if (entity != null)
             _weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-            if (_weaponsAspect == null)
-            {
-            }
-        }
         else
-        {
-            _weaponsAspect = null; // Ensure _weaponsAspect is null if entity is invalid
-        }
+            _weaponsAspect = null;
     }
 
     public override void Init()
     {
         base.Init();
-        
-
         if (!FogWarMgr.inst.nonRevelers.Contains(entity))
         {
-            line = LineMgr.inst.CreateAttackMoveLine(entity.position, movePosition,entity.isAI);
+            line = LineMgr.inst.CreateAttackMoveLine(entity.position, movePosition, entity.isAI);
             if (line != null)
-            {
                 line.gameObject.SetActive(false);
-            }
         }
     }
 
     public override void Tick()
     {
-        // Update timers
         timeSinceLastThreatCheck += Time.deltaTime;
         timeSinceLastPathUpdate += Time.deltaTime;
 
-        // Update last known positions - cheap operation
-        if (commandedTarget != null && _weaponsAspect != null && _weaponsAspect.IsTargetValid(commandedTarget))
+        // --- FOCUS‑FIRE MODE (explicit target) ---
+        if (hasExplicitTarget)
         {
-            lastKnownCommandedTargetPosition = commandedTarget.position;
-        }
-        if (hasExplicitTarget && explicitTarget != null && _weaponsAspect != null && _weaponsAspect.IsTargetValid(explicitTarget))
-        {
-            lastKnownTargetPosition = explicitTarget.position;
-        }
+            // Update last known commanded target position (for after death)
+            if (commandedTarget != null && _weaponsAspect != null && _weaponsAspect.IsTargetValid(commandedTarget))
+                lastKnownCommandedTargetPosition = commandedTarget.position;
 
-        // Handle explicitTarget becoming invalid
-        if (hasExplicitTarget && (explicitTarget == null || (_weaponsAspect != null && !_weaponsAspect.IsTargetValid(explicitTarget))))
-        {
-            if (isAcquiredTarget)
+            // Check if explicit target is still valid
+            if (explicitTarget == null || (_weaponsAspect != null && !_weaponsAspect.IsTargetValid(explicitTarget)))
             {
-                if (commandedTarget != null && _weaponsAspect != null && _weaponsAspect.IsTargetValid(commandedTarget))
-                {
-                    explicitTarget = commandedTarget;
-                    isAcquiredTarget = false;
-                }
-                else
-                {
-                    hasExplicitTarget = false;
-                    movePosition = lastKnownCommandedTargetPosition;
-                }
-            }
-            else
-            {
+                // Target lost – switch to moving to last known position
                 hasExplicitTarget = false;
-                movePosition = lastKnownTargetPosition;
-            }
-        }
-
-        // Threat detection with cooldown
-        if (acquireTargetsOnWay && timeSinceLastThreatCheck >= threatCheckCooldown && _weaponsAspect != null)
-        {
-            Entity threat = _weaponsAspect.FindImmediateThreatInRange();
-            if (threat != null && threat != explicitTarget)
-            {
-                explicitTarget = threat;
-                isAcquiredTarget = true;
-                hasExplicitTarget = true;
-            }
-            timeSinceLastThreatCheck = 0f;
-        }
-
-        // Determine if we need to update path
-        bool needsPathUpdate = timeSinceLastPathUpdate >= pathUpdateCooldown;
-        bool targetMovedSignificantly = false;
-
-        if (hasExplicitTarget && explicitTarget != null)
-        {
-            // Check if target has moved significantly since last path update
-            float moveDistanceSq = (explicitTarget.position - movePosition).sqrMagnitude;
-            targetMovedSignificantly = moveDistanceSq > SignificantMovementThresholdSq;
-        }
-
-        // Update destination only when needed
-        if (needsPathUpdate || targetMovedSignificantly)
-        {
-            if (hasExplicitTarget && explicitTarget != null)
-            {
-                movePosition = explicitTarget.position;
-                if (explicitTarget.speed > TargetMovingSpeedThreshold)
-                {
-                    pathUpdateCooldown = MovingTargetPathUpdateCooldown;
-                }
-                else
-                {
-                    pathUpdateCooldown = basePathUpdateCooldown;
-                }
-            }
-            else
-            {
-                if (wasOriginallyAttackMoveToPosition)
-                {
-                    movePosition = originalDestinationForAttackMove;
-                }
-                else
-                {
-                    movePosition = lastKnownCommandedTargetPosition;
-                }
+                movePosition = lastKnownCommandedTargetPosition;
                 pathUpdateCooldown = basePathUpdateCooldown;
             }
+            else
+            {
+                // Follow the target
+                bool needsPathUpdate = timeSinceLastPathUpdate >= pathUpdateCooldown;
+                bool targetMovedSignificantly = (explicitTarget.position - movePosition).sqrMagnitude > SignificantMovementThresholdSq;
+
+                if (needsPathUpdate || targetMovedSignificantly)
+                {
+                    movePosition = explicitTarget.position;
+                    pathUpdateCooldown = (explicitTarget.speed > TargetMovingSpeedThreshold)
+                        ? MovingTargetPathUpdateCooldown
+                        : basePathUpdateCooldown;
+                    timeSinceLastPathUpdate = 0f;
+                }
+
+                // Engage if in range
+                if (_weaponsAspect != null && _weaponsAspect.weapon != null)
+                {
+                    float rangeSq = _weaponsAspect.weapon.range * _weaponsAspect.weapon.range;
+                    if ((explicitTarget.position - entity.position).sqrMagnitude <= rangeSq)
+                    {
+                        AimAndFireAtTarget(explicitTarget);
+                        // Optionally slow down to match target speed
+                        entity.desiredSpeed = explicitTarget.speed;
+                    }
+                }
+                // Continue moving
+                base.Tick();
+                UpdateAttackLineRenderer();
+                return;
+            }
+        }
+
+        // --- POSITION‑BASED MODE (with opportunistic firing) ---
+        // Destination is always the original position (or last known commanded position after target death)
+        if (wasOriginallyAttackMoveToPosition)
+            movePosition = originalDestination;
+        else
+            movePosition = lastKnownCommandedTargetPosition;
+
+        // Simple path cooldown – destination does not change
+        if (timeSinceLastPathUpdate >= pathUpdateCooldown)
+        {
             timeSinceLastPathUpdate = 0f;
         }
 
-        // Engagement Logic
-        Entity targetToEngage = null;
-        bool canEngage = _weaponsAspect != null && _weaponsAspect.weapon != null;
-
-        if (canEngage)
+        // Opportunistic threat detection
+        if (acquireTargetsOnWay && timeSinceLastThreatCheck >= threatCheckCooldown && _weaponsAspect != null)
         {
-            if (hasExplicitTarget && explicitTarget != null && _weaponsAspect.IsTargetValid(explicitTarget))
+            opportunisticTarget = _weaponsAspect.FindImmediateThreatInRange();
+            timeSinceLastThreatCheck = 0f;
+        }
+
+        bool isFiring = false;
+        if (opportunisticTarget != null && _weaponsAspect != null && _weaponsAspect.weapon != null)
+        {
+            if (!_weaponsAspect.IsTargetValid(opportunisticTarget))
             {
-                float rangeSq = (_weaponsAspect.weapon.range * _weaponsAspect.weapon.range)-100f*100f;
-                if ((explicitTarget.position - entity.position).sqrMagnitude <= rangeSq)
-                {
-                    targetToEngage = explicitTarget;
-                }
+                opportunisticTarget = null;
             }
             else
             {
-                // Only check for immediate threats if not in cooldown
-                if (timeSinceLastThreatCheck >= threatCheckCooldown * 0.5f)
+                float rangeSq = _weaponsAspect.weapon.range * _weaponsAspect.weapon.range;
+                if ((opportunisticTarget.position - entity.position).sqrMagnitude <= rangeSq)
                 {
-                    targetToEngage = _weaponsAspect.FindImmediateThreatInRange();
+                    // Stop moving and fire at the opportunistic target
+                    AimAndFireAtTarget(opportunisticTarget);
+                    entity.desiredSpeed = 0f;
+                    // Face the target
+                    Vector3 dirToTarget = (opportunisticTarget.position - entity.position).normalized;
+                    entity.desiredHeading = Mathf.Atan2(dirToTarget.x, dirToTarget.z) * Mathf.Rad2Deg;
+                    isFiring = true;
                 }
+                // else: target out of range – will resume moving below
             }
         }
 
-        // Act
-        if (targetToEngage != null)
+        if (!isFiring)
         {
-            AimAndFireAtTarget(targetToEngage);
-
-            if (hasExplicitTarget && targetToEngage == explicitTarget)
-            {
-            base.Tick();
-            entity.desiredSpeed = targetToEngage.speed;
-            }
-            else
-            {
-            entity.desiredSpeed = 0f;
-
-            Vector3 directionToTarget = (targetToEngage.position - entity.position).normalized;
-            entity.desiredHeading = Mathf.Atan2(directionToTarget.x, directionToTarget.z) * Mathf.Rad2Deg;
-            }
-        }
-        else
-        {
+            // Resume moving toward the destination
             base.Tick();
         }
 
@@ -248,7 +210,6 @@ public class AttackMove : Move
         {
             bool shouldShow = entity.isSelected && (hasExplicitTarget || !IsDone());
             line.gameObject.SetActive(shouldShow);
-            
             if (shouldShow)
             {
                 line.positionCount = 2;
@@ -267,27 +228,14 @@ public class AttackMove : Move
     public override bool IsDone()
     {
         if (hasExplicitTarget)
-        {
             return false;
-        }
-    
-        if (_weaponsAspect != null && _weaponsAspect.weapon != null)
-        {
-            // Only check for threats periodically
-            if (timeSinceLastThreatCheck >= threatCheckCooldown * 0.7f)
-            {
-                Entity threatInRange = _weaponsAspect.FindImmediateThreatInRange();
-                if (threatInRange != null) return false;
-            }
-        }
         return base.IsDone();
     }
+
     public override void Stop()
     {
         base.Stop();
         if (line != null)
-        {
             line.gameObject.SetActive(false);
-        }
     }
 }

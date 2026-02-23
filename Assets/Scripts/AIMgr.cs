@@ -222,170 +222,204 @@ public class AIMgr : NetworkBehaviour
         Debug.Log(sb.ToString());
 
     }
-public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, bool add)
-{
-    selectedEntities = SelectionMgr.inst.selectedEntities;
-    if (selectedEntities.Count > 0)
+    public void HandleCommand(Vector2 mousePos, bool intercept, bool attackMove, bool add)
     {
-        foreach (Entity ent in selectedEntities)
+        selectedEntities = SelectionMgr.inst.selectedEntities;
+        if (selectedEntities.Count > 0)
         {
-            if (ent.entityType == EntityType.Rig_Balder || ent.entityClass == EntityClass.Missile) return;
-        }
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
-        {
-            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Terrain"))
+            foreach (Entity ent in selectedEntities)
             {
-                return;
+                if (ent.entityType == EntityType.Rig_Balder || ent.entityClass == EntityClass.Missile) return;
             }
-
-            Vector3 pos = hit.point;
-            pos.y = 0;
-            Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
-            if (ent != null && !ent.isVisible && ent.entityClass == EntityClass.Missile && !ent.isGreyed) ent = null;
-
-            // Record command
-            if (ReplayMgr.inst != null)
+            if (Physics.Raycast(Camera.main.ScreenPointToRay(mousePos), out hit, float.MaxValue, layerMask))
             {
-                string commandType;
-                int targetEntityId = -1;
-                if (attackMove)
+                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Terrain"))
                 {
-                    commandType = ent != null ? "AttackMoveToEntity" : "AttackMoveToPosition";
-                    if (ent != null) targetEntityId = ent.entityId;
-                }
-                else
-                {
-                    commandType = "Move";
+                    return;
                 }
 
-                string targetEntityName = null;
-                string targetOwnerName = null;
-                if (targetEntityId != -1 && EntityMgr.inst.entitiesDict.TryGetValue(targetEntityId, out Entity targetEntity) && targetEntity != null)
+                Vector3 pos = hit.point;
+                pos.y = 0;
+                Entity ent = UIMgr.inst.FindClosestEntInRadius(pos);
+                if (ent != null && !ent.isVisible && ent.entityClass == EntityClass.Missile && !ent.isGreyed) ent = null;
+
+                // Record command
+                if (ReplayMgr.inst != null)
                 {
-                    targetEntityName = targetEntity.name;
-                    if (targetEntity.owner != null)
+                    string commandType;
+                    int targetEntityId = -1;
+
+                     if (attackMove)
                     {
-                        targetOwnerName = targetEntity.owner.name;
+                        if (ent != null)
+                        {
+                            commandType = "AttackMoveToEntity";
+                            targetEntityId = ent.entityId;
+                        }
+                        else
+                        {
+                            commandType = "AttackMoveToPosition";
+                        }
                     }
+                    else if (ent != null)
+                    {
+                        commandType = "Follow";
+                        targetEntityId = ent.entityId;
+                    }
+                    else
+                    {
+                        commandType = "Move";
+                    }
+
+                    string targetEntityName = null;
+                    string targetOwnerName = null;
+                    if (targetEntityId != -1 && EntityMgr.inst.entitiesDict.TryGetValue(targetEntityId, out Entity targetEntity) && targetEntity != null)
+                    {
+                        targetEntityName = targetEntity.name;
+                        if (targetEntity.owner != null)
+                        {
+                            targetOwnerName = targetEntity.owner.name;
+                        }
+                    }
+
+                    ReplayCommand cmd = new()
+                    {
+                        timestamp = Time.time ,
+                        timeScale = Time.timeScale,
+                        commandType = commandType,
+                        entityIds = selectedEntities.Select(e => e.entityId).ToArray(),
+                        targetPosition = pos,
+                        targetEntityId = targetEntityId,
+                        targetEntityName = targetEntityName,
+                        targetOwnerName = targetOwnerName,
+                        add = add
+                    };
+                    Debug.Log($"Recording command: {cmd.commandType} at {cmd.targetPosition} for entities: {string.Join(", ", cmd.entityIds)}");
+                    
+                    ReplayMgr.inst.RecordCommand(cmd);
                 }
 
-                ReplayCommand cmd = new()
+                if (intercept && ent != null)
                 {
-                    timestamp = Time.time ,
-                    timeScale = Time.timeScale,
-                    commandType = commandType,
-                    entityIds = selectedEntities.Select(e => e.entityId).ToArray(),
-                    targetPosition = pos,
-                    targetEntityId = targetEntityId,
-                    targetEntityName = targetEntityName,
-                    targetOwnerName = targetOwnerName,
-                    add = add
-                };
-                Debug.Log($"Recording command: {cmd.commandType} at {cmd.targetPosition} for entities: {string.Join(", ", cmd.entityIds)}");
-                
-                ReplayMgr.inst.RecordCommand(cmd);
-            }
-
-            if (ent == null)
-            {
-                if (attackMove)
-                    HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, null, add, useLowestCruiseSpeed: true);
-                else
-                    HandleMove(SelectionMgr.inst.selectedEntities, pos, add, useLowestCruiseSpeed: true);
-            }
-            else
-            {
-                if (attackMove)
+                    // Intercept key held + clicked on entity -> intercept
+                    HandleIntercept(SelectionMgr.inst.selectedEntities, ent, add);
+                }
+                else if (ent != null && !attackMove)
+                {
+                    // Clicked on entity without attack -> follow
+                    HandleFollow(SelectionMgr.inst.selectedEntities, ent, Vector3.zero, add);
+                }
+                else if (attackMove)
+                {
                     HandleAttackMove(SelectionMgr.inst.selectedEntities, pos, ent, add, useLowestCruiseSpeed: true);
+                }
                 else
+                {
                     HandleMove(SelectionMgr.inst.selectedEntities, pos, add, useLowestCruiseSpeed: true);
+                }
             }
         }
     }
-}
 
-    // public void HandleMove(List<Entity> entities, Vector3 point, bool add, 
-    //                   bool isLocalCommand = true, bool maxSpeedMovement = false, bool useFormation = false, FormationType formationType = FormationType.Circle)
     // Constructor for position-based attack-move
-public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, bool acquireTarget = false, float doneDistanceSq = 0f, bool useLowestCruiseSpeed = false)
-{
-    if (isLocalCommand)
+    public void HandleAttackMove(List<Entity> entities, Vector3 point, Entity target, bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, bool acquireTarget = false, float doneDistanceSq = 0f, bool useLowestCruiseSpeed = false)
     {
-        NetTellAllClients(TactCommandTypes.AttackMove, entities, point, target, add, useLowestCruiseSpeed);
-    }
+        if (isLocalCommand)
+        {
+            NetTellAllClients(TactCommandTypes.AttackMove, entities, point, target, add, useLowestCruiseSpeed);
+        }
 
-    float groupSpeed = -1f;
-    if (useLowestCruiseSpeed && entities.Count > 1)
-    {
-        float lowestCruiseSpeed = float.MaxValue;
+        float groupSpeed = -1f;
+        if (useLowestCruiseSpeed && entities.Count > 1)
+        {
+            float lowestCruiseSpeed = float.MaxValue;
+            foreach (Entity entity in entities)
+            {
+                if (entity.maxSpeed < lowestCruiseSpeed)
+                {
+                    lowestCruiseSpeed = entity.maxSpeed;
+                }
+            }
+            groupSpeed = lowestCruiseSpeed;
+        }
+
+        int entityIndex = 0;
         foreach (Entity entity in entities)
         {
-            if (entity.maxSpeed < lowestCruiseSpeed)
-            {
-                lowestCruiseSpeed = entity.maxSpeed;
-            }
-        }
-        groupSpeed = lowestCruiseSpeed;
-    }
+            if (entity == null || entity.gameObject == null || entity.isGreyed)
+                continue;
 
-    foreach (Entity entity in entities)
-    {
-        if (entity == null || entity.gameObject == null || entity.isGreyed)
-            continue;
+            int capturedIndex = entityIndex;
+            entityIndex++;
 
-        UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-        var startPos = (add && uai != null) ? uai.GetQueueTailPosition() : entity.position;
+            UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+            var startPos = (add && uai != null) ? uai.GetQueueTailPosition() : entity.position;
 
-        Pathfinding.inst.StartFindPath(startPos, point, (waypoints, success) => {
-            if (success && waypoints.Length > 0)
-            {
-                if (uai == null) uai = entity.GetComponentInChildren<UnitAI>();
-                if (uai != null)
+            Pathfinding.inst.StartFindPath(startPos, point, (waypoints, success) => {
+                if (success && waypoints.Length > 0)
                 {
-                    if (!add)
+                    if (uai == null) uai = entity.GetComponentInChildren<UnitAI>();
+                    if (uai != null)
                     {
-                        uai.StopAndRemoveAllCommands();
-                    }
+                        if (!add)
+                        {
+                            uai.StopAndRemoveAllCommands();
+                        }
 
-                    for (int i = 0; i < waypoints.Length; i++)
-                    {
-                        Vector3 waypoint = waypoints[i];
-                        bool isLastWaypoint = (i == waypoints.Length - 1);
+                        if (target != null)
+                        {
+                            // Entity target: go direct so line tracks target immediately
+                            AttackMove am = new AttackMove(entity, target, maxSpeedMovement, StoppingDistanceSq(entity, entities.Count, capturedIndex));
+                            uai.AddCommand(am);
+                        }
+                        else
+                        {
+                            // Position target: use A* waypoints with color override
+                            Color attackMoveColor = Color.red;
+                            if (LineMgr.inst.AttackMovePrefab != null)
+                            {
+                                attackMoveColor = LineMgr.inst.AttackMovePrefab.startColor;
+                            }
 
-                        float currentDoneDistanceSq = isLastWaypoint
-                            ? StoppingDistanceSq(entity, entities.Count)
-                            : 1000f * 1000f;
+                            for (int i = 0; i < waypoints.Length; i++)
+                            {
+                                Vector3 waypoint = waypoints[i];
+                                bool isLastWaypoint = (i == waypoints.Length - 1);
 
-                        AttackMove am = isLastWaypoint && target != null
-                            ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq)
-                            : new AttackMove(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, !isLastWaypoint);
-                        
-                        uai.AddCommand(am);
+                                float currentDoneDistanceSq = isLastWaypoint
+                                    ? StoppingDistanceSq(entity, entities.Count, capturedIndex)
+                                    : 1000f * 1000f;
+
+                                // FIX: Use AttackMove for ALL waypoints so units can acquire and fire at targets throughout the entire path
+                                AttackMove am = new AttackMove(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, isWaypoint: !isLastWaypoint);
+                                am.lineColorOverride = attackMoveColor;
+                                uai.AddCommand(am);
+                            }
+                        }
                     }
                 }
-            }
-            else
-            {
-                // Fallback to direct attack-move if pathfinding fails
-                HandleDirectAttackMove(entity, point, target, add, maxSpeedMovement, acquireTarget, doneDistanceSq, entities.Count);
-            }
-        });
+                else
+                {
+                    // Fallback to direct attack-move if pathfinding fails
+                    HandleDirectAttackMove(entity, point, target, add, maxSpeedMovement, acquireTarget, doneDistanceSq, entities.Count, capturedIndex);
+                }
+            });
+        }
     }
-}
 
-private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target, bool add, bool maxSpeedMovement, bool acquireTarget, float doneDistanceSq, int entitiesCount, float groupSpeed = -1f)
-{
-    float currentDoneDistanceSq = StoppingDistanceSq(entity, entitiesCount);
-    AttackMove am = target != null
-        ? new AttackMove(entity, target, acquireTargetsOnWay: acquireTarget, maxSpeedMovement, currentDoneDistanceSq)
-        : new AttackMove(entity, point, maxSpeedMovement, currentDoneDistanceSq);
-
-    UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-    if (uai != null)
+    private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target, bool add, bool maxSpeedMovement, bool acquireTarget, float doneDistanceSq, int entitiesCount, int entityIndex = 0, float groupSpeed = -1f)
     {
-        AddOrSet(am, uai, add);
+        float currentDoneDistanceSq = StoppingDistanceSq(entity, entitiesCount, entityIndex);
+        AttackMove am = target != null
+            ? new AttackMove(entity, target, maxSpeedMovement, currentDoneDistanceSq)
+            : new AttackMove(entity, point, maxSpeedMovement, currentDoneDistanceSq);
+
+        UnitAI uai = entity.GetComponentInChildren<UnitAI>();
+        if (uai != null)
+        {
+            AddOrSet(am, uai, add);
+        }
     }
-}
 
     public void HandleMove(List<Entity> entities, Vector3 point,
                       bool add = false, bool isLocalCommand = true, bool maxSpeedMovement = false, float doneDistanceSq = 0f, bool useLowestCruiseSpeed = false)
@@ -409,10 +443,14 @@ private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target,
             groupSpeed = lowestCruiseSpeed;
         }
 
+        int entityIndex = 0;
         foreach (Entity entity in entities)
         {
             if(entity.isGreyed)
                 continue; 
+
+            int capturedIndex = entityIndex;
+            entityIndex++;
 
             UnitAI uai = entity.GetComponentInChildren<UnitAI>();
             var startPos = (add && uai != null) ? uai.GetQueueTailPosition() : entity.position;
@@ -438,7 +476,7 @@ private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target,
                             }
                             else 
                             {
-                               currentDoneDistanceSq = StoppingDistanceSq(entity, entities.Count);
+                               currentDoneDistanceSq = StoppingDistanceSq(entity, entities.Count, capturedIndex);
                             }
                             // Debug.Log($"AIMgr: Creating Move command to waypoint {waypoint} with doneDistanceSq {currentDoneDistanceSq}");
                             Move m = new Move(entity, waypoint, maxSpeedMovement, currentDoneDistanceSq, i < waypoints.Length - 1, groupSpeed);
@@ -448,15 +486,15 @@ private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target,
                 }
                 else
                 {
-                    HandleDirectMove(entity, point, add, maxSpeedMovement, doneDistanceSq, entities.Count, groupSpeed);
+                    HandleDirectMove(entity, point, add, maxSpeedMovement, doneDistanceSq, entities.Count, capturedIndex, groupSpeed);
                 }
             });
         }
     }
 
-    private void HandleDirectMove(Entity entity, Vector3 point, bool add, bool maxSpeedMovement, float doneDistanceSq, int entitiesCount, float groupSpeed = -1f)
+    private void HandleDirectMove(Entity entity, Vector3 point, bool add, bool maxSpeedMovement, float doneDistanceSq, int entitiesCount, int entityIndex = 0, float groupSpeed = -1f)
     {
-        float currentDoneDistanceSq = StoppingDistanceSq(entity, entitiesCount);
+        float currentDoneDistanceSq = StoppingDistanceSq(entity, entitiesCount, entityIndex);
         
         Move m = new Move(entity, point, maxSpeedMovement, currentDoneDistanceSq, groupSpeed: groupSpeed);
         UnitAI uai = entity.GetComponentInChildren<UnitAI>();
@@ -466,25 +504,34 @@ private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target,
         }
     }
 
-    public float StoppingDistanceSq(Entity entity, int entitiesCount = 1)
+    public float StoppingDistanceSq(Entity entity, int entitiesCount = 1, int entityIndex = 0)
     {
-        if (entitiesCount == 1)
+        // Base stopping distance from entity size (use the larger of length/width as radius proxy)
+        float entityRadius = Mathf.Max(entity.length, entity.width) * 0.5f;
+        float baseDistance = Mathf.Max(entityRadius * 2f, 50f); // At minimum 50m
+
+        if (entitiesCount <= 1)
         {
-            return 200f * 200f;
+            // Single entity: just needs to get reasonably close
+            return baseDistance * baseDistance;
         }
-        else if (entitiesCount < 5)
-        {
-            return 500f * 500f;
-        }
-        else if (entitiesCount >= 5)
-        {
-            WeaponsAspect weaponsAspect = entity.GetComponentInChildren<WeaponsAspect>();
-            return weaponsAspect.weapon.range * weaponsAspect.weapon.range;
-        }
-        else
-        {
-            return 1000f * 1000f;
-        }
+
+        // Group spread: arrange in concentric rings so entities don't stack
+        // Ring 0 = first entity at base distance, subsequent rings expand outward
+        float spacing = Mathf.Max(entityRadius * 3f, 100f); // Min 100m between ring radii
+        int entitiesPerRing = Mathf.Max(4, entitiesCount / 2);  // How many fit per ring
+        int ring = entityIndex / entitiesPerRing;               // Which ring this entity is on
+
+        float stopDistance = baseDistance + (ring + 1) * spacing;
+
+        // Scale up with group size so larger groups spread more
+        float groupScale = 1f + (entitiesCount - 1) * 0.15f;
+        stopDistance *= groupScale;
+
+        // Clamp to reasonable bounds
+        stopDistance = Mathf.Clamp(stopDistance, 100f, 3000f);
+
+        return stopDistance * stopDistance;
     }
     void AddOrSet(Command c, UnitAI uai, bool add)
     {
@@ -500,11 +547,70 @@ private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target,
         if(isLocalCommand) {
             NetTellAllClients(TactCommandTypes.Follow, entities, offset, ent, add);
         }
+
+        int entityIndex = 0;
         foreach(Entity entity in entities) {
             if(ent != entity) {
-                Follow f = new Follow(entity, ent, offset);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-                AddOrSet(f, uai, add);
+                if (uai == null) continue;
+
+                int capturedIndex = entityIndex;
+                entityIndex++;
+
+                var startPos = (add && uai != null) ? uai.GetQueueTailPosition() : entity.position;
+                Vector3 targetPos = ent.position;
+
+                Entity capturedEntity = entity;
+                Entity capturedTarget = ent;
+                Vector3 capturedOffset = offset;
+                bool capturedAdd = add;
+                int capturedEntitiesCount = entities.Count;
+
+                Pathfinding.inst.StartFindPath(startPos, targetPos, (waypoints, success) => {
+                    if (success && waypoints.Length > 0)
+                    {
+                        UnitAI capturedUai = capturedEntity.GetComponentInChildren<UnitAI>();
+                        if (capturedUai != null)
+                        {
+                            if (!capturedAdd)
+                            {
+                                capturedUai.StopAndRemoveAllCommands();
+                            }
+
+                            Color followColor = Color.green;
+                            if (LineMgr.inst.FollowPrefab != null)
+                            {
+                                followColor = LineMgr.inst.FollowPrefab.startColor;
+                            }
+
+                            for (int i = 0; i < waypoints.Length; i++)
+                            {
+                                bool isLastWaypoint = (i == waypoints.Length - 1);
+                                if (isLastWaypoint)
+                                {
+                                    Follow f = new Follow(capturedEntity, capturedTarget, capturedOffset);
+                                    capturedUai.AddCommand(f);
+                                }
+                                else
+                                {
+                                    float currentDoneDistanceSq = (i < waypoints.Length - 2)
+                                        ? 1000f * 1000f
+                                        : StoppingDistanceSq(capturedEntity, capturedEntitiesCount, capturedIndex);
+
+                                    Move m = new Move(capturedEntity, waypoints[i], false, currentDoneDistanceSq, true);
+                                    m.lineColorOverride = followColor;
+                                    capturedUai.AddCommand(m);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Follow f = new Follow(capturedEntity, capturedTarget, capturedOffset);
+                        UnitAI fallbackUai = capturedEntity.GetComponentInChildren<UnitAI>();
+                        if (fallbackUai != null) AddOrSet(f, fallbackUai, capturedAdd);
+                    }
+                });
             }
         }
     }
@@ -514,14 +620,71 @@ private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target,
         if(isLocalCommand) {
             NetTellAllClients(TactCommandTypes.Intercept, entities, Vector3.zero, ent, add);
         }
+
+        int entityIndex = 0;
         foreach(Entity entity in entities) {
             if(ent != entity) {
-                Intercept intercept = new Intercept(entity, ent);
                 UnitAI uai = entity.GetComponentInChildren<UnitAI>();
-                AddOrSet(intercept, uai, add);
+                if (uai == null) continue;
+
+                int capturedIndex = entityIndex;
+                entityIndex++;
+
+                var startPos = (add && uai != null) ? uai.GetQueueTailPosition() : entity.position;
+                Vector3 targetPos = ent.position;
+
+                Entity capturedEntity = entity;
+                Entity capturedTarget = ent;
+                bool capturedAdd = add;
+                int capturedEntitiesCount = entities.Count;
+
+                Pathfinding.inst.StartFindPath(startPos, targetPos, (waypoints, success) => {
+                    if (success && waypoints.Length > 0)
+                    {
+                        UnitAI capturedUai = capturedEntity.GetComponentInChildren<UnitAI>();
+                        if (capturedUai != null)
+                        {
+                            if (!capturedAdd)
+                            {
+                                capturedUai.StopAndRemoveAllCommands();
+                            }
+
+                            Color interceptColor = Color.red;
+                            if (LineMgr.inst.InterceptPrefab != null)
+                            {
+                                interceptColor = LineMgr.inst.InterceptPrefab.startColor;
+                            }
+
+                            for (int i = 0; i < waypoints.Length; i++)
+                            {
+                                bool isLastWaypoint = (i == waypoints.Length - 1);
+                                if (isLastWaypoint)
+                                {
+                                    Intercept interceptCmd = new Intercept(capturedEntity, capturedTarget);
+                                    capturedUai.AddCommand(interceptCmd);
+                                }
+                                else
+                                {
+                                    float currentDoneDistanceSq = (i < waypoints.Length - 2)
+                                        ? 1000f * 1000f
+                                        : StoppingDistanceSq(capturedEntity, capturedEntitiesCount, capturedIndex);
+
+                                    Move m = new Move(capturedEntity, waypoints[i], true, currentDoneDistanceSq, true);
+                                    m.lineColorOverride = interceptColor;
+                                    capturedUai.AddCommand(m);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Intercept interceptCmd = new Intercept(capturedEntity, capturedTarget);
+                        UnitAI fallbackUai = capturedEntity.GetComponentInChildren<UnitAI>();
+                        if (fallbackUai != null) AddOrSet(interceptCmd, fallbackUai, capturedAdd);
+                    }
+                });
             }
         }
-
     }
 
     public void Handle3dIntercept(List<Entity> entities, Entity ent, bool add, bool isLocalCommand = true)
@@ -632,32 +795,3 @@ private void HandleDirectAttackMove(Entity entity, Vector3 point, Entity target,
    
     //Networking -----------------------------------------------------------------
 }
-
-
-/*
- * 
-    public float rClickRadiusSq = 10000;
-    public Entity FindClosestEntInRadius(Vector3 point, float rsq)
-    {
-        Entity minEnt = null;
-        float min = float.MaxValue;
-        foreach (Entity ent in EntityMgr.inst.entities) {
-            float distanceSq = (ent.transform.position - point).sqrMagnitude;
-            if (distanceSq < rsq) {
-                if (distanceSq < min) {
-                    minEnt = ent;
-                    min = distanceSq;
-                }
-            }    
-        }
-        return minEnt;
-    }
-
-
-
-/*
- * 
-    public float rClickRadiusSq = 10000;
-rsq        Entity minEntmin = float.MaxValue;
-        foreach (Entity ent in EntityMgr.inst.entities) {
-rsq) {if (distanceSq < min) minEntentmindistanceSq    minEnt*/

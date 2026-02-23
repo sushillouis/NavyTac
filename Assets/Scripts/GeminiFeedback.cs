@@ -8,7 +8,9 @@ using Newtonsoft.Json.Linq;
 
 public class GeminiRtsFeedback : MonoBehaviour
 {
-    public string apiKey;
+    [Header("AWS API Gateway URL (your existing Lambda endpoint)")]
+    public string apiGatewayUrl = "https://1nht1d5r0h.execute-api.us-east-2.amazonaws.com/default/UnityS3Upload";
+
     public TextAsset jsonLog;
     public TextAsset csvStats;
 
@@ -60,7 +62,7 @@ Provide 2–4 numbered reasons, each ≈10 words maximum.
 
 Reasons should tie to strategy, unit usage, command discipline, scouting, AI behavior, and neutral base control.
 
-Never mention “adaptive” or “non-adaptive” AI.
+Never mention ""adaptive"" or ""non-adaptive"" AI.
 
 What will we do to improve?
 
@@ -75,7 +77,7 @@ Emphasize minimizing DamageTaken, maximizing DamageDealt, protecting the **comma
 
 When relevant, mention actionable inputs (F1/F2/F3/F4, A+Right Click, CTRL+0–9) but not camera controls.
 
-Use rounded phases (“early/mid/late game”), not raw data, timestamps, or coordinates.
+Use rounded phases (""early/mid/late game""), not raw data, timestamps, or coordinates.
 
 Do not show raw JSON/CSV values.
 
@@ -89,10 +91,6 @@ Keep responses concise, objective, and actionable.
 2.  **AI Difficulty (Attack-Retreat):** If the CSV `AIDifficulty` is greater than 0.25, your analysis in 'Why did it happen?' should consider that the AI uses 'attack-retreat' tactics.
 3.  **AI Difficulty (Scouting):** If `AIDifficulty` is greater than 0.33 AND a neutral base was present, 'What will we do to improve?' should suggest sending scouts to the neutral base early to contest it before the AI arrives.
 ";
-
-
-    const string Model = "gemini-2.5-flash";
-    string Endpoint(string key) => $"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent?key={key}";
 
     private float requestStartTime;
     private float responseTime;
@@ -108,10 +106,10 @@ Keep responses concise, objective, and actionable.
 
     public async Task<string> GenerateFeedbackAsync(string jsonData, string csvData, System.Action<string> onFeedbackReady = null)
     {
-        if (string.IsNullOrWhiteSpace(apiKey))
+        if (string.IsNullOrWhiteSpace(apiGatewayUrl))
         {
-            Debug.LogError("API key missing.");
-            return "Error: API key missing.";
+            Debug.LogError("API Gateway URL missing.");
+            return "Error: API Gateway URL missing.";
         }
         if (string.IsNullOrWhiteSpace(jsonData) || string.IsNullOrWhiteSpace(csvData))
         {
@@ -119,19 +117,15 @@ Keep responses concise, objective, and actionable.
             return "Error: Cannot generate feedback due to missing or invalid JSON or CSV data.";
         }
 
-        string finalPrompt = $"{promptTemplate}\n\nJSON Command Log:\n{jsonData}\n\nCSV Stats:\n{csvData}";
-
+        // Build the request body matching the Lambda's generateFeedback action
         var body = new JObject {
-            ["contents"] = new JArray {
-                new JObject {
-                    ["parts"] = new JArray {
-                        new JObject { ["text"] = finalPrompt }
-                    }
-                }
-            }
+            ["action"] = "generateFeedback",
+            ["systemPrompt"] = promptTemplate,
+            ["jsonData"] = jsonData,
+            ["csvData"] = csvData
         };
 
-        string url = Endpoint(apiKey);
+        string url = apiGatewayUrl;
         using var req = new UnityWebRequest(url, "POST");
         byte[] payload = Encoding.UTF8.GetBytes(body.ToString());
         req.uploadHandler   = new UploadHandlerRaw(payload);
@@ -139,33 +133,52 @@ Keep responses concise, objective, and actionable.
         req.SetRequestHeader("Content-Type", "application/json");
 
         requestStartTime = Time.time;
-        Debug.Log($"Sending Gemini request at time: {requestStartTime}");
+        Debug.Log($"Sending Bedrock request at time: {requestStartTime}");
 
         var op = req.SendWebRequest();
         while (!op.isDone) { await Task.Yield(); }
 
         responseTime = Time.time;
         float totalTime = responseTime - requestStartTime;
-        Debug.Log($"Gemini request completed at time: {responseTime}, Total time: {totalTime} seconds");
+        Debug.Log($"Bedrock request completed at time: {responseTime}, Total time: {totalTime} seconds");
 
         if (req.result != UnityWebRequest.Result.Success)
         {
-            Debug.LogError($"Gemini request failed: {req.responseCode} {req.error}\n{req.downloadHandler.text}");
-            return $"Error: Gemini request failed ({req.responseCode}).";
+            Debug.LogError($"Bedrock request failed: {req.responseCode} {req.error}\n{req.downloadHandler.text}");
+            return $"Error: Bedrock request failed ({req.responseCode}).";
         }
 
         try
         {
             var resp = JObject.Parse(req.downloadHandler.text);
-            string text = (string)resp["candidates"]?[0]?["content"]?["parts"]?[0]?["text"];
+
+            // Check if Lambda returned an error
+            bool ok = resp["ok"]?.Value<bool>() ?? false;
+            if (!ok)
+            {
+                string error = (string)resp["error"] ?? "Unknown error";
+                Debug.LogError($"Lambda error: {error}");
+                return $"Error: {error}";
+            }
+
+            string text = (string)resp["feedback"];
 
             if (string.IsNullOrWhiteSpace(text))
             {
-                Debug.LogWarning("No text returned. Full response:\n" + resp.ToString());
+                Debug.LogWarning("No feedback text returned. Full response:\n" + resp.ToString());
                 return "Error: No feedback generated.";
             }
             else
             {
+                // Log token usage if available
+                var usage = resp["usage"];
+                if (usage != null)
+                {
+                    int inputTokens = usage["inputTokens"]?.Value<int>() ?? 0;
+                    int outputTokens = usage["outputTokens"]?.Value<int>() ?? 0;
+                    Debug.Log($"Token usage - Input: {inputTokens}, Output: {outputTokens}");
+                }
+
                 Debug.Log("Feedback:\n" + text);
                 onFeedbackReady?.Invoke(text);
                 return text;
@@ -173,8 +186,8 @@ Keep responses concise, objective, and actionable.
         }
         catch (System.Exception e)
         {
-            Debug.LogError("Failed to parse Gemini response: " + e);
-            return "Error: Failed to parse Gemini response.";
+            Debug.LogError("Failed to parse Bedrock response: " + e);
+            return "Error: Failed to parse Bedrock response.";
         }
     }
 }

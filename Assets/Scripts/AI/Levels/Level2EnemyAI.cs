@@ -192,7 +192,7 @@ public class Level2EnemyAI : BaseEnemyAI
         if (idleEntities.Count == 0) return;
 
         Debug.Log($"Level2EnemyAI: {idleEntities.Count} idle -> aggressive.");
-        AIMgr.inst.HandleAttackMove(idleEntities, opponentBase.transform.position, opponentBase, acquireTarget: true, useLowestCruiseSpeed: true);
+        AIMgr.inst.HandleAttackMove(idleEntities, opponentBase.transform.position, null, acquireTarget: true, useLowestCruiseSpeed: true);
 
         aggressiveEntities.AddRange(idleEntities.Where(e => e != null));
         idleEntities.Clear();
@@ -260,7 +260,7 @@ public class Level2EnemyAI : BaseEnemyAI
         if (valid.Count > 0)
         {
             Debug.Log($"Level2EnemyAI: Initial delay over. Commanding {valid.Count} aggressive units.");
-            AIMgr.inst.HandleAttackMove(valid, opponentBase.transform.position, opponentBase, acquireTarget: true, useLowestCruiseSpeed: true);
+            AIMgr.inst.HandleAttackMove(valid, opponentBase.transform.position, null, acquireTarget: true, useLowestCruiseSpeed: true);
         }
         else
         {

@@ -34,64 +34,74 @@ public class WeaponsAspect : MonoBehaviour
     }
 
     private void Update()
+{
+    if (entity == null || weapon == null) return;
+
+    UnitAI unitAI = entity.GetComponentInChildren<UnitAI>();
+    if (unitAI != null && unitAI.commands.Count > 0 && unitAI.commands.Peek() != null)
     {
-        if (entity == null || weapon == null) return;
-        UnitAI unitAI = entity.GetComponentInChildren<UnitAI>();
-        if (unitAI == null) return;
-        if (unitAI.commands.Count > 0 && unitAI.commands.Peek() != null) {
-            if (unitAI.commands.Peek().GetType() == typeof(Move) ||
-                unitAI.commands.Peek().GetType() == typeof(AttackMove) ||
-                unitAI.commands.Peek().GetType() == typeof(Follow) ||
-                unitAI.commands.Peek().GetType() == typeof(Intercept) ||
-                unitAI.commands.Peek().GetType() == typeof(Intercept3d) ||
-                unitAI.commands.Peek().GetType() == typeof(SmartIntercept))
-            {
-                return;
-            }
-        }
-        if (OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial && entity.owner == PlayerMgr.inst.player2)
+        var t = unitAI.commands.Peek().GetType();
+        if (t == typeof(Move) || t == typeof(AttackMove) || t == typeof(Follow) ||
+            t == typeof(Intercept) || t == typeof(Intercept3d) || t == typeof(SmartIntercept))
         {
-            // In training mode, we don't want to auto-fire weapons
             return;
-        }
-
-        bool isAmmoDepleted = (weapon.ammoCount != -1 && weapon.ammoCount <= 0);
-        if (Time.time - weapon.lastShotTime < weapon.cooldown || isAmmoDepleted)
-            return;
-        Entity target = FindImmediateThreatInRange();
-        if (target != null && entity.isNeutral == false)
-        {
-            //Debug.Log("Target found: " + target.name);
-            entity.isAttacking = true;
-            entity.attackingTarget = target;
-            // If the current attacker is changing, release the previous target
-            if (entity.attackingTarget != null && entity.attackingTarget != target && entity.isNeutral == false)
-            {
-                if (entity.attackingTarget.beingAttackedBy == entity)
-                {
-                    entity.attackingTarget.isBeingAttacked = false;
-                    entity.attackingTarget.beingAttackedBy = null;
-                }
-            }
-
-            target.beingAttackedBy = entity;
-            target.isBeingAttacked = true;
-            WeaponsMgr.inst.handleWeapon(entity, target);
-        }
-        else
-        {
-            if (entity.attackingTarget != null)
-            {
-                if (entity.attackingTarget.beingAttackedBy == entity)
-                {
-                    entity.attackingTarget.isBeingAttacked = false;
-                    entity.attackingTarget.beingAttackedBy = null;
-                }
-            }
-            entity.isAttacking = false;
-            entity.attackingTarget = null;
         }
     }
+
+    if (OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial &&
+        entity.owner == PlayerMgr.inst.player2)
+        return;
+
+    Entity target = FindImmediateThreatInRange();
+
+    if (target != null && entity.isNeutral == false)
+    {
+        // Maintain state EVERY frame
+        SetAttackLinks(entity, target);
+
+        bool isAmmoDepleted = (weapon.ammoCount != -1 && weapon.ammoCount <= 0);
+        bool canFireNow = !isAmmoDepleted && (Time.time - weapon.lastShotTime >= weapon.cooldown);
+
+        if (canFireNow)
+        {
+            WeaponsMgr.inst.handleWeapon(entity, target);
+        }
+    }
+    else
+    {
+        ClearAttackLinks(entity);
+    }
+}
+
+private void SetAttackLinks(Entity attacker, Entity target)
+{
+    Entity prev = attacker.attackingTarget;
+
+    attacker.isAttacking = true;
+    attacker.attackingTarget = target;
+
+    if (prev != null && prev != target && prev.beingAttackedBy == attacker)
+    {
+        prev.isBeingAttacked = false;
+        prev.beingAttackedBy = null;
+    }
+
+    target.beingAttackedBy = attacker;
+    target.isBeingAttacked = true;
+}
+
+private void ClearAttackLinks(Entity attacker)
+{
+    if (attacker.attackingTarget != null && attacker.attackingTarget.beingAttackedBy == attacker)
+    {
+        attacker.attackingTarget.isBeingAttacked = false;
+        attacker.attackingTarget.beingAttackedBy = null;
+    }
+
+    attacker.isAttacking = false;
+    attacker.attackingTarget = null;
+}
+
 
 private Entity lastTarget;
 private float lastTargetTime;
