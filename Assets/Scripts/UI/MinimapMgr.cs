@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.UI;
-
+using System.Linq;
 public class MinimapMgr : MonoBehaviour
 {
     public static MinimapMgr inst;
@@ -59,8 +59,13 @@ public class MinimapMgr : MonoBehaviour
             minimapImage = minimapImageNonReplay;
         UpdateMinimap();
 
-        if (Input.GetMouseButtonDown(0)) {
+        if (Input.GetMouseButtonDown(0))
+        {
             MoveCameraViaMinimap(Input.mousePosition);
+        }
+        if (Input.GetMouseButtonDown(1)) {
+
+            IssueTacticalCommandViaMinimap(Input.mousePosition);
         }
     }
 
@@ -277,4 +282,53 @@ public class MinimapMgr : MonoBehaviour
         }
         mapIcons.Clear();
     }
+  public void IssueTacticalCommandViaMinimap(Vector2 mousePos) {
+    if (!CursorOverMap(mousePos)) return;
+
+    var selected = SelectionMgr.inst.selectedEntities;
+    if (selected == null || selected.Count == 0) return;
+
+    foreach (Entity ent in selected) {
+        if (ent.entityType == EntityType.Rig_Balder || ent.entityClass == EntityClass.Missile)
+            return;
+    }
+
+    // Convert minimap click to world position
+    Vector2 localPoint;
+    RectTransformUtility.ScreenPointToLocalPointInRectangle(
+        minimapImage, mousePos, null, out localPoint);
+
+    Vector2 worldPos2D = mapToWorldTransformationMatrix.MultiplyPoint3x4(localPoint);
+    Vector3 worldPos = new Vector3(worldPos2D.x, 0, worldPos2D.y);
+    if (Physics.Raycast(new Vector3(worldPos.x, 500f, worldPos.z), Vector3.down, out RaycastHit hit, 1000f, AIMgr.inst.layerMask))
+    {
+        if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Terrain"))
+        {
+            return;
+        }
+    }
+    bool add = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+    bool attackMove = Input.GetKey(KeyCode.Space);
+
+    // Record for replay
+    if (ReplayMgr.inst != null) {
+        ReplayCommand cmd = new() {
+            timestamp = Time.time,
+            timeScale = Time.timeScale,
+            commandType = attackMove ? "AttackMoveToPosition" : "Move",
+            entityIds = selected.Select(e => e.entityId).ToArray(),
+            targetPosition = worldPos,
+            targetEntityId = -1,
+            add = add
+        };
+        ReplayMgr.inst.RecordCommand(cmd);
+    }
+
+    // Issue command — position-only, no entity targeting
+    if (attackMove) {
+        AIMgr.inst.HandleAttackMove(selected, worldPos, null, add, useLowestCruiseSpeed: true);
+    } else {
+        AIMgr.inst.HandleMove(selected, worldPos, add, useLowestCruiseSpeed: true);
+    }
+}
 }

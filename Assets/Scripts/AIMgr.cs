@@ -745,19 +745,23 @@ public class AIMgr : NetworkBehaviour
     }
 
 
-    public void HandleNetCommandSpec(TactCommandStruct command) {
+    public void HandleNetCommandSpec(TactCommandStruct command)
+    {
         ////Debug.Log(OwnerClientId + " recvd Command: " + command.ToString());
 
         List<Entity> entities = new List<Entity>();
         Entity entTmp;
-        for(int i = 0; i < command.entityIds.Length; i++) {
+        for (int i = 0; i < command.entityIds.Length; i++)
+        {
             entTmp = EntityMgr.inst.entitiesDict[command.entityIds[i]];
-            if(entTmp != null) {
+            if (entTmp != null)
+            {
                 entities.Add(entTmp);
             }
         }
 
-        switch(command.commandType) {
+        switch (command.commandType)
+        {
             case TactCommandTypes.Move:
                 ////Debug.Log("NetCmd: MoveTo pos:" + command.targetOrOffsetPosition);
                 HandleMove(entities, command.targetOrOffsetPosition, command.add, false, useLowestCruiseSpeed: command.useLowestCruiseSpeed);
@@ -768,19 +772,22 @@ public class AIMgr : NetworkBehaviour
                 break;
             case TactCommandTypes.Follow:
                 Entity target = EntityMgr.inst.entitiesDict[command.targetEntityId];
-                if(target != null) {
+                if (target != null)
+                {
                     HandleFollow(entities, target, command.targetOrOffsetPosition, command.add, false);
                 }
                 break;
             case TactCommandTypes.Intercept:
                 Entity interceptTarget = EntityMgr.inst.entitiesDict[command.targetEntityId];
-                if(interceptTarget != null) {
+                if (interceptTarget != null)
+                {
                     HandleIntercept(entities, interceptTarget, command.add, false);
                 }
                 break;
             case TactCommandTypes.Intercept3d:
                 Entity intercept3dTarget = EntityMgr.inst.entitiesDict[command.targetEntityId];
-                if(intercept3dTarget != null) {
+                if (intercept3dTarget != null)
+                {
                     Handle3dIntercept(entities, intercept3dTarget, command.add, false);
                 }
                 break;
@@ -789,8 +796,10 @@ public class AIMgr : NetworkBehaviour
                 HandleMove(entities, command.targetOrOffsetPosition, command.add, false);
                 break;
         }
-        
+
     }
+    
+    
 
    
     //Networking -----------------------------------------------------------------
