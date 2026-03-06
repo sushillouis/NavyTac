@@ -88,6 +88,7 @@ public class FogWarMgr : MonoBehaviour
             fogPlane = new GameObject("FogOfWarPlane");
             fogPlane.AddComponent<MeshFilter>();
             fogPlane.AddComponent<MeshRenderer>();
+            fogPlane.layer = LayerMask.NameToLayer("FOW");
         }
 
         fogPlane.transform.position = new Vector3(0, heightAboveMap, 0);
