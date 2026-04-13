@@ -24,7 +24,7 @@ public class ScoreMgr : MonoBehaviour
     [SerializeField] private GeminiRtsFeedback geminiFeedback;
 
     // Unified API endpoint for both S3 and DynamoDB
-    private const string API_URL = "";
+    private const string API_URL = "https://1nht1d5r0h.execute-api.us-east-2.amazonaws.com/default/UnityS3Upload";
 
     [System.Serializable]
     public class FeedbackData

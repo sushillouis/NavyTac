@@ -211,14 +211,25 @@ public class MinimapMgr : MonoBehaviour
         return RectTransformUtility.RectangleContainsScreenPoint(minimapImage, mousePos);
     }
 
-    //Moves the camera to the spot clicked on the minimap
+    //Moves the camera to the spot clicked on the minimap with a good top-down overview
     public void MoveCameraViaMinimap(Vector2 mousePos) {
+        if (!CursorOverMap(mousePos)) return;
+
         Vector2 localPoint;
-        if(CursorOverMap(mousePos)) {
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(minimapImage, mousePos, null, out localPoint);
-            Vector2 worldPos2D = mapToWorldTransformationMatrix.MultiplyPoint3x4(localPoint);
-            CameraMgr.inst.YawNode.transform.position = new Vector3(worldPos2D.x, CameraMgr.inst.YawNode.transform.position.y, worldPos2D.y);
-        }
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(minimapImage, mousePos, null, out localPoint);
+        Vector2 worldPos2D = mapToWorldTransformationMatrix.MultiplyPoint3x4(localPoint);
+
+        // Place the rig at the clicked XZ position at ground level
+        CameraMgr.inst.RTSCameraRig.transform.position = new Vector3(worldPos2D.x, 0f, worldPos2D.y);
+
+        // Set YawNode to a comfortable overview height, no yaw rotation
+        float overviewHeight = 9600f;
+        CameraMgr.inst.YawNode.transform.localPosition = new Vector3(0f, overviewHeight, 0f);
+        CameraMgr.inst.YawNode.transform.localRotation = Quaternion.identity;
+
+        // Angle PitchNode slightly forward so you can see the area naturally
+        CameraMgr.inst.PitchNode.transform.localPosition = Vector3.zero;
+        CameraMgr.inst.PitchNode.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
     }
 
     //Zooms in the minimap

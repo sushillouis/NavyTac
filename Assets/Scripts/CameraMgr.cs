@@ -42,6 +42,7 @@ public class CameraMgr : MonoBehaviour
         StoreInitialTransforms();
     }
 
+    private Vector3 baseRigPosition;
     private Vector3 baseYawLocalPosition;
     private Quaternion baseYawLocalRotation;
     private Vector3 basePitchLocalPosition;
@@ -237,6 +238,7 @@ public class CameraMgr : MonoBehaviour
         }
 
         // Store the base transform values
+        baseRigPosition = RTSCameraRig.transform.position;
         baseYawLocalPosition = YawNode.transform.localPosition;
         baseYawLocalRotation = YawNode.transform.localRotation;
         basePitchLocalPosition = PitchNode.transform.localPosition;
@@ -382,12 +384,13 @@ public class CameraMgr : MonoBehaviour
 
     public void ToggleRTSView()
     {
-        YawNode.transform.localPosition = baseYawLocalPosition; // Restore saved position
-        YawNode.transform.localRotation = baseYawLocalRotation; // Restore saved rotation
-        PitchNode.transform.localPosition = basePitchLocalPosition; // Restore saved position
-        PitchNode.transform.localRotation = basePitchLocalRotation; // Restore saved rotation
-        RollNode.transform.localPosition = baseRollLocalPosition; // Restore saved position
-        RollNode.transform.localRotation = baseRollLocalRotation; // Restore saved rotation
+        RTSCameraRig.transform.position = baseRigPosition;     // Restore rig world position
+        YawNode.transform.localPosition = baseYawLocalPosition;
+        YawNode.transform.localRotation = baseYawLocalRotation;
+        PitchNode.transform.localPosition = basePitchLocalPosition;
+        PitchNode.transform.localRotation = basePitchLocalRotation;
+        RollNode.transform.localPosition = baseRollLocalPosition;
+        RollNode.transform.localRotation = baseRollLocalRotation;
     }
     public void ResetCamera()
     {
