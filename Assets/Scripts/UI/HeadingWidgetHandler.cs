@@ -8,9 +8,6 @@ using static UnityEngine.Rendering.DebugUI.Table;
 public class HeadingWidgetHandler : MonoBehaviour
 {
 
-    void Start() {
-
-    }
 
 
     public Vector3 ddg51ImageEulerAngles = Vector3.zero;

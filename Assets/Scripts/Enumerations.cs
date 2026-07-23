@@ -24,19 +24,21 @@ public enum EntityType
     CVN75,
     Submarine,
     AntiShipMissile,
+    Rig_Balder,
 }
 
 [Serializable]
 public enum PlayerSide
 {
     SideOne = 0,
-    SideTwo, 
+    SideTwo,
     SideThree,
     SideFour,
     SideFive,
     SideSix,
     SideSeven,
     SideEight,
+    Neutral, 
 }
 
 [Serializable]
@@ -75,6 +77,7 @@ public enum EntityRole
     Bomber,
     CAP,
     SEAD,
+    Base
 }
 
 [Serializable]
@@ -112,7 +115,69 @@ public enum WeaponBehaviors
 public enum TactCommandTypes
 {
     Move = 0,
+    AttackMove,
     Follow,
     Intercept,
     Intercept3d,
+}
+
+[Serializable]
+public enum AIState
+{
+    None = 0,
+    Move,
+    Attack,
+    Flee,
+    Scout,
+    Patrol,
+    Chase,
+    Dead,
+    Orbit,
+    GroupMove,
+}
+
+[Serializable]
+
+public enum FormationType
+{
+    Line = 0,
+    Wedge,
+    Circle,
+    Vee,
+    InvertedVee
+}
+
+public enum Difficulty { Easy, Medium, Hard }
+
+public enum LobbyState
+{
+    None = 0,
+    SingleMultiPlayer,
+    Login,
+    MapSelect,
+    HostOrJoin,
+    Play,
+    Done,
+    ScorePanel,
+    GamePaused,
+    Replay,
+    MultiScorePanel,
+    AAR
+    }
+public enum TrainingState
+{
+    None,
+    PreTest,
+    PostTest,
+    Adaptive,
+    NonAdaptive,
+    Tutorial
+    }
+
+    public enum PathfindingState
+{
+    RequestingPath,
+    FollowingPath,
+    PotentialFieldsOnly,
+    Finished
 }

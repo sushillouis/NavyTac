@@ -14,15 +14,18 @@ public class Intercept : Follow
 
     public override void Init()
     {
-        //Debug.Log("Intercept:\t ing: " + targetEntity.gameObject.name);
-        line = LineMgr.inst.CreateInterceptLine(entity.position, targetEntity.position, targetEntity.position);
-        line.gameObject.SetActive(false);
+        ////Debug.Log("Intercept:\t ing: " + targetEntity.gameObject.name);
+        line = LineMgr.inst.CreateInterceptLine(entity.position, targetEntity.position, targetEntity.position, entity.isAI);
+        if (line != null)
+        {
+            line.gameObject.SetActive(false);
+        }
     }
 
     public override void Tick()
     {
         //movePosition = targetEntity.transform.position;
-        float dh = ComputePredictiveDH(targetEntity.transform.position);
+        float dh = ComputePredictiveDH();
         entity.desiredHeading = dh;
         entity.desiredSpeed = entity.maxSpeed;
 
@@ -39,17 +42,23 @@ public class Intercept : Follow
     public override void Stop() {
         //base.Stop();
 
-        FXMgr.inst.CreateExplosionAt(entity.position, 1);
+        // FXMgr.inst.CreateExplosionAt(entity.position, 1);
 
         entity.desiredSpeed = 0;
         entity.speed = 0;
+        if (line != null)
+        {
+            line.gameObject.SetActive(false);
+            line = null;
+        }
 
-        targetEntity.desiredSpeed = 0;
-        Vector3 sunkenOffset = new Vector3(0, -5, 0);
-        targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
-        targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
-        targetEntity.transform.position += sunkenOffset;
+        // targetEntity.desiredSpeed = 0;
+        // Vector3 sunkenOffset = new Vector3(0, -5, 0);
+        // targetEntity.GetComponentInChildren<UnitAI>().StopAndRemoveAllCommands();
+        // targetEntity.GetComponentInChildren<OrientedPhysics>().enabled = false;
+        // targetEntity.transform.position += sunkenOffset;
 
     }
+    
 
 }

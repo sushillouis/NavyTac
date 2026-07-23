@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -71,4 +72,8 @@ public static class Utils {
         );
     }
 
+    internal static float VectorToHeading(Vector3 direction)
+    {
+        throw new NotImplementedException();
+    }
 }

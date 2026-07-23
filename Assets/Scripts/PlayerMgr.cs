@@ -50,6 +50,7 @@ public class PlayerMgr : MonoBehaviour
     //For testing;
     public TactPlayer player1;
     public TactPlayer player2;
+    public TactPlayer neutral;
     public TactPlayer localPlayer;
 
 
@@ -117,7 +118,7 @@ public class PlayerMgr : MonoBehaviour
             TactPlayer player = CreatePlayer(name, (ulong) playerCount, sides[playerCount], playerColors[playerCount]);
             AddTestPlayer1And2(player, playerCount);
             playerCount++;
-            Debug.Log("Added player: " + player.ToString());
+            //Debug.Log("Added player: " + player.ToString());
             return player;
         }
         return null;

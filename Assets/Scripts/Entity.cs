@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 
 public class Entity : MonoBehaviour
@@ -13,21 +11,16 @@ public class Entity : MonoBehaviour
     public bool isSelected = false;
     public Vector3 position = Vector3.zero;
     public Vector3 velocity = Vector3.zero;
-
     public float speed;
     public float desiredSpeed;
     public float heading; //degrees
     public float desiredHeading; //degrees
     public float health;
-    public float fuel;
+    public float fuel = 1;
     public float range;
     public float fuelBurnRate;
     public EntityRole entityRole;
-
     [Header("Const values")]
-    //------------------------------
-    // values that do not change
-    //------------------------------
     public float acceleration;
     public float turnRate;
     public float maxSpeed;
@@ -37,55 +30,144 @@ public class Entity : MonoBehaviour
     public float length;
     public float width;
     public float height;
-
+    public float maxHealth;
+    public float minHealth;
+    public bool isVisible = true;
     public float maxFuel;
     public float maxRange;
-
     public EntityType entityType;
     public EntityClass entityClass;
-
     public GameObject cameraRig;
     public GameObject selectionCircle;
-
     public TactPlayer owner;
-
-
-    [Header("Aspect references")]
+    public Entity creatorsEntity;
+    public bool isAI = false;
+    public bool isAttacking = false;
+    public bool isBeingAttacked = false;
+    public Entity attackingTarget = null;
+    public Entity beingAttackedBy = null;
     public NetAspect net = null;
     public OrientedPhysics phx = null;
     public UnitAI ai = null;
     public UIAspect ui = null;
     public WeaponsAspect weapons = null;
-
-    // Start is called before the first frame update
+    private GameObject healthBarObject;
+    public bool isGreyed = false;
+    public bool isNeutral = false;
+    public float greyOverlayFadeDuration = 10f; 
     void Start()
     {
-        isSelected = false;
-        //cameraRig = transform.Find("CameraRig").gameObject;
-        //selectionCircle = transform.Find("Decorations").Find("SelectionCylinder").gameObject;
-        fuel = maxFuel;
-
+        InitializeEntityValues();
+        SetEntityColors();
+        SetupHealthBar();  
     }
-
-    // Update is called once per frame
-    void Update()
+    void InitializeEntityValues()
     {
-
+        fuel = maxFuel;
+        health = maxHealth;
+        isSelected = false;
     }
-
-    private void FixedUpdate() {
-        ComputeFuelRange();
-    }
-
-    void ComputeFuelRange() {
-        if(speed <= cruiseSpeed) {
-            fuelBurnRate = 1f - (cruiseSpeed - speed) / (cruiseSpeed + 0.0001f);
-        } else {
-            fuelBurnRate = 1f + (speed - cruiseSpeed) / (maxSpeed - cruiseSpeed + 0.0001f) ;
+    public void SetEntityColors()
+    {
+        if (owner == null || owner == PlayerMgr.inst.neutral)
+        {
+            return; // Do not set any colors for neutral or undefined owner
         }
+        Renderer[] childRenderers = GetComponentsInChildren<Renderer>(true);
+        foreach (var renderer in childRenderers)
+        {
+            if (renderer.CompareTag("Color"))
+            {
+                renderer.material.color = owner.playerColor;
+            }
+            else if (renderer.CompareTag("BrightGreenColor"))
+            {
+                renderer.material.color = new Color(0.2f, 1f, 0.2f, 1f);
+            }
+        }
+    }
+
+    void SetupHealthBar()
+    {
+        HealthBarMgr healthBarMgr = GetComponentInChildren<HealthBarMgr>(true);
+        if (healthBarMgr != null)
+        {
+            healthBarObject = healthBarMgr.gameObject;
+            healthBarObject.SetActive(false);
+        }
+    }
+    private void FixedUpdate()
+    {
+        ComputeFuelRange();
+
+        if (CheckAndHandleEntityDestruction())
+            return;
+
+        UpdateVisibility();
+        if (beingAttackedBy != null)
+        {
+            isBeingAttacked = true;
+            if (!beingAttackedBy.isAttacking || beingAttackedBy.attackingTarget != this)
+            {
+                isBeingAttacked = false;
+                beingAttackedBy = null;
+            }
+        }
+        else
+        {
+            isBeingAttacked = false;
+
+        }
+        if (isNeutral)
+        {
+            isBeingAttacked = false;
+            beingAttackedBy = null;
+        }
+    }
+
+    private bool CheckAndHandleEntityDestruction()
+    {
+        if (health <= 0)
+        {
+            WeaponsMgr.inst.DestroyEntity(this);
+            return true;
+        }
+
+        if (fuel <= 0 && WeaponsMgr.inst.weapons.Contains(this))
+        {
+            FXMgr.inst.CreateExplosionAt(transform.position, 1);
+            WeaponsMgr.inst.DestroyEntity(this);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void UpdateVisibility()
+    {
+        if (transform.childCount > 0)
+            transform.GetChild(0).gameObject.SetActive(isVisible);
+
+        if (healthBarObject != null)
+            healthBarObject.SetActive(isVisible);
+    }
+
+    void ComputeFuelRange()
+    {
+        if (speed <= cruiseSpeed)
+        {
+            fuelBurnRate = 1f - (cruiseSpeed - speed) / (cruiseSpeed + 0.0001f);
+        }
+        else
+        {
+            fuelBurnRate = 1f + (speed - cruiseSpeed) / (maxSpeed - cruiseSpeed + 0.0001f);
+        }
+
         fuel -= fuelBurnRate * Time.fixedDeltaTime * Time.timeScale;
         fuel = Mathf.Clamp(fuel, 0, maxFuel);
         range = Mathf.Clamp(fuel * cruiseSpeed, 0, maxRange);
-
     }
+
+    
 }
+

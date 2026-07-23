@@ -202,204 +202,6 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": ""2D Vector"",
-                    ""id"": ""050ae0b9-b24a-484a-8a75-63bced435314"",
-                    ""path"": ""2DVector"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""left"",
-                    ""id"": ""e7a43725-4a53-4214-806d-2865ed2e92d1"",
-                    ""path"": ""<Keyboard>/a"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""right"",
-                    ""id"": ""e2db6342-0fa9-4da7-b13d-8b68c7790cf2"",
-                    ""path"": ""<Keyboard>/d"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""up"",
-                    ""id"": ""102bbe4e-263c-4c2a-97af-88bc69860463"",
-                    ""path"": ""<Keyboard>/w"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""down"",
-                    ""id"": ""d1555d69-1bac-41fa-83ba-c0722b2cf04a"",
-                    ""path"": ""<Keyboard>/s"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""2D Vector"",
-                    ""id"": ""b85cd45d-dbaf-4df0-930d-b0a3ab0c8ebb"",
-                    ""path"": ""2DVector"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""left"",
-                    ""id"": ""d7516bec-c54f-4ae8-93ae-323093ccf2b6"",
-                    ""path"": ""<Touchscreen>/primaryTouch/delta/left"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""right"",
-                    ""id"": ""7ecc6bef-4927-400b-974b-b8d9bd7b6ab0"",
-                    ""path"": ""<Touchscreen>/primaryTouch/delta/right"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""up"",
-                    ""id"": ""02b92c07-1979-4d39-8e0b-b2e66976bef8"",
-                    ""path"": ""<Touchscreen>/primaryTouch/delta/up"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""down"",
-                    ""id"": ""1add975a-bcd1-45e9-81cb-1304704c2072"",
-                    ""path"": ""<Touchscreen>/primaryTouch/delta/down"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""2D Vector"",
-                    ""id"": ""f6e1afcd-69bc-4bd6-8636-ac6d0ca5a432"",
-                    ""path"": ""2DVector"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""left"",
-                    ""id"": ""a29c0cf3-da2d-440b-9085-43e8cc1fcf0e"",
-                    ""path"": ""<Keyboard>/leftArrow"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""right"",
-                    ""id"": ""b9b3c265-84a0-4748-8ba1-7e5dba9a4a42"",
-                    ""path"": ""<Keyboard>/rightArrow"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""up"",
-                    ""id"": ""0479ed73-b52b-48c0-a742-193f6a5ef6dd"",
-                    ""path"": ""<Keyboard>/upArrow"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""down"",
-                    ""id"": ""89ac881b-cbfa-4e19-9bc1-a1ece087fd86"",
-                    ""path"": ""<Keyboard>/downArrow"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""One Modifier"",
-                    ""id"": ""c119b839-9411-4736-8daf-6958d47178f9"",
-                    ""path"": ""OneModifier"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""modifier"",
-                    ""id"": ""5d7485be-e1b9-4aeb-b0c0-a32dcb90d4a4"",
-                    ""path"": ""<Mouse>/middleButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""binding"",
-                    ""id"": ""e4f6a117-423c-4fc2-8811-e22acfffe3a6"",
-                    ""path"": ""<Mouse>/delta"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""XZMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""2D Vector"",
                     ""id"": ""8e17f1cf-109c-460a-9c92-d034e8d4c9e9"",
                     ""path"": ""2DVector"",
                     ""interactions"": """",
@@ -469,7 +271,7 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""id"": ""773e73eb-b501-47c0-a0f1-f72be94128a5"",
                     ""path"": ""<Mouse>/scroll"",
                     ""interactions"": """",
-                    ""processors"": ""ScaleVector2(y=-0.025)"",
+                    ""processors"": ""ScaleVector2(x=0.025,y=-0.025)"",
                     ""groups"": """",
                     ""action"": ""YMove"",
                     ""isComposite"": false,
@@ -562,6 +364,204 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""action"": ""Map"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""2D Vector"",
+                    ""id"": ""b85cd45d-dbaf-4df0-930d-b0a3ab0c8ebb"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""d7516bec-c54f-4ae8-93ae-323093ccf2b6"",
+                    ""path"": ""<Touchscreen>/primaryTouch/delta/left"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""7ecc6bef-4927-400b-974b-b8d9bd7b6ab0"",
+                    ""path"": ""<Touchscreen>/primaryTouch/delta/right"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""02b92c07-1979-4d39-8e0b-b2e66976bef8"",
+                    ""path"": ""<Touchscreen>/primaryTouch/delta/up"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""1add975a-bcd1-45e9-81cb-1304704c2072"",
+                    ""path"": ""<Touchscreen>/primaryTouch/delta/down"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""2D Vector"",
+                    ""id"": ""f6e1afcd-69bc-4bd6-8636-ac6d0ca5a432"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""a29c0cf3-da2d-440b-9085-43e8cc1fcf0e"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""b9b3c265-84a0-4748-8ba1-7e5dba9a4a42"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""0479ed73-b52b-48c0-a742-193f6a5ef6dd"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""89ac881b-cbfa-4e19-9bc1-a1ece087fd86"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""2D Vector"",
+                    ""id"": ""50ec47c0-cde8-47a2-b745-437069bb88b7"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""42160acf-a911-4aff-985a-76df9da3f0f1"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""dcac9b97-0b08-4c42-bca8-880dcde52c68"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""725e0b34-500f-4191-a1fe-9cfffb97cb6f"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""cab9cdbd-9f17-4bab-a4c5-7a0a4376821a"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""c119b839-9411-4736-8daf-6958d47178f9"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""5d7485be-e1b9-4aeb-b0c0-a32dcb90d4a4"",
+                    ""path"": ""<Mouse>/middleButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""e4f6a117-423c-4fc2-8811-e22acfffe3a6"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""XZMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         },
@@ -618,6 +618,33 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""name"": ""SelectAll"",
                     ""type"": ""Button"",
                     ""id"": ""150c2fbd-77f3-4da2-bed4-184d955a6dd2"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SelectAllDDG51"",
+                    ""type"": ""Button"",
+                    ""id"": ""49117c76-8189-43b9-a6cd-96e880355c91"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SelectAllSEAHUNTER"",
+                    ""type"": ""Button"",
+                    ""id"": ""85c70685-a556-4d72-bed9-ce0b4bae0820"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SelectAllJARIUSV"",
+                    ""type"": ""Button"",
+                    ""id"": ""2395dbe4-5802-4922-8220-18f0969db1b6"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -710,6 +737,39 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""SelectAll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5adaa9d8-6a71-4be8-8f37-2458f46da267"",
+                    ""path"": ""<Keyboard>/f2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectAllDDG51"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6d7d084b-684f-4bd6-8e12-828d9d99d649"",
+                    ""path"": ""<Keyboard>/f3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectAllSEAHUNTER"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1e39c09e-0cae-477e-a11f-57c1f160ac3a"",
+                    ""path"": ""<Keyboard>/f4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectAllJARIUSV"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -917,6 +977,841 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Attacks"",
+            ""id"": ""00b10792-822a-4f20-9006-00a9737d4f02"",
+            ""actions"": [
+                {
+                    ""name"": ""Attack1"",
+                    ""type"": ""Button"",
+                    ""id"": ""5b7527e5-02de-4338-9c64-65f01533eff3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Attack2"",
+                    ""type"": ""Button"",
+                    ""id"": ""55f48028-ce74-439d-9bb1-7fdc3f98daaa"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Attack3"",
+                    ""type"": ""Button"",
+                    ""id"": ""b98f2984-504b-40b6-a008-961221b8d675"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Attack4"",
+                    ""type"": ""Button"",
+                    ""id"": ""f1a7b65a-b084-4b7d-962a-66562228b1db"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Modifers"",
+                    ""type"": ""Button"",
+                    ""id"": ""244d5b36-7106-4619-b7f4-9de2f009d649"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""a2f15a99-6382-4db0-9f14-b26581419c11"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""e3c20d64-9be6-48bd-bfd1-665117e7fdf4"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack2"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""b04d68d1-0fb3-43e2-a62b-c810e4494114"",
+                    ""path"": ""<Keyboard>/o"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""57de45f7-12fb-4a60-8509-f123f521f1b7"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""af6a4d63-d24a-4680-a5f1-f1c12b394389"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack3"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""f4f75b56-40b6-4991-b436-dcdfc8c69b72"",
+                    ""path"": ""<Keyboard>/i"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack3"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""ea3fc27f-677e-499f-9681-7cf6b74914f3"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack3"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""72de57ef-ee8f-46ba-8376-7f2de61f0d1b"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack4"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""57d17eb9-0cf6-4b74-a88b-48eb9c9d34b9"",
+                    ""path"": ""<Keyboard>/u"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack4"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""46b95728-d703-4ab6-aae1-307040694ed7"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack4"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""26c2c03a-1a86-4d93-a601-43fbaf5b1dd9"",
+                    ""path"": ""<Keyboard>/p"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Modifers"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e2daf471-5658-496f-bb86-e578fdbb275b"",
+                    ""path"": ""<Keyboard>/o"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Modifers"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""64e812ef-423d-4e62-bbab-b92ee3d13cda"",
+                    ""path"": ""<Keyboard>/i"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Modifers"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e0824412-6bd4-4f83-807b-160fa0f6c25a"",
+                    ""path"": ""<Keyboard>/u"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Modifers"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
+            ""name"": ""BindGroup"",
+            ""id"": ""25fa9ef8-842a-45bd-9c91-52bf980bcd03"",
+            ""actions"": [
+                {
+                    ""name"": ""BindControlGroup1"",
+                    ""type"": ""Button"",
+                    ""id"": ""24f87f2f-0f5d-4558-b689-58b9ac0a201b"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BindControlGroup2"",
+                    ""type"": ""Button"",
+                    ""id"": ""872788b8-f0e4-42cb-9ff2-5df4d9381fc6"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BindControlGroup3"",
+                    ""type"": ""Button"",
+                    ""id"": ""72943975-72b7-4c1f-954a-4937dbce0029"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BindControlGroup4"",
+                    ""type"": ""Button"",
+                    ""id"": ""e7d499fe-0b55-4a49-8226-f9c7afd4b1b3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BindControlGroup5"",
+                    ""type"": ""Button"",
+                    ""id"": ""9792951f-6f79-4cd7-827e-c4bc32ba6a55"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BindControlGroup6"",
+                    ""type"": ""Button"",
+                    ""id"": ""84066bc2-9b27-4a99-b5fa-8f8f323d1c86"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BindControlGroup7"",
+                    ""type"": ""Button"",
+                    ""id"": ""2c85ed16-721a-4ee4-ad58-d29f1c10448d"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BindControlGroup8"",
+                    ""type"": ""Button"",
+                    ""id"": ""94858a1e-e459-49bd-8a41-7b884c5ab171"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BindControlGroup9"",
+                    ""type"": ""Button"",
+                    ""id"": ""3610689c-3ec0-4a0d-b894-afca472f29b8"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BindControlGroup10"",
+                    ""type"": ""Button"",
+                    ""id"": ""3c741c4a-f161-4ee8-b6c2-fdc7566e0b12"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RetreiveControlGroup1"",
+                    ""type"": ""Button"",
+                    ""id"": ""247cc660-3d1f-48d4-922c-210d00c28879"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RetreiveControlGroup2"",
+                    ""type"": ""Button"",
+                    ""id"": ""bd4efa35-4e5b-413d-84a0-7dfdb9c30aeb"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RetreiveControlGroup3"",
+                    ""type"": ""Button"",
+                    ""id"": ""f8fd2153-9324-4b86-a8d7-d816331172c3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RetreiveControlGroup4"",
+                    ""type"": ""Button"",
+                    ""id"": ""ece3e713-a7dd-4b59-bf5c-4134e3f5a238"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RetreiveControlGroup5"",
+                    ""type"": ""Button"",
+                    ""id"": ""68aca8b1-614a-4777-9ad5-759320c73f80"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RetreiveControlGroup6"",
+                    ""type"": ""Button"",
+                    ""id"": ""63048d67-6e02-4aa4-a6fc-2b825fe57cb8"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RetreiveControlGroup7"",
+                    ""type"": ""Button"",
+                    ""id"": ""27a63571-dab5-4cb4-911e-ab7e49fe0834"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RetreiveControlGroup8"",
+                    ""type"": ""Button"",
+                    ""id"": ""74831513-49ab-42e0-9496-fe965bb7fb71"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RetreiveControlGroup9"",
+                    ""type"": ""Button"",
+                    ""id"": ""8e588988-98dd-45e8-aeb7-b4c9f5fd3501"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RetreiveControlGroup10"",
+                    ""type"": ""Button"",
+                    ""id"": ""845a3baa-a0c1-489b-8388-da0bdee39ec8"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""9cb455ba-5bcc-4374-9aa1-f28687dda899"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BindControlGroup1"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Modifier"",
+                    ""id"": ""d4a78df2-426a-498b-b471-85276ea63ec0"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button"",
+                    ""id"": ""f6e2f93e-4c30-4a9c-a3a9-1f104085ce38"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fe92efd5-3874-4783-a91c-551086d952ad"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""RetreiveControlGroup1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""adfe461c-65b1-4be0-bedd-b232acc17b35"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BindControlGroup2"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Modifier"",
+                    ""id"": ""65177098-bac8-4d4b-b48d-0bce796b88c7"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button"",
+                    ""id"": ""ca51af9a-6d3e-44bc-85bd-21fc9800fb78"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5f1a04b7-488f-4d11-bcc0-4b57b6bf4fea"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""RetreiveControlGroup2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""da06f868-887b-4280-ab1d-a519130d5d93"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BindControlGroup3"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Modifier"",
+                    ""id"": ""e7c5369d-4ba1-4eb6-b6e0-50a757ec40ac"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup3"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button"",
+                    ""id"": ""20d8a0ed-d2ad-4110-93c5-13930396b791"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup3"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""b62fb061-fc83-4f28-a038-833a37d8b074"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BindControlGroup4"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Modifier"",
+                    ""id"": ""cb30f53f-570b-4935-9349-0583521eea0a"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup4"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button"",
+                    ""id"": ""3044a295-93d2-47ab-8e59-2daba1aed020"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup4"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""bfa3fa36-14fb-4d6c-a557-525e22c23c57"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BindControlGroup5"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Modifier"",
+                    ""id"": ""59a58874-857c-4048-bc30-1f40af1371ec"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup5"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button"",
+                    ""id"": ""95479443-21e3-4640-a2e6-4469344c50b0"",
+                    ""path"": ""<Keyboard>/5"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup5"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""3a59ec00-fb64-463f-944e-7988969785c2"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BindControlGroup6"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Modifier"",
+                    ""id"": ""0665ff6f-c38a-4b29-9548-0080234e85f1"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup6"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button"",
+                    ""id"": ""b18f7285-c26a-4655-94b2-2e4a4d76cec9"",
+                    ""path"": ""<Keyboard>/6"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup6"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""2fdcb72e-818b-4813-8047-44ab374c1743"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BindControlGroup7"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Modifier"",
+                    ""id"": ""cb049d29-d539-42cc-aa1e-881a605105f4"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup7"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button"",
+                    ""id"": ""45a960a1-542e-4b41-b155-39ca9bc483c2"",
+                    ""path"": ""<Keyboard>/7"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup7"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""8409006d-ff68-465f-ac52-90d8bdc0b96a"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BindControlGroup8"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Modifier"",
+                    ""id"": ""be6a0a27-12c2-4a53-a6f1-e7856f7e0ef5"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup8"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button"",
+                    ""id"": ""3a1b6d3a-5fae-4a9a-9430-b6f95b447adf"",
+                    ""path"": ""<Keyboard>/8"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup8"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""74daaeb0-b738-4c4d-b187-1f95ff619c31"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BindControlGroup9"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Modifier"",
+                    ""id"": ""2fc4dce8-3814-49a6-8eaf-9e0d777f8db8"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup9"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button"",
+                    ""id"": ""ecfaf291-d014-43bf-b49d-2cf520fcf407"",
+                    ""path"": ""<Keyboard>/9"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup9"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""e96e4de1-be9d-47f6-8a23-0a4b3c1f6650"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BindControlGroup10"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Modifier"",
+                    ""id"": ""ded70e55-e008-4ed5-8242-71870c31d293"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup10"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button"",
+                    ""id"": ""1ab45393-9bc3-4cd4-bbac-74a237685588"",
+                    ""path"": ""<Keyboard>/0"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""BindControlGroup10"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6e45ba63-5aa2-4d87-a705-62775c161ae3"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""RetreiveControlGroup3"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""87d582f6-9644-45dc-be0e-914f62fda2c2"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""RetreiveControlGroup4"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""75a5af5d-31c0-4b42-b89e-c4ca28af426c"",
+                    ""path"": ""<Keyboard>/5"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""RetreiveControlGroup5"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""41e765ff-8372-40b4-970e-e22b8af67fcc"",
+                    ""path"": ""<Keyboard>/6"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""RetreiveControlGroup6"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d66e024f-a76a-443c-ad6c-b7a0c833a940"",
+                    ""path"": ""<Keyboard>/7"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""RetreiveControlGroup7"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e27ea953-3733-42b9-ad84-68c562784923"",
+                    ""path"": ""<Keyboard>/8"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""RetreiveControlGroup8"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2423839a-3d78-4a56-beaa-c3992b4150f6"",
+                    ""path"": ""<Keyboard>/9"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""RetreiveControlGroup9"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d66821e4-d7a9-45d4-812e-0dbd56927bd0"",
+                    ""path"": ""<Keyboard>/0"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse;Touch;XR"",
+                    ""action"": ""RetreiveControlGroup10"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -939,6 +1834,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Selection_CursorPosition = m_Selection.FindAction("CursorPosition", throwIfNotFound: true);
         m_Selection_NextEntity = m_Selection.FindAction("NextEntity", throwIfNotFound: true);
         m_Selection_SelectAll = m_Selection.FindAction("SelectAll", throwIfNotFound: true);
+        m_Selection_SelectAllDDG51 = m_Selection.FindAction("SelectAllDDG51", throwIfNotFound: true);
+        m_Selection_SelectAllSEAHUNTER = m_Selection.FindAction("SelectAllSEAHUNTER", throwIfNotFound: true);
+        m_Selection_SelectAllJARIUSV = m_Selection.FindAction("SelectAllJARIUSV", throwIfNotFound: true);
         // Entities
         m_Entities = asset.FindActionMap("Entities", throwIfNotFound: true);
         m_Entities_Speed = m_Entities.FindAction("Speed", throwIfNotFound: true);
@@ -948,6 +1846,35 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         m_Entities_Create100 = m_Entities.FindAction("Create100", throwIfNotFound: true);
         m_Entities_AddCommand = m_Entities.FindAction("AddCommand", throwIfNotFound: true);
         m_Entities_ControlKey = m_Entities.FindAction("ControlKey", throwIfNotFound: true);
+        // Attacks
+        m_Attacks = asset.FindActionMap("Attacks", throwIfNotFound: true);
+        m_Attacks_Attack1 = m_Attacks.FindAction("Attack1", throwIfNotFound: true);
+        m_Attacks_Attack2 = m_Attacks.FindAction("Attack2", throwIfNotFound: true);
+        m_Attacks_Attack3 = m_Attacks.FindAction("Attack3", throwIfNotFound: true);
+        m_Attacks_Attack4 = m_Attacks.FindAction("Attack4", throwIfNotFound: true);
+        m_Attacks_Modifers = m_Attacks.FindAction("Modifers", throwIfNotFound: true);
+        // BindGroup
+        m_BindGroup = asset.FindActionMap("BindGroup", throwIfNotFound: true);
+        m_BindGroup_BindControlGroup1 = m_BindGroup.FindAction("BindControlGroup1", throwIfNotFound: true);
+        m_BindGroup_BindControlGroup2 = m_BindGroup.FindAction("BindControlGroup2", throwIfNotFound: true);
+        m_BindGroup_BindControlGroup3 = m_BindGroup.FindAction("BindControlGroup3", throwIfNotFound: true);
+        m_BindGroup_BindControlGroup4 = m_BindGroup.FindAction("BindControlGroup4", throwIfNotFound: true);
+        m_BindGroup_BindControlGroup5 = m_BindGroup.FindAction("BindControlGroup5", throwIfNotFound: true);
+        m_BindGroup_BindControlGroup6 = m_BindGroup.FindAction("BindControlGroup6", throwIfNotFound: true);
+        m_BindGroup_BindControlGroup7 = m_BindGroup.FindAction("BindControlGroup7", throwIfNotFound: true);
+        m_BindGroup_BindControlGroup8 = m_BindGroup.FindAction("BindControlGroup8", throwIfNotFound: true);
+        m_BindGroup_BindControlGroup9 = m_BindGroup.FindAction("BindControlGroup9", throwIfNotFound: true);
+        m_BindGroup_BindControlGroup10 = m_BindGroup.FindAction("BindControlGroup10", throwIfNotFound: true);
+        m_BindGroup_RetreiveControlGroup1 = m_BindGroup.FindAction("RetreiveControlGroup1", throwIfNotFound: true);
+        m_BindGroup_RetreiveControlGroup2 = m_BindGroup.FindAction("RetreiveControlGroup2", throwIfNotFound: true);
+        m_BindGroup_RetreiveControlGroup3 = m_BindGroup.FindAction("RetreiveControlGroup3", throwIfNotFound: true);
+        m_BindGroup_RetreiveControlGroup4 = m_BindGroup.FindAction("RetreiveControlGroup4", throwIfNotFound: true);
+        m_BindGroup_RetreiveControlGroup5 = m_BindGroup.FindAction("RetreiveControlGroup5", throwIfNotFound: true);
+        m_BindGroup_RetreiveControlGroup6 = m_BindGroup.FindAction("RetreiveControlGroup6", throwIfNotFound: true);
+        m_BindGroup_RetreiveControlGroup7 = m_BindGroup.FindAction("RetreiveControlGroup7", throwIfNotFound: true);
+        m_BindGroup_RetreiveControlGroup8 = m_BindGroup.FindAction("RetreiveControlGroup8", throwIfNotFound: true);
+        m_BindGroup_RetreiveControlGroup9 = m_BindGroup.FindAction("RetreiveControlGroup9", throwIfNotFound: true);
+        m_BindGroup_RetreiveControlGroup10 = m_BindGroup.FindAction("RetreiveControlGroup10", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -1117,6 +2044,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Selection_CursorPosition;
     private readonly InputAction m_Selection_NextEntity;
     private readonly InputAction m_Selection_SelectAll;
+    private readonly InputAction m_Selection_SelectAllDDG51;
+    private readonly InputAction m_Selection_SelectAllSEAHUNTER;
+    private readonly InputAction m_Selection_SelectAllJARIUSV;
     public struct SelectionActions
     {
         private @GameInputs m_Wrapper;
@@ -1127,6 +2057,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         public InputAction @CursorPosition => m_Wrapper.m_Selection_CursorPosition;
         public InputAction @NextEntity => m_Wrapper.m_Selection_NextEntity;
         public InputAction @SelectAll => m_Wrapper.m_Selection_SelectAll;
+        public InputAction @SelectAllDDG51 => m_Wrapper.m_Selection_SelectAllDDG51;
+        public InputAction @SelectAllSEAHUNTER => m_Wrapper.m_Selection_SelectAllSEAHUNTER;
+        public InputAction @SelectAllJARIUSV => m_Wrapper.m_Selection_SelectAllJARIUSV;
         public InputActionMap Get() { return m_Wrapper.m_Selection; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1154,6 +2087,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @SelectAll.started += instance.OnSelectAll;
             @SelectAll.performed += instance.OnSelectAll;
             @SelectAll.canceled += instance.OnSelectAll;
+            @SelectAllDDG51.started += instance.OnSelectAllDDG51;
+            @SelectAllDDG51.performed += instance.OnSelectAllDDG51;
+            @SelectAllDDG51.canceled += instance.OnSelectAllDDG51;
+            @SelectAllSEAHUNTER.started += instance.OnSelectAllSEAHUNTER;
+            @SelectAllSEAHUNTER.performed += instance.OnSelectAllSEAHUNTER;
+            @SelectAllSEAHUNTER.canceled += instance.OnSelectAllSEAHUNTER;
+            @SelectAllJARIUSV.started += instance.OnSelectAllJARIUSV;
+            @SelectAllJARIUSV.performed += instance.OnSelectAllJARIUSV;
+            @SelectAllJARIUSV.canceled += instance.OnSelectAllJARIUSV;
         }
 
         private void UnregisterCallbacks(ISelectionActions instance)
@@ -1176,6 +2118,15 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
             @SelectAll.started -= instance.OnSelectAll;
             @SelectAll.performed -= instance.OnSelectAll;
             @SelectAll.canceled -= instance.OnSelectAll;
+            @SelectAllDDG51.started -= instance.OnSelectAllDDG51;
+            @SelectAllDDG51.performed -= instance.OnSelectAllDDG51;
+            @SelectAllDDG51.canceled -= instance.OnSelectAllDDG51;
+            @SelectAllSEAHUNTER.started -= instance.OnSelectAllSEAHUNTER;
+            @SelectAllSEAHUNTER.performed -= instance.OnSelectAllSEAHUNTER;
+            @SelectAllSEAHUNTER.canceled -= instance.OnSelectAllSEAHUNTER;
+            @SelectAllJARIUSV.started -= instance.OnSelectAllJARIUSV;
+            @SelectAllJARIUSV.performed -= instance.OnSelectAllJARIUSV;
+            @SelectAllJARIUSV.canceled -= instance.OnSelectAllJARIUSV;
         }
 
         public void RemoveCallbacks(ISelectionActions instance)
@@ -1287,6 +2238,282 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         }
     }
     public EntitiesActions @Entities => new EntitiesActions(this);
+
+    // Attacks
+    private readonly InputActionMap m_Attacks;
+    private List<IAttacksActions> m_AttacksActionsCallbackInterfaces = new List<IAttacksActions>();
+    private readonly InputAction m_Attacks_Attack1;
+    private readonly InputAction m_Attacks_Attack2;
+    private readonly InputAction m_Attacks_Attack3;
+    private readonly InputAction m_Attacks_Attack4;
+    private readonly InputAction m_Attacks_Modifers;
+    public struct AttacksActions
+    {
+        private @GameInputs m_Wrapper;
+        public AttacksActions(@GameInputs wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Attack1 => m_Wrapper.m_Attacks_Attack1;
+        public InputAction @Attack2 => m_Wrapper.m_Attacks_Attack2;
+        public InputAction @Attack3 => m_Wrapper.m_Attacks_Attack3;
+        public InputAction @Attack4 => m_Wrapper.m_Attacks_Attack4;
+        public InputAction @Modifers => m_Wrapper.m_Attacks_Modifers;
+        public InputActionMap Get() { return m_Wrapper.m_Attacks; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(AttacksActions set) { return set.Get(); }
+        public void AddCallbacks(IAttacksActions instance)
+        {
+            if (instance == null || m_Wrapper.m_AttacksActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_AttacksActionsCallbackInterfaces.Add(instance);
+            @Attack1.started += instance.OnAttack1;
+            @Attack1.performed += instance.OnAttack1;
+            @Attack1.canceled += instance.OnAttack1;
+            @Attack2.started += instance.OnAttack2;
+            @Attack2.performed += instance.OnAttack2;
+            @Attack2.canceled += instance.OnAttack2;
+            @Attack3.started += instance.OnAttack3;
+            @Attack3.performed += instance.OnAttack3;
+            @Attack3.canceled += instance.OnAttack3;
+            @Attack4.started += instance.OnAttack4;
+            @Attack4.performed += instance.OnAttack4;
+            @Attack4.canceled += instance.OnAttack4;
+            @Modifers.started += instance.OnModifers;
+            @Modifers.performed += instance.OnModifers;
+            @Modifers.canceled += instance.OnModifers;
+        }
+
+        private void UnregisterCallbacks(IAttacksActions instance)
+        {
+            @Attack1.started -= instance.OnAttack1;
+            @Attack1.performed -= instance.OnAttack1;
+            @Attack1.canceled -= instance.OnAttack1;
+            @Attack2.started -= instance.OnAttack2;
+            @Attack2.performed -= instance.OnAttack2;
+            @Attack2.canceled -= instance.OnAttack2;
+            @Attack3.started -= instance.OnAttack3;
+            @Attack3.performed -= instance.OnAttack3;
+            @Attack3.canceled -= instance.OnAttack3;
+            @Attack4.started -= instance.OnAttack4;
+            @Attack4.performed -= instance.OnAttack4;
+            @Attack4.canceled -= instance.OnAttack4;
+            @Modifers.started -= instance.OnModifers;
+            @Modifers.performed -= instance.OnModifers;
+            @Modifers.canceled -= instance.OnModifers;
+        }
+
+        public void RemoveCallbacks(IAttacksActions instance)
+        {
+            if (m_Wrapper.m_AttacksActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IAttacksActions instance)
+        {
+            foreach (var item in m_Wrapper.m_AttacksActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_AttacksActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public AttacksActions @Attacks => new AttacksActions(this);
+
+    // BindGroup
+    private readonly InputActionMap m_BindGroup;
+    private List<IBindGroupActions> m_BindGroupActionsCallbackInterfaces = new List<IBindGroupActions>();
+    private readonly InputAction m_BindGroup_BindControlGroup1;
+    private readonly InputAction m_BindGroup_BindControlGroup2;
+    private readonly InputAction m_BindGroup_BindControlGroup3;
+    private readonly InputAction m_BindGroup_BindControlGroup4;
+    private readonly InputAction m_BindGroup_BindControlGroup5;
+    private readonly InputAction m_BindGroup_BindControlGroup6;
+    private readonly InputAction m_BindGroup_BindControlGroup7;
+    private readonly InputAction m_BindGroup_BindControlGroup8;
+    private readonly InputAction m_BindGroup_BindControlGroup9;
+    private readonly InputAction m_BindGroup_BindControlGroup10;
+    private readonly InputAction m_BindGroup_RetreiveControlGroup1;
+    private readonly InputAction m_BindGroup_RetreiveControlGroup2;
+    private readonly InputAction m_BindGroup_RetreiveControlGroup3;
+    private readonly InputAction m_BindGroup_RetreiveControlGroup4;
+    private readonly InputAction m_BindGroup_RetreiveControlGroup5;
+    private readonly InputAction m_BindGroup_RetreiveControlGroup6;
+    private readonly InputAction m_BindGroup_RetreiveControlGroup7;
+    private readonly InputAction m_BindGroup_RetreiveControlGroup8;
+    private readonly InputAction m_BindGroup_RetreiveControlGroup9;
+    private readonly InputAction m_BindGroup_RetreiveControlGroup10;
+    public struct BindGroupActions
+    {
+        private @GameInputs m_Wrapper;
+        public BindGroupActions(@GameInputs wrapper) { m_Wrapper = wrapper; }
+        public InputAction @BindControlGroup1 => m_Wrapper.m_BindGroup_BindControlGroup1;
+        public InputAction @BindControlGroup2 => m_Wrapper.m_BindGroup_BindControlGroup2;
+        public InputAction @BindControlGroup3 => m_Wrapper.m_BindGroup_BindControlGroup3;
+        public InputAction @BindControlGroup4 => m_Wrapper.m_BindGroup_BindControlGroup4;
+        public InputAction @BindControlGroup5 => m_Wrapper.m_BindGroup_BindControlGroup5;
+        public InputAction @BindControlGroup6 => m_Wrapper.m_BindGroup_BindControlGroup6;
+        public InputAction @BindControlGroup7 => m_Wrapper.m_BindGroup_BindControlGroup7;
+        public InputAction @BindControlGroup8 => m_Wrapper.m_BindGroup_BindControlGroup8;
+        public InputAction @BindControlGroup9 => m_Wrapper.m_BindGroup_BindControlGroup9;
+        public InputAction @BindControlGroup10 => m_Wrapper.m_BindGroup_BindControlGroup10;
+        public InputAction @RetreiveControlGroup1 => m_Wrapper.m_BindGroup_RetreiveControlGroup1;
+        public InputAction @RetreiveControlGroup2 => m_Wrapper.m_BindGroup_RetreiveControlGroup2;
+        public InputAction @RetreiveControlGroup3 => m_Wrapper.m_BindGroup_RetreiveControlGroup3;
+        public InputAction @RetreiveControlGroup4 => m_Wrapper.m_BindGroup_RetreiveControlGroup4;
+        public InputAction @RetreiveControlGroup5 => m_Wrapper.m_BindGroup_RetreiveControlGroup5;
+        public InputAction @RetreiveControlGroup6 => m_Wrapper.m_BindGroup_RetreiveControlGroup6;
+        public InputAction @RetreiveControlGroup7 => m_Wrapper.m_BindGroup_RetreiveControlGroup7;
+        public InputAction @RetreiveControlGroup8 => m_Wrapper.m_BindGroup_RetreiveControlGroup8;
+        public InputAction @RetreiveControlGroup9 => m_Wrapper.m_BindGroup_RetreiveControlGroup9;
+        public InputAction @RetreiveControlGroup10 => m_Wrapper.m_BindGroup_RetreiveControlGroup10;
+        public InputActionMap Get() { return m_Wrapper.m_BindGroup; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(BindGroupActions set) { return set.Get(); }
+        public void AddCallbacks(IBindGroupActions instance)
+        {
+            if (instance == null || m_Wrapper.m_BindGroupActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_BindGroupActionsCallbackInterfaces.Add(instance);
+            @BindControlGroup1.started += instance.OnBindControlGroup1;
+            @BindControlGroup1.performed += instance.OnBindControlGroup1;
+            @BindControlGroup1.canceled += instance.OnBindControlGroup1;
+            @BindControlGroup2.started += instance.OnBindControlGroup2;
+            @BindControlGroup2.performed += instance.OnBindControlGroup2;
+            @BindControlGroup2.canceled += instance.OnBindControlGroup2;
+            @BindControlGroup3.started += instance.OnBindControlGroup3;
+            @BindControlGroup3.performed += instance.OnBindControlGroup3;
+            @BindControlGroup3.canceled += instance.OnBindControlGroup3;
+            @BindControlGroup4.started += instance.OnBindControlGroup4;
+            @BindControlGroup4.performed += instance.OnBindControlGroup4;
+            @BindControlGroup4.canceled += instance.OnBindControlGroup4;
+            @BindControlGroup5.started += instance.OnBindControlGroup5;
+            @BindControlGroup5.performed += instance.OnBindControlGroup5;
+            @BindControlGroup5.canceled += instance.OnBindControlGroup5;
+            @BindControlGroup6.started += instance.OnBindControlGroup6;
+            @BindControlGroup6.performed += instance.OnBindControlGroup6;
+            @BindControlGroup6.canceled += instance.OnBindControlGroup6;
+            @BindControlGroup7.started += instance.OnBindControlGroup7;
+            @BindControlGroup7.performed += instance.OnBindControlGroup7;
+            @BindControlGroup7.canceled += instance.OnBindControlGroup7;
+            @BindControlGroup8.started += instance.OnBindControlGroup8;
+            @BindControlGroup8.performed += instance.OnBindControlGroup8;
+            @BindControlGroup8.canceled += instance.OnBindControlGroup8;
+            @BindControlGroup9.started += instance.OnBindControlGroup9;
+            @BindControlGroup9.performed += instance.OnBindControlGroup9;
+            @BindControlGroup9.canceled += instance.OnBindControlGroup9;
+            @BindControlGroup10.started += instance.OnBindControlGroup10;
+            @BindControlGroup10.performed += instance.OnBindControlGroup10;
+            @BindControlGroup10.canceled += instance.OnBindControlGroup10;
+            @RetreiveControlGroup1.started += instance.OnRetreiveControlGroup1;
+            @RetreiveControlGroup1.performed += instance.OnRetreiveControlGroup1;
+            @RetreiveControlGroup1.canceled += instance.OnRetreiveControlGroup1;
+            @RetreiveControlGroup2.started += instance.OnRetreiveControlGroup2;
+            @RetreiveControlGroup2.performed += instance.OnRetreiveControlGroup2;
+            @RetreiveControlGroup2.canceled += instance.OnRetreiveControlGroup2;
+            @RetreiveControlGroup3.started += instance.OnRetreiveControlGroup3;
+            @RetreiveControlGroup3.performed += instance.OnRetreiveControlGroup3;
+            @RetreiveControlGroup3.canceled += instance.OnRetreiveControlGroup3;
+            @RetreiveControlGroup4.started += instance.OnRetreiveControlGroup4;
+            @RetreiveControlGroup4.performed += instance.OnRetreiveControlGroup4;
+            @RetreiveControlGroup4.canceled += instance.OnRetreiveControlGroup4;
+            @RetreiveControlGroup5.started += instance.OnRetreiveControlGroup5;
+            @RetreiveControlGroup5.performed += instance.OnRetreiveControlGroup5;
+            @RetreiveControlGroup5.canceled += instance.OnRetreiveControlGroup5;
+            @RetreiveControlGroup6.started += instance.OnRetreiveControlGroup6;
+            @RetreiveControlGroup6.performed += instance.OnRetreiveControlGroup6;
+            @RetreiveControlGroup6.canceled += instance.OnRetreiveControlGroup6;
+            @RetreiveControlGroup7.started += instance.OnRetreiveControlGroup7;
+            @RetreiveControlGroup7.performed += instance.OnRetreiveControlGroup7;
+            @RetreiveControlGroup7.canceled += instance.OnRetreiveControlGroup7;
+            @RetreiveControlGroup8.started += instance.OnRetreiveControlGroup8;
+            @RetreiveControlGroup8.performed += instance.OnRetreiveControlGroup8;
+            @RetreiveControlGroup8.canceled += instance.OnRetreiveControlGroup8;
+            @RetreiveControlGroup9.started += instance.OnRetreiveControlGroup9;
+            @RetreiveControlGroup9.performed += instance.OnRetreiveControlGroup9;
+            @RetreiveControlGroup9.canceled += instance.OnRetreiveControlGroup9;
+            @RetreiveControlGroup10.started += instance.OnRetreiveControlGroup10;
+            @RetreiveControlGroup10.performed += instance.OnRetreiveControlGroup10;
+            @RetreiveControlGroup10.canceled += instance.OnRetreiveControlGroup10;
+        }
+
+        private void UnregisterCallbacks(IBindGroupActions instance)
+        {
+            @BindControlGroup1.started -= instance.OnBindControlGroup1;
+            @BindControlGroup1.performed -= instance.OnBindControlGroup1;
+            @BindControlGroup1.canceled -= instance.OnBindControlGroup1;
+            @BindControlGroup2.started -= instance.OnBindControlGroup2;
+            @BindControlGroup2.performed -= instance.OnBindControlGroup2;
+            @BindControlGroup2.canceled -= instance.OnBindControlGroup2;
+            @BindControlGroup3.started -= instance.OnBindControlGroup3;
+            @BindControlGroup3.performed -= instance.OnBindControlGroup3;
+            @BindControlGroup3.canceled -= instance.OnBindControlGroup3;
+            @BindControlGroup4.started -= instance.OnBindControlGroup4;
+            @BindControlGroup4.performed -= instance.OnBindControlGroup4;
+            @BindControlGroup4.canceled -= instance.OnBindControlGroup4;
+            @BindControlGroup5.started -= instance.OnBindControlGroup5;
+            @BindControlGroup5.performed -= instance.OnBindControlGroup5;
+            @BindControlGroup5.canceled -= instance.OnBindControlGroup5;
+            @BindControlGroup6.started -= instance.OnBindControlGroup6;
+            @BindControlGroup6.performed -= instance.OnBindControlGroup6;
+            @BindControlGroup6.canceled -= instance.OnBindControlGroup6;
+            @BindControlGroup7.started -= instance.OnBindControlGroup7;
+            @BindControlGroup7.performed -= instance.OnBindControlGroup7;
+            @BindControlGroup7.canceled -= instance.OnBindControlGroup7;
+            @BindControlGroup8.started -= instance.OnBindControlGroup8;
+            @BindControlGroup8.performed -= instance.OnBindControlGroup8;
+            @BindControlGroup8.canceled -= instance.OnBindControlGroup8;
+            @BindControlGroup9.started -= instance.OnBindControlGroup9;
+            @BindControlGroup9.performed -= instance.OnBindControlGroup9;
+            @BindControlGroup9.canceled -= instance.OnBindControlGroup9;
+            @BindControlGroup10.started -= instance.OnBindControlGroup10;
+            @BindControlGroup10.performed -= instance.OnBindControlGroup10;
+            @BindControlGroup10.canceled -= instance.OnBindControlGroup10;
+            @RetreiveControlGroup1.started -= instance.OnRetreiveControlGroup1;
+            @RetreiveControlGroup1.performed -= instance.OnRetreiveControlGroup1;
+            @RetreiveControlGroup1.canceled -= instance.OnRetreiveControlGroup1;
+            @RetreiveControlGroup2.started -= instance.OnRetreiveControlGroup2;
+            @RetreiveControlGroup2.performed -= instance.OnRetreiveControlGroup2;
+            @RetreiveControlGroup2.canceled -= instance.OnRetreiveControlGroup2;
+            @RetreiveControlGroup3.started -= instance.OnRetreiveControlGroup3;
+            @RetreiveControlGroup3.performed -= instance.OnRetreiveControlGroup3;
+            @RetreiveControlGroup3.canceled -= instance.OnRetreiveControlGroup3;
+            @RetreiveControlGroup4.started -= instance.OnRetreiveControlGroup4;
+            @RetreiveControlGroup4.performed -= instance.OnRetreiveControlGroup4;
+            @RetreiveControlGroup4.canceled -= instance.OnRetreiveControlGroup4;
+            @RetreiveControlGroup5.started -= instance.OnRetreiveControlGroup5;
+            @RetreiveControlGroup5.performed -= instance.OnRetreiveControlGroup5;
+            @RetreiveControlGroup5.canceled -= instance.OnRetreiveControlGroup5;
+            @RetreiveControlGroup6.started -= instance.OnRetreiveControlGroup6;
+            @RetreiveControlGroup6.performed -= instance.OnRetreiveControlGroup6;
+            @RetreiveControlGroup6.canceled -= instance.OnRetreiveControlGroup6;
+            @RetreiveControlGroup7.started -= instance.OnRetreiveControlGroup7;
+            @RetreiveControlGroup7.performed -= instance.OnRetreiveControlGroup7;
+            @RetreiveControlGroup7.canceled -= instance.OnRetreiveControlGroup7;
+            @RetreiveControlGroup8.started -= instance.OnRetreiveControlGroup8;
+            @RetreiveControlGroup8.performed -= instance.OnRetreiveControlGroup8;
+            @RetreiveControlGroup8.canceled -= instance.OnRetreiveControlGroup8;
+            @RetreiveControlGroup9.started -= instance.OnRetreiveControlGroup9;
+            @RetreiveControlGroup9.performed -= instance.OnRetreiveControlGroup9;
+            @RetreiveControlGroup9.canceled -= instance.OnRetreiveControlGroup9;
+            @RetreiveControlGroup10.started -= instance.OnRetreiveControlGroup10;
+            @RetreiveControlGroup10.performed -= instance.OnRetreiveControlGroup10;
+            @RetreiveControlGroup10.canceled -= instance.OnRetreiveControlGroup10;
+        }
+
+        public void RemoveCallbacks(IBindGroupActions instance)
+        {
+            if (m_Wrapper.m_BindGroupActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IBindGroupActions instance)
+        {
+            foreach (var item in m_Wrapper.m_BindGroupActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_BindGroupActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public BindGroupActions @BindGroup => new BindGroupActions(this);
     public interface ICameraActions
     {
         void OnYaw(InputAction.CallbackContext context);
@@ -1306,6 +2533,9 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnCursorPosition(InputAction.CallbackContext context);
         void OnNextEntity(InputAction.CallbackContext context);
         void OnSelectAll(InputAction.CallbackContext context);
+        void OnSelectAllDDG51(InputAction.CallbackContext context);
+        void OnSelectAllSEAHUNTER(InputAction.CallbackContext context);
+        void OnSelectAllJARIUSV(InputAction.CallbackContext context);
     }
     public interface IEntitiesActions
     {
@@ -1316,5 +2546,36 @@ public partial class @GameInputs: IInputActionCollection2, IDisposable
         void OnCreate100(InputAction.CallbackContext context);
         void OnAddCommand(InputAction.CallbackContext context);
         void OnControlKey(InputAction.CallbackContext context);
+    }
+    public interface IAttacksActions
+    {
+        void OnAttack1(InputAction.CallbackContext context);
+        void OnAttack2(InputAction.CallbackContext context);
+        void OnAttack3(InputAction.CallbackContext context);
+        void OnAttack4(InputAction.CallbackContext context);
+        void OnModifers(InputAction.CallbackContext context);
+    }
+    public interface IBindGroupActions
+    {
+        void OnBindControlGroup1(InputAction.CallbackContext context);
+        void OnBindControlGroup2(InputAction.CallbackContext context);
+        void OnBindControlGroup3(InputAction.CallbackContext context);
+        void OnBindControlGroup4(InputAction.CallbackContext context);
+        void OnBindControlGroup5(InputAction.CallbackContext context);
+        void OnBindControlGroup6(InputAction.CallbackContext context);
+        void OnBindControlGroup7(InputAction.CallbackContext context);
+        void OnBindControlGroup8(InputAction.CallbackContext context);
+        void OnBindControlGroup9(InputAction.CallbackContext context);
+        void OnBindControlGroup10(InputAction.CallbackContext context);
+        void OnRetreiveControlGroup1(InputAction.CallbackContext context);
+        void OnRetreiveControlGroup2(InputAction.CallbackContext context);
+        void OnRetreiveControlGroup3(InputAction.CallbackContext context);
+        void OnRetreiveControlGroup4(InputAction.CallbackContext context);
+        void OnRetreiveControlGroup5(InputAction.CallbackContext context);
+        void OnRetreiveControlGroup6(InputAction.CallbackContext context);
+        void OnRetreiveControlGroup7(InputAction.CallbackContext context);
+        void OnRetreiveControlGroup8(InputAction.CallbackContext context);
+        void OnRetreiveControlGroup9(InputAction.CallbackContext context);
+        void OnRetreiveControlGroup10(InputAction.CallbackContext context);
     }
 }

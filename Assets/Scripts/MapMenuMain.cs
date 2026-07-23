@@ -7,86 +7,60 @@ using UnityEngine.UI;
 
 public class MapMenuMain : MonoBehaviour
 {
-    public static bool isHost;
+    public static bool isHost = true;  // Always host by default
     public static string playerName = "Debugger";
 
+    [SerializeField] private PanelPlus loginPanel;
+    [SerializeField] private PanelPlus mapSelectPanel;
 
-    [SerializeField]
-    private PanelPlus loginPanel;
-    [SerializeField]
-    private PanelPlus mapSelectPanel;
-    [SerializeField]
-    private PanelPlus HostOrJoinPanel;
+    [SerializeField] private TMP_InputField loginNameInputField;
 
-    [SerializeField]
-    private TMP_InputField loginNameInputField;
-    [SerializeField]
-    private Button hostButton;
-    [SerializeField]
-    private Button joinButton;
+    public MapNames selectedMapName;
 
     public enum LobbyState
     {
         None = 0,
-        Login,
         MapSelect,
-        HostOrJoin,
+        Login,
         Done,
     }
 
-    private void Start() {
-        lobbyState = LobbyState.HostOrJoin;
-        hostButton.onClick.RemoveAllListeners();
-        hostButton.onClick.AddListener(() => {
-            isHost = true;
-            OnHostOrJoinSubmit();
-        });
-        joinButton.onClick.RemoveAllListeners();
-        joinButton.onClick.AddListener(() => {
-            isHost = false;
-            OnHostOrJoinSubmit();
-        });
-    }
-
-    //[SerializeField]
-    //private LobbyState lstate = LobbyState.None;
     [SerializeField]
     private LobbyState _lobbyState = LobbyState.None;
     private LobbyState lobbyState
     {
-        get {
-            return _lobbyState;
-        }
-        set {
+        get { return _lobbyState; }
+        set
+        {
             _lobbyState = value;
 
-            loginPanel.isVisible = (value == LobbyState.Login);
             mapSelectPanel.isVisible = (value == LobbyState.MapSelect);
-            HostOrJoinPanel.isVisible = (value == LobbyState.HostOrJoin);
+            loginPanel.isVisible = (value == LobbyState.Login);
         }
     }
 
-    public void OnLogin() {
-        playerName = loginNameInputField.text.Trim();
+    private void Start()
+    {
+        // Show map select first
         lobbyState = LobbyState.MapSelect;
     }
 
-    public MapNames selectedMapName;
-    public void OnMapSelected() {
-        lobbyState = LobbyState.HostOrJoin;
-        MapMgr.inst.LoadMap();
-    }
-
-    public void OnHostOrJoinSubmit() {
+    // Called when a map is selected
+    public void OnMapSelected(MapNames chosenMap)
+    {
+        selectedMapName = chosenMap;
+        // MapMgr.inst.LoadMap();  // Load selected map
         lobbyState = LobbyState.Login;
-        if(isHost) {
-            NetworkManager.Singleton.StartHost();
-        }
-        else {
-            NetworkManager.Singleton.StartClient();
-        }
-
     }
 
+    // Called when player enters their name
+    public void OnLogin()
+    {
+        playerName = loginNameInputField.text.Trim();
 
+        // Start as Host
+        NetworkManager.Singleton.StartHost();
+
+        lobbyState = LobbyState.Done;
+    }
 }

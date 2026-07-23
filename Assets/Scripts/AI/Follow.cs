@@ -1,83 +1,175 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [System.Serializable]
 public class Follow : Move
 {
     public Entity targetEntity;
     public Vector3 relativeOffset;
-    public Vector3 randomizedOffset;
-    public float perturbationMagnitude = 50;
-    public Follow(Entity ent, Entity target, Vector3 delta): base(ent, target.transform.position)
+    public Vector3 offset;
+    protected Vector3 lastValidTargetPosition;
+    private WeaponsAspect _weaponsAspect;
+    private float weaponRangeSq;
+
+    public Follow(Entity ent, Entity target, Vector3 delta, float doneDistanceSq = 1000f) : 
+        base(ent, (target != null && target.gameObject.activeSelf ? target.transform.position : (ent != null && ent.gameObject.activeSelf ? ent.transform.position : Vector3.zero)), doneDistanceSq: doneDistanceSq)
     {
         targetEntity = target;
         relativeOffset = delta;
+
+        if (targetEntity != null && targetEntity.gameObject.activeSelf)
+        {
+            lastValidTargetPosition = targetEntity.transform.position;
+        }
+        else if (ent != null && ent.gameObject.activeSelf)
+        {
+            lastValidTargetPosition = ent.transform.position;
+        }
+        else
+        {
+            lastValidTargetPosition = Vector3.zero;
+        }
+
+        // Cache weapon range for maintain-distance logic
+        if (ent != null)
+        {
+            _weaponsAspect = ent.GetComponentInChildren<WeaponsAspect>();
+            if (_weaponsAspect != null && _weaponsAspect.weapon != null)
+            {
+                float range = _weaponsAspect.weapon.range;
+                weaponRangeSq = (range * range) - 100f * 100f; // Same margin as AttackMove
+            }
+            else
+            {
+                weaponRangeSq = 0f;
+            }
+        }
     }
 
-    // Start is called before the first frame update
     public override void Init()
     {
-        //Debug.Log("Follow:\t Following: " + targetEntity.gameObject.name);
+        if (entity == null || !entity.gameObject.activeSelf)
+        {
+            return;
+        }
+        if (targetEntity == null || !targetEntity.gameObject.activeSelf)
+        {
+            return;
+        }
+
+        base.Init();
         offset = targetEntity.transform.TransformVector(relativeOffset);
-        line = LineMgr.inst.CreateFollowLine(entity.position, targetEntity.position + offset, targetEntity.position);
-        line.gameObject.SetActive(false);
-        randomizedOffset = Random.onUnitSphere * perturbationMagnitude;
+        line = LineMgr.inst.CreateFollowLine(entity.position, targetEntity.position + offset, targetEntity.position, entity.isAI);
+        if (line != null)
+        {
+            line.gameObject.SetActive(false);
+        }
     }
 
-    public float followThresholdSq = 2000;
-    public Vector3 offset;
-    // Update is called once per frame
     public override void Tick()
     {
-        offset = targetEntity.transform.TransformVector(relativeOffset);
-        movePosition = targetEntity.transform.position + offset;
-        entity.desiredHeading = ComputePredictiveDH(movePosition);
-       // entity.desiredHeading = ComputeDHDS().dh;
-        if (diffToMovePosition.sqrMagnitude < followThresholdSq) {
-            entity.desiredSpeed = targetEntity.speed;
-            entity.desiredHeading = targetEntity.heading;
-        } else {
-            entity.desiredSpeed = entity.maxSpeed;
+        if (entity == null || !entity.gameObject.activeSelf)
+        {
+            return;
         }
-        range = diffToMovePosition.magnitude;
-        timeOnTarget = range / entity.speed;
-    }
 
-    public bool done = false;//user can set it to done
+        if (targetEntity == null || !targetEntity.gameObject.activeSelf)
+        {
+            // Target is invalid; move to last known valid position
+            movePosition = lastValidTargetPosition;
+            base.Tick();
+            return;
+        }
+
+        // Update position and offset
+        offset = targetEntity.transform.TransformVector(relativeOffset);
+        movePosition = targetEntity.position + offset;
+        lastValidTargetPosition = movePosition;
+
+        float distanceSq = (movePosition - entity.position).sqrMagnitude;
+
+        // Use weapon range as maintain distance (like AttackMove), fall back to doneDistanceSq
+        float maintainDistanceSq = weaponRangeSq > 0f ? weaponRangeSq : doneDistanceSq;
+
+        if (distanceSq <= maintainDistanceSq)
+        {
+            // Within maintain distance — match target's speed and heading
+            entity.desiredSpeed = targetEntity.desiredSpeed;
+            entity.desiredHeading = targetEntity.desiredHeading;
+
+            // Update lines
+            if (line != null)
+            {
+                line.SetPosition(0, entity.position);
+                line.SetPosition(1, movePosition);
+            }
+            if (potentialLine != null && AIMgr.inst.isPotentialFieldsMovement)
+            {
+                potentialLine.SetPosition(0, entity.position);
+                potentialLine.SetPosition(1, entity.position + potentialSum);
+            }
+
+            range = (movePosition - entity.position).magnitude;
+            timeOnTarget = entity.speed > 0.001f ? range / entity.speed : float.PositiveInfinity;
+        }
+        else
+        {
+            // Outside maintain distance — close in using full Move.Tick() steering
+            base.Tick();
+        }
+    }
 
     public override bool IsDone()
     {
-        return done;
+        if (entity == null || !entity.gameObject.activeSelf) return true;
+        return targetEntity == null || !targetEntity.gameObject.activeSelf;
     }
 
     public override void Stop()
     {
         base.Stop();
-        entity.desiredSpeed = 0;
-        isRunning = false;
-
+        if (entity != null && entity.gameObject.activeSelf)
+        {
+            entity.desiredSpeed = 0;
+        }
     }
 
-    Vector3 relativeVelocity;
+
+    public Vector3 relativeVelocity;
     public float predictedInterceptTime;
     public Vector3 predictedMovePosition;
     Vector3 predictedDiff;
-    //------------------------------------------------------
-    public float ComputePredictiveDH(Vector3 movePosition)
+    public Vector3 diff;
+    // this is also used by the Intercept class
+    public float ComputePredictiveDH()
     {
-        float dh;
-        //movePosition = targetEntity.position + targetEntity.transform.TransformVector(relativeOffset);
-        diffToMovePosition = movePosition - entity.position + randomizedOffset; 
-        relativeVelocity = entity.velocity - targetEntity.velocity;
-        predictedInterceptTime = diffToMovePosition.magnitude / relativeVelocity.magnitude;
-        if (predictedInterceptTime >= 0) {
-            predictedMovePosition = movePosition + (targetEntity.velocity * predictedInterceptTime);
+        if (entity == null || !entity.gameObject.activeSelf) return 0f;
+        if (targetEntity == null || !targetEntity.gameObject.activeSelf) return entity.heading;
 
-            predictedDiff = predictedMovePosition - entity.position;
-            dh = Utils.Degrees360(Mathf.Atan2(predictedDiff.x, predictedDiff.z) * Mathf.Rad2Deg);
-        } else {
-            dh = ComputeDHDS().dh;
+        float dh;
+        Vector3 calculatedMovePosition = targetEntity.position + targetEntity.transform.TransformVector(relativeOffset);
+        diff = calculatedMovePosition - entity.position;
+        relativeVelocity = entity.velocity - targetEntity.velocity;
+
+        if (relativeVelocity.sqrMagnitude < Mathf.Epsilon * Mathf.Epsilon)
+        {
+            DHDS fallbackDhds = ComputeDHDS();
+            dh = fallbackDhds.dh;
+        }
+        else
+        {
+            predictedInterceptTime = diff.magnitude / relativeVelocity.magnitude;
+            if (predictedInterceptTime >= 0 && !float.IsNaN(predictedInterceptTime) && !float.IsInfinity(predictedInterceptTime))
+            {
+                predictedMovePosition = calculatedMovePosition + (targetEntity.velocity * predictedInterceptTime);
+
+                predictedDiff = predictedMovePosition - entity.position;
+                dh = Utils.Degrees360(Mathf.Atan2(predictedDiff.x, predictedDiff.z) * Mathf.Rad2Deg);
+            }
+            else
+            {
+                DHDS fallbackDhds = ComputeDHDS();
+                dh = fallbackDhds.dh;
+            }
         }
         return dh;
     }

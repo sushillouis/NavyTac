@@ -93,17 +93,24 @@ MonoBehaviour:
   range: 0
   fuelBurnRate: 0
   entityRole: 7
-  acceleration: 10
-  turnRate: 20
-  maxSpeed: 15.4
+  acceleration: 106.722
+  originalAcceleration: 106.722
+  turnRate: 132.35326
+  originalTurnRate: 132.35326
+  maxSpeed: 46.2
+  originalMaxSpeed: 46.2
   minSpeed: 0
   cruiseSpeed: 12
   mass: 40
   length: 16
   width: 5
   height: 8
+  maxHealth: 100
+  minHealth: 0
+  isVisible: 1
   maxFuel: 0
   maxRange: 0
+  entityCollisionRadius: 1
   entityType: 5
   entityClass: 7
   cameraRig: {fileID: 817593654}
@@ -115,6 +122,7 @@ MonoBehaviour:
     playerColor: {r: 0, g: 0, b: 0, a: 0}
     isObserver: 0
     isAdmin: 0
+  creatorsEntity: {fileID: 0}
   net: {fileID: 0}
   phx: {fileID: 0}
   ai: {fileID: 0}
@@ -437,10 +445,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entity: {fileID: 0}
   moves: []
+  attackMoves: []
   follows: []
-  commands: []
   intercepts: []
   intercept3ds: []
+  smartIntercepts: []
   pfList:
   - {fileID: 6474725924095868067}
   - {fileID: 4930656988933476450}

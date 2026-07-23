@@ -8,7 +8,7 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
 
     [Header("Minimap Icon")]
     [SerializeField]
-    private GameObject minimapIcon;
+    public GameObject minimapIcon;
 
     private void Awake() {
         entity = GetComponentInParent<Entity>();
@@ -26,8 +26,8 @@ public class UIAspect : MonoBehaviour //change name to UI aspect
     // Update is called once per frame
     void Update()
     {
-        if(entity != null)
-            entity.selectionCircle.SetActive(entity.isSelected);
+        if(entity != null){}
+             entity.selectionCircle.SetActive(entity.isSelected);
     }
 
 }

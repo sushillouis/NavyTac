@@ -42,7 +42,7 @@ public class FormationMoveTactic : Tactic
         int perEnt = others.Count / (capitalShips.Count + 1);
         int start = 0;
         foreach(Entity ent in capitalShips) {
-            //Debug.Log($"start: {start}, perEnt: {perEnt}");
+            ////Debug.Log($"start: {start}, perEnt: {perEnt}");
             CircleFormate(ent, others.GetRange(start, perEnt), 1852);
             start += perEnt;
         }

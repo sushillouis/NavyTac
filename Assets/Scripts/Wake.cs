@@ -51,26 +51,46 @@ public class Wake : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-
+        if(!entity.isVisible){
+            wakeParticleSystem.Stop();
+            return;
+        }
         if (entity.speed <= wakeThresholdSpeed) {
             wakeParticleSystem.Stop();
         } else if (!wakeParticleSystem.isPlaying) {
             wakeParticleSystem.Play();
         }
-        wakeSpeed = entity.speed * wakeLengthFactor;// * sd.shipStatic.width;
-        if (shouldDisappear) {
-            Disappear();
-        } else {
-           var cofm = wakeParticleSystem.colorOverLifetime;
-              if (isNight()) {
-                  cofm.color = nightMMGradient;
-              } else if (isDusk()) {
-                cofm.color = duskMMGradient;
-              } else {
-                cofm.color = dayMMGradient; // daytime
+        wakeSpeed = entity.speed * wakeLengthFactor;
+
+        var cofm = wakeParticleSystem.colorOverLifetime;
+        
+        // Missile wake color handling
+        if (entity.entityClass == EntityClass.Missile)
+        {
+            if (entity.owner != null)
+            {
+                // Create solid color gradient from owner's color
+                cofm.color = new ParticleSystem.MinMaxGradient(entity.owner.playerColor);
             }
-          }
         }
+        else if (shouldDisappear)
+        {
+            Disappear();
+        }
+        else 
+        {
+            // Existing time-of-day handling
+            if (isNight()) {
+                cofm.color = nightMMGradient;
+            } 
+            else if (isDusk()) {
+                cofm.color = duskMMGradient;
+            } 
+            else {
+                cofm.color = dayMMGradient;
+            }
+        }
+    }
 
 
 

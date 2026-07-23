@@ -1,179 +1,230 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+[Serializable]
+public class EntityQuantity
+{
+    public EntityType entityType;
+    public int unitCount;
+}
+
+[Serializable]
+public struct StartingPosition
+{
+    public Vector3 position;
+    public float heading;
+}
+
+[Serializable]
+public class ScenarioData
+{
+    public int scenarioNumber;
+    public List<EntityQuantity> entityQuantities = new();
+    public List<Vector3> Player1Positions = new();
+    public List<float> Player1Headings = new();
+    public List<Vector3> Player2Positions = new();
+    public List<float> Player2Headings = new();
+    public float difficultyLevel;
+    public bool isNeutralBaseAvailable;
+    public List<Vector3> NeutralBasePositions = new();
+    public List<float> NeutralBaseHeadings = new();
+    public TrainingState trainingState;
+    public bool winLoss;
+    public string winReason;
+    public float score;
+    public float totalTime;
+    public string timestamp;
+}
+
 public class GameMgr : MonoBehaviour
 {
+    public static int reloadCount = 0;
     public static GameMgr inst;
+
+    [Header("Seeds per Training State")]
+    [SerializeField] public int seedPreTest = 10;
+    [SerializeField] public int seedPostTest = 20;
+    [SerializeField] public int seedAdaptive = 30;
+    [SerializeField] public int seedNonAdaptive = 40;
+    public int selectedSeed;
+
+    public float min = 1;
+    public float max = 5;
+
+    [Header("Time Control UI")]
+    [SerializeField] private Button plusButton;
+    [SerializeField] private Button minusButton;
+    [SerializeField] private List<TextMeshProUGUI> simSpeedButtonText;
+
+    public float timeScale = 1;
+    public bool isIntroPlaying = true;
+
+    float lastDisplayedSpeedValue = -10f;
 
     private void Awake()
     {
-        inst = this;
+        if (inst == null)
+        {
+            inst = this;
+        }
+        else if (inst != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
     }
 
-    // Start is called before the first frame update
     void Start()
     {
+        if (EntityMgr.inst != null)
+        {
+            EntityMgr.inst.movableEntitiesRoot.SetActive(false);
+            EntityMgr.inst.nonMoveableEntitiesRoot.SetActive(false);
+        }
 
-        EntityMgr.inst.movableEntitiesRoot.SetActive(false);
-
-        plusButton.onClick.RemoveAllListeners();
-        plusButton.onClick.AddListener(() => DeltaScale(1));
-        minusButton.onClick.RemoveAllListeners();
-        minusButton.onClick.AddListener(() => DeltaScale(-1));
-
+        if (plusButton != null)
+        {
+            plusButton.onClick.RemoveAllListeners();
+            plusButton.onClick.AddListener(() => DeltaScale(1));
+        }
+        if (minusButton != null)
+        {
+            minusButton.onClick.RemoveAllListeners();
+            minusButton.onClick.AddListener(() => DeltaScale(-1));
+        }
     }
 
-    public Vector3 position;
-    public float spread = 20;
-    public float colNum = 10;
-    public float initZ;
-
-    [SerializeField]
-    private Button plusButton;
-    [SerializeField]
-    private Button minusButton;
-    [SerializeField]
-    private TextMeshProUGUI simSpeedButtonText;
-
-    public float timeScale = 1;
-
-    // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyUp(KeyCode.Equals)) {
+        if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus))
             DeltaScale(1);
-        }
-        if(Input.GetKeyUp(KeyCode.Minus)) {
+        if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus))
             DeltaScale(-1);
-        }
 
-    }
-
-    public void DeltaScale(float delta) {
-        if(Time.timeScale + delta >= 0) {
-            Time.timeScale += delta;
-            Time.timeScale = Mathf.Clamp(Time.timeScale, 0, 16);
-            simSpeedButtonText.text = Time.timeScale.ToString("0");
-        }
-    }
-    public void Create100()
-    {
-        initZ = position.z;
-        for (int i = 0; i < 10; i++)
+        float displayedSpeedValue = Time.timeScale;
+        if (displayedSpeedValue != lastDisplayedSpeedValue)
         {
-            for (int j = 0; j < 10; j++)
+            lastDisplayedSpeedValue = displayedSpeedValue;
+            float relativeDisplay = displayedSpeedValue;
+            foreach (TextMeshProUGUI text in simSpeedButtonText)
             {
-                Entity ent = EntityMgr.inst.CreateEntity(EntityType.PilotVessel, position, Vector3.zero);
-                position.z += spread;
+                text.text = relativeDisplay.ToString("0");
             }
-            position.x += spread;
-            position.z = initZ;
         }
-        DistanceMgr.inst.Initialize();
     }
 
-
-
-    public void InitMapMenu() {
-        List<Entity> allEntities = new List<Entity>();
-        Vector3 position = Vector3.zero;
-        Vector3 offset = new Vector3(100, 0, -50);
-
-        foreach(GameObject go in EntityMgr.inst.entityPrefabs) {
-            Entity ent = go.GetComponent<Entity>();
-            ent = EntityMgr.inst.CreateEntity(ent.entityType, position + offset, new Vector3(0, 270, 0));
-            allEntities.Add(ent);
-            position.x += 400;
-        }
-        Vector3 pos = new Vector3(-3000, 0, 0);
-        bool add = false;
-        StartCoroutine(AddMoveCommandsToEnt(allEntities, pos, add, 270));
-        pos.x = 3000;
-        add = true;
-        StartCoroutine(AddMoveCommandsToEnt(allEntities, pos, add));
-    }
-
-
-    IEnumerator AddMoveCommandsToEnt(List<Entity> allEntities, Vector3 movePos, bool shouldAdd, float heading = -1) {
-        yield return new WaitForSeconds(0.1f);
-        foreach(Entity ent in allEntities) {
-            ent.heading = (heading == -1 ? ent.heading : heading);
-            //ent.isSelected = true;
-        }
-        AIMgr.inst.HandleMove(allEntities, movePos, shouldAdd);
-        //AIMgr.inst.HandleMove(allEntities, new Vector3(3000, 0, 0), true);
-    }
-
-
-
-    public void MakeMapEntities() {
-        Vector3 pos = new Vector3(0, 0, 0);
-        Entity ent;
-        foreach(TactPlayer player in PlayerMgr.inst.players) {
-            for(int i = 0; i < 5; i++) {
-                ent = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, pos, new Vector3(0, 0, 0), player);
-                pos.x += 50;
+    public int GetSelectedSeed()
+    {
+        selectedSeed = seedPreTest;
+        if (OpenOceanMain.inst != null)
+        {
+            switch (OpenOceanMain.inst.currentTrainingState)
+            {
+                case TrainingState.PreTest:
+                    selectedSeed = seedPreTest;
+                    break;
+                case TrainingState.PostTest:
+                    selectedSeed = seedPostTest;
+                    break;
+                case TrainingState.Adaptive:
+                    selectedSeed = seedAdaptive;
+                    break;
+                case TrainingState.NonAdaptive:
+                    selectedSeed = seedNonAdaptive;
+                    break;
+                default:
+                    selectedSeed = seedPreTest;
+                    break;
             }
-            pos.z += 100;
-            pos.x = 0;
         }
-
+        return selectedSeed;
     }
 
-    public void OpenOcean1x1() {
-        Vector3 posPlayer1 = new Vector3(0, 0, 0);
-        Vector3 posPlayer2 = new Vector3(0, 0, 1 * Utils.FromNauticalMiles);
-        MakeEntsForPlayer(posPlayer1, 0, PlayerMgr.inst.player1);
-        //MakeEntsForPlayer(posPlayer2, 180, PlayerMgr.inst.player2);
+    public void PlusButtonClicked() => DeltaScale(1);
+    public void MinusButtonClicked() => DeltaScale(-1);
 
+    public void DeltaScale(float delta = 0)
+    {
+        float newTimeScale = Time.timeScale + delta;
+        Time.timeScale = Mathf.Clamp(newTimeScale, min, max);
+        ReplayCommand cmd = new()
+        {
+            timestamp = Time.time,
+            timeScale = Time.timeScale,
+            commandType = "TimeScaleChange",
+        };
+        ReplayMgr.inst.RecordCommand(cmd);
     }
 
-    public void MakeEntsForPlayer(Vector3 initPos, float initHeading, TactPlayer player) {
-        Vector3 eulerAngles = new Vector3(0, initHeading, 0);
-        Entity initEnt = EntityMgr.inst.CreateEntity(EntityType.CVN75, initPos, eulerAngles, player);
-        Entity tmpEnt;
+    public void OpenOcean1x1()
+    {
+        isIntroPlaying = true;
 
-        //Escort on right
-        Vector3 offset = initEnt.transform.right * 1000;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
-
-
-        //USV on right
-        offset = tmpEnt.transform.right * 500;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
-
-        //USV in front
-        offset = initEnt.transform.forward * 1000;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
-
-        //USV in behind
-        offset = -initEnt.transform.forward * 1000;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
-
-        //Escort on left
-        offset = -initEnt.transform.right * 1000;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.DDG51, initPos + offset, eulerAngles, player);
-        /*
-        //USV on left
-        offset = -initEnt.transform.right * 500;
-        tmpEnt = EntityMgr.inst.CreateEntity(EntityType.SeaHunter, initPos + offset, eulerAngles, player);
-
-        offset = initEnt.transform.forward * 500;
-        offset.x -= 250;
-        for(int i = 0; i < 5; i++) {
-            tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);
-            offset.x += 100;
+        if (ScenarioGenerator.inst == null)
+        {
+            Debug.LogError("ScenarioGenerator instance not found!");
+            return;
         }
-        offset = -initEnt.transform.forward * 500;
-        offset.x -= 200;
-        for(int i = 0; i < 5; i++) {
-            tmpEnt = EntityMgr.inst.CreateEntity(EntityType.Mykola, initPos + offset, eulerAngles, player);
-            offset.x += 100;
+
+        if (OpenOceanMain.inst != null && OpenOceanMain.inst.currentTrainingState == TrainingState.Tutorial)
+        {
+            var tutorialScenario = ScenarioGenerator.inst.GenerateScenario(TrainingState.Tutorial);
+            ScenarioGenerator.inst.SpawnScenario(tutorialScenario);
         }
-        */
+        else
+        {
+            var scenario = ScenarioGenerator.inst.GenerateScenario(OpenOceanMain.inst?.currentTrainingState ?? TrainingState.PreTest);
+            
+            // Apply speed adjustments based on training state
+            if (OpenOceanMain.inst?.currentTrainingState == TrainingState.Adaptive)
+            {
+                Time.timeScale = 1f;
+                ScenarioGenerator.inst.AdjustAdaptiveEntitySpeed();
+            }
+            else
+            {
+                Time.timeScale = 1f;
+                ScenarioGenerator.inst.AdjustNonAdaptiveEntitySpeed();
+            }
+            
+            ScenarioGenerator.inst.SpawnScenario(scenario);
+        }
+
+        if (CameraMgr.inst != null) CameraMgr.inst.SetCameraPosition();
+        if (ReplayMgr.inst != null) ReplayMgr.inst.StartNewScenario();
     }
 
+    public void CreateTwoVsTwoScenario()
+    {
+        isIntroPlaying = true;
+        
+        if (ScenarioGenerator.inst != null)
+        {
+            ScenarioGenerator.inst.GenerateTwoVsTwoScenario();
+        }
+    }
+
+    // Property accessors for compatibility with existing code
+    public float difficultyLevel => ScenarioGenerator.inst?.CurrentDifficultyLevel ?? 0f;
+    public Dictionary<EntityType, int> entityDict => ScenarioGenerator.inst?.EntityDictionary ?? new Dictionary<EntityType, int>();
+    public List<EntityQuantity> entityQuantities => ScenarioGenerator.inst?.entityQuantities ?? new List<EntityQuantity>();
+
+    // Scenario data management methods
+    public void StoreCurrentScenario()
+    {
+        ScenarioGenerator.inst?.StoreCurrentScenario();
+    }
+
+    public void InitializeScenarioFromData(ScenarioData data)
+    {
+        ScenarioGenerator.inst?.InitializeScenarioFromData(data);
+    }
+
+    public ScenarioData GetScenario(int scenarioNumber)
+    {
+        return ScenarioGenerator.inst?.GetScenario(scenarioNumber);
+    }
 }

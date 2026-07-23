@@ -48,7 +48,7 @@ public class ControlMgr : NetworkBehaviour
     }
 
     public void UpdateOnHeadingSet(float angle) {
-        Debug.Log("Angle set to: " + angle);
+        //Debug.Log("Angle set to: " + angle);
         if(IsOwner && SelectionMgr.inst.selectedEntity != null)
             SelectionMgr.inst.selectedEntity.desiredHeading = Utils.Degrees360(angle);
         if(!IsOwner)

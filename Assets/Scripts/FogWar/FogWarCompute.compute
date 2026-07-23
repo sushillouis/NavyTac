@@ -1,0 +1,119 @@
+#pragma kernel ClearGrid
+#pragma kernel RevealAreas
+#pragma kernel ApplyToTexture
+#pragma kernel CalculateVisibility
+
+// Grid parameters
+int GridWidth;
+int GridHeight;
+float GridCellSize;
+float2 GridOrigin;
+float4 FogColor ;
+float4 PreviouslyRevealedColor ; 
+int NonRevealerCount;
+int EntitiesCount;
+
+// Buffers & Textures
+RWStructuredBuffer<float> Grid;
+RWStructuredBuffer<float> VisitedGrid;
+StructuredBuffer<float4> Entities;
+StructuredBuffer<float4> NonRevelers;
+RWStructuredBuffer<uint> VisibilityResults;
+RWTexture2D<float4> FogTexture;
+
+[numthreads(8, 8, 1)]
+void ClearGrid(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)GridWidth || id.y >= (uint)GridHeight) return;
+    Grid[id.x + id.y * GridWidth] = 0.0f;
+}
+
+[numthreads(8, 8, 1)] 
+void RevealAreas(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)GridWidth || id.y >= (uint)GridHeight) return;
+
+    float2 cellCenter = GridOrigin + float2(
+        (id.x + 0.5) * GridCellSize,
+        (id.y + 0.5) * GridCellSize
+    );
+
+    float maxVisibility = 0.0f;
+
+    for (uint i = 0; i < (uint)EntitiesCount; i++)
+    {
+        float4 entity = Entities[i];
+        float2 entityPos = entity.xz;
+        float radius = entity.w;
+
+        float dist = distance(cellCenter, entityPos);
+        float visibility = 1.0f - smoothstep(radius * 0.8f, radius, dist);
+        maxVisibility = max(maxVisibility, visibility);
+    }
+
+    if (maxVisibility > 0)
+    {
+        Grid[id.x + id.y * GridWidth] = maxVisibility;
+        VisitedGrid[id.x + id.y * GridWidth] = max(maxVisibility, VisitedGrid[id.x + id.y * GridWidth]);
+    }
+}
+
+[numthreads(8, 8, 1)]
+void ApplyToTexture(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)GridWidth || id.y >= (uint)GridHeight) return;
+
+    float currentVisibility = Grid[id.x + id.y * GridWidth];
+    float visitedVisibility = VisitedGrid[id.x + id.y * GridWidth];
+
+    if (id.x < 0 || id.x >= (uint)GridWidth || id.y < 0 || id.y >= (uint)GridHeight) {
+        FogTexture[id.xy] = FogColor;
+        return;
+    }
+
+    float4 visitedColor = lerp(FogColor, PreviouslyRevealedColor, visitedVisibility);
+    float4 finalColor = lerp(visitedColor, float4(0, 0, 0, 0), currentVisibility);
+
+    FogTexture[id.xy] = finalColor;
+}
+
+[numthreads(64, 1, 1)]
+void CalculateVisibility(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)NonRevealerCount) return;
+
+    float4 entity = NonRevelers[id.x];
+    float2 entityPos = entity.xz;
+    float visionRadius = entity.w;
+    
+    float2 minGrid = (entityPos - visionRadius - GridOrigin) / GridCellSize;
+    float2 maxGrid = (entityPos + visionRadius - GridOrigin) / GridCellSize;
+    
+    int2 minCell = int2(floor(minGrid.x), floor(minGrid.y));
+    int2 maxCell = int2(ceil(maxGrid.x), ceil(maxGrid.y));
+    
+    bool visible = false;
+    
+    for(int x = minCell.x; x <= maxCell.x; x++)
+    {
+        for(int y = minCell.y; y <= maxCell.y; y++)
+        {
+            if(x < 0 || x >= GridWidth || y < 0 || y >= GridHeight) continue;
+            
+            float2 cellCenter = GridOrigin + float2(
+                (x + 0.5) * GridCellSize,
+                (y + 0.5) * GridCellSize
+            );
+            
+            if(Grid[y * GridWidth + x] > 0.5f && 
+               distance(entityPos, cellCenter) <= visionRadius)
+            {
+                visible = true;
+                break;
+            }
+        }
+        if(visible) break;
+    }
+    
+    VisibilityResults[id.x] = visible ? 1 : 0;
+}
